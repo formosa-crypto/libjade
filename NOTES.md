@@ -8,7 +8,7 @@
 * What cryptographic primitives should it provide?
   For most of the cases, what is needed in real applications is algorithms that integrate into TLS and ones that are used for encryption of data at rest. These include:
   * Post-quantum KEMs
-  * Post-quantum Signtures
+  * Post-quantum Signatures
   * Hashes
   * MAC
   * Block/Stream ciphers
@@ -42,5 +42,6 @@ TODO:
 * How will be handling contribuitions?
 * How often will be updating easycrypt and jasmin libraries?
 * Which architecture should it support?
+* Should we use hacspec?
   
 
