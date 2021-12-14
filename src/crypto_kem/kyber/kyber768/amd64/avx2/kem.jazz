@@ -1,0 +1,18 @@
+require "kem.jinc"
+
+export fn crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
+{
+  __crypto_kem_keypair_jazz(pkp, skp, randomnessp);
+}
+
+
+export fn crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomnessp)
+{
+  __crypto_kem_enc_jazz(ctp, shkp, pkp, randomnessp);
+}
+
+
+export fn crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+{
+  __crypto_kem_dec_jazz(shkp, ctp, skp);
+}

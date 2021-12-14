@@ -1,0 +1,137 @@
+require "indcpa.jinc"
+require "verify.jinc"
+
+inline
+fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
+{
+  stack u8[32] h_pk;
+  stack u64 s_randomnessp s_skp s_pkp;
+  reg u64 t64;
+  inline int i;
+
+  s_randomnessp = randomnessp;
+  s_pkp = pkp;
+  s_skp = skp;
+
+  __indcpa_keypair(pkp, skp, randomnessp);
+
+  randomnessp = s_randomnessp;
+  randomnessp += KYBER_SYMBYTES;
+  s_randomnessp = randomnessp;
+
+  skp = s_skp;
+  skp += KYBER_POLYVECBYTES;
+  pkp = s_pkp;
+
+  for i=0 to KYBER_INDCPA_PUBLICKEYBYTES/8
+  {
+    t64 = (u64)[pkp + 8*i];
+    (u64)[skp] = t64;
+    skp += 8;
+  }
+
+  s_skp = skp;
+  pkp = s_pkp;
+  t64 = KYBER_POLYVECBYTES + KYBER_SYMBYTES;
+  h_pk = _isha3_256(h_pk, pkp, t64);
+  skp = s_skp;
+
+  for i=0 to 4
+  {
+    t64 = h_pk[u64 i];
+    (u64)[skp] = t64;
+    skp += 8;
+  }
+  
+  randomnessp = s_randomnessp;
+
+  for i=0 to KYBER_SYMBYTES/8
+  {
+    t64 = (u64)[randomnessp + 8*i];
+    (u64)[skp] = t64;
+    skp += 8;
+  }
+}
+
+inline
+fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomnessp)
+{
+  stack u8[KYBER_SYMBYTES * 2] buf kr;
+  stack u64 s_pkp s_ctp s_randomnessp s_shkp;
+  reg u64 t64;
+
+  s_pkp = pkp;
+  s_ctp = ctp;
+  s_shkp = shkp;
+  
+  t64 = KYBER_SYMBYTES;
+  buf[0:KYBER_SYMBYTES] = _isha3_256(buf[0:KYBER_SYMBYTES], randomnessp, t64);
+
+  s_randomnessp = randomnessp;
+  pkp = s_pkp;
+
+  t64 = KYBER_PUBLICKEYBYTES;
+  buf[KYBER_SYMBYTES:KYBER_SYMBYTES] = _isha3_256(buf[KYBER_SYMBYTES:KYBER_SYMBYTES], pkp, t64);
+
+  kr = _sha3_512_64(kr, buf);
+
+  pkp = s_pkp;
+
+  __indcpa_enc(s_ctp, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+
+  ctp = s_ctp;
+  t64 = KYBER_CT_LEN;
+  kr[KYBER_SYMBYTES:KYBER_SYMBYTES] = _isha3_256(kr[KYBER_SYMBYTES:KYBER_SYMBYTES], ctp, t64);
+
+  shkp = s_shkp;
+  t64 = KYBER_SSBYTES;
+  _shake256_64(shkp, t64, kr);
+}
+
+inline
+fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+{
+  stack u8[KYBER_CT_LEN] ctpc;
+  stack u8[2*KYBER_SYMBYTES] kr buf;
+  stack u64 s_skp s_ctp s_shkp;
+  reg u64 pkp hp zp t64 cnd;
+  inline int i;
+
+  s_shkp = shkp;
+  s_ctp = ctp;
+
+  buf[0:KYBER_MSGBYTES] = __indcpa_dec(buf[0:KYBER_MSGBYTES], ctp, skp);
+
+  hp = skp + 32;
+  hp += 24 * KYBER_K * KYBER_N>>3;
+
+  for i=0 to KYBER_SYMBYTES/8
+  {
+    t64 = (u64)[hp + 8*i];
+    buf.[u64 KYBER_SYMBYTES + 8*i] = t64;
+  }
+
+  s_skp = skp;
+
+  kr = _sha3_512_64(kr, buf);
+
+  pkp = s_skp;
+  pkp += 12 * KYBER_K * KYBER_N>>3;
+
+  ctpc = __iindcpa_enc(ctpc, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+
+  ctp = s_ctp;
+  cnd = __verify(ctp, ctpc);
+
+  zp = s_skp;
+  zp += 64;
+  zp += 24 * KYBER_K * KYBER_N>>3;
+  kr[0:KYBER_SYMBYTES] = __cmov(kr[0:KYBER_SYMBYTES], zp, cnd);
+
+  t64 = KYBER_CT_LEN;
+  kr[KYBER_SYMBYTES:KYBER_SYMBYTES] = _isha3_256(kr[KYBER_SYMBYTES:KYBER_SYMBYTES], ctp, t64);
+
+  shkp = s_shkp;
+  t64 = KYBER_SSBYTES;
+  _shake256_64(shkp, t64, kr);
+}
