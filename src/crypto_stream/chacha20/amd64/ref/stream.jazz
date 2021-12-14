@@ -1,6 +1,0 @@
-require "chacha20.jinc"
-
-export fn crypto_stream_chacha20_amd64_ref(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
-{
-  __chacha20_ref(output, plain, len, key, nonce, counter);
-}
