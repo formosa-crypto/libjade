@@ -1,18 +1,19 @@
-require "kem.jinc"
+require "indcpa.jinc"
+require "../../../common/amd64/kem.jinc"
 
-export fn crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
+export fn jade_kem_kyber_kyber768_amd64_avx2_keypair(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
 {
   __crypto_kem_keypair_jazz(pkp, skp, randomnessp);
 }
 
 
-export fn crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomnessp)
+export fn jade_kem_kyber_kyber768_amd64_enc(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomnessp)
 {
   __crypto_kem_enc_jazz(ctp, shkp, pkp, randomnessp);
 }
 
 
-export fn crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+export fn jade_kem_kyber_kyber768_amd64_dec(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
   __crypto_kem_dec_jazz(shkp, ctp, skp);
 }

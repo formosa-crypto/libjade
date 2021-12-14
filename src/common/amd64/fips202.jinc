@@ -1,10 +1,5 @@
 require "keccakf1600.jinc"
-require "fips202_common.jinc"
-
-param int SHAKE128_RATE = 168;
-param int SHAKE256_RATE = 136;
-param int SHA3_256_RATE = 136;
-param int SHA3_512_RATE = 72;
+require "../fips202_params.jinc"
 
 inline
 fn __st0(reg ptr u64[25] state) -> reg ptr u64[25]

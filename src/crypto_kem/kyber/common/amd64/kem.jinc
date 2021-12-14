@@ -1,5 +1,4 @@
-require "indcpa.jinc"
-require "verify.jinc"
+require "avx2/verify.jinc"
 
 inline
 fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
