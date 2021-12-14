@@ -853,6 +853,13 @@ fn _double_quarter_round_x8(reg u256[16] k, inline int a0 b0 c0 d0
 // but imagine that you don't want to execute 2 shuffles (from memory operands)
 // next to each other...
 // we can just define a variant of the double_quarter_round_x8 such that:
+
+/* TODO CHECKME: this function causes the compilation to fail;
+   - performing several additional spills in '__rounds_x8_avx2'/'__column_round_x8_avx2'/'__diagonal_round_x8_avx2' would not fix the issue
+   - the proposed temporary solution is to take less advantage of pipeling strategies
+*/
+
+/*
 inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
                                          inline int a0 b0 c0 d0
                                                     a1 b1 c1 d1,
@@ -866,6 +873,27 @@ inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
 
   return k;
 }
+*/
+
+inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
+                                         inline int a0 b0 c0 d0
+                                                    a1 b1 c1 d1,
+                                         stack u256 r16 r8) -> reg u256[16]
+{
+
+  k = ___line_x8_v_avx2(k, a0, b0, d0, 16, r16, r8);
+  k = ___line_x8_v_avx2(k, c0, d0, b0, 12, r16, r8);
+  k = ___line_x8_v_avx2(k, a0, b0, d0, 8,  r16, r8);
+  k = ___line_x8_v_avx2(k, c0, d0, b0, 7,  r16, r8);
+
+  k = ___line_x8_v_avx2(k, a1, b1, d1, 16, r16, r8);
+  k = ___line_x8_v_avx2(k, c1, d1, b1, 12, r16, r8);
+  k = ___line_x8_v_avx2(k, a1, b1, d1, 8,  r16, r8);
+  k = ___line_x8_v_avx2(k, c1, d1, b1, 7,  r16, r8);
+
+  return k;
+}
+
 
 inline fn __column_round_x8_avx2(reg u256[16] k, stack u256 k15 s_r16 s_r8) -> reg u256[16], stack u256
 {
