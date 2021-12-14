@@ -1,0 +1,9 @@
+TOP := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+JFLAGS ?=
+JASMINC ?= jasminc
+
+%.s: %.jazz
+	@$(JASMINC) $(JFLAGS) -o $@ $< || (rm -f $@ && touch fail && echo "\033[1;31m FAIL \033[0m")
+
+clean:
+	@rm -f fail *.s
