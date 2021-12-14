@@ -1,4 +1,4 @@
-JFLAGS += -lea
+#JFLAGS:= -lea
 
 default: stream.s
 	@true

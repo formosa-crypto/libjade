@@ -1,4 +1,4 @@
-// NOTES: in this file we keep the '_ref' suffix because this implementation may be compiled together with avx2 code
+// NOTES: this file expect an even CHACHA_ROUNDS param
 
 inline fn __init_ref(reg u64 key nonce, reg u32 counter) -> stack u32[16]
 {
@@ -114,7 +114,7 @@ inline fn __rounds_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
   inline int i;
   stack u32 c k14;
 
-  c = 10;
+  c = (CHACHA_ROUNDS/2);
   while
   {
     //k = quarter_round(k, 0, 4, 8, 12);
@@ -334,7 +334,7 @@ inline fn __increment_counter_ref(stack u32[16] st) -> stack u32[16]
   return st;
 }
 
-inline fn __chacha20_ref(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
+inline fn __chacha_ref(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
 {
   stack u64 s_output, s_plain;
   stack u32 s_len;

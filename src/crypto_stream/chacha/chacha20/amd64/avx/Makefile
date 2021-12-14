@@ -2,5 +2,5 @@
 default: stream.s
 	@true
 
-include ../../../../Makefile.common
+include ../../../../../Makefile.common
 

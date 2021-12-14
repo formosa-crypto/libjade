@@ -1,3 +1,5 @@
+// NOTES: this file expect an even CHACHA_ROUNDS param
+
 u128 g_r16 = (16u8)[13,12,15,14, 9,8,11,10, 5,4,7,6, 1,0,3,2];
 u128 g_r8  = (16u8)[14,13,12,15, 10,9,8,11, 6,5,4,7, 2,1,0,3];
 
@@ -531,7 +533,7 @@ inline fn __rounds_x1_avx(reg u128[4] k) -> reg u128[4]
   r8 = g_r8;
 
   c = 0;
-  while(c < 10)
+  while(c < (CHACHA_ROUNDS/2))
   {
     k = __column_round_x1_avx(k, r16, r8);
     k = __diagonal_round_x1_avx(k, r16, r8);
@@ -630,7 +632,7 @@ inline fn __rounds_x2_avx(reg u128[4] k1 k2) -> reg u128[4], reg u128[4]
   // do not use zf;
   // it decreases the performance here.
   c = 0;
-  while(c < 10) {
+  while(c < (CHACHA_ROUNDS/2)) {
     k1, k2 = __column_round_x2_avx(k1, k2, r16, r8);
     k1, k2 = __diagonal_round_x2_avx(k1, k2, r16, r8);
     c += 1;
@@ -725,7 +727,7 @@ inline fn __rounds_x4_avx(reg u128[16] k, stack u128 s_r16 s_r8) -> reg u128[16]
 
   k15 = k[15];
 
-  c = 10;
+  c = (CHACHA_ROUNDS/2);
   /*align*/ while {
     k, k14 = __column_round_x4_avx(k, k15, s_r16, s_r8);
     k, k15 = __diagonal_round_x4_avx(k, k14, s_r16, s_r8);
@@ -737,7 +739,7 @@ inline fn __rounds_x4_avx(reg u128[16] k, stack u128 s_r16 s_r8) -> reg u128[16]
   return k;
 }
 
-inline fn __chacha20_more_than_128_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
+inline fn __chacha_more_than_128_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
 {
   stack u128[16] st;
   reg   u128[16]  k;
@@ -765,7 +767,7 @@ inline fn __chacha20_more_than_128_avx(reg u64 output plain, reg u32 len, reg u6
   }
 }
 
-inline fn __chacha20_less_than_129_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
+inline fn __chacha_less_than_129_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
 {
   reg u128[4] st k1, k2;
 
@@ -789,11 +791,11 @@ inline fn __chacha20_less_than_129_avx(reg u64 output plain, reg u32 len, reg u6
   }
 }
 
-inline fn __chacha20_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
+inline fn __chacha_avx(reg u64 output plain, reg u32 len, reg u64 key nonce, reg u32 counter)
 {
   if(len < 129)
-  { __chacha20_less_than_129_avx(output, plain, len, key, nonce, counter); }
+  { __chacha_less_than_129_avx(output, plain, len, key, nonce, counter); }
   else
-  { __chacha20_more_than_128_avx(output, plain, len, key, nonce, counter); }
+  { __chacha_more_than_128_avx(output, plain, len, key, nonce, counter); }
 }
 
