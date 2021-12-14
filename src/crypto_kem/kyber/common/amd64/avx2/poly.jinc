@@ -1,0 +1,1310 @@
+require "shuffle.jinc"
+require "consts.jinc"
+require "reduce.jinc"
+require "../../../../../common/amd64/fips202.jinc"
+require "../../../../../common/amd64/avx2/fips202_4x.jinc"
+
+fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> stack u16[KYBER_N]
+{
+  inline int i;
+  reg u256 a;
+  reg u256 b;
+  reg u256 r;
+
+  for i = 0 to 16 {
+    a = rp.[u256 32*i];
+    b = bp.[u256 32*i];
+    r = #VPADD_16u16(a, b);
+    rp.[u256 32*i] = r;
+  }
+
+  return rp;
+}
+
+fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 r qx16;
+  inline int i;
+  
+  qx16 = jqx16[u256 0];
+
+  for i=0 to 16 {
+    r = rp.[u256 32*i];
+    r = __csubq(r, qx16);
+    rp.[u256 32*i] = r;
+  }
+
+  return rp;
+}
+
+
+inline 
+fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int sign) -> reg u256, reg u256, reg u256, reg u256
+{
+  reg u256 a b c d x0 x1 y0 y1;
+  reg u256 bdlo bdhi bclo bchi adlo adhi aclo achi bd;
+  reg u256 rbdlo rbdhi bc0 bc1 ad0 ad1 ac0 ac1 rbd0 rbd1;
+
+  b = ap.[u256 32*1];
+  d = bp.[u256 32*1];
+  a = ap.[u256 32*0];
+  c = bp.[u256 32*0];
+
+  bdlo = #VPMULL_16u16(b, d);
+  bdhi = #VPMULH_16u16(b, d);
+  bclo = #VPMULL_16u16(b, c);
+  bchi = #VPMULH_16u16(b, c);
+  adlo = #VPMULL_16u16(a, d);
+  adhi = #VPMULH_16u16(a, d);
+  aclo = #VPMULL_16u16(a, c);
+  achi = #VPMULH_16u16(a, c);
+
+  bdlo = #VPMULL_16u16(bdlo, qinvx16);
+  bdlo = #VPMULH_16u16(bdlo, qx16);
+  bd   = #VPSUB_16u16(bdhi, bdlo);
+
+  rbdlo = #VPMULL_16u16(zeta, bd);
+  rbdhi = #VPMULH_16u16(zeta, bd);
+
+  bc0  = #VPUNPCKL_16u16(bclo,  bchi);
+  bc1  = #VPUNPCKH_16u16(bclo,  bchi);
+  ad0  = #VPUNPCKL_16u16(adlo,  adhi);
+  ad1  = #VPUNPCKH_16u16(adlo,  adhi);
+  ac0  = #VPUNPCKL_16u16(aclo,  achi);
+  ac1  = #VPUNPCKH_16u16(aclo,  achi);
+  rbd0 = #VPUNPCKL_16u16(rbdlo, rbdhi);
+  rbd1 = #VPUNPCKH_16u16(rbdlo, rbdhi);
+
+  if (sign == 0)
+  {
+    x0 = #VPADD_8u32(ac0, rbd0);
+    x1 = #VPADD_8u32(ac1, rbd1);
+  }
+  else
+  {
+    x0 = #VPSUB_8u32(ac0, rbd0);
+    x1 = #VPSUB_8u32(ac1, rbd1);
+  }
+  y0 = #VPADD_8u32(bc0, ad0);
+  y1 = #VPADD_8u32(bc1, ad1);
+
+  return x0, x1, y0, y1;
+}
+
+inline 
+fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
+{
+  reg u256 zero x y z;
+
+  zero = #set0_256();
+  y = #VPBLEND_16u16(a0,zero,0xAA);
+  z = #VPBLEND_16u16(a1,zero,0xAA);
+  a0 = #VPSRL_8u32(a0,16);
+  a1 = #VPSRL_8u32(a1,16);
+  z = #VPACKUS_8u32(y, z);
+  a0 = #VPACKUS_8u32(a0, a1);
+
+  y = #VPBLEND_16u16(b0,zero,0xAA);
+  x = #VPBLEND_16u16(b1,zero,0xAA);
+  b0 = #VPSRL_8u32(b0,16);
+  b1 = #VPSRL_8u32(b1,16);
+  y = #VPACKUS_8u32(y, x);
+  b0 = #VPACKUS_8u32(b0, b1);
+
+  z  = #VPMULL_16u16(z, qinvx16);
+  y  = #VPMULL_16u16(y, qinvx16);
+  z  = #VPMULH_16u16(z, qx16);
+  y  = #VPMULH_16u16(y, qx16);
+  a0 = #VPSUB_16u16(a0, z);
+  b0 = #VPSUB_16u16(b0, y);
+
+  return a0, b0;
+}
+
+inline
+fn __basemul32x(reg ptr u16[64] rp ap bp, reg u256 zeta qx16 qinvx16) -> reg ptr u16[64]
+{
+  reg u256 x0 y0 x1 y1;
+
+  x0, x1, y0, y1 = __schoolbook(ap[0:32], bp[0:32], zeta, qx16, qinvx16, 0);
+  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
+  rp.[u256 32*0] = x0;
+  rp.[u256 32*1] = x1;
+
+  x0, x1, y0, y1 = __schoolbook(ap[32:32], bp[32:32], zeta, qx16, qinvx16, 1);
+  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
+  rp.[u256 32*2] = x0;
+  rp.[u256 32*3] = x1;
+
+  return rp;
+}
+
+
+fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 zeta qx16 qinvx16;
+  
+  qx16    = jqx16.[u256 0];
+  qinvx16 = jqinvx16.[u256 0];
+  
+  zeta = jzetas_exp.[u256 304];
+  rp[0:64]   = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16);
+  zeta = jzetas_exp.[u256 368];
+  rp[64:64]  = __basemul32x(rp[64:64],  ap[64:64],  bp[64:64], zeta, qx16, qinvx16);
+  zeta = jzetas_exp.[u256 696];
+  rp[128:64] = __basemul32x(rp[128:64], ap[128:64], bp[128:64], zeta, qx16, qinvx16);
+  zeta = jzetas_exp.[u256 760];
+  rp[192:64] = __basemul32x(rp[192:64], ap[192:64], bp[192:64], zeta, qx16, qinvx16);
+  
+  return rp;
+}
+
+u16 pc_shift1_s = 0x200;
+u16 pc_mask_s = 0x0F;
+u16 pc_shift2_s = 0x1001;
+u32[8] pc_permidx_s = {0,4,1,5,2,6,3,7};
+
+fn _poly_compress(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f0 f1 f2 f3 v shift1 mask shift2 permidx;
+  reg u128 t0 t1 t3;
+  reg ptr u16[16] x16p;
+  reg u64 t64;
+  reg u32 t32;
+  reg u16 t16;
+
+  a = _poly_csubq(a);
+
+  x16p = jvx16;
+  v = x16p[u256 0];
+  shift1 = #VPBROADCAST_16u16(pc_shift1_s);
+  mask = #VPBROADCAST_16u16(pc_mask_s);
+  shift2 = #VPBROADCAST_16u16(pc_shift2_s);
+  permidx = pc_permidx_s[u256 0];
+
+  for i=0 to KYBER_N/64
+  {
+    f0 = a[u256 4*i];
+    f1 = a[u256 4*i + 1];
+    f2 = a[u256 4*i + 2];
+    f3 = a[u256 4*i + 3];
+    f0 = #VPMULH_16u16(f0, v);
+    f1 = #VPMULH_16u16(f1, v);
+    f2 = #VPMULH_16u16(f2, v);
+    f3 = #VPMULH_16u16(f3, v);
+    f0 = #VPMULHRS_16u16(f0, shift1);
+    f1 = #VPMULHRS_16u16(f1, shift1);
+    f2 = #VPMULHRS_16u16(f2, shift1);
+    f3 = #VPMULHRS_16u16(f3, shift1);
+    f0 = #VPAND_256(f0, mask);
+    f1 = #VPAND_256(f1, mask);
+    f2 = #VPAND_256(f2, mask);
+    f3 = #VPAND_256(f3, mask);
+    f0 = #VPACKUS_16u16(f0, f1);
+    f2 = #VPACKUS_16u16(f2, f3);
+    f0 = #VPMADDUBSW_256(f0, shift2);
+    f2 = #VPMADDUBSW_256(f2, shift2);
+    f0 = #VPACKUS_16u16(f0, f2);
+    f0 = #VPERMD(permidx, f0);
+    (u256)[rp + 32*i] = f0;
+  }
+
+  return a;
+}
+
+fn _i_poly_compress(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_N] a) -> reg ptr u8[KYBER_POLYCOMPRESSEDBYTES], reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f0 f1 f2 f3 v shift1 mask shift2 permidx;
+  reg u128 t0 t1 t3;
+  reg ptr u16[16] x16p;
+  reg u64 t64;
+  reg u32 t32;
+  reg u16 t16;
+
+  a = _poly_csubq(a);
+
+  x16p = jvx16;
+  v = x16p[u256 0];
+  shift1 = #VPBROADCAST_16u16(pc_shift1_s);
+  mask = #VPBROADCAST_16u16(pc_mask_s);
+  shift2 = #VPBROADCAST_16u16(pc_shift2_s);
+  permidx = pc_permidx_s[u256 0];
+
+  for i=0 to KYBER_N/64
+  {
+    f0 = a[u256 4*i];
+    f1 = a[u256 4*i + 1];
+    f2 = a[u256 4*i + 2];
+    f3 = a[u256 4*i + 3];
+    f0 = #VPMULH_16u16(f0, v);
+    f1 = #VPMULH_16u16(f1, v);
+    f2 = #VPMULH_16u16(f2, v);
+    f3 = #VPMULH_16u16(f3, v);
+    f0 = #VPMULHRS_16u16(f0, shift1);
+    f1 = #VPMULHRS_16u16(f1, shift1);
+    f2 = #VPMULHRS_16u16(f2, shift1);
+    f3 = #VPMULHRS_16u16(f3, shift1);
+    f0 = #VPAND_256(f0, mask);
+    f1 = #VPAND_256(f1, mask);
+    f2 = #VPAND_256(f2, mask);
+    f3 = #VPAND_256(f3, mask);
+    f0 = #VPACKUS_16u16(f0, f1);
+    f2 = #VPACKUS_16u16(f2, f3);
+    f0 = #VPMADDUBSW_256(f0, shift2);
+    f2 = #VPMADDUBSW_256(f2, shift2);
+    f0 = #VPACKUS_16u16(f0, f2);
+    f0 = #VPERMD(permidx, f0);
+    rp.[u256 32*i] = f0;
+  }
+
+  return rp, a;
+}
+
+
+
+u8[32] pd_jshufbidx = {0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,
+                       4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7};
+u32 pd_mask_s = 0x00F0000F;
+u32 pd_shift_s = 0x800800;
+
+fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f q shufbidx mask shift;
+  reg ptr u16[16] x16p;
+  reg ptr u8[32] x32p;
+
+  x16p = jqx16;
+  q = x16p[u256 0];
+  x32p = pd_jshufbidx;
+  shufbidx = x32p[u256 0];
+  mask = #VPBROADCAST_8u32(pd_mask_s);
+  shift = #VPBROADCAST_8u32(pd_shift_s);
+
+  f = #set0_256();
+
+  for i=0 to KYBER_N/16
+  {
+    f = #VPBROADCAST_2u128((u128)[ap + 8*i]);
+    f = #VPSHUFB_256(f, shufbidx);
+    f = #VPAND_256(f, mask);
+    f = #VPMULL_16u16(f, shift);
+    f = #VPMULHRS_16u16(f, q);
+    rp[u256 i] = f;
+  }
+
+  return rp;
+}
+
+
+fn _poly_frombytes(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 t0 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 t11 tt mask;
+  reg ptr u16[16] maskp;
+
+  maskp = maskx16;
+  mask = maskp[u256 0];
+
+  for i=0 to 2
+  {
+    t0 = (u256)[ap + 192*i];
+    t1 = (u256)[ap + 192*i + 32];
+    t2 = (u256)[ap + 192*i + 64];
+    t3 = (u256)[ap + 192*i + 96];
+    t4 = (u256)[ap + 192*i + 128];
+    t5 = (u256)[ap + 192*i + 160];
+
+    tt, t3 = __shuffle8(t0, t3);
+    t0, t4 = __shuffle8(t1, t4);
+    t1, t5 = __shuffle8(t2, t5);
+
+    t2, t4 = __shuffle4(tt, t4);
+    tt, t1 = __shuffle4(t3, t1);
+    t3, t5 = __shuffle4(t0, t5);
+
+    t0, t1 = __shuffle2(t2, t1);
+    t2, t3 = __shuffle2(t4, t3);
+    t4, t5 = __shuffle2(tt, t5);
+
+    t6, t3 = __shuffle1(t0, t3);
+    t0, t4 = __shuffle1(t1, t4);
+    t1, t5 = __shuffle1(t2, t5);
+
+    t7 = #VPSRL_16u16(t6, 12);
+    t8 = #VPSLL_16u16(t3, 4);
+    t7 = #VPOR_256(t7, t8);
+    t6 = #VPAND_256(mask, t6);
+    t7 = #VPAND_256(mask, t7);
+
+    t8 = #VPSRL_16u16(t3, 8);
+    t9 = #VPSLL_16u16(t0, 8);
+    t8 = #VPOR_256(t8,t9);
+    t8 = #VPAND_256(mask,t8);
+
+    t9 = #VPSRL_16u16(t0, 4);
+    t9 = #VPAND_256(mask, t9);
+
+    t10 = #VPSRL_16u16(t4, 12);
+    t11 = #VPSLL_16u16(t1, 4);
+    t10 = #VPOR_256(t10, t11);
+    t4 = #VPAND_256(mask,t4);
+    t10 = #VPAND_256(mask, t10);
+
+    t11 = #VPSRL_16u16(t1, 8);
+    tt = #VPSLL_16u16(t5, 8);
+    t11 = #VPOR_256(t11, tt);
+    t11 = #VPAND_256(mask, t11);
+
+    tt = #VPSRL_16u16(t5, 4);
+    tt = #VPAND_256(mask, tt);
+
+    rp[u256 8*i] = t6;
+    rp[u256 8*i + 1] = t7;
+    rp[u256 8*i + 2] = t8;
+    rp[u256 8*i + 3] = t9;
+    rp[u256 8*i + 4] = t4;
+    rp[u256 8*i + 5] = t10;
+    rp[u256 8*i + 6] = t11;
+    rp[u256 8*i + 7] = tt;
+  }
+
+  return rp;
+}
+
+param int DMONT   = 1353;      /* (1ULL << 32) % KYBER_Q */
+
+fn poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 t qx16 qinvx16 dmontx16;
+  inline int i;
+  reg ptr u16[16] x16p;
+
+  x16p = jqx16;
+  qx16 = x16p[u256 0];
+  x16p = jqinvx16;
+  qinvx16 = x16p[u256 0];
+  x16p = jdmontx16;
+  dmontx16 = x16p[u256 0];
+
+  for i=0 to KYBER_N/16
+  {
+    t = rp[u256 i];
+    t = __fqmulx16(t, dmontx16, qx16, qinvx16);
+    rp[u256 i] = t;
+  }
+
+  return rp; 
+}
+
+u32[4] pfm_shift_s = {3, 2, 1, 0};
+u8[16] pfm_idx_s = {0, 1, 4, 5, 8, 9, 12, 13,
+                2, 3, 6, 7, 10, 11, 14, 15};
+
+fn poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
+  reg u256 shift idx hqs;
+  reg ptr u16[16] x16p;
+
+  x16p = hqx16_p1;
+  hqs = x16p[u256 0];
+  shift = #VPBROADCAST_2u128(pfm_shift_s[u128 0]);
+  idx = #VPBROADCAST_2u128(pfm_idx_s[u128 0]);
+
+  f = (u256)[ap];
+
+  for i=0 to 4
+  {
+    g3 =  #VPSHUFD_256(f, 0x55*i);
+    g3 = #VPSLLV_8u32(g3, shift);
+    g3 = #VPSHUFB_256(g3, idx);
+    g0 = #VPSLL_16u16(g3,12);
+    g1 = #VPSLL_16u16(g3,8);
+    g2 = #VPSLL_16u16(g3,4);
+    g0 = #VPSRA_16u16(g0,15);
+    g1 = #VPSRA_16u16(g1,15);
+    g2 = #VPSRA_16u16(g2,15);
+    g3 = #VPSRA_16u16(g3,15);
+    g0 = #VPAND_256(g0,hqs);
+    g1 = #VPAND_256(g1,hqs);
+    g2 = #VPAND_256(g2,hqs);
+    g3 = #VPAND_256(g3,hqs);
+    h0 = #VPUNPCKL_4u64(g0,g1);
+    h2 = #VPUNPCKH_4u64(g0,g1);
+    h1 = #VPUNPCKL_4u64(g2,g3);
+    h3 = #VPUNPCKH_4u64(g2,g3);
+    g0 = #VPERM2I128(h0,h1,0x20);
+    g2 = #VPERM2I128(h0,h1,0x31);
+    g1 = #VPERM2I128(h2,h3,0x20);
+    g3 = #VPERM2I128(h2,h3,0x31);
+    rp[u256 2*i] = g0;
+    rp[u256 2*i + 1] = g1;
+    rp[u256 2*i + 8] = g2;
+    rp[u256 2*i + 8 + 1] = g3;
+  }
+
+  return rp;
+}
+
+
+fn i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
+  reg u256 shift idx hqs;
+  reg ptr u16[16] x16p;
+
+  x16p = hqx16_p1;
+  hqs = x16p[u256 0];
+  shift = #VPBROADCAST_2u128(pfm_shift_s[u128 0]);
+  idx = #VPBROADCAST_2u128(pfm_idx_s[u128 0]);
+
+  f = ap[u256 0];
+
+  for i=0 to 4
+  {
+    g3 = #VPSHUFD_256(f, 0x55*i);
+    g3 = #VPSLLV_8u32(g3, shift);
+    g3 = #VPSHUFB_256(g3, idx);
+    g0 = #VPSLL_16u16(g3,12);
+    g1 = #VPSLL_16u16(g3,8);
+    g2 = #VPSLL_16u16(g3,4);
+    g0 = #VPSRA_16u16(g0,15);
+    g1 = #VPSRA_16u16(g1,15);
+    g2 = #VPSRA_16u16(g2,15);
+    g3 = #VPSRA_16u16(g3,15);
+    g0 = #VPAND_256(g0,hqs);
+    g1 = #VPAND_256(g1,hqs);
+    g2 = #VPAND_256(g2,hqs);
+    g3 = #VPAND_256(g3,hqs);
+    h0 = #VPUNPCKL_4u64(g0,g1);
+    h2 = #VPUNPCKH_4u64(g0,g1);
+    h1 = #VPUNPCKL_4u64(g2,g3);
+    h3 = #VPUNPCKH_4u64(g2,g3);
+    g0 = #VPERM2I128(h0,h1,0x20);
+    g2 = #VPERM2I128(h0,h1,0x31);
+    g1 = #VPERM2I128(h2,h3,0x20);
+    g3 = #VPERM2I128(h2,h3,0x31);
+    rp[u256 2*i] = g0;
+    rp[u256 2*i + 1] = g1;
+    rp[u256 2*i + 8] = g2;
+    rp[u256 2*i + 8 + 1] = g3;
+  }
+
+  return rp;
+}
+
+param int NOISE_BLOCKS = (KYBER_ETA * KYBER_N/4 + SHAKE256_RATE - 1)/SHAKE256_RATE;
+
+inline
+fn __poly_cbd(reg ptr u16[KYBER_N] rp, reg ptr u8[NOISE_BLOCKS * SHAKE256_RATE] buf) -> reg ptr u16[KYBER_N]
+{
+
+  inline int i;
+  reg u256 f0 f1 f2 f3;
+  reg u256 mask55 mask33 mask03 mask0F;
+  reg u128 t;
+  stack u32 mask55_s mask33_s mask03_s mask0F_s;
+
+  mask55_s = 0x55555555;
+  mask33_s = 0x33333333;
+  mask03_s = 0x03030303;
+  mask0F_s = 0x0F0F0F0F;
+
+  mask55 = #VPBROADCAST_8u32(mask55_s);
+  mask33 = #VPBROADCAST_8u32(mask33_s);
+  mask03 = #VPBROADCAST_8u32(mask03_s);
+  mask0F = #VPBROADCAST_8u32(mask0F_s);
+
+  for i=0 to KYBER_N/64
+  {
+    f0 = buf[u256 i];
+
+    f1 = #VPSRL_16u16(f0, 1);
+    f0 = #VPAND_256(mask55, f0);
+    f1 = #VPAND_256(mask55, f1);
+    f0 = #VPADD_32u8(f0, f1);
+
+    f1 = #VPSRL_16u16(f0, 2);
+    f0 = #VPAND_256(mask33, f0);
+    f1 = #VPAND_256(mask33, f1);
+    f0 = #VPADD_32u8(f0, mask33);
+    f0 = #VPSUB_32u8(f0, f1);
+
+    f1 = #VPSRL_16u16(f0, 4);
+    f0 = #VPAND_256(mask0F, f0);
+    f1 = #VPAND_256(mask0F, f1);
+    f0 = #VPSUB_32u8(f0, mask03);
+    f1 = #VPSUB_32u8(f1, mask03);
+
+    f2 = #VPUNPCKL_32u8(f0, f1);
+    f3 = #VPUNPCKH_32u8(f0, f1);
+
+    t = (128u)f2;
+    f0 = #VPMOVSX_16u8_16u16(t);
+    t = #VEXTRACTI128(f2, 1);
+    f1 = #VPMOVSX_16u8_16u16(t);
+    t = (128u)f3;
+    f2 = #VPMOVSX_16u8_16u16(t);
+    t = #VEXTRACTI128(f3, 1);
+    f3 = #VPMOVSX_16u8_16u16(t);
+    rp[u256 4*i] = f0;
+    rp[u256 4*i + 1] = f2;
+    rp[u256 4*i + 2] = f1;
+    rp[u256 4*i + 3] = f3;
+  }
+
+  return rp;
+}
+
+
+#[returnaddress="stack"]
+fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f0 f1 f2 f3;
+  reg u256 mask55 mask33 mask03 mask0F;
+  reg u128 t;
+  reg u64 t64;
+  stack ptr u16[KYBER_N] srp;
+  stack u8[128] buf;
+  stack u8[33] extseed;
+  stack u32 mask55_s mask33_s mask03_s mask0F_s;
+
+  mask55_s = 0x55555555;
+  mask33_s = 0x33333333;
+  mask03_s = 0x03030303;
+  mask0F_s = 0x0F0F0F0F;
+
+  srp = rp;
+
+  for i=0 to KYBER_SYMBYTES/8
+  {
+    t64 = seed[u64 i];
+    extseed[u64 i] = t64;
+  }
+  extseed[KYBER_SYMBYTES] = nonce;
+
+  buf = _shake256_128_33(buf, extseed);
+
+  mask55 = #VPBROADCAST_8u32(mask55_s);
+  mask33 = #VPBROADCAST_8u32(mask33_s);
+  mask03 = #VPBROADCAST_8u32(mask03_s);
+  mask0F = #VPBROADCAST_8u32(mask0F_s);
+
+  rp = srp;
+
+  for i=0 to KYBER_N/64
+  {
+    f0 = buf[u256 i];
+
+    f1 = #VPSRL_16u16(f0, 1);
+    f0 = #VPAND_256(mask55, f0);
+    f1 = #VPAND_256(mask55, f1);
+    f0 = #VPADD_32u8(f0, f1);
+
+    f1 = #VPSRL_16u16(f0, 2);
+    f0 = #VPAND_256(mask33, f0);
+    f1 = #VPAND_256(mask33, f1);
+    f0 = #VPADD_32u8(f0, mask33);
+    f0 = #VPSUB_32u8(f0, f1);
+
+    f1 = #VPSRL_16u16(f0, 4);
+    f0 = #VPAND_256(mask0F, f0);
+    f1 = #VPAND_256(mask0F, f1);
+    f0 = #VPSUB_32u8(f0, mask03);
+    f1 = #VPSUB_32u8(f1, mask03);
+
+    f2 = #VPUNPCKL_32u8(f0, f1);
+    f3 = #VPUNPCKH_32u8(f0, f1);
+
+    t = (128u)f2;
+    f0 = #VPMOVSX_16u8_16u16(t);
+    t = #VEXTRACTI128(f2, 1);
+    f1 = #VPMOVSX_16u8_16u16(t);
+    t = (128u)f3;
+    f2 = #VPMOVSX_16u8_16u16(t);
+    t = #VEXTRACTI128(f3, 1);
+    f3 = #VPMOVSX_16u8_16u16(t);
+    rp[u256 4*i] = f0;
+    rp[u256 4*i + 1] = f2;
+    rp[u256 4*i + 2] = f1;
+    rp[u256 4*i + 3] = f3;
+  }
+
+  return rp;
+}
+
+
+inline
+fn __shake256_squeezenblocks4x(reg ptr u256[25] state, reg ptr u8[NOISE_BLOCKS * SHAKE256_RATE] buf0 buf1 buf2 buf3) -> reg ptr u256[25], reg ptr u8[NOISE_BLOCKS*SHAKE256_RATE], reg ptr u8[NOISE_BLOCKS*SHAKE256_RATE], reg ptr u8[NOISE_BLOCKS*SHAKE256_RATE], reg ptr u8[NOISE_BLOCKS*SHAKE256_RATE]
+{
+  inline int i;
+
+  for i = 0 to NOISE_BLOCKS
+  {
+    state, buf0[i*SHAKE256_RATE:SHAKE256_RATE], buf1[i*SHAKE256_RATE:SHAKE256_RATE], buf2[i*SHAKE256_RATE:SHAKE256_RATE], buf3[i*SHAKE256_RATE:SHAKE256_RATE] = __shake256_squeezeblock4x(state, buf0[i*SHAKE256_RATE:SHAKE256_RATE], buf1[i*SHAKE256_RATE:SHAKE256_RATE], buf2[i*SHAKE256_RATE:SHAKE256_RATE], buf3[i*SHAKE256_RATE:SHAKE256_RATE]);
+  }
+
+  return state, buf0, buf1, buf2, buf3;
+}
+
+#[returnaddress="stack"]
+fn _poly_getnoise_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N]
+{
+  reg u256 f;
+  stack u256[25] state;
+  stack u8[NOISE_BLOCKS * SHAKE256_RATE] buf0;
+  stack u8[NOISE_BLOCKS * SHAKE256_RATE] buf1;
+  stack u8[NOISE_BLOCKS * SHAKE256_RATE] buf2;
+  stack u8[NOISE_BLOCKS * SHAKE256_RATE] buf3;
+
+  f = seed[u256 0];
+  buf0[u256 0] = f;
+  buf1[u256 0] = f;
+  buf2[u256 0] = f;
+  buf3[u256 0] = f;
+
+  buf0.[32] = nonce;
+  nonce += 1;
+  buf1.[32] = nonce;
+  nonce += 1;
+  buf2.[32] = nonce;
+  nonce += 1;
+  buf3.[32] = nonce;
+
+  state = _shake256_absorb4x_33(state, buf0[0:33], buf1[0:33], buf2[0:33], buf3[0:33]);
+  state, buf0, buf1, buf2, buf3 = __shake256_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
+
+  r0 = __poly_cbd(r0, buf0);
+  r1 = __poly_cbd(r1, buf1);
+  r2 = __poly_cbd(r2, buf2);
+  r3 = __poly_cbd(r3, buf3);
+
+  return r0, r1, r2, r3;
+}
+
+
+inline
+fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
+    -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+  reg u256 t0 t1 t2 t3 t4 t5 t6 t7;
+
+  t0  = #VPSUB_16u16(rl0, rh0);
+  t1  = #VPSUB_16u16(rl1, rh1);
+  t2  = #VPSUB_16u16(rl2, rh2);
+
+  rl0 = #VPADD_16u16(rh0, rl0);
+  rl1 = #VPADD_16u16(rh1, rl1);
+  rh0 = #VPMULL_16u16(zl0, t0);
+
+  rl2 = #VPADD_16u16(rh2, rl2);
+  rh1 = #VPMULL_16u16(zl0, t1);
+  t3  = #VPSUB_16u16(rl3, rh3);
+
+  rl3 = #VPADD_16u16(rh3, rl3);
+  rh2 = #VPMULL_16u16(zl1, t2);
+  rh3 = #VPMULL_16u16(zl1, t3);
+  
+  t0  = #VPMULH_16u16(zh0, t0);
+  t1  = #VPMULH_16u16(zh0, t1);
+
+  t2  = #VPMULH_16u16(zh1, t2);
+  t3  = #VPMULH_16u16(zh1, t3);
+
+  // Reduce
+  rh0  = #VPMULH_16u16(qx16, rh0);
+  rh1  = #VPMULH_16u16(qx16, rh1);
+  rh2  = #VPMULH_16u16(qx16, rh2);
+  rh3  = #VPMULH_16u16(qx16, rh3);
+  
+  rh0  = #VPSUB_16u16(t0, rh0);
+  rh1  = #VPSUB_16u16(t1, rh1);
+  rh2  = #VPSUB_16u16(t2, rh2);
+  rh3  = #VPSUB_16u16(t3, rh3);
+
+  return rl0, rl1, rl2, rl3, rh0, rh1, rh2, rh3;
+}
+
+inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
+  reg u32 t;
+  reg u16 w;
+  reg ptr u16[400] zetasp;
+  reg ptr u16[16] qx16p;
+  inline int i;
+
+  zetasp = jzetas_inv_exp;
+  qx16 = jqx16[u256 0];
+
+  for i=0 to 2 
+  {
+    // level 0:
+    zeta0 = zetasp.[u256 0+392*i];
+    zeta1 = zetasp.[u256 64+392*i];
+    zeta2 = zetasp.[u256 32+392*i];
+    zeta3 = zetasp.[u256 96+392*i];
+
+    r0 = rp.[u256 32*0+256*i];
+    r1 = rp.[u256 32*1+256*i];
+    r2 = rp.[u256 32*2+256*i];
+    r3 = rp.[u256 32*3+256*i];
+    r4 = rp.[u256 32*4+256*i];
+    r5 = rp.[u256 32*5+256*i];
+    r6 = rp.[u256 32*6+256*i];
+    r7 = rp.[u256 32*7+256*i];
+
+//    r0, r1, r2, r3, r4, r5, r6, r7 = __nttunpack128(r0, r1, r2, r3, r4, r5, r6, r7);
+
+    r0, r1, r4, r5, r2, r3, r6, r7 = __invntt___butterfly64x(r0, r1, r4, r5, r2, r3, r6, r7, zeta0, zeta1, zeta2, zeta3, qx16);
+
+    // level 1:
+    zeta0 = zetasp.[u256 128+392*i];
+    zeta1 = zetasp.[u256 160+392*i];
+
+    r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+    
+    r0, r1 = __shuffle1(r0, r1);
+    r2, r3 = __shuffle1(r2, r3);
+    r4, r5 = __shuffle1(r4, r5);
+    r6, r7 = __shuffle1(r6, r7);
+
+    // level 2:
+    zeta0 = zetasp.[u256 192+392*i];
+    zeta1 = zetasp.[u256 224+392*i];
+
+    vx16 = jvx16[u256 0];
+
+    r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    r0 = __red16x(r0, qx16, vx16);
+
+    r0, r2 = __shuffle2(r0, r2);
+    r4, r6 = __shuffle2(r4, r6);
+    r1, r3 = __shuffle2(r1, r3);
+    r5, r7 = __shuffle2(r5, r7);
+
+    // level 3:
+    zeta0 = zetasp.[u256 256+392*i];
+    zeta1 = zetasp.[u256 288+392*i];
+
+    r0, r4, r1, r5, r2, r6, r3, r7 = __invntt___butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    r0 = __red16x(r0, qx16, vx16);
+
+    r0, r4 = __shuffle4(r0, r4);
+    r1, r5 = __shuffle4(r1, r5);
+    r2, r6 = __shuffle4(r2, r6);
+    r3, r7 = __shuffle4(r3, r7);
+
+    // level 4:
+    zeta0 = zetasp.[u256 320+392*i];
+    zeta1 = zetasp.[u256 352+392*i];
+
+    r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    r0 = __red16x(r0, qx16, vx16);
+
+    r0, r1 = __shuffle8(r0, r1);
+    r2, r3 = __shuffle8(r2, r3);
+    r4, r5 = __shuffle8(r4, r5);
+    r6, r7 = __shuffle8(r6, r7);
+
+    // level 5:
+    zeta0 = #VPBROADCAST_8u32(zetasp.[u32 384+392*i]);
+    zeta1 = #VPBROADCAST_8u32(zetasp.[u32 388+392*i]);
+
+    r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    r0 = __red16x(r0, qx16, vx16);
+
+    rp.[u256 32*0+256*i] = r0;
+    rp.[u256 32*1+256*i] = r2;
+    rp.[u256 32*2+256*i] = r4;
+    rp.[u256 32*3+256*i] = r6;
+    rp.[u256 32*4+256*i] = r1;
+    rp.[u256 32*5+256*i] = r3;
+    rp.[u256 32*6+256*i] = r5;
+    rp.[u256 32*7+256*i] = r7;
+  }
+
+  return rp;
+}
+
+
+inline fn __invntt_level6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 zeta0 zeta1 r0 r1 r2 r3 r4 r5 r6 r7 qx16 flox16 fhix16;
+  reg u32 t;
+  reg u16 w;
+  reg ptr u16[400] zetasp;
+  inline int i;
+
+  zetasp = jzetas_inv_exp;
+
+  qx16 = jqx16[u256 0];
+
+  zeta0 = #VPBROADCAST_8u32(zetasp.[u32 784]);
+  zeta1 = #VPBROADCAST_8u32(zetasp.[u32 788]);
+
+  for i=0 to 2
+  {
+    r0 = rp.[u256 32*0+128*i];
+    r1 = rp.[u256 32*1+128*i];
+    r2 = rp.[u256 32*2+128*i];
+    r3 = rp.[u256 32*3+128*i];
+    r4 = rp.[u256 32*8+128*i];
+    r5 = rp.[u256 32*9+128*i];
+    r6 = rp.[u256 32*10+128*i];
+    r7 = rp.[u256 32*11+128*i];
+
+    r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    flox16 = jflox16[u256 0];
+    fhix16 = jfhix16[u256 0];
+
+    rp.[u256 32*8+128*i]  = r4;
+    rp.[u256 32*9+128*i]  = r5;
+    rp.[u256 32*10+128*i] = r6;
+    rp.[u256 32*11+128*i] = r7;
+
+    r0 = __fqmulprecomp16x(r0, flox16, fhix16, qx16);
+    r1 = __fqmulprecomp16x(r1, flox16, fhix16, qx16);
+    r2 = __fqmulprecomp16x(r2, flox16, fhix16, qx16);
+    r3 = __fqmulprecomp16x(r3, flox16, fhix16, qx16);
+
+    rp.[u256 32*0+128*i] = r0;
+    rp.[u256 32*1+128*i] = r1;
+    rp.[u256 32*2+128*i] = r2;
+    rp.[u256 32*3+128*i] = r3;
+  }
+
+  return rp;
+}
+
+
+fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+//  rp = _nttunpack(rp);
+  rp = __invntt_levels0t5(rp);
+  rp = __invntt_level6(rp);
+  return rp;
+}
+
+
+inline
+fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
+    -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+  reg u256 t0 t1 t2 t3 t4 t5 t6 t7;
+
+  t0 = #VPMULL_16u16(zl0, rh0);
+  t1 = #VPMULH_16u16(zh0, rh0);
+  t2 = #VPMULL_16u16(zl0, rh1);
+  t3 = #VPMULH_16u16(zh0, rh1);
+  t4 = #VPMULL_16u16(zl1, rh2);
+  t5 = #VPMULH_16u16(zh1, rh2);
+  t6 = #VPMULL_16u16(zl1, rh3);
+  t7 = #VPMULH_16u16(zh1, rh3);
+
+  t0 = #VPMULH_16u16(t0, qx16);
+  t2 = #VPMULH_16u16(t2, qx16);
+  t4 = #VPMULH_16u16(t4, qx16);
+  t6 = #VPMULH_16u16(t6, qx16);
+
+  //rh1 = #VPSUB_16u16(t3, rl1);
+  rh1 = #VPSUB_16u16(rl1, t3);
+  rl1 = #VPADD_16u16(t3, rl1);
+  //rh0 = #VPSUB_16u16(t1, rl0);
+  rh0 = #VPSUB_16u16(rl0, t1);
+  rl0 = #VPADD_16u16(t1, rl0);
+  //rh3 = #VPSUB_16u16(t7, rl3);
+  rh3 = #VPSUB_16u16(rl3, t7);
+  rl3 = #VPADD_16u16(t7, rl3);
+  //rh2 = #VPSUB_16u16(t5, rl2);
+  rh2 = #VPSUB_16u16(rl2, t5);
+  rl2 = #VPADD_16u16(t5, rl2);
+
+  rh0 = #VPADD_16u16(t0, rh0);
+  //rl0 = #VPSUB_16u16(t0, rl0);
+  rl0 = #VPSUB_16u16(rl0, t0);
+  rh1 = #VPADD_16u16(t2, rh1);
+  //rl1 = #VPSUB_16u16(t2, rl1);
+  rl1 = #VPSUB_16u16(rl1, t2);
+  rh2 = #VPADD_16u16(t4, rh2);
+  //rl2 = #VPSUB_16u16(t4, rl2);
+  rl2 = #VPSUB_16u16(rl2, t4);
+  rh3 = #VPADD_16u16(t6, rh3);
+  //rl3 = #VPSUB_16u16(t6, rl3);
+  rl3 = #VPSUB_16u16(rl3, t6);
+
+  return rl0, rl1, rl2, rl3, rh0, rh1, rh2, rh3;
+}
+
+
+inline fn __ntt_level0(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 zeta0 zeta1 r0 r1 r2 r3 r4 r5 r6 r7 qx16;
+  reg u32 t;
+  reg u16 w;
+  reg ptr u16[400] zetasp;
+  //reg ptr u16[16] qx16p;
+
+  zetasp = jzetas_exp;
+  //qx16p = jqx16;
+
+  qx16 = jqx16[u256 0];
+
+  zeta0 = #VPBROADCAST_8u32(zetasp[u32 0]);
+  zeta1 = #VPBROADCAST_8u32(zetasp[u32 1]);
+
+  r0 = rp.[u256 32*0];
+  r1 = rp.[u256 32*1];
+  r2 = rp.[u256 32*2];
+  r3 = rp.[u256 32*3];
+  r4 = rp.[u256 32*8];
+  r5 = rp.[u256 32*9];
+  r6 = rp.[u256 32*10];
+  r7 = rp.[u256 32*11];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+  rp.[u256 32*0] = r0;
+  rp.[u256 32*1] = r1;
+  rp.[u256 32*2] = r2;
+  rp.[u256 32*3] = r3;
+  rp.[u256 32*8] = r4;
+  rp.[u256 32*9] = r5;
+  rp.[u256 32*10] = r6;
+  rp.[u256 32*11] = r7;
+
+  r0 = rp.[u256 32*4];
+  r1 = rp.[u256 32*5];
+  r2 = rp.[u256 32*6];
+  r3 = rp.[u256 32*7];
+  r4 = rp.[u256 32*12];
+  r5 = rp.[u256 32*13];
+  r6 = rp.[u256 32*14];
+  r7 = rp.[u256 32*15];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+  rp.[u256 32*4] = r0;
+  rp.[u256 32*5] = r1;
+  rp.[u256 32*6] = r2;
+  rp.[u256 32*7] = r3;
+  rp.[u256 32*12] = r4;
+  rp.[u256 32*13] = r5;
+  rp.[u256 32*14] = r6;
+  rp.[u256 32*15] = r7;
+
+  return rp;
+}
+
+inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
+  reg u32 t;
+  reg u16 w;
+  reg ptr u16[400] zetasp;
+  //reg ptr u16[16] qx16p;
+  inline int i;
+
+  zetasp = jzetas_exp;
+  //qx16p = jqx16;
+
+  qx16 = jqx16[u256 0];
+
+  for i=0 to 2 {
+
+    // level 1
+    zeta0 = #VPBROADCAST_8u32(zetasp.[u32 8 + 392*i]);
+    zeta1 = #VPBROADCAST_8u32(zetasp.[u32 12 + 392*i]);
+
+    r0 = rp.[u256 32*0+256*i];
+    r1 = rp.[u256 32*1+256*i];
+    r2 = rp.[u256 32*2+256*i];
+    r3 = rp.[u256 32*3+256*i];
+    r4 = rp.[u256 32*4+256*i];
+    r5 = rp.[u256 32*5+256*i];
+    r6 = rp.[u256 32*6+256*i];
+    r7 = rp.[u256 32*7+256*i];
+
+    r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    // level 2
+    zeta0 = zetasp.[u256 16 + 392*i];
+    zeta1 = zetasp.[u256 48 + 392*i];
+
+    r0, r4 = __shuffle8(r0, r4);
+    r1, r5 = __shuffle8(r1, r5);
+    r2, r6 = __shuffle8(r2, r6);
+    r3, r7 = __shuffle8(r3, r7);
+
+    r0, r4, r1, r5, r2, r6, r3, r7 = __butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    // level 3
+    zeta0 = zetasp.[u256 80 + 392*i];
+    zeta1 = zetasp.[u256 112 + 392*i];
+
+    r0, r2 = __shuffle4(r0, r2);
+    r4, r6 = __shuffle4(r4, r6);
+    r1, r3 = __shuffle4(r1, r3);
+    r5, r7 = __shuffle4(r5, r7);
+
+    r0, r2, r4, r6, r1, r3, r5, r7 = __butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    // level 4
+    zeta0 = zetasp.[u256 144 + 392*i];
+    zeta1 = zetasp.[u256 176 + 392*i];
+
+    r0, r1 = __shuffle2(r0, r1);
+    r2, r3 = __shuffle2(r2, r3);
+    r4, r5 = __shuffle2(r4, r5);
+    r6, r7 = __shuffle2(r6, r7);
+
+    r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    // level 5
+    zeta0 = zetasp.[u256 208 + 392*i];
+    zeta1 = zetasp.[u256 240 + 392*i];
+
+    r0, r4 = __shuffle1(r0, r4);
+    r1, r5 = __shuffle1(r1, r5);
+    r2, r6 = __shuffle1(r2, r6);
+    r3, r7 = __shuffle1(r3, r7);
+
+    r0, r4, r1, r5, r2, r6, r3, r7 = __butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    // level 6
+    zeta0 = zetasp.[u256 272 + 392*i];
+    zeta1 = zetasp.[u256 336 + 392*i];
+    zeta2 = zetasp.[u256 304 + 392*i];
+    zeta3 = zetasp.[u256 368 + 392*i];
+
+    r0, r4, r2, r6, r1, r5, r3, r7 = __butterfly64x(r0, r4, r2, r6, r1, r5, r3, r7, zeta0, zeta1, zeta2, zeta3, qx16);
+
+    vx16 = jvx16[u256 0];
+
+    r0 = __red16x(r0, qx16, vx16);
+    r4 = __red16x(r4, qx16, vx16);
+    r2 = __red16x(r2, qx16, vx16);
+    r6 = __red16x(r6, qx16, vx16);
+    r1 = __red16x(r1, qx16, vx16);
+    r5 = __red16x(r5, qx16, vx16);
+    r3 = __red16x(r3, qx16, vx16);
+    r7 = __red16x(r7, qx16, vx16);
+
+    // r0, r4, r1, r5, r2, r6, r3, r7 = __nttpack128(r0, r4, r1, r5, r2, r6, r3, r7);
+
+    rp.[u256 32*0+256*i] = r0;
+    rp.[u256 32*1+256*i] = r4;
+    rp.[u256 32*2+256*i] = r1;
+    rp.[u256 32*3+256*i] = r5;
+    rp.[u256 32*4+256*i] = r2;
+    rp.[u256 32*5+256*i] = r6;
+    rp.[u256 32*6+256*i] = r3;
+    rp.[u256 32*7+256*i] = r7;
+  }
+
+  return rp;
+}
+
+fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  rp = __ntt_level0(rp);
+  rp = __ntt_level1t6(rp);
+
+//  rp = _nttpack(rp);
+
+  return rp;
+}
+
+inline
+fn __poly_reduce(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 r qx16 vx16;
+  
+  qx16 = jqx16[u256 0];
+  vx16 = jvx16[u256 0];
+
+  for i=0 to 16 
+  {
+    r = rp.[u256 32*i];
+    r = __red16x(r, qx16, vx16);
+    rp.[u256 32*i] = r;
+  }
+  return rp;
+}
+
+fn _poly_sub(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 a;
+  reg u256 b;
+  reg u256 r;
+
+  for i = 0 to 16 {
+    a = ap.[u256 32*i];
+    b = bp.[u256 32*i];
+    r = #VPSUB_16u16(a, b);
+    rp.[u256 32*i] = r;
+  }
+
+  return rp;
+}
+
+fn _poly_tobytes(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 t0 t1 t2 t3 t4 t5 t6 t7 qx16 tt ttt;
+  reg ptr u16[16] jqx16_p;
+
+  jqx16_p = jqx16;
+  qx16 = jqx16_p[u256 0];
+
+  for i = 0 to 2
+  {
+    t0 = a[u256 8*i];
+    t1 = a[u256 8*i + 1];
+    t2 = a[u256 8*i + 2];
+    t3 = a[u256 8*i + 3];
+    t4 = a[u256 8*i + 4];
+    t5 = a[u256 8*i + 5];
+    t6 = a[u256 8*i + 6];
+    t7 = a[u256 8*i + 7];
+
+    t0 = __csubq(t0, qx16);
+    t1 = __csubq(t1, qx16);
+    t2 = __csubq(t2, qx16);
+    t3 = __csubq(t3, qx16);
+    t4 = __csubq(t4, qx16);
+    t5 = __csubq(t5, qx16);
+    t6 = __csubq(t6, qx16);
+    t7 = __csubq(t7, qx16);
+
+    tt = #VPSLL_16u16(t1, 12);
+    tt |= t0;
+
+    t0 = #VPSRL_16u16(t1, 4);
+    t1 = #VPSLL_16u16(t2, 8);
+    t0 |= t1;
+
+    t1 = #VPSRL_16u16(t2, 8);
+    t2 = #VPSLL_16u16(t3, 4);
+    t1 |= t2;
+
+    t2 = #VPSLL_16u16(t5, 12);
+    t2 |= t4;
+
+    t3 = #VPSRL_16u16(t5, 4);
+    t4 = #VPSLL_16u16(t6, 8);
+    t3 |= t4;
+
+    t4 = #VPSRL_16u16(t6, 8);
+    t5 = #VPSLL_16u16(t7, 4);
+    t4 |= t5;
+
+    ttt, t0 = __shuffle1(tt, t0);
+    tt, t2 = __shuffle1(t1, t2);
+    t1, t4 = __shuffle1(t3, t4);
+
+    t3, tt= __shuffle2(ttt, tt);
+    ttt, t0 = __shuffle2(t1, t0);
+    t1, t4 = __shuffle2(t2, t4);
+
+    t2, ttt = __shuffle4(t3, ttt);
+    t3, tt = __shuffle4(t1, tt);
+    t1, t4 = __shuffle4(t0, t4);
+
+    t0, t3 = __shuffle8(t2, t3);
+    t2, ttt = __shuffle8(t1, ttt);
+    t1, t4 = __shuffle8(tt, t4);
+
+    (u256)[rp + 192*i] = t0;
+    (u256)[rp + 192*i + 32] = t2;
+    (u256)[rp + 192*i + 64] = t1;
+    (u256)[rp + 192*i + 96] = t3;
+    (u256)[rp + 192*i + 128] = ttt;
+    (u256)[rp + 192*i + 160] = t4;
+  }
+
+  return a;
+}
+
+fn _poly_tomsg(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
+{
+  inline int i;
+  reg u256 f0 f1 g0 g1 hq hhq;
+  reg ptr u16[16] px16;
+  reg u32 c;
+
+  a = _poly_csubq(a);
+
+  px16 = hqx16_m1;
+  hq = px16[u256 0];
+
+  px16 = hhqx16;
+  hhq = px16[u256 0];
+
+  for i=0 to KYBER_N/32
+  {
+    f0 = a[u256 2*i];
+    f1 = a[u256 2*i + 1];
+    f0 = #VPSUB_16u16(hq, f0);
+    f1 = #VPSUB_16u16(hq, f1);
+    g0 = #VPSRA_16u16(f0, 15);
+    g1 = #VPSRA_16u16(f1, 15);
+    f0 = #VPXOR_256(f0, g0);
+    f1 = #VPXOR_256(f1, g1);
+    f0 = #VPSUB_16u16(f0, hhq);
+    f1 = #VPSUB_16u16(f1, hhq);
+    f0 = #VPACKSS_16u16(f0, f1);
+    f0 = #VPERMQ(f0, 0xD8);
+    c = #VPMOVMSKB_u256u32(f0);
+    (u32)[rp+4*i] = c;
+  }
+  return a;
+}
+
+fn _i_poly_tomsg(reg ptr u8[KYBER_N/8] rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N], reg ptr u8[KYBER_N/8]
+{
+  inline int i;
+  reg u256 f0 f1 g0 g1 hq hhq;
+  reg ptr u16[16] px16;
+  reg u32 c;
+
+  a = _poly_csubq(a);
+
+  px16 = hqx16_m1;
+  hq = px16[u256 0];
+
+  px16 = hhqx16;
+  hhq = px16[u256 0];
+
+  for i=0 to KYBER_N/32
+  {
+    f0 = a[u256 2*i];
+    f1 = a[u256 2*i + 1];
+    f0 = #VPSUB_16u16(hq, f0);
+    f1 = #VPSUB_16u16(hq, f1);
+    g0 = #VPSRA_16u16(f0, 15);
+    g1 = #VPSRA_16u16(f1, 15);
+    f0 = #VPXOR_256(f0, g0);
+    f1 = #VPXOR_256(f1, g1);
+    f0 = #VPSUB_16u16(f0, hhq);
+    f1 = #VPSUB_16u16(f1, hhq);
+    f0 = #VPACKSS_16u16(f0, f1);
+    f0 = #VPERMQ(f0, 0xD8);
+    c = #VPMOVMSKB_u256u32(f0);
+    rp[u32 i] = c;
+  }
+  return a, rp;
+}

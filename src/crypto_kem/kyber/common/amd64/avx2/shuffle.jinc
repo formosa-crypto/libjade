@@ -1,0 +1,192 @@
+inline 
+fn __shuffle8(reg u256 a b) -> reg u256, reg u256
+{
+  reg u256 r0 r1; 
+  r0 = #VPERM2I128(a,b,0x20);
+  r1 = #VPERM2I128(a,b,0x31);
+  return r0, r1;
+}
+
+inline 
+fn __shuffle4(reg u256 a b) -> reg u256, reg u256
+{
+  reg u256 r0 r1; 
+  r0 = #VPUNPCKL_4u64(a,b);
+  r1 = #VPUNPCKH_4u64(a,b);
+  return r0, r1;
+}
+
+inline 
+fn __shuffle2(reg u256 a b) -> reg u256, reg u256
+{
+  reg u256 t0 t1;
+  t0 = #VMOVSLDUP_8u32(b);
+  t0 = #VPBLEND_8u32(a, t0, 0xAA);
+  a = #VPSRL_4u64(a,32);
+  t1 = #VPBLEND_8u32(a, b, 0xAA);
+  return t0, t1;
+}
+
+
+inline 
+fn __shuffle1(reg u256 a b) -> reg u256, reg u256
+{
+  reg u256 r0 r1 t0 t1; 
+  t0 = #VPSLL_8u32(b,16);
+  r0 = #VPBLEND_16u16(a,t0,0xAA);
+  t1 = #VPSRL_8u32(a,16);
+  r1 = #VPBLEND_16u16(t1,b,0xAA);
+  return r0, r1;
+}
+
+
+// Transform from AVX order to bitreversed order
+inline 
+fn __nttpack128(reg u256 r0 r1 r2 r3 r4 r5 r6 r7)
+    -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+  r0, r1 = __shuffle1(r0, r1);
+  r2, r3 = __shuffle1(r2, r3);
+  r4, r5 = __shuffle1(r4, r5);
+  r6, r7 = __shuffle1(r6, r7);
+
+  r0, r2 = __shuffle2(r0, r2);
+  r4, r6 = __shuffle2(r4, r6);
+  r1, r3 = __shuffle2(r1, r3);
+  r5, r7 = __shuffle2(r5, r7);
+
+  r0, r4 = __shuffle4(r0, r4);
+  r1, r5 = __shuffle4(r1, r5);
+  r2, r6 = __shuffle4(r2, r6);
+  r3, r7 = __shuffle4(r3, r7);
+
+  r0, r1 = __shuffle8(r0, r1);
+  r2, r3 = __shuffle8(r2, r3);
+  r4, r5 = __shuffle8(r4, r5);
+  r6, r7 = __shuffle8(r6, r7);
+
+  return r0, r2, r4, r6, r1, r3, r5, r7;
+}
+
+
+// Transform from bitreversed order to AVX order
+inline
+fn __nttunpack128(reg u256 r0 r1 r2 r3 r4 r5 r6 r7)
+    -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+  r0, r4 = __shuffle8(r0, r4);
+  r1, r5 = __shuffle8(r1, r5);
+  r2, r6 = __shuffle8(r2, r6);
+  r3, r7 = __shuffle8(r3, r7);
+
+  r0, r2 = __shuffle4(r0, r2);
+  r4, r6 = __shuffle4(r4, r6);
+  r1, r3 = __shuffle4(r1, r3);
+  r5, r7 = __shuffle4(r5, r7);
+
+  r0, r1 = __shuffle2(r0, r1);
+  r2, r3 = __shuffle2(r2, r3);
+  r4, r5 = __shuffle2(r4, r5);
+  r6, r7 = __shuffle2(r6, r7);
+
+  r0, r4 = __shuffle1(r0, r4);
+  r1, r5 = __shuffle1(r1, r5);
+  r2, r6 = __shuffle1(r2, r6);
+  r3, r7 = __shuffle1(r3, r7);
+
+  return r0, r4, r1, r5, r2, r6, r3, r7;
+}
+
+fn _nttpack(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 r0 r1 r2 r3 r4 r5 r6 r7;
+
+  r0 = rp.[u256 32*0];
+  r1 = rp.[u256 32*1];
+  r2 = rp.[u256 32*2];
+  r3 = rp.[u256 32*3];
+  r4 = rp.[u256 32*4];
+  r5 = rp.[u256 32*5];
+  r6 = rp.[u256 32*6];
+  r7 = rp.[u256 32*7];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __nttpack128(r0, r1, r2, r3, r4, r5, r6, r7);
+
+  rp.[u256 32*0] = r0;
+  rp.[u256 32*1] = r1;
+  rp.[u256 32*2] = r2;
+  rp.[u256 32*3] = r3;
+  rp.[u256 32*4] = r4;
+  rp.[u256 32*5] = r5;
+  rp.[u256 32*6] = r6;
+  rp.[u256 32*7] = r7;
+
+  r0 = rp.[u256 32*8];
+  r1 = rp.[u256 32*9];
+  r2 = rp.[u256 32*10];
+  r3 = rp.[u256 32*11];
+  r4 = rp.[u256 32*12];
+  r5 = rp.[u256 32*13];
+  r6 = rp.[u256 32*14];
+  r7 = rp.[u256 32*15];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __nttpack128(r0, r1, r2, r3, r4, r5, r6, r7);
+
+  rp.[u256 32*8] = r0;
+  rp.[u256 32*9] = r1;
+  rp.[u256 32*10] = r2;
+  rp.[u256 32*11] = r3;
+  rp.[u256 32*12] = r4;
+  rp.[u256 32*13] = r5;
+  rp.[u256 32*14] = r6;
+  rp.[u256 32*15] = r7;
+
+  return rp;
+}
+
+fn _nttunpack(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+{
+  reg u256 r0 r1 r2 r3 r4 r5 r6 r7;
+
+  r0 = rp.[u256 32*0];
+  r1 = rp.[u256 32*1];
+  r2 = rp.[u256 32*2];
+  r3 = rp.[u256 32*3];
+  r4 = rp.[u256 32*4];
+  r5 = rp.[u256 32*5];
+  r6 = rp.[u256 32*6];
+  r7 = rp.[u256 32*7];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __nttunpack128(r0, r1, r2, r3, r4, r5, r6, r7);
+
+  rp.[u256 32*0] = r0;
+  rp.[u256 32*1] = r1;
+  rp.[u256 32*2] = r2;
+  rp.[u256 32*3] = r3;
+  rp.[u256 32*4] = r4;
+  rp.[u256 32*5] = r5;
+  rp.[u256 32*6] = r6;
+  rp.[u256 32*7] = r7;
+
+  r0 = rp.[u256 32*8];
+  r1 = rp.[u256 32*9];
+  r2 = rp.[u256 32*10];
+  r3 = rp.[u256 32*11];
+  r4 = rp.[u256 32*12];
+  r5 = rp.[u256 32*13];
+  r6 = rp.[u256 32*14];
+  r7 = rp.[u256 32*15];
+
+  r0, r1, r2, r3, r4, r5, r6, r7 = __nttunpack128(r0, r1, r2, r3, r4, r5, r6, r7);
+
+  rp.[u256 32*8] = r0;
+  rp.[u256 32*9] = r1;
+  rp.[u256 32*10] = r2;
+  rp.[u256 32*11] = r3;
+  rp.[u256 32*12] = r4;
+  rp.[u256 32*13] = r5;
+  rp.[u256 32*14] = r6;
+  rp.[u256 32*15] = r7;
+
+  return rp;
+}
