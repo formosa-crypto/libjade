@@ -3,7 +3,7 @@ JFLAGS ?=
 JASMINC ?= jasminc
 
 %.s: %.jazz
-	@$(JASMINC) $(JFLAGS) -o $@ $< || (rm -f $@ && touch fail && echo "\033[1;31m FAIL \033[0m")
+	@$(JASMINC) $(JFLAGS) -o $@ $<
 
 clean:
-	@rm -f fail *.s
+	@rm -f *.s
