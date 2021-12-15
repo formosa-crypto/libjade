@@ -678,7 +678,6 @@ inline fn __line_x4_v_avx(reg u128[16] k,
   return k;
 }
 
-/*
 inline fn __double_quarter_round_x4_avx(reg u128[16] k,
                                         inline int a0 b0 c0 d0
                                                    a1 b1 c1 d1,
@@ -691,9 +690,10 @@ inline fn __double_quarter_round_x4_avx(reg u128[16] k,
 
   return k;
 }
-*/
 
-// TODO: CHECKME: to fix compilation
+/*
+// The following function can replace the previous one for the implementation to be compiled without the '--lazy-regalloc' flag.
+// - check jasmin-lang/jasmin commit 66fec2891a7fe41eb6b015cf52e8030e058e1f11 for more info about --lazy-regalloc
 inline fn __line_x4_s_avx(reg u128[16] k,
                           inline int a0 b0 c0 r0,
                           stack u128 r16 r8) -> reg u128[16]
@@ -720,6 +720,7 @@ inline fn __double_quarter_round_x4_avx(reg u128[16] k,
 
   return k;
 }
+*/
 
 inline fn __column_round_x4_avx(reg u128[16] k, stack u128 k15 s_r16 s_r8) -> reg u128[16], stack u128
 {

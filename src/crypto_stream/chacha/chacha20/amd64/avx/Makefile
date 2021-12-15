@@ -2,5 +2,4 @@
 default: stream.s
 	@true
 
-include ../../../../../Makefile.common
-
+include ../../../common/amd64/avx/Makefile

@@ -854,12 +854,6 @@ fn _double_quarter_round_x8(reg u256[16] k, inline int a0 b0 c0 d0
 // next to each other...
 // we can just define a variant of the double_quarter_round_x8 such that:
 
-/* TODO CHECKME: this function causes the compilation to fail;
-   - performing several additional spills in '__rounds_x8_avx2'/'__column_round_x8_avx2'/'__diagonal_round_x8_avx2' would not fix the issue
-   - the proposed temporary solution is to take less advantage of pipeling strategies
-*/
-
-/*
 inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
                                          inline int a0 b0 c0 d0
                                                     a1 b1 c1 d1,
@@ -873,8 +867,11 @@ inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
 
   return k;
 }
-*/
 
+
+/*
+// The following function can replace the previous one for the implementation to be compiled without the '--lazy-regalloc' flag.
+// - check jasmin-lang/jasmin commit 66fec2891a7fe41eb6b015cf52e8030e058e1f11 for more info about --lazy-regalloc
 inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
                                          inline int a0 b0 c0 d0
                                                     a1 b1 c1 d1,
@@ -893,6 +890,7 @@ inline fn __double_quarter_round_x8_avx2(reg u256[16] k,
 
   return k;
 }
+*/
 
 
 inline fn __column_round_x8_avx2(reg u256[16] k, stack u256 k15 s_r16 s_r8) -> reg u256[16], stack u256

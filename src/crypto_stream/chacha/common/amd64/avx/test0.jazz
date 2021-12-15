@@ -1,0 +1,22 @@
+param int CHACHA_ROUNDS=20;
+require "chacha.jinc"
+
+export fn test_jade_stream_chacha_common_amd64_avx__inlined_round_x2_avx(reg u64 out in)
+{
+  inline int i;
+  reg u128[4] k1 k2;
+  reg u128 r16 r8;
+
+  for i=0 to 4
+  { k1[i] = (u128)[in + 32*i];
+    k2[i] = (u128)[in + 32*(i+4)]; }
+  r8 = (u128)[in + 32*8];
+  r16 = (u128)[in + 32*9];
+
+  k1, k2 = __inlined_round_x2_avx(k1, k2, r16, r8);
+
+  for i=0 to 4
+  { (u128)[out + 32*i] = k1[i];
+    (u128)[out + 32*(i+4)] = k2[i];
+  }
+}
