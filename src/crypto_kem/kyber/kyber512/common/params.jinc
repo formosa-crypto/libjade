@@ -1,10 +1,10 @@
 param int KYBER_Q = 3329;
 param int KYBER_N = 256;
-param int KYBER_K = 3;
+param int KYBER_K = 2;
 param int KYBER_VECN = KYBER_K * KYBER_N;
 
 param int KYBER_SYMBYTES = 32;
-param int KYBER_ETA1 = 2;
+param int KYBER_ETA1 = 3;
 param int KYBER_ETA2 = 2;
 param int KYBER_POLYBYTES = 384;
 param int KYBER_POLYVECBYTES = (KYBER_K * KYBER_POLYBYTES);
