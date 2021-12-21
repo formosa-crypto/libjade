@@ -76,7 +76,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomn
 
   pkp = s_pkp;
 
-  __indcpa_enc(s_ctp, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+  __indcpa_enc_0(s_ctp, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
 
   ctp = s_ctp;
   t64 = KYBER_CT_LEN;
@@ -117,7 +117,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   pkp = s_skp;
   pkp += 12 * KYBER_K * KYBER_N>>3;
 
-  ctpc = __iindcpa_enc(ctpc, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+  ctpc = __indcpa_enc_1(ctpc, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
 
   ctp = s_ctp;
   cnd = __verify(ctp, ctpc);
