@@ -1,4 +1,4 @@
-JFLAGS := ${JFLAGS} --lazy-regalloc
+include Flags.mk
 
 test: test0.s
 	@true
