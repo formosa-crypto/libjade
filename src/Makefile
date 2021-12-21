@@ -1,7 +1,7 @@
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
-SUBDIRS := $(shell find crypto_* -name '*.jazz' -printf "%h\n" | sort --unique)
+SUBDIRS := $(shell find crypto_* -name '*.jazz' -exec dirname {} \; | sort --unique)
 
 # --------------------------------------------------------------------
 SRC    := $(shell find crypto_* -name '*.c')
