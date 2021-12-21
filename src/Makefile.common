@@ -6,4 +6,4 @@ JASMINC ?= jasminc
 	$(JASMINC) $(JFLAGS) -o $@ $<
 
 clean:
-	@rm -f *.s
+	@rm -f *.s *.o *.a
