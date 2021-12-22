@@ -10,7 +10,7 @@ import sys
 import unittest
 from functools import lru_cache
 
-import pqclean
+import libjade
 
 
 @atexit.register
@@ -194,9 +194,9 @@ def permit_test(testname, *args, **kwargs):
         if testname.lower() in os.environ['PQCLEAN_SKIP_TESTS'].lower().split(','):
             return False
 
-    if isinstance(thing, pqclean.Implementation):
+    if isinstance(thing, libjade.Implementation):
         scheme = thing.scheme
-    elif isinstance(thing, pqclean.Scheme):
+    elif isinstance(thing, libjade.Scheme):
         scheme = thing
     else:
         return True

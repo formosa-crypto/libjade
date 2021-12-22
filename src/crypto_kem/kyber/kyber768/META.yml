@@ -31,5 +31,8 @@ implementations:
           operating_systems:
               - Linux
               - Darwin
-#          required_flags:
-#              - TODO
+          required_flags: # FIXME
+              - aes
+              - avx2
+              - bmi2
+              - popcnt

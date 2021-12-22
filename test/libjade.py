@@ -1,12 +1,16 @@
 import glob
 import os
 from typing import Optional
-from functools import lru_cache
+from functools import lru_cache, reduce
 
 import yaml
 import platform
 import helpers
 
+GITROOT = reduce(os.path.join, \
+                 helpers.run_subprocess(['git', 'rev-parse', '--show-toplevel'], print_output=False).strip().split('/'), \
+                 '/')
+SRC = os.path.join(GITROOT, 'src')
 
 class Scheme:
     def __init__(self):
@@ -14,11 +18,9 @@ class Scheme:
         self.name = None
         self.implementations = []
 
-    # TODO base is ../src/
-    def path(self, base='..'):
+    def path(self, base=SRC):
         return os.path.join(base, 'crypto_' + self.type, self.name)
 
-    # TODO namespace is JADE_(...) ; check line 16 of Makefile
     def namespace_prefix(self):
         return 'PQCLEAN_{}_'.format(self.name.upper()).replace('-', '')
 
@@ -30,7 +32,6 @@ class Scheme:
                 return scheme
         raise KeyError()
 
-    # TODO extend this for stream; onetimeauth; hash; scalarmult; ... (use a map?)
     @staticmethod
     @lru_cache(maxsize=1)
     def all_schemes():
@@ -57,10 +58,11 @@ class Scheme:
     @lru_cache(maxsize=32)
     def all_schemes_of_type(type: str) -> list:
         schemes = []
-        p = os.path.join('..', 'crypto_' + type) # TODO dependency of base: '..' -> '../src/' ? 
+        p = os.path.join(SRC, 'crypto_' + type)
         if os.path.isdir(p):
-            for d in os.listdir(p):
-                # TODO extend for stream; ...
+            scheme_names = list(map(lambda d: os.path.relpath(os.path.dirname(d), p), \
+                                    glob.glob(os.path.join(p,'**/META.yml'),recursive=True)))
+            for d in scheme_names:
                 if os.path.isdir(os.path.join(p, d)):
                     if type == 'kem':
                         schemes.append(KEM(d))
@@ -97,16 +99,14 @@ class Implementation:
             if i['name'] == self.name:
                 return i
 
-    def path(self, base='..') -> str:
+    def path(self, base=SRC) -> str:
         return os.path.join(self.scheme.path(base=base), self.name)
 
-    # TODO libname: refactor; check line 33 of Makefile
     def libname(self) -> str:
         if os.name == 'nt':
             return "lib{}_{}.lib".format(self.scheme.name, self.name)
         return "lib{}_{}.a".format(self.scheme.name, self.name)
 
-    # TODO : check this (jazz files?)
     def cfiles(self) -> [str]:
         return glob.glob(os.path.join(self.path(), '*.c'))
 
@@ -130,7 +130,10 @@ class Implementation:
     @lru_cache(maxsize=None)
     def all_implementations(scheme: Scheme) -> list:
         implementations = []
-        for d in os.listdir(scheme.path()):
+        p = scheme.path()
+        impl_names = list(map(lambda d: os.path.relpath(os.path.dirname(d), p), \
+                              glob.glob(os.path.join(p, '**/'+scheme.type+'.jazz'),recursive=True)))
+        for d in impl_names:
             if os.path.isdir(os.path.join(scheme.path(), d)):
                 implementations.append(Implementation(scheme, d))
         return implementations
@@ -140,7 +143,6 @@ class Implementation:
         return [impl for impl in Implementation.all_implementations(scheme)
                 if impl.supported_on_current_platform()]
 
-    # TODO namespacing 
     def namespace_prefix(self):
         return '{}{}_'.format(self.scheme.namespace_prefix(),
                               self.name.upper()).replace('-', '')
@@ -213,5 +215,3 @@ class Signature(Scheme):
     @staticmethod
     def all_sigs():
         return Scheme.all_schemes_of_type('sign')
-
-# TODO : implement additional classes
