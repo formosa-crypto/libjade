@@ -1,3 +1,5 @@
 *.s
+*.o
+*.a
 _build/
 libjade.a

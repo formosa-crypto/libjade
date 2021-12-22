@@ -14,9 +14,11 @@ class Scheme:
         self.name = None
         self.implementations = []
 
+    # TODO base is ../src/
     def path(self, base='..'):
         return os.path.join(base, 'crypto_' + self.type, self.name)
 
+    # TODO namespace is JADE_(...) ; check line 16 of Makefile
     def namespace_prefix(self):
         return 'PQCLEAN_{}_'.format(self.name.upper()).replace('-', '')
 
@@ -28,6 +30,7 @@ class Scheme:
                 return scheme
         raise KeyError()
 
+    # TODO extend this for stream; onetimeauth; hash; scalarmult; ... (use a map?)
     @staticmethod
     @lru_cache(maxsize=1)
     def all_schemes():
@@ -54,9 +57,10 @@ class Scheme:
     @lru_cache(maxsize=32)
     def all_schemes_of_type(type: str) -> list:
         schemes = []
-        p = os.path.join('..', 'crypto_' + type)
+        p = os.path.join('..', 'crypto_' + type) # TODO dependency of base: '..' -> '../src/' ? 
         if os.path.isdir(p):
             for d in os.listdir(p):
+                # TODO extend for stream; ...
                 if os.path.isdir(os.path.join(p, d)):
                     if type == 'kem':
                         schemes.append(KEM(d))
@@ -96,11 +100,13 @@ class Implementation:
     def path(self, base='..') -> str:
         return os.path.join(self.scheme.path(base=base), self.name)
 
+    # TODO libname: refactor; check line 33 of Makefile
     def libname(self) -> str:
         if os.name == 'nt':
             return "lib{}_{}.lib".format(self.scheme.name, self.name)
         return "lib{}_{}.a".format(self.scheme.name, self.name)
 
+    # TODO : check this (jazz files?)
     def cfiles(self) -> [str]:
         return glob.glob(os.path.join(self.path(), '*.c'))
 
@@ -134,6 +140,7 @@ class Implementation:
         return [impl for impl in Implementation.all_implementations(scheme)
                 if impl.supported_on_current_platform()]
 
+    # TODO namespacing 
     def namespace_prefix(self):
         return '{}{}_'.format(self.scheme.namespace_prefix(),
                               self.name.upper()).replace('-', '')
@@ -206,3 +213,5 @@ class Signature(Scheme):
     @staticmethod
     def all_sigs():
         return Scheme.all_schemes_of_type('sign')
+
+# TODO : implement additional classes

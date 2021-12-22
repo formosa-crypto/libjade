@@ -1,0 +1,35 @@
+name: Kyber768
+type: kem
+claimed-nist-level: 3
+claimed-security: IND-CCA2
+length-public-key: 1184
+length-ciphertext: 1088
+length-secret-key: 2400
+length-shared-secret: 32
+nistkat-sha256: 89e82a5bf2d4ddb2c6444e10409e6d9ca65dafbca67d1a0db2c9b54920a29172
+principal-submitters:
+  - TODO
+auxiliary-submitters:
+  - TODO
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags:
+              - aes
+              - avx2
+              - bmi2
+              - popcnt
+    - name: amd64/avx2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+#          required_flags:
+#              - TODO
