@@ -1,0 +1,117 @@
+// this is a Jasmin implementation of PQClean/test/common
+
+/**
+ * WARNING
+ *
+ * This file generates a PREDICTABLE and NOT AT ALL RANDOM sequence of bytes.
+ *
+ * Its purpose is to support our testing suite and it MUST NOT be used in any
+ * scenario where you are expecting actual cryptography to happen.
+ */
+
+u32[32] NRB_SEED = {
+  3, 1, 4, 1, 5, 9, 2, 6, 5, 3, 5, 8, 9, 7, 9, 3,
+  2, 3, 8, 4, 6, 2, 6, 4, 3, 3, 8, 3, 2, 7, 9, 5
+};
+
+inline fn __nrb_rotate(reg u32 x, inline int b)
+{
+  _, _, x = #ROL_32(x , b);
+}
+
+inline fn __nrb_mush(stack u32[12] t, reg u32 x sum, inline int i b) -> stack u32[12], reg u32
+{
+  reg u32 y z;
+
+  y = x;
+  _, _, y = #ROL_32(y , b);
+
+  x ^= NRB_SEED[i];
+  x += sum;
+  x ^= y;
+  x += t[i];
+
+  t[i] = x;  
+  
+  return t, x;
+}
+
+inline fn __nrb_surf(stack u32[12] in) -> stack u32[8]
+{
+  inline int i;
+  stack u32[12] t;
+  stack u32[8] out;
+  reg u32 loop r x sum;
+  reg u32 a b;
+
+  for i=0 to 12
+  { a = in[i]; a ^= NRB_SEED[12 + i]; t[i] = a; }
+
+  for i=0 to 8
+  { b = NRB_SEED[24 + i]; out[i] = b; }
+
+  x = t[11];
+  sum = 0;
+
+  loop = 0;
+  while(loop < 2)
+  { r = 0;
+    while(r < 16)
+    { sum += 0x9e3779b9;
+      t, x = __nrb_mush(t, x, sum, 0, 5);
+      t, x = __nrb_mush(t, x, sum, 1, 7);
+      t, x = __nrb_mush(t, x, sum, 2, 9);
+      t, x = __nrb_mush(t, x, sum, 3, 13);
+      t, x = __nrb_mush(t, x, sum, 4, 5);
+      t, x = __nrb_mush(t, x, sum, 5, 7);
+      t, x = __nrb_mush(t, x, sum, 6, 9);
+      t, x = __nrb_mush(t, x, sum, 7, 13);
+      t, x = __nrb_mush(t, x, sum, 8, 5);
+      t, x = __nrb_mush(t, x, sum, 9, 7);
+      t, x = __nrb_mush(t, x, sum, 10, 9);
+      t, x = __nrb_mush(t, x, sum, 11, 13);
+      r += 1;
+    }
+
+    for i=0 to 8
+    { a = t[i+4]; a ^= out[i]; out[i] = a; }
+
+    loop += 1;
+  }
+
+  return out;
+}
+
+inline fn __randombytes_0(reg u64 buf n) -> reg u64
+{
+  reg u64 i r outleft;
+  stack u32[12] in;
+  stack u32[8] out;
+  reg u32 v;
+  reg u8 t;
+
+  i = 0;
+  while(i < (12/2))
+  { in[u64 (int) i] = 0; i += 1; }
+
+  outleft = 0;
+  while(n > 0)
+  {  if(outleft == 0)
+     { in[u32 0] += 1;
+       out = __nrb_surf(in);
+       outleft = 8;
+     }
+
+     outleft -= 1;
+     v = out[(int) outleft];
+     t = (8u) v;
+     (u8) [buf + 0] = t;
+
+     buf += 1;
+     n -= 1;
+  }
+
+  r = 0;
+  return r;
+}
+

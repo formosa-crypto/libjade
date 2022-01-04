@@ -1,0 +1,20 @@
+// this is a Jasmin implementation of PQClean/test/common
+
+/**
+ * WARNING
+ *
+ * This file generates a PREDICTABLE and NOT AT ALL RANDOM sequence of bytes.
+ *
+ * Its purpose is to support our testing suite and it MUST NOT be used in any
+ * scenario where you are expecting actual cryptography to happen.
+ */
+
+require "notrandombytes.jinc"
+
+export fn jade_common_amd64_randombytes(reg u64 buf n) -> reg u64
+{
+  reg u64 r;
+  r = __randombytes_0(buf, n);
+  return r;
+}
+
