@@ -59,8 +59,9 @@ def isolate_test_files(impl_path, test_prefix,
         os.mkdir(os.path.join(test_dir, 'test'))
 
         # Copy common files (randombytes.c, aes.c, ...)
-        shutil.copytree(
-            os.path.join('..', 'common'), os.path.join(test_dir, 'common'))
+        ###shutil.copytree(os.path.join('..', 'common'), os.path.join(test_dir, 'common'))
+        shutil.copytree(os.path.join('.', 'common2'), os.path.join(test_dir, 'common'))
+
         # Copy makefiles
         shutil.copy(os.path.join('..', 'test', 'Makefile'),
                     os.path.join(test_dir, 'test', 'Makefile'))
