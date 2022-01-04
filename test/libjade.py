@@ -7,8 +7,45 @@ import yaml
 import platform
 import helpers
 
+### TODO FIXME quick fix to remove circular dependency
+### - "AttributeError: partially initialized module 'helpers' has no attribute 'run_subprocess' (most likely due to a circular import)"
+import subprocess
+
+def _run_subprocess(command, working_dir='.', env=None, expected_returncode=0,
+                   print_output=True):
+    """
+    Helper function to run a shell command and report success/failure
+    depending on the exit status of the shell command.
+    """
+    if env is not None:
+        env_ = os.environ.copy()
+        env_.update(env)
+        env = env_
+
+    # Note we need to capture stdout/stderr from the subprocess,
+    # then print it, which the unittest will then capture and
+    # buffer appropriately
+    print(working_dir + " > " + " ".join(command))
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=working_dir,
+        env=env,
+    )
+    if print_output:
+        print(result.stdout.decode('utf-8'))
+    if expected_returncode is not None:
+        assert result.returncode == expected_returncode, \
+            "Got unexpected return code {}".format(result.returncode)
+    else:
+        return (result.returncode, result.stdout.decode('utf-8'))
+    return result.stdout.decode('utf-8')
+
+###
+
 GITROOT = reduce(os.path.join, \
-                 helpers.run_subprocess(['git', 'rev-parse', '--show-toplevel'], print_output=False).strip().split('/'), \
+                 _run_subprocess(['git', 'rev-parse', '--show-toplevel'], print_output=False).strip().split('/'), \
                  '/')
 SRC = os.path.join(GITROOT, 'src')
 
