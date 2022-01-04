@@ -10,8 +10,38 @@ import sys
 import unittest
 from functools import lru_cache
 
-import libjade
+def run_subprocess(command, working_dir='.', env=None, expected_returncode=0,
+                   print_output=True):
+    """
+    Helper function to run a shell command and report success/failure
+    depending on the exit status of the shell command.
+    """
+    if env is not None:
+        env_ = os.environ.copy()
+        env_.update(env)
+        env = env_
 
+    # Note we need to capture stdout/stderr from the subprocess,
+    # then print it, which the unittest will then capture and
+    # buffer appropriately
+    print(working_dir + " > " + " ".join(command))
+    result = subprocess.run(
+        command,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=working_dir,
+        env=env,
+    )
+    if print_output:
+        print(result.stdout.decode('utf-8'))
+    if expected_returncode is not None:
+        assert result.returncode == expected_returncode, \
+            "Got unexpected return code {}".format(result.returncode)
+    else:
+        return (result.returncode, result.stdout.decode('utf-8'))
+    return result.stdout.decode('utf-8')
+
+import libjade
 
 @atexit.register
 def cleanup_testcases():
@@ -59,32 +89,21 @@ def isolate_test_files(impl_path, test_prefix,
         os.mkdir(os.path.join(test_dir, 'test'))
 
         # Copy common files (randombytes.c, aes.c, ...)
-        ###shutil.copytree(os.path.join('..', 'common'), os.path.join(test_dir, 'common')) # CHECKME
         shutil.copytree(os.path.join('.', 'common2'), os.path.join(test_dir, 'common'))
 
         # Copy makefiles
         shutil.copy(os.path.join('..', 'test', 'Makefile'),
                     os.path.join(test_dir, 'test', 'Makefile'))
 
-        #shutil.copy(os.path.join('..', 'test', 'Makefile.Microsoft_nmake'),
-        #            os.path.join(test_dir, 'test', 'Makefile.Microsoft_nmake'))
         # Copy directories with support files
-
-        for d in ['common1', 'test_common', 'crypto_kem']: # TODO hardcoded, FIXME
+        for d in ['common1', 'test_common', 'crypto_kem']: # TODO extend for more crypto_*
             shutil.copytree(
                 os.path.join('..', 'test', d),
                 os.path.join(test_dir, 'test', d)
             )
 
-#        for d in ['common', 'test_common', 'crypto_sign', 'crypto_kem']: # TODO hardcoded, FIXME
-#            shutil.copytree(
-#                os.path.join('..', 'test', d),
-#                os.path.join(test_dir, 'test', d)
-#            )
-
-        # TODO CHECKME : In this step it is necessary to run 'make' in src/... to build the *.s
-        make('default', working_dir=impl_path)
-
+        # Make clean and make *.s in src folder
+        make('clean', 'default', working_dir=impl_path)
         shutil.copytree(impl_path, new_impl_dir)
 
     def destructor():
@@ -92,39 +111,6 @@ def isolate_test_files(impl_path, test_prefix,
         shutil.rmtree(test_dir, ignore_errors=True)
 
     return (test_dir, new_impl_dir, initializer, destructor)
-
-
-def run_subprocess(command, working_dir='.', env=None, expected_returncode=0,
-                   print_output=True):
-    """
-    Helper function to run a shell command and report success/failure
-    depending on the exit status of the shell command.
-    """
-    if env is not None:
-        env_ = os.environ.copy()
-        env_.update(env)
-        env = env_
-
-    # Note we need to capture stdout/stderr from the subprocess,
-    # then print it, which the unittest will then capture and
-    # buffer appropriately
-    print(working_dir + " > " + " ".join(command))
-    result = subprocess.run(
-        command,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        cwd=working_dir,
-        env=env,
-    )
-    if print_output:
-        print(result.stdout.decode('utf-8'))
-    if expected_returncode is not None:
-        assert result.returncode == expected_returncode, \
-            "Got unexpected return code {}".format(result.returncode)
-    else:
-        return (result.returncode, result.stdout.decode('utf-8'))
-    return result.stdout.decode('utf-8')
-
 
 def make(*args, working_dir='.', env=None, expected_returncode=0, **kwargs):
     """
@@ -200,11 +186,11 @@ def permit_test(testname, *args, **kwargs):
     else:
         thing = args[0]
 
-    if 'PQCLEAN_ONLY_TESTS' in os.environ:
-        if not(testname.lower() in os.environ['PQCLEAN_ONLY_TESTS'].lower().split(',')):
+    if 'LIBJADE_ONLY_TESTS' in os.environ:
+        if not(testname.lower() in os.environ['LIBJADE_ONLY_TESTS'].lower().split(',')):
             return False
-    if 'PQCLEAN_SKIP_TESTS' in os.environ:
-        if testname.lower() in os.environ['PQCLEAN_SKIP_TESTS'].lower().split(','):
+    if 'LIBJADE_SKIP_TESTS' in os.environ:
+        if testname.lower() in os.environ['LIBJADE_SKIP_TESTS'].lower().split(','):
             return False
 
     if isinstance(thing, libjade.Implementation):
@@ -214,20 +200,20 @@ def permit_test(testname, *args, **kwargs):
     else:
         return True
 
-    if 'PQCLEAN_ONLY_TYPES' in os.environ:
-        if not(scheme.type.lower() in os.environ['PQCLEAN_ONLY_TYPES'].lower().split(',')):
+    if 'LIBJADE_ONLY_TYPES' in os.environ:
+        if not(scheme.type.lower() in os.environ['LIBJADE_ONLY_TYPES'].lower().split(',')):
             return False
-    if 'PQCLEAN_SKIP_TYPES' in os.environ:
-        if scheme.type.lower() in os.environ['PQCLEAN_SKIP_TYPES'].lower().split(','):
+    if 'LIBJADE_SKIP_TYPES' in os.environ:
+        if scheme.type.lower() in os.environ['LIBJADE_SKIP_TYPES'].lower().split(','):
             return False
-    if 'PQCLEAN_ONLY_SCHEMES' in os.environ:
-        if not(scheme.name.lower() in os.environ['PQCLEAN_ONLY_SCHEMES'].lower().split(',')):
+    if 'LIBJADE_ONLY_SCHEMES' in os.environ:
+        if not(scheme.name.lower() in os.environ['LIBJADE_ONLY_SCHEMES'].lower().split(',')):
             return False
-    if 'PQCLEAN_SKIP_SCHEMES' in os.environ:
-        if scheme.name.lower() in os.environ['PQCLEAN_SKIP_SCHEMES'].lower().split(','):
+    if 'LIBJADE_SKIP_SCHEMES' in os.environ:
+        if scheme.name.lower() in os.environ['LIBJADE_SKIP_SCHEMES'].lower().split(','):
             return False
 
-    if 'PQCLEAN_ONLY_DIFF' in os.environ:
+    if 'LIBJADE_ONLY_DIFF' in os.environ:
         if shutil.which('git') is not None:
             # if we're on a non-master branch, and the only changes are in schemes,
             # only run tests on those schemes
