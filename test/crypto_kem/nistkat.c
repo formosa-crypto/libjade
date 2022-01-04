@@ -51,7 +51,7 @@ int main() {
     uint8_t shared_secret_d[CRYPTO_BYTES];
     int rc;
 
-    uint8_t rnd[CRYPTO_BYTES*2]; // TODO: TO REMOVE (after randomness support in jasmin)
+    uint8_t rnd[CRYPTO_BYTES]; // TODO: TO REMOVE (after randomness support in jasmin)
 
     for (uint8_t i = 0; i < 48; i++) {
         entropy_input[i] = i;
