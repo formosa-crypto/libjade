@@ -67,7 +67,7 @@ def isolate_test_files(impl_path, test_prefix,
         shutil.copy(os.path.join('..', 'test', 'Makefile.Microsoft_nmake'),
                     os.path.join(test_dir, 'test', 'Makefile.Microsoft_nmake'))
         # Copy directories with support files
-        for d in ['common', 'test_common', 'crypto_sign', 'crypto_kem']:
+        for d in ['common', 'test_common', 'crypto_sign', 'crypto_kem']: # TODO hardcoded, FIXME
             shutil.copytree(
                 os.path.join('..', 'test', d),
                 os.path.join(test_dir, 'test', d)

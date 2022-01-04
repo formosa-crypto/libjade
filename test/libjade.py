@@ -61,7 +61,7 @@ class Scheme:
         p = os.path.join(SRC, 'crypto_' + type)
         if os.path.isdir(p):
             scheme_names = list(map(lambda d: os.path.relpath(os.path.dirname(d), p), \
-                                    glob.glob(os.path.join(p,'**/META.yml'),recursive=True)))
+                                    glob.glob(os.path.join(p,'**/META.yml'),recursive=True))) # '/' is hardcoded
             for d in scheme_names:
                 if os.path.isdir(os.path.join(p, d)):
                     if type == 'kem':
