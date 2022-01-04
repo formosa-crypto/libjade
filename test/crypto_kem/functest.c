@@ -88,6 +88,10 @@ static int test_keys(void) {
     uint8_t *sendb_aligned = malloc_s(CRYPTO_CIPHERTEXTBYTES + 16 + 1);
     uint8_t *sk_a_aligned  = malloc_s(CRYPTO_SECRETKEYBYTES + 16 + 1);
     uint8_t *rnd_aligned = malloc_s(CRYPTO_BYTES * 2 + 16 + 1);
+    
+
+    for(int i=0;i<CRYPTO_BYTES * 2 + 16 + 1;i++)
+      rnd_aligned[i] = 42;
 
     /*
      * Make sure all pointers are odd.
