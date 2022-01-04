@@ -62,7 +62,7 @@ def mktmpdir(parent, prefix):
 
 
 def isolate_test_files(impl_path, test_prefix,
-                       dir=os.path.join('..', 'testcases')):
+                       dir=os.path.join('.', 'testcases')):
     """Isolates the test files in a separate directory, to help parallelise.
 
     Especially Windows is problematic and needs isolation of all test files:
