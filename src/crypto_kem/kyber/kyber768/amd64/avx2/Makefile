@@ -1,4 +1,5 @@
-JFLAGS:= -lea
+JFLAGS := -lea
+JASMIND := ./depend
 
 default: kem.s
 	@true

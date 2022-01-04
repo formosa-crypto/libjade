@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+echo "../../../../../common/amd64/fips202.jinc ../../../../../common/amd64/avx2/fips202_4x.jinc ../../common/params.jinc ../../../common/amd64/avx2/poly.jinc ../../../common/amd64/avx2/polyvec.jinc gen_matrix.jinc indcpa.jinc ../../../common/amd64/kem.jinc"

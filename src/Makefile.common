@@ -1,8 +1,9 @@
 TOP := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 JFLAGS := ${JFLAGS} -noinsertarraycopy
 JASMINC ?= jasminc
+JASMIND ?= jasminc --print-dependencies
 
-%.s: %.jazz
+%.s: %.jazz $(shell $(JASMIND) %.jazz)
 	$(JASMINC) $(JFLAGS) -o $@ $<
 
 clean:
