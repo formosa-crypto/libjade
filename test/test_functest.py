@@ -79,7 +79,8 @@ def test_functest_sanitizers(implementation, impl_path, test_dir,
 
     init()
 
-    helpers.make('clean-scheme', 'functest',
+    #helpers.make('clean-scheme', 'functest',
+    helpers.make('functest',
                  TYPE=implementation.scheme.type,
                  SCHEME=implementation.scheme.name,
                  IMPLEMENTATION=implementation.name,

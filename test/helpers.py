@@ -82,6 +82,9 @@ def isolate_test_files(impl_path, test_prefix,
 #                os.path.join(test_dir, 'test', d)
 #            )
 
+        # TODO CHECKME : In this step it is necessary to run 'make' in src/... to build the *.s
+        make('default', working_dir=impl_path)
+
         shutil.copytree(impl_path, new_impl_dir)
 
     def destructor():
