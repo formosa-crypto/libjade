@@ -31,10 +31,19 @@ def test_functest(implementation, impl_path, test_dir,
                  SCHEME_DIR=impl_path,
                  DEST_DIR=dest_dir,
                  working_dir=os.path.join(test_dir, 'test'))
+
+    ### TODO QUICK FIX
+    #    print (
+    #      'functest_{}_{}{}'.format(
+    #            implementation.scheme.name.replace('/', '_'),
+    #            implementation.name.replace('/', '_'),
+    #            '.exe' if os.name == 'nt' else ''))
+    ###
+
     helpers.run_subprocess(
         [os.path.join(dest_dir, 'functest_{}_{}{}'.format(
-            implementation.scheme.name,
-            implementation.name,
+            implementation.scheme.name.replace('/', '_'), # TODO FIXME
+            implementation.name.replace('/', '_'), # TODO FIXME
             '.exe' if os.name == 'nt' else ''
         ))],
     )
@@ -86,8 +95,8 @@ def test_functest_sanitizers(implementation, impl_path, test_dir,
                  env=env)
     helpers.run_subprocess(
         [os.path.join(dest_dir, 'functest_{}_{}{}'.format(
-            implementation.scheme.name,
-            implementation.name,
+            implementation.scheme.name.replace('/', '_'), # TODO CHECKME
+            implementation.name.replace('/', '_'), # TODO CHECKME 
             '.exe' if os.name == 'nt' else ''
         ))],
         env=env,

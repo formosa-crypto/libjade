@@ -57,7 +57,7 @@ $(SCHEME_LIBRARY): $(SCHEME_OBJ)
 
 .PHONY: clean-scheme
 clean-scheme:
-	cd $(SCHEME_DIR) && $(MAKE) clean
+	#cd $(SCHEME_DIR) && $(MAKE) clean ## TODO FIXME
 
 .PHONY: functest
 functest: $(DEST_DIR)/functest_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)

@@ -18,8 +18,8 @@ def cleanup_testcases():
     """Clean up any remaining isolated test dirs"""
     print("Cleaning up testcases directory",
           file=sys.stderr)
-    for dir_ in TEST_TEMPDIRS:
-        shutil.rmtree(dir_, ignore_errors=True)
+    ##for dir_ in TEST_TEMPDIRS: ## TODO REMOVE COMMENTS
+    ##    shutil.rmtree(dir_, ignore_errors=True)
 
 
 TEST_TEMPDIRS = []
@@ -59,20 +59,28 @@ def isolate_test_files(impl_path, test_prefix,
         os.mkdir(os.path.join(test_dir, 'test'))
 
         # Copy common files (randombytes.c, aes.c, ...)
-        ###shutil.copytree(os.path.join('..', 'common'), os.path.join(test_dir, 'common'))
+        ###shutil.copytree(os.path.join('..', 'common'), os.path.join(test_dir, 'common')) # CHECKME
         shutil.copytree(os.path.join('.', 'common2'), os.path.join(test_dir, 'common'))
 
         # Copy makefiles
         shutil.copy(os.path.join('..', 'test', 'Makefile'),
                     os.path.join(test_dir, 'test', 'Makefile'))
-        shutil.copy(os.path.join('..', 'test', 'Makefile.Microsoft_nmake'),
-                    os.path.join(test_dir, 'test', 'Makefile.Microsoft_nmake'))
+
+        #shutil.copy(os.path.join('..', 'test', 'Makefile.Microsoft_nmake'),
+        #            os.path.join(test_dir, 'test', 'Makefile.Microsoft_nmake'))
         # Copy directories with support files
-        for d in ['common', 'test_common', 'crypto_sign', 'crypto_kem']: # TODO hardcoded, FIXME
+
+        for d in ['common1', 'test_common', 'crypto_kem']: # TODO hardcoded, FIXME
             shutil.copytree(
                 os.path.join('..', 'test', d),
                 os.path.join(test_dir, 'test', d)
             )
+
+#        for d in ['common', 'test_common', 'crypto_sign', 'crypto_kem']: # TODO hardcoded, FIXME
+#            shutil.copytree(
+#                os.path.join('..', 'test', d),
+#                os.path.join(test_dir, 'test', d)
+#            )
 
         shutil.copytree(impl_path, new_impl_dir)
 
