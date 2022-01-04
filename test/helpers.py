@@ -18,8 +18,8 @@ def cleanup_testcases():
     """Clean up any remaining isolated test dirs"""
     print("Cleaning up testcases directory",
           file=sys.stderr)
-    ##for dir_ in TEST_TEMPDIRS: ## TODO REMOVE COMMENTS
-    ##    shutil.rmtree(dir_, ignore_errors=True)
+    for dir_ in TEST_TEMPDIRS:
+        shutil.rmtree(dir_, ignore_errors=True)
 
 
 TEST_TEMPDIRS = []
