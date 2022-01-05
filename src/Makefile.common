@@ -1,10 +1,23 @@
-TOP := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
-JFLAGS := ${JFLAGS} -noinsertarraycopy
-JASMINC ?= jasminc
-JASMIND ?= jasminc --print-dependencies
+JFLAGS := $(JFLAGS) -noinsertarraycopy
+JASMINC := jasminc
+DEPSDIR := .deps
+DEPS = (echo -n "$@: "; $(JASMINC) --print-dependencies $<) > $(DEPSDIR)/$*.d
+COMPILE = $(JASMINC) $(JFLAGS) -o $@ $<
 
-%.s: %.jazz $(shell $(JASMIND) %.jazz)
-	$(JASMINC) $(JFLAGS) -o $@ $<
+default: $(SRCS:%.jazz=%.s)
+	@true
+
+%.s : %.jazz
+%.s : %.jazz $(DEPSDIR)/%.d | $(DEPSDIR)
+	$(DEPS)
+	$(COMPILE)
+
+$(DEPSDIR): ; @mkdir -p $@
+
+DEPFILES := $(SRCS:%.jazz=$(DEPSDIR)/%.d)
+$(DEPFILES):
+
+include $(wildcard $(DEPFILES))
 
 clean:
-	@rm -f *.s *.o *.a
+	@rm -fr $(DEPSDIR) *.s *.o *.a

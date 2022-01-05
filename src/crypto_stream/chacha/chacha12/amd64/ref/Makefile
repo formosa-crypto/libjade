@@ -1,6 +1,2 @@
-
-default: stream.s
-	@true
-
+SRCS := stream.jazz
 include ../../../../../Makefile.common
-

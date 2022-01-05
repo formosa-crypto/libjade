@@ -3,3 +3,4 @@
 *.a
 _build/
 libjade.a
+.deps
