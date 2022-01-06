@@ -10,11 +10,18 @@
  */
 
 require "notrandombytes.jinc"
+require "notrandombytes1.jinc"
 
-export fn jade_common_amd64_randombytes(reg u64 buf n) -> reg u64
+export fn jade_common_amd64_randombytes(reg u64 buf in n) -> reg u64
 {
   reg u64 r;
-  r = __randombytes_0(buf, n);
+  r = _nrb_randombytes_0(buf, in, n);
   return r;
 }
 
+export fn jade_common_amd64_randombytes1(reg u64 buf in n) -> reg u64
+{
+  reg u64 r;
+  r = _nrb_randombytes_1(buf, in, n);
+  return r;
+}
