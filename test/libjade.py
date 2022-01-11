@@ -37,6 +37,7 @@ class Scheme:
     def all_schemes():
         schemes = []
         schemes.extend(Scheme.all_schemes_of_type('kem'))
+        schemes.extend(Scheme.all_schemes_of_type('stream'))
         schemes.extend(Scheme.all_schemes_of_type('sign'))
         return schemes
 
@@ -67,6 +68,8 @@ class Scheme:
                 if os.path.isdir(os.path.join(p, d)):
                     if type == 'kem':
                         schemes.append(KEM(d))
+                    elif type == 'stream':
+                        schemes.append(Stream(d))
                     elif type == 'sign':
                         schemes.append(Signature(d))
                     else:
@@ -196,7 +199,6 @@ class Implementation:
 
 
 class KEM(Scheme):
-
     def __init__(self, name: str):
         self.type = 'kem'
         self.name = name
@@ -206,6 +208,17 @@ class KEM(Scheme):
     @staticmethod
     def all_kems() -> list:
         return Scheme.all_schemes_of_type('kem')
+
+class Stream(Scheme):
+    def __init__(self, name: str):
+        self.type = 'stream'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_stream() -> list:
+        return Scheme.all_schemes_of_type('stream')
 
 
 class Signature(Scheme):
