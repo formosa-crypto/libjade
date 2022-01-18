@@ -1,13 +1,7 @@
-/*
-require "params.jinc"
-require "shuffle.jinc"
-require "consts.jinc"
-*/
-
 require "../../../../../common/amd64/fips202.jinc"
 require "../../../../../common/amd64/avx2/fips202_4x.jinc"
 
-param int GENMATRIX_NBLOCKS = 3;
+param int GENMATRIX_NBLOCKS = ((12*KYBER_N/8*4096/KYBER_Q + SHAKE128_RATE)/SHAKE128_RATE);
 param int REJ_UNIFORM_AVX_BUFLEN = GENMATRIX_NBLOCKS * SHAKE128_RATE;
 
 u8[2048] ru_idx = {-1, -1, -1, -1, -1, -1, -1, -1,

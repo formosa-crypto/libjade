@@ -213,7 +213,8 @@ fn _poly_compress(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
   return a;
 }
 
-fn _i_poly_compress(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_N] a) -> reg ptr u8[KYBER_POLYCOMPRESSEDBYTES], reg ptr u16[KYBER_N]
+// FIXME: E_EPTR
+fn _poly_compress_1(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_N] a) -> reg ptr u8[KYBER_POLYCOMPRESSEDBYTES], reg ptr u16[KYBER_N]
 {
   inline int i;
   reg u256 f0 f1 f2 f3 v shift1 mask shift2 permidx;
@@ -376,7 +377,7 @@ fn _poly_frombytes(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
 
 param int DMONT   = 1353;      /* (1ULL << 32) % KYBER_Q */
 
-fn poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
   reg u256 t qx16 qinvx16 dmontx16;
   inline int i;
@@ -403,7 +404,7 @@ u32[4] pfm_shift_s = {3, 2, 1, 0};
 u8[16] pfm_idx_s = {0, 1, 4, 5, 8, 9, 12, 13,
                 2, 3, 6, 7, 10, 11, 14, 15};
 
-fn poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
+fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 {
   inline int i;
   reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
@@ -450,8 +451,8 @@ fn poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
   return rp;
 }
 
-
-fn i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBER_N]
+// FIXME: E_EPTR
+fn _poly_frommsg_1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_INDCPA_MSGBYTES] ap) -> stack u16[KYBER_N]
 {
   inline int i;
   reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
@@ -500,8 +501,8 @@ fn i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBER
 
 param int NOISE_NBLOCKS = (KYBER_ETA1 * KYBER_N/4 + SHAKE256_RATE - 1)/SHAKE256_RATE;
 
-u8[32] cbd_jshufbidx = {-1,15,14,13,-1,12,11,10,-1, 9, 8, 7,-1, 6, 5, 4,
-                        -1,11,10, 9,-1, 8, 7, 6,-1, 5, 4, 3,-1, 2, 1, 0};
+u8[32] cbd_jshufbidx = {0, 1, 2, -1, 3, 4, 5, -1, 6, 7, 8, -1, 9, 10, 11, -1,
+                        4, 5, 6, -1, 7, 8, 9, -1, 10, 11, 12, -1, 13, 14, 15, -1};
 
 inline
 fn __cbd3(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8] buf) -> reg ptr u16[KYBER_N]{
@@ -1387,7 +1388,8 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
   return a;
 }
 
-fn _i_poly_tomsg(reg ptr u8[KYBER_N/8] rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N], reg ptr u8[KYBER_N/8]
+// FIXME: E_EPTR
+fn _poly_tomsg_1(reg ptr u8[KYBER_INDCPA_MSGBYTES] rp, reg ptr u16[KYBER_N] a) -> reg ptr u8[KYBER_INDCPA_MSGBYTES], reg ptr u16[KYBER_N]
 {
   inline int i;
   reg u256 f0 f1 g0 g1 hq hhq;
@@ -1419,5 +1421,5 @@ fn _i_poly_tomsg(reg ptr u8[KYBER_N/8] rp, reg ptr u16[KYBER_N] a) -> reg ptr u1
     c = #VPMOVMSKB_u256u32(f0);
     rp[u32 i] = c;
   }
-  return a, rp;
+  return rp, a;
 }

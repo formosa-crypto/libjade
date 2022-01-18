@@ -119,8 +119,9 @@ fn __polyvec_compress(reg u64 rp, stack u16[KYBER_VECN] a)
   }
 }
 
+// FIXME: E_PTR
 inline
-fn __i_polyvec_compress(reg ptr u8[KYBER_POLYVECCOMPRESSEDBYTES] rp, stack u16[KYBER_VECN] a) -> reg ptr u8[KYBER_POLYVECCOMPRESSEDBYTES]
+fn __polyvec_compress_1(reg ptr u8[KYBER_POLYVECCOMPRESSEDBYTES] rp, stack u16[KYBER_VECN] a) -> reg ptr u8[KYBER_POLYVECCOMPRESSEDBYTES]
 {
   inline int i;
   reg u256 f0 f1 f2 v v8 off shift1 mask shift2 sllvdidx shufbidx;

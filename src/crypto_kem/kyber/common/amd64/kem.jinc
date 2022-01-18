@@ -31,7 +31,7 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
 
   s_skp = skp;
   pkp = s_pkp;
-  t64 = KYBER_POLYVECBYTES + KYBER_SYMBYTES;
+  t64 = KYBER_INDCPA_PUBLICKEYBYTES;
   h_pk = _isha3_256(h_pk, pkp, t64);
   skp = s_skp;
 
@@ -76,10 +76,10 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomn
 
   pkp = s_pkp;
 
-  __indcpa_enc_0(s_ctp, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+  __indcpa_enc_0(s_ctp, buf[0:KYBER_INDCPA_MSGBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
 
   ctp = s_ctp;
-  t64 = KYBER_CT_LEN;
+  t64 = KYBER_INDCPA_CIPHERTEXTBYTES;
   kr[KYBER_SYMBYTES:KYBER_SYMBYTES] = _isha3_256(kr[KYBER_SYMBYTES:KYBER_SYMBYTES], ctp, t64);
 
   shkp = s_shkp;
@@ -90,7 +90,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomn
 inline
 fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
-  stack u8[KYBER_CT_LEN] ctpc;
+  stack u8[KYBER_INDCPA_CIPHERTEXTBYTES] ctpc;
   stack u8[2*KYBER_SYMBYTES] kr buf;
   stack u64 s_skp s_ctp s_shkp;
   reg u64 pkp hp zp t64 cnd;
@@ -99,7 +99,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   s_shkp = shkp;
   s_ctp = ctp;
 
-  buf[0:KYBER_MSGBYTES] = __indcpa_dec(buf[0:KYBER_MSGBYTES], ctp, skp);
+  buf[0:KYBER_INDCPA_MSGBYTES] = __indcpa_dec(buf[0:KYBER_INDCPA_MSGBYTES], ctp, skp);
 
   hp = skp + 32;
   hp += 24 * KYBER_K * KYBER_N>>3;
@@ -117,7 +117,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   pkp = s_skp;
   pkp += 12 * KYBER_K * KYBER_N>>3;
 
-  ctpc = __indcpa_enc_1(ctpc, buf[0:KYBER_SYMBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
+  ctpc = __indcpa_enc_1(ctpc, buf[0:KYBER_INDCPA_MSGBYTES], pkp, kr[KYBER_SYMBYTES:KYBER_SYMBYTES]);
 
   ctp = s_ctp;
   cnd = __verify(ctp, ctpc);
@@ -127,7 +127,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   zp += 24 * KYBER_K * KYBER_N>>3;
   kr[0:KYBER_SYMBYTES] = __cmov(kr[0:KYBER_SYMBYTES], zp, cnd);
 
-  t64 = KYBER_CT_LEN;
+  t64 = KYBER_INDCPA_CIPHERTEXTBYTES;
   kr[KYBER_SYMBYTES:KYBER_SYMBYTES] = _isha3_256(kr[KYBER_SYMBYTES:KYBER_SYMBYTES], ctp, t64);
 
   shkp = s_shkp;
