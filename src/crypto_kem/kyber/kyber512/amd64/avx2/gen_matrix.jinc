@@ -1,13 +1,7 @@
-/*
-require "params.jinc"
-require "shuffle.jinc"
-require "consts.jinc"
-*/
-
 require "../../../../../common/amd64/fips202.jinc"
 require "../../../../../common/amd64/avx2/fips202_4x.jinc"
 
-param int GENMATRIX_NBLOCKS = 3;
+param int GENMATRIX_NBLOCKS = ((12*KYBER_N/8*4096/KYBER_Q + SHAKE128_RATE)/SHAKE128_RATE);
 param int REJ_UNIFORM_AVX_BUFLEN = GENMATRIX_NBLOCKS * SHAKE128_RATE;
 
 u8[2048] ru_idx = {-1, -1, -1, -1, -1, -1, -1, -1,
@@ -594,10 +588,10 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
     buf0[KYBER_SYMBYTES+1] = 0;
     buf1[KYBER_SYMBYTES]   = 0;
     buf1[KYBER_SYMBYTES+1] = 1;
-    buf2[KYBER_SYMBYTES]   = 0;
-    buf2[KYBER_SYMBYTES+1] = 2;
+    buf2[KYBER_SYMBYTES]   = 1;
+    buf2[KYBER_SYMBYTES+1] = 0;
     buf3[KYBER_SYMBYTES]   = 1;
-    buf3[KYBER_SYMBYTES+1] = 0;
+    buf3[KYBER_SYMBYTES+1] = 1;
   }
   else
   {
@@ -605,9 +599,9 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
     buf0[KYBER_SYMBYTES+1] = 0;
     buf1[KYBER_SYMBYTES]   = 1;
     buf1[KYBER_SYMBYTES+1] = 0;
-    buf2[KYBER_SYMBYTES]   = 2;
-    buf2[KYBER_SYMBYTES+1] = 0;
-    buf3[KYBER_SYMBYTES]   = 0;
+    buf2[KYBER_SYMBYTES]   = 0;
+    buf2[KYBER_SYMBYTES+1] = 1;
+    buf3[KYBER_SYMBYTES]   = 1;
     buf3[KYBER_SYMBYTES+1] = 1;
   }
 
