@@ -1,0 +1,113 @@
+require "../../../../../crypto_stream/chacha/common/amd64/avx2/chacha_globals.jinc"
+
+u256 CHACHA_P00010000_H_AVX2 = (8u32)[0,0,0,1,0,0,0,0];
+u256 CHACHA_P00020002_H_AVX2 = (8u32)[0,0,0,2,0,0,0,2];
+u256 CHACHA_P00040004_H_AVX2 = (8u32)[0,0,0,4,0,0,0,4];
+u256 CHACHA_P88888888_H_AVX2 = (8u32)[8,8,8,8,8,8,8,8];
+
+// _h /////////////////////////////////////////////////////////////////////////
+
+// nonce : 12 bytes
+// key : 32 bytes
+// counter : 4 bytes (starts at 0)
+inline fn __init_h_avx2(reg u64 nonce key) -> reg u256[4]
+{
+  reg u256[4] st;
+  reg u128 t;
+
+  st[0] = CHACHA_SIGMA_H_AVX2;
+
+  st[1] = #VPBROADCAST_2u128((u128)[key + 0]);
+  st[2] = #VPBROADCAST_2u128((u128)[key + 16]);
+
+  t = #set0_128();
+  t = #VPINSR_4u32(t, (u32)[nonce + 0], 1);
+  t = #VPINSR_2u64(t, (u64)[nonce + 4], 1);
+
+  st[3] = #set0_256();
+  st[3] = #VINSERTI128(st[3], t, 0);
+  st[3] = #VINSERTI128(st[3], t, 1);
+  st[3] +8u32= CHACHA_P00010000_H_AVX2;
+
+  // st:
+  //  st[0] = { sigma     , sigma      }
+  //  st[1] = { k[127:0]  , k[127:0]   }
+  //  st[2] = { k[255:128], k[255:128] }
+  //  st[3] = { n[96:0], 1, n[96:0], 0 }
+  return st;
+}
+
+
+// increments 32-bit counters
+inline fn __increment_counter0404_h_avx2(reg u256[4] st) -> reg u256[4]
+{
+  st[3] +8u32= CHACHA_P00040004_H_AVX2;
+  return st;
+}
+
+
+// increments 32-bit counters
+inline fn __increment_counter0202_h_avx2(reg u256[4] st) -> reg u256[4]
+{
+  st[3] +8u32= CHACHA_P00020002_H_AVX2;
+  return st;
+}
+
+
+// _v /////////////////////////////////////////////////////////////////////////
+
+// nonce : 12 bytes
+// key : 32 bytes
+// counter : 4 bytes (starts at 0)
+inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
+{
+  inline int i;
+  stack u256[16] _st;
+  reg u256[16] st;
+
+  // sigma
+  for i=0 to 4
+  { st[i] = CHACHA_SIGMA_V_AVX2[i]; }
+
+  // key
+  for i=0 to 8
+  { st[4+i] = #VPBROADCAST_8u32((u32)[key + 4*i]); }
+
+  // counter
+  st[12] = CHACHA_P76543210_V_AVX;
+
+  // nonce
+  for i=0 to 3
+  { st[13+i] = #VPBROADCAST_8u32((u32)[nonce + 4*i]); }
+
+  _st = #copy(st);
+
+  //  _st:
+  //   _st[0]  = { ... , sigma0     , sigma0     }
+  //   _st[1]  = { ... , sigma1     , sigma1     }
+  //   _st[2]  = { ... , sigma2     , sigma2     }
+  //   _st[3]  = { ... , sigma3     , sigma3     }
+  //   _st[4]  = { ... , k[31:0]    , k[31:0]    }
+  //   ...
+  //   _st[11] = { ... , k[255:224] , k[255:224] }
+  //   _st[12] = { ... , 1          , 0          }
+  //   _st[13] = { ... , n[31:0]    , n[31:0]    }
+  //   _st[14] = { ... , n[63:32]   , n[63:32]   }
+  //   _st[15] = { ... , n[95:64]   , n[95:64]   }
+
+  return _st;
+}
+
+
+inline fn __increment_counter_v_avx2(stack u256[16] st) -> stack u256[16]
+{
+  reg u256 c;
+
+  c = CHACHA_P88888888_H_AVX2;
+  c +8u32= st[12];
+  st[12] = c;
+
+  return st;
+}
+
+

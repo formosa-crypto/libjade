@@ -1,0 +1,343 @@
+require "chacha_globals.jinc"
+
+///////////////////////////////////////////////////////////////////////////////
+// 'core' code for 2 blocks (128 bytes) ///////////////////////////////////////
+
+
+inline fn __copy_state_h_avx2(reg u256[4] st) -> reg u256[4]
+{
+  reg u256[4] k;
+  k = #copy(st);
+  return k;
+}
+
+
+inline fn __rotate_h_avx2(reg u256[4] k, inline int i r, reg u256 r16 r8) -> reg u256[4]
+{
+  reg u256 t;
+
+  if(r==16){ 
+    k[i] = #VPSHUFB_256(k[i], r16);
+
+  } else { if (r==8) {
+    k[i] = #VPSHUFB_256(k[i], r8);
+
+  } else {
+    t = k[i] <<8u32 r;
+    k[i] = k[i] >>8u32 (32-r);
+    k[i] ^= t;
+
+  }}
+
+  return k;
+}
+
+
+inline fn __line_h_avx2(reg u256[4] k, inline int a b c r, reg u256 r16 r8) -> reg u256[4]
+{
+  k[a] +8u32= k[b];
+  k[c] ^= k[a];
+  k = __rotate_h_avx2(k, (c), r, r16, r8);
+  return k;
+}
+
+
+inline fn __round_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
+{
+  k = __line_h_avx2(k, 0, 1, 3, 16, r16, r8);
+  k = __line_h_avx2(k, 2, 3, 1, 12, r16, r8);
+  k = __line_h_avx2(k, 0, 1, 3,  8, r16, r8);
+  k = __line_h_avx2(k, 2, 3, 1,  7, r16, r8);
+  return k;
+}
+
+
+inline fn __shuffle_state_h_avx2(reg u256[4] k) -> reg u256[4]
+{
+  k[1] = #VPSHUFD_256(k[1], (4u2)[0,3,2,1]);
+  k[2] = #VPSHUFD_256(k[2], (4u2)[1,0,3,2]);
+  k[3] = #VPSHUFD_256(k[3], (4u2)[2,1,0,3]);
+  return k;
+}
+
+
+inline fn __reverse_shuffle_state_h_avx2(reg u256[4] k) -> reg u256[4]
+{
+  k[1] = #VPSHUFD_256(k[1], (4u2)[2,1,0,3]);
+  k[2] = #VPSHUFD_256(k[2], (4u2)[1,0,3,2]);
+  k[3] = #VPSHUFD_256(k[3], (4u2)[0,3,2,1]);
+  return k;
+}
+
+
+inline fn __column_round_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
+{
+  k = __round_h_avx2(k, r16, r8);
+  return k;
+}
+
+
+inline fn __diagonal_round_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
+{
+  k = __shuffle_state_h_avx2(k);
+  k = __round_h_avx2(k, r16, r8);
+  k = __reverse_shuffle_state_h_avx2(k);
+  return k;
+}
+
+
+inline fn __double_round_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
+{
+  k = __column_round_h_avx2(k, r16, r8);
+  k = __diagonal_round_h_avx2(k, r16, r8);
+  return k;
+}
+
+
+inline fn __rounds_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
+{
+  reg u32 c;
+
+  c = (CHACHA_ROUNDS/2);
+  while
+  {
+    k = __double_round_h_avx2(k, r16, r8);
+    (_,_,_,_,c) = #DEC_32(c);
+  } (c > 0)
+
+  return k;
+}
+
+
+inline fn __sum_states_h_avx2(reg u256[4] k st) -> reg u256[4]
+{
+  inline int i;
+  for i=0 to 4
+  { k[i] +8u32= st[i]; }
+  return k;
+}
+
+
+inline fn __perm_h_avx2(reg u256[4] k) -> reg u256[4]
+{
+  reg u256[4] p;
+  p[0] = #VPERM2I128(k[0], k[1], (2u4)[2, 0]);
+  p[1] = #VPERM2I128(k[2], k[3], (2u4)[2, 0]);
+  p[2] = #VPERM2I128(k[0], k[1], (2u4)[3, 1]);
+  p[3] = #VPERM2I128(k[2], k[3], (2u4)[3, 1]);
+  return p;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// 'core' code for 4 blocks (256 bytes) ///////////////////////////////////////
+
+inline fn __copy_state_h_x2_avx2(reg u256[4] st) -> reg u256[4], reg u256[4]
+{
+  reg u256[4] k1 k2;
+  k1 = #copy(st);
+  k2 = #copy(st);
+  k2 = __increment_counter0202_h_avx2(k2);
+
+  // k2                         k1
+  // { sigma     , sigma      } { sigma     , sigma      }
+  // { k[127:0]  , k[127:0]   } { k[127:0]  , k[127:0]   }
+  // { k[255:128], k[255:128] } { k[255:128], k[255:128] }
+  // { n , cnt+3 , n , cnt+2  } { n , cnt+1 , n , cnt    }
+  return k1, k2;
+}
+
+
+inline fn __round_h_x2_inline_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
+{
+  reg u256 t1;
+
+  k1[0] +8u32= k1[1];
+  k2[0] +8u32= k2[1];
+
+  k1[3] ^= k1[0];
+  k2[3] ^= k2[0];
+
+  k1 = __rotate_h_avx2(k1, 3, 16, r16, r8);
+  k2 = __rotate_h_avx2(k2, 3, 16, r16, r8);
+
+
+  k1[2] +8u32= k1[3];
+  k2[2] +8u32= k2[3];
+
+                          k1[1] ^= k1[2];
+  // inlined rotate
+  t1 = k1[1] <<8u32 12;
+  k1[1] = k1[1] >>8u32 20;
+                          k2[1] ^= k2[2];
+  k1[1] ^= t1;
+
+  k2 = __rotate_h_avx2(k2, 1, 12, r16, r8);
+
+  k1[0] +8u32= k1[1];
+  k2[0] +8u32= k2[1];
+
+  k1[3] ^= k1[0];
+  k2[3] ^= k2[0];
+
+  k1 = __rotate_h_avx2(k1, 3, 8, r16, r8);
+  k2 = __rotate_h_avx2(k2, 3, 8, r16, r8);
+
+  k1[2] +8u32= k1[3];
+  k2[2] +8u32= k2[3];
+
+                          k1[1] ^= k1[2];
+  // inlined rotate
+  t1 = k1[1] <<8u32 7;
+  k1[1] = k1[1] >>8u32 25;
+                          k2[1] ^= k2[2];
+  k1[1] ^= t1;
+
+  k2 = __rotate_h_avx2(k2, 1, 7, r16, r8);
+
+  return k1, k2;
+}
+
+
+inline fn __shuffle_state_h_x2_avx2(reg u256[4] k1 k2) -> reg u256[4], reg u256[4]
+{
+  k1 = __shuffle_state_h_avx2(k1);
+  k2 = __shuffle_state_h_avx2(k2);
+  return k1, k2;
+}
+
+
+inline fn __reverse_shuffle_state_h_x2_avx2(reg u256[4] k1 k2) -> reg u256[4], reg u256[4]
+{
+  k1 = __reverse_shuffle_state_h_avx2(k1);
+  k2 = __reverse_shuffle_state_h_avx2(k2);
+  return k1, k2;
+}
+
+
+inline fn __column_round_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
+{
+  k1, k2 = __round_h_x2_inline_avx2(k1, k2, r16, r8);
+  return k1, k2;
+}
+
+
+inline fn __diagonal_round_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
+{
+  k1, k2 = __shuffle_state_h_x2_avx2(k1, k2);
+  k1, k2 = __round_h_x2_inline_avx2(k1, k2, r16, r8);
+  k1, k2 = __reverse_shuffle_state_h_x2_avx2(k1, k2);
+  return k1, k2;
+}
+
+
+inline fn __double_round_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
+{
+  k1, k2 = __column_round_h_x2_avx2(k1, k2, r16, r8);
+  k1, k2 = __diagonal_round_h_x2_avx2(k1, k2, r16, r8);
+  return k1, k2;
+}
+
+
+inline fn __rounds_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
+{
+  reg u32 c;
+
+  c = (CHACHA_ROUNDS/2);
+  while
+  {
+    k1, k2 = __double_round_h_x2_avx2(k1, k2, r16, r8);
+    (_,_,_,_,c) = #DEC_32(c);
+  } (c > 0)
+
+  return k1, k2;
+}
+
+
+inline fn __sum_states_h_x2_avx2(reg u256[4] k1 k2 st) -> reg u256[4], reg u256[4]
+{
+  k1 = __sum_states_h_avx2(k1, st);
+  k2 = __sum_states_h_avx2(k2, st);
+  k2 = __increment_counter0202_h_avx2(k2);
+  return k1, k2;
+}
+
+
+inline fn __perm_h_x2_avx2(reg u256[4] k1 k2) -> reg u256[4], reg u256[4]
+{
+  reg u256[4] p1 p2;
+  p1 = __perm_h_avx2(k1);
+  p2 = __perm_h_avx2(k2);
+  return p1, p2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+inline fn __chacha_h_avx2(reg u64 output plain len nonce key)
+{
+  reg u256[4] st k;
+  reg u256 r16 r8;
+
+  r16 = CHACHA_R16_AVX2;
+  r8  = CHACHA_R8_AVX2;
+  st = __init_h_avx2(nonce, key);
+
+  while(len >= 128)
+  {
+    k = __copy_state_h_avx2(st);
+    k = __rounds_h_avx2(k, r16, r8);
+    k = __sum_states_h_avx2(k, st);
+    k = __perm_h_avx2(k);
+    output, plain, len = __store_h_avx2(output, plain, len, k);
+    st = __increment_counter0202_h_avx2(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_h_avx2(st);
+    k = __rounds_h_avx2(k, r16, r8);
+    k = __sum_states_h_avx2(k, st);
+    k = __perm_h_avx2(k);
+    __store_last_h_avx2(output, plain, len, k);
+  }
+}
+
+
+inline fn __chacha_h_x2_avx2(reg u64 output plain len nonce key)
+{
+  reg u256[4] st k1 k2;
+  reg u256 r16 r8;
+
+  r16 = CHACHA_R16_AVX2;
+  r8  = CHACHA_R8_AVX2;
+  st = __init_h_avx2(nonce, key);
+
+  while(len >= 256)
+  {
+    k1, k2 = __copy_state_h_x2_avx2(st);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
+    k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
+    k1, k2 = __perm_h_x2_avx2(k1, k2);
+    output, plain, len = __store_h_x2_avx2(output, plain, len, k1, k2);
+    st = __increment_counter0404_h_avx2(st);
+  }
+
+  if(len > 128)
+  { k1, k2 = __copy_state_h_x2_avx2(st);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
+    k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
+    k1, k2 = __perm_h_x2_avx2(k1, k2);
+    output, plain, len = __store_h_avx2(output, plain, len, k1);
+    __store_last_h_avx2(output, plain, len, k2);
+  }
+  else
+  { k1 = __copy_state_h_avx2(st);
+    k1 = __rounds_h_avx2(k1, r16, r8);
+    k1 = __sum_states_h_avx2(k1, st);
+    k1 = __perm_h_avx2(k1);
+    __store_last_h_avx2(output, plain, len, k1);
+  }
+}
+
+

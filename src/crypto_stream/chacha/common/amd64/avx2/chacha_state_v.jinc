@@ -1,0 +1,73 @@
+require "chacha_globals.jinc"
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
+{
+  inline int i;
+  stack u256[16] _st;
+  reg u256[16] st;
+
+  // sigma
+  for i=0 to 4
+  { st[i] = CHACHA_SIGMA_V_AVX2[i]; }
+
+  // key
+  for i=0 to 8
+  { st[4+i] = #VPBROADCAST_8u32((u32)[key + 4*i]); }
+
+  // counter
+  st[12] = CHACHA_P76543210_V_AVX;
+  st[13] = #set0_256();
+
+  // nonce
+  for i=0 to 2
+  { st[14+i] = #VPBROADCAST_8u32((u32)[nonce + 4*i]); }
+
+  _st = #copy(st);
+
+  //  _st:
+  //   _st[0]  = { ... , sigma0     , sigma0     }
+  //   _st[1]  = { ... , sigma1     , sigma1     }
+  //   _st[2]  = { ... , sigma2     , sigma2     }
+  //   _st[3]  = { ... , sigma3     , sigma3     }
+  //   _st[4]  = { ... , k[31:0]    , k[31:0]    }
+  //   ...
+  //   _st[11] = { ... , k[255:224] , k[255:224] }
+  //   _st[12] = { ... , 1          , 0          }
+  //   _st[13] = { ... , 0          , 0          }
+  //   _st[14] = { ... , n[31:0]    , n[31:0]    }
+  //   _st[15] = { ... , n[63:32]   , n[63:32]   }
+
+  return _st;
+}
+
+
+// increments 64-bit counters
+inline fn __increment_counter_v_avx2(stack u256[16] st) -> stack u256[16]
+{
+  reg u256 a b x y;
+  
+  x = st[12]; //6 G 4 E 2 C 0 A
+  y = st[13]; //7 H 5 F 3 D 1 B  
+  
+  a = #VPUNPCKL_8u32(x, y); // 5 4 F E 1 0 B A
+  b = #VPUNPCKH_8u32(x, y); // 7 6 H G 3 2 D C
+  
+  a +4u64= CHACHA_P8888_V_AVX2; 
+  b +4u64= CHACHA_P8888_V_AVX2;
+  
+  x = #VPUNPCKL_8u32(a, b); // H F G E D B C A
+  y = #VPUNPCKH_8u32(a, b); // 7 5 6 4 3 1 2 0
+  
+  a = #VPUNPCKL_8u32(x, y); // 6 G 4 E 2 C 0 A
+  b = #VPUNPCKH_8u32(x, y); // 7 H 5 F 3 D 1 B
+  
+  st[12] = a;
+  st[13] = b;
+  
+  return st;
+}
+
+

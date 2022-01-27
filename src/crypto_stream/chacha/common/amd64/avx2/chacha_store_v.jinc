@@ -1,0 +1,161 @@
+
+require "chacha_store_h.jinc" // __store_h_x2_avx2 __store_last_h_x2_avx2
+
+
+inline fn __sub_rotate_avx2(reg u256[8] t) -> reg u256[8]
+{
+  inline int i;
+  reg u256[8] x;
+
+  x[0] = #VPUNPCKL_4u64(t[0], t[1]);
+  x[1] = #VPUNPCKL_4u64(t[2], t[3]);
+  x[2] = #VPUNPCKH_4u64(t[0], t[1]);
+  x[3] = #VPUNPCKH_4u64(t[2], t[3]);
+
+  x[4] = #VPUNPCKL_4u64(t[4], t[5]);
+  x[5] = #VPUNPCKL_4u64(t[6], t[7]);
+  x[6] = #VPUNPCKH_4u64(t[4], t[5]);
+  x[7] = #VPUNPCKH_4u64(t[6], t[7]);
+
+  for i=0 to 4
+  {   t[i] = #VPERM2I128(x[2*i+0], x[2*i+1], (2u4)[2,0]);
+    t[i+4] = #VPERM2I128(x[2*i+0], x[2*i+1], (2u4)[3,1]); }
+
+  return t;
+}
+
+
+inline fn __rotate_avx2(reg u256[8] x) -> reg u256[8]
+{
+  inline int i;
+  reg u256[8] t;
+
+  for i=0 to 4
+  {   t[i] = #VPUNPCKL_8u32(x[2*i+0], x[2*i+1]);
+    t[i+4] = #VPUNPCKH_8u32(x[2*i+0], x[2*i+1]); }
+
+  t = __sub_rotate_avx2(t);
+
+  return t;
+}
+
+
+inline fn __rotate_stack_avx2(stack u256[8] s) -> reg u256[8]
+{
+  inline int i;
+  reg u256[8] t x;
+
+  for i=0 to 4
+  { x[i] = s[2*i+0]; }
+
+  for i=0 to 4
+  { t[  i] = #VPUNPCKL_8u32(x[i], s[2*i+1]);
+    t[4+i] = #VPUNPCKH_8u32(x[i], s[2*i+1]); }
+
+  t = __sub_rotate_avx2(t);
+
+  return t;
+}
+
+
+inline fn __rotate_first_half_v_avx2(reg u256[16] k) -> reg u256[8], stack u256[8]
+{
+  inline int i;
+  stack u256[8] s_k8_15;
+  reg   u256[8] k0_7;
+
+  for i=0 to 8
+  { s_k8_15[i] = k[8+i]; }
+
+  for i=0 to 8
+  { k0_7[i] = k[i]; }
+
+  k0_7 = __rotate_avx2(k0_7);
+
+  return k0_7, s_k8_15;
+}
+
+
+inline fn __rotate_second_half_v_avx2(stack u256[8] s_k8_15) -> reg u256[8]
+{
+  inline int i;
+  reg u256[8] k8_15;
+  k8_15 = __rotate_stack_avx2(s_k8_15);
+  return k8_15;
+}
+
+
+inline fn __interleave_avx2(stack u256[8] s, reg u256[8] k, inline int o) -> reg u256[4], reg u256[4]
+{
+  inline int i;
+  reg u256[4] sk1 sk2;
+
+  sk1[0] = s[o + 0];
+  sk1[1] = k[o + 0];
+  sk1[2] = s[o + 1];
+  sk1[3] = k[o + 1];
+
+  sk2[0] = s[o + 2];
+  sk2[1] = k[o + 2];
+  sk2[2] = s[o + 3];
+  sk2[3] = k[o + 3];
+
+  return sk1, sk2;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+// 256 bytes (non sequentially)
+inline fn __store_half_interleave_v_avx2(reg u64 output plain len, reg u256[8] k, inline int o)
+{
+  inline int i;
+
+  for i=0 to 8
+  { k[i] ^= (u256)[plain + o + 64*i]; }
+  for i=0 to 8
+  { (u256)[output + o + 64*i] = k[i]; }
+}
+
+
+// 512 bytes
+inline fn __store_v_avx2(reg u64 output plain len, reg u256[16] k) -> reg u64, reg u64, reg u64
+{
+  stack u256[8] s_k8_15;
+  reg u256[8] k0_7, k8_15;
+
+  k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
+  __store_half_interleave_v_avx2(output, plain, len, k0_7, 0);
+  k8_15 = __rotate_second_half_v_avx2(s_k8_15);
+  __store_half_interleave_v_avx2(output, plain, len, k8_15, 32);
+
+  output, plain, len = __update_ptr_ref(output, plain, len, 512);
+
+  return output, plain, len;
+}
+
+
+// <= 512 bytes
+inline fn __store_last_v_avx2(reg u64 output plain len, reg u256[16] k)
+{
+  inline int i;
+  stack u256[8] s_k0_7 s_k8_15;
+  reg u256[8] k0_7 k8_15;
+  reg u256[4] k0_3 k4_7;
+
+  k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
+  s_k0_7 = #copy(k0_7);
+
+  k8_15 = __rotate_second_half_v_avx2(s_k8_15);
+  k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 0);
+
+  if(len >= 256)
+  { output, plain, len = __store_h_x2_avx2(output, plain, len, k0_3, k4_7);
+    k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 4);
+  }
+
+  __store_last_h_x2_avx2(output, plain, len, k0_3, k4_7);
+}
+
+

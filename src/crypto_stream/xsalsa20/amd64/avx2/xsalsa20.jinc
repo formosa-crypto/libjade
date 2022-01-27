@@ -1,0 +1,26 @@
+
+require "../../../../crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
+require "../../../../crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
+
+inline fn __xsalsa20_avx2(reg u64 output plain len nonce key)
+{
+  stack u64 _output _plain _len _nonce _key;
+  reg u32[8] subkey;
+
+  _output = output;
+  _plain = plain;
+  _len = len;
+  _nonce = nonce;
+  _key = key;
+
+  subkey = __hsalsa20_ref(nonce, key);
+
+  output = _output;
+  plain = _plain;
+  len = _len;
+  nonce = _nonce;
+  nonce += 16;
+
+  __salsa20_1_avx2(output, plain, len, nonce, subkey);
+}
+

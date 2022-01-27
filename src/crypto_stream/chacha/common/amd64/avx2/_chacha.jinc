@@ -1,0 +1,7 @@
+inline fn __chacha_avx2(reg u64 output plain len nonce key)
+{
+  if(len < 257)
+  { __chacha_h_x2_avx2(output, plain, len, nonce, key); }
+  else
+  { __chacha_v_avx2(output, plain, len, nonce, key); }
+}

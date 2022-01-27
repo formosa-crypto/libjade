@@ -1,0 +1,155 @@
+require "salsa20_globals.jinc"
+
+///////////////////////////////////////////////////////////////////////////////
+// 'core' code for 4 blocks (256 bytes) ///////////////////////////////////////
+
+inline fn __copy_state_v_avx2(stack u256[16] st) -> reg u256[16]
+{
+  reg u256[16] k;
+  k = #copy(st);
+  return k;
+}
+
+
+inline fn __rotate_v_avx2(reg u256 x, inline int r) -> reg u256
+{
+  reg u256 t;
+  t  = x <<8u32 r;
+  x  = x >>8u32 (32-r);
+  x ^= t;
+  return x;
+}
+
+
+inline fn __line_v_avx2(reg u256[16] k, inline int a b c r) -> reg u256[16]
+{
+  reg u256 t;
+  t  = k[b] +8u32 k[c];
+  t  = __rotate_v_avx2(t, r);
+  k[a] ^= t;
+
+  return k;
+}
+
+
+inline fn __quarter_round_v_avx2(reg u256[16] k, inline int a b c d) -> reg u256[16]
+{
+  k = __line_v_avx2(k, b, a, d, 7);
+  k = __line_v_avx2(k, c, b, a, 9);
+  k = __line_v_avx2(k, d, c, b, 13);
+  k = __line_v_avx2(k, a, d, c, 18);
+  return k;
+}
+
+
+inline fn __column_round_v_avx2(reg u256[16] k, stack u256 k2 k3) -> reg u256[16], stack u256, stack u256
+{
+  stack u256 k12 k13;
+
+  k = __quarter_round_v_avx2(k,  0,  4,  8, 12); k12 = k[12]; k[2] = k2;
+  k = __quarter_round_v_avx2(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3; 
+  k = __quarter_round_v_avx2(k, 10, 14,  2,  6);
+  k = __quarter_round_v_avx2(k, 15,  3,  7, 11);
+
+  return k, k12, k13;
+}
+
+
+inline fn __line_round_v_avx2(reg u256[16] k, stack u256 k12 k13) -> reg u256[16], stack u256, stack u256
+{
+  stack u256 k2 k3;
+
+  k = __quarter_round_v_avx2(k,  0,  1,  2,  3); k2 = k[2]; k[12] = k12;
+  k = __quarter_round_v_avx2(k,  5,  6,  7,  4); k3 = k[3]; k[13] = k13;
+  k = __quarter_round_v_avx2(k, 10, 11,  8,  9);
+  k = __quarter_round_v_avx2(k, 15, 12, 13, 14);
+
+  return k, k2, k3;
+}
+
+
+inline fn __double_round_v_avx2(reg u256[16] k, stack u256 k2 k3) -> reg u256[16], stack u256, stack u256
+{
+  stack u256 k12 k13;
+
+  k, k12, k13 = __column_round_v_avx2(k, k2, k3);
+  k, k2,  k3  = __line_round_v_avx2(k, k12, k13);
+  return k, k2, k3;
+}
+
+
+inline fn __rounds_v_avx2(reg u256[16] k) -> reg u256[16]
+{
+  reg u32 c;
+  stack u256 k2 k3;
+
+  k2 = k[2]; k3 = k[3];
+  c = (SALSA20_ROUNDS/2);
+  while
+  {
+    k, k2, k3 = __double_round_v_avx2(k, k2, k3);
+    (_,_,_,_,c) = #DEC_32(c);
+  } (c > 0)
+
+  k[2] = k2; k[3] = k3;
+  return k;
+}
+
+
+inline fn __sum_states_v_avx2(reg u256[16] k, stack u256[16] st) -> reg u256[16]
+{
+  inline int i;
+  for i=0 to 16
+  { k[i] +8u32= st[i]; }
+  return k;
+}
+
+
+inline fn __salsa20_v_avx2(reg u64 output plain len nonce key)
+{
+  stack u256[16] st;
+  reg u256[16] k;
+
+  st = __init_v_avx2(nonce, key);
+
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
+    k = __sum_states_v_avx2(k, st);
+    output, plain, len = __store_v_avx2(output, plain, len, k);
+    st = __increment_counter_v_avx2(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
+    k = __sum_states_v_avx2(k, st);
+    __store_last_v_avx2(output, plain, len, k);
+  }
+}
+
+
+inline fn __salsa20_v_1_avx2(reg u64 output plain len nonce, reg u32[8] key)
+{
+  stack u256[16] st;
+  reg u256[16] k;
+
+  st = __init_v_1_avx2(nonce, key);
+
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
+    k = __sum_states_v_avx2(k, st);
+    output, plain, len = __store_v_avx2(output, plain, len, k);
+    st = __increment_counter_v_avx2(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
+    k = __sum_states_v_avx2(k, st);
+    __store_last_v_avx2(output, plain, len, k);
+  }
+}
+
+

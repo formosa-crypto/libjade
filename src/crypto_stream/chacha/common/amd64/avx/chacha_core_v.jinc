@@ -1,0 +1,230 @@
+require "chacha_globals.jinc"
+
+
+///////////////////////////////////////////////////////////////////////////////
+// 'core' code for 4 blocks (256 bytes) ///////////////////////////////////////
+
+inline fn __copy_state_v_avx(stack u128[16] st) -> reg u128[16]
+{
+  reg u128[16] k;
+  k = #copy(st);
+  return k;
+}
+
+
+// this function is essentially the same as '__rotate_h_avx' but for different types: polymorphism in Jasmin (?)
+inline fn __rotate_v_avx(reg u128[16] k, inline int i r, stack u128 r16 r8) -> reg u128[16]
+{
+  reg u128 t;
+
+  if(r==16){ 
+    k[i] = #VPSHUFB_128(k[i], r16);
+
+  } else { if (r==8) {
+    k[i] = #VPSHUFB_128(k[i], r8);
+
+  } else {
+    t = k[i] <<4u32 r;
+    k[i] = k[i] >>4u32 (32-r);
+    k[i] ^= t;
+
+  }}
+
+  return k;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+// not exported; may be useful as spec;
+inline fn __line_v_avx(reg u128[16] k, inline int a b c r, stack u128 r16 r8) -> reg u128[16]
+{
+  k[a] +4u32= k[b];
+  k[c] ^= k[a];
+  k = __rotate_v_avx(k, c, r, r16, r8);
+  return k;
+}
+
+// not exported; may be useful as spec;
+inline fn __quarter_round_v_avx(reg u128[16] k, inline int a b c d, stack u128 r16 r8) -> reg u128[16]
+{
+  k = __line_v_avx(k, a, b, d, 16, r16, r8);
+  k = __line_v_avx(k, c, d, b, 12, r16, r8);
+  k = __line_v_avx(k, a, b, d, 8,  r16, r8);
+  k = __line_v_avx(k, c, d, b, 7,  r16, r8);
+  return k;
+}
+
+// not exported; may be useful as spec;
+inline fn __column_round_v_avx(reg u128[16] k, stack u128 k15 r16 r8) -> reg u128[16], stack u128
+{
+  stack u128 k14;
+
+  k = __quarter_round_v_avx(k, 0, 4,  8, 12, r16, r8);
+  k = __quarter_round_v_avx(k, 1, 5,  9, 13, r16, r8);
+  k = __quarter_round_v_avx(k, 2, 6, 10, 14, r16, r8);  k14 = k[14]; k[15] = k15;
+  k = __quarter_round_v_avx(k, 3, 7, 11, 15, r16, r8);  k15 = k[15]; k[14] = k14;
+
+  return k, k15;
+}
+
+// not exported; may be useful as spec;
+inline fn __diagonal_round_v_avx(reg u128[16] k, stack u128 k15 r16 r8) -> reg u128[16], stack u128
+{
+  stack u128 k14;
+                                                       k14 = k[14]; k[15] = k15;
+  k = __quarter_round_v_avx(k, 0, 5, 10, 15, r16, r8); k15 = k[15]; k[14] = k14;
+  k = __quarter_round_v_avx(k, 1, 6, 11, 12, r16, r8);
+  k = __quarter_round_v_avx(k, 2, 7, 8,  13, r16, r8);
+  k = __quarter_round_v_avx(k, 3, 4, 9,  14, r16, r8);
+
+  return k, k15;
+}
+
+// not exported; may be useful as spec;
+inline fn __double_round_v_avx(reg u128[16] k, stack u128 k15 r16 r8) -> reg u128[16], stack u128
+{
+  k, k15 = __column_round_v_avx(k, k15, r16, r8);
+  k, k15 = __diagonal_round_v_avx(k, k15, r16, r8);
+  return k, k15;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+inline fn __double_line_v_avx(
+  reg u128[16] k,
+  inline int a0 b0 c0 r0
+             a1 b1 c1 r1,
+  stack u128 r16 r8) -> reg u128[16]
+{
+  k[a0] +4u32= k[b0];
+  k[a1] +4u32= k[b1];
+
+  k[c0] ^= k[a0];
+  k[c1] ^= k[a1];
+
+  k = __rotate_v_avx(k, c0, r0, r16, r8);
+  k = __rotate_v_avx(k, c1, r1, r16, r8);
+
+  return k;
+}
+
+
+inline fn __double_quarter_round_v_avx(reg u128[16] k,
+                                        inline int a0 b0 c0 d0
+                                                   a1 b1 c1 d1,
+                                        stack u128 r16 r8) -> reg u128[16]
+{
+  k = __double_line_v_avx(k, a0, b0, d0, 16, a1, b1, d1, 16, r16, r8);
+  k = __double_line_v_avx(k, c0, d0, b0, 12, c1, d1, b1, 12, r16, r8);
+  k = __double_line_v_avx(k, a0, b0, d0, 8,  a1, b1, d1, 8,  r16, r8);
+  k = __double_line_v_avx(k, c0, d0, b0, 7,  c1, d1, b1, 7,  r16, r8);
+
+  return k;
+}
+
+
+inline fn __column_round_v_1_avx(reg u128[16] k, stack u128 k15 s_r16 s_r8) -> reg u128[16], stack u128
+{
+  stack u128 k14;
+
+  k = __double_quarter_round_v_avx(k, 0, 4, 8,  12,
+                                      2, 6, 10, 14, s_r16, s_r8);
+  k[15] = k15;
+  k14 = k[14];
+
+  k = __double_quarter_round_v_avx(k, 1, 5, 9,  13,
+                                      3, 7, 11, 15, s_r16, s_r8);
+  return k, k14;
+}
+
+
+inline fn __diagonal_round_v_1_avx(reg u128[16] k, stack u128 k14 s_r16 s_r8) -> reg u128[16], stack u128
+{
+  stack u128 k15;
+
+  k = __double_quarter_round_v_avx(k, 1, 6, 11, 12,
+                                      0, 5, 10, 15, s_r16, s_r8);
+  k[14] = k14;
+  k15 = k[15];
+
+  k = __double_quarter_round_v_avx(k, 2, 7, 8, 13,
+                                      3, 4, 9, 14, s_r16, s_r8);
+  return k, k15;
+}
+
+// __double_round_v_1_avx ~ __double_round_v_avx
+inline fn __double_round_v_1_avx(reg u128[16] k, stack u128 k15 r16 r8) -> reg u128[16], stack u128
+{
+  stack u128 k14;
+
+  k, k14 = __column_round_v_1_avx(k, k15, r16, r8);
+  k, k15 = __diagonal_round_v_1_avx(k, k14, r16, r8);
+  return k, k15;
+}
+
+
+inline fn __rounds_v_avx(reg u128[16] k, stack u128 r16 r8) -> reg u128[16]
+{
+  reg u32 c;
+  stack u128 k15;
+
+  k15 = k[15];
+  c = (CHACHA_ROUNDS/2);
+  while
+  {
+    k, k15 = __double_round_v_avx(k, k15, r16, r8);
+    (_,_,_,_,c) = #DEC_32(c);
+  } (c > 0)
+
+  k[15] = k15;
+  return k;
+}
+
+
+inline fn __sum_states_v_avx(reg u128[16] k, stack u128[16] st) -> reg u128[16]
+{
+  inline int i;
+  for i=0 to 16
+  { k[i] +4u32= st[i]; }
+  return k;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+
+inline fn __chacha_v_avx(reg u64 output plain len nonce key)
+{
+  stack u128[16] st;
+  reg u128[16] k;
+  reg u128 _r16 _r8;
+  stack u128 r16 r8;
+
+  _r16 = CHACHA_R16_AVX;
+  _r8  = CHACHA_R8_AVX;
+  r16 = _r16;
+  r8 = _r8;
+
+  st = __init_v_avx(nonce, key);
+
+  while(len >= 256)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
+    k = __sum_states_v_avx(k, st);
+    output, plain, len = __store_v_avx(output, plain, len, k);
+    st = __increment_counter_v_avx(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
+    k = __sum_states_v_avx(k, st);
+    __store_last_v_avx(output, plain, len, k);
+  }
+}
+
+

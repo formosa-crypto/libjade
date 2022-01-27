@@ -1,0 +1,42 @@
+require "chacha_globals.jinc"
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+inline fn __init_h_avx(reg u64 nonce key) -> reg u128[4]
+{
+  reg u128[4] st;
+
+  st[0] = CHACHA_SIGMA_H_AVX;
+
+  st[1] = (u128)[key + 0];
+  st[2] = (u128)[key + 16];
+
+  st[3] = #set0_128();
+  st[3] = #VPINSR_2u64(st[3], (u64)[nonce + 0], 1);
+
+  // st:
+  //  st[0] = { sigma      }
+  //  st[1] = { k[127:0]   }
+  //  st[2] = { k[255:128] }
+  //  st[3] = { n[64:0], 0 }
+  return st;
+}
+
+
+// increments 64-bit counter
+inline fn __increment_counter02_h_avx(reg u128[4] st) -> reg u128[4]
+{
+  st[3] +2u64 = CHACHA_P02_H_AVX;
+  return st;
+}
+
+
+// increments 64-bit counter
+inline fn __increment_counter01_h_avx(reg u128[4] st) -> reg u128[4]
+{
+  st[3] +2u64 = CHACHA_P01_H_AVX;
+  return st;
+}
+
+

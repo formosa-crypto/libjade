@@ -1,0 +1,136 @@
+require "salsa20_globals.jinc"
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+inline fn __init_v_avx(reg u64 nonce key) -> stack u128[16]
+{
+  inline int i;
+  stack u128[16] _st;
+  reg u128[16] st;
+
+  // state[1,2,3,4, 11,12,13,14] = key[0,1,2,3, 4,5,6,7]
+  for i=0 to 4
+  { st[i+1] = #VPBROADCAST_4u32((u32)[key + i*4]); }
+
+  for i=4 to 8
+  { st[i+7] = #VPBROADCAST_4u32((u32)[key + i*4]); }
+
+  // state[0,5,10,15] = sigma[0,1,2,3]
+  for i=0 to 4
+  { st[i*5] = SALSA20_SIGMA_V_AVX[i]; }
+
+  // state[6,7] = nonce[0,1]
+  for i=0 to 2
+  { st[i+6] = #VPBROADCAST_4u32((u32)[nonce + i*4]); }
+
+  // state[8,9] = 0
+  st[8] = SALSA20_P3210_V_AVX;
+  st[9] = #set0_128();
+
+  _st = #copy(st);
+
+  //  _st:
+  //   _st[0]  = { ... , sigma0    , sigma0     }
+  //   _st[1]  = { ... , k[31:0]   , k[31:0]    }
+  //   _st[2]  = { ... , k[63:32]  , k[63:32]   }
+  //   _st[3]  = { ... , k[95:64]  , k[95:64]   }
+  //   _st[4]  = { ... , k[127:96] , k[127:96]  }
+  //   _st[5]  = { ... , sigma1    , sigma1     }
+  //   _st[6]  = { ... , n[31:0]   , n[31:0]    }
+  //   _st[7]  = { ... , n[63:32]  , n[63:32]   }
+  //   _st[8]  = { ... , 1         , 0          }
+  //   _st[9]  = { ... , 0         , 0          }
+  //   _st[10] = { ... , sigma2    , sigma2     }
+  //   _st[11] = { ... , k[...]    , k[...]     }
+  //   _st[12] = { ... , k[...]    , k[...]     }
+  //   _st[13] = { ... , k[...]    , k[...]     }
+  //   _st[14] = { ... , k[...]    , k[...]     }
+  //   _st[15]  = { ... , sigma3   , sigma3     }
+
+  return _st;
+}
+
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+inline fn __init_v_1_avx(reg u64 nonce, reg u32[8] key) -> stack u128[16]
+{
+  inline int i;
+  stack u128[16] _st;
+  reg u128[16] st;
+  stack u32[8] _key;
+
+  _key = #copy(key);
+
+  // state[1,2,3,4, 11,12,13,14] = key[0,1,2,3, 4,5,6,7]
+  for i=0 to 4
+  { st[i+1] = #VPBROADCAST_4u32(_key[i]); }
+
+  for i=4 to 8
+  { st[i+7] = #VPBROADCAST_4u32(_key[i]); }
+
+  // state[0,5,10,15] = sigma[0,1,2,3]
+  for i=0 to 4
+  { st[i*5] = SALSA20_SIGMA_V_AVX[i]; }
+
+  // state[6,7] = nonce[0,1]
+  for i=0 to 2
+  { st[i+6] = #VPBROADCAST_4u32((u32)[nonce + i*4]); }
+
+  // state[8,9] = 0
+  st[8] = SALSA20_P3210_V_AVX;
+  st[9] = #set0_128();
+
+  _st = #copy(st);
+
+  //  _st:
+  //   _st[0]  = { ... , sigma0    , sigma0     }
+  //   _st[1]  = { ... , k[31:0]   , k[31:0]    }
+  //   _st[2]  = { ... , k[63:32]  , k[63:32]   }
+  //   _st[3]  = { ... , k[95:64]  , k[95:64]   }
+  //   _st[4]  = { ... , k[127:96] , k[127:96]  }
+  //   _st[5]  = { ... , sigma1    , sigma1     }
+  //   _st[6]  = { ... , n[31:0]   , n[31:0]    }
+  //   _st[7]  = { ... , n[63:32]  , n[63:32]   }
+  //   _st[8]  = { ... , 1         , 0          }
+  //   _st[9]  = { ... , 0         , 0          }
+  //   _st[10] = { ... , sigma2    , sigma2     }
+  //   _st[11] = { ... , k[...]    , k[...]     }
+  //   _st[12] = { ... , k[...]    , k[...]     }
+  //   _st[13] = { ... , k[...]    , k[...]     }
+  //   _st[14] = { ... , k[...]    , k[...]     }
+  //   _st[15]  = { ... , sigma3   , sigma3     }
+
+  return _st;
+}
+
+
+// increments 64-bit counters
+inline fn __increment_counter_v_avx(stack u128[16] st) -> stack u128[16]
+{
+  reg u128 a b x y;
+  
+  x = st[8]; //2 C 0 A
+  y = st[9]; //3 D 1 B  
+  
+  a = #VPUNPCKL_4u32(x, y); // 1 0 B A
+  b = #VPUNPCKH_4u32(x, y); // 3 2 D C
+  
+  a +2u64= SALSA20_P44_V_AVX;
+  b +2u64= SALSA20_P44_V_AVX;
+  
+  x = #VPUNPCKL_4u32(a, b); // D B C A
+  y = #VPUNPCKH_4u32(a, b); // 3 1 2 0
+  
+  a = #VPUNPCKL_4u32(x, y); // 2 C 0 A
+  b = #VPUNPCKH_4u32(x, y); // 3 D 1 B
+  
+  st[8] = a;
+  st[9] = b;
+  
+  return st;
+}
+
+
