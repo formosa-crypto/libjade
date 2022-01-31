@@ -1,8 +1,11 @@
 # This Makefile can be used with GNU Make or BSD Make
 
 # override as desired
-TYPE=kem
-SCHEME=kyber/kyber768
+#TYPE=kem
+#SCHEME=kyber/kyber768
+#IMPLEMENTATION=amd64/avx2
+TYPE=stream
+SCHEME=chacha/chacha20-ietf
 IMPLEMENTATION=amd64/avx2
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)
