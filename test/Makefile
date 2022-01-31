@@ -10,15 +10,16 @@ SRC_DIR=$(TOP_DIR)/src
 SCHEME_DIR=$(SRC_DIR)/crypto_$(TYPE)/$(SCHEME)/$(IMPLEMENTATION)
 SCHEME_INCLUDE_DIR=$(SRC_DIR)/crypto_$(TYPE)/$(SCHEME)/$(IMPLEMENTATION)/include
 
-TYPE_UPPERCASE=$(shell echo $(TYPE) | tr a-z A-Z | tr / _ | sed 's/-//g')
-SCHEME_UPPERCASE:=$(shell echo $(SCHEME) | tr a-z A-Z | tr / _ | sed 's/-//g')
-IMPLEMENTATION_UPPERCASE:=$(shell echo $(IMPLEMENTATION) | tr a-z A-Z | tr / _ | sed 's/-//g')
-JADE_NAMESPACE=JADE_$(TYPE_UPPERCASE)_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE)
+TYPE_UPPERCASE=$(shell echo $(TYPE) | tr a-z A-Z | tr / _ )
+SCHEME_UPPERCASE:=$(shell echo $(SCHEME) | tr a-z A-Z | tr / _ )
+IMPLEMENTATION_UPPERCASE:=$(shell echo $(IMPLEMENTATION) | tr a-z A-Z | tr / _ )
+JADE_NAMESPACE=$(shell echo JADE_$(TYPE_UPPERCASE)_$(SCHEME_UPPERCASE)_$(IMPLEMENTATION_UPPERCASE) | tr - _)
 
-TYPE_LOWERCASE:=$(shell echo $(TYPE) | tr A-Z a-z | tr / _ | sed 's/-//g')
-SCHEME_LOWERCASE:=$(shell echo $(SCHEME) | tr A-Z a-z | tr / _ | sed 's/-//g')
-IMPLEMENTATION_LOWERCASE:=$(shell echo $(IMPLEMENTATION) | tr A-Z a-z | tr / _ | sed 's/-//g')
-JADE_NAMESPACE_LC=jade_$(TYPE_LOWERCASE)_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+TYPE_LOWERCASE:=$(shell echo $(TYPE) | tr A-Z a-z | tr / _ )
+SCHEME_LOWERCASE:=$(shell echo $(SCHEME) | tr A-Z a-z | tr / _ )
+IMPLEMENTATION_LOWERCASE:=$(shell echo $(IMPLEMENTATION) | tr A-Z a-z | tr / _ )
+SCHEME_IMPLEMENTATION_LC:=$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+JADE_NAMESPACE_LC=$(shell echo jade_$(TYPE_LOWERCASE)_$(SCHEME_IMPLEMENTATION_LC) | tr - _)
 
 TEST_DIR=$(TOP_DIR)/test
 TEST_COMMON_DIR=$(TEST_DIR)/common1# prev TOP_DIR/test/common # TODO CHECKME
@@ -30,7 +31,7 @@ DEST_DIR=$(TEST_DIR)/bin
 SCHEME_SRC:=$(SCHEME_DIR)/$(TYPE).jazz
 SCHEME_ASM:=$(SCHEME_SRC:%.jazz=%.s)
 SCHEME_OBJ:=$(SCHEME_ASM:%.s=%.o)
-SCHEME_LIBRARY:=$(SCHEME_DIR)/lib$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE).a
+SCHEME_LIBRARY:=$(SCHEME_DIR)/lib$(SCHEME_IMPLEMENTATION_LC).a
 
 # This -Wall was supported by the European Commission through the ERC Starting Grant 805031 (EPOQUE)
 CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
@@ -41,9 +42,9 @@ CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 # Number of tests run for functests
 NTESTS=1
 
-all: $(DEST_DIR)/functest_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE) \
-	$(DEST_DIR)/testvectors_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE) \
-	$(DEST_DIR)/printparams_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+all: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC) \
+	$(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC) \
+	$(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: build-scheme
 build-scheme: $(SCHEME_LIBRARY)
@@ -60,16 +61,16 @@ clean-scheme:
 	cd $(SCHEME_DIR) && $(MAKE) clean
 
 .PHONY: functest
-functest: $(DEST_DIR)/functest_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+functest: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: testvectors
-testvectors: $(DEST_DIR)/testvectors_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+testvectors: $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: printparams
-printparams: $(DEST_DIR)/printparams_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+printparams: $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: nistkat
-nistkat: $(DEST_DIR)/nistkat_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+nistkat: $(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC)
 
 $(DEST_DIR)/test_common_aes: test_common/aes.c $(COMMON_FILES)
 	mkdir -p $(DEST_DIR)
@@ -88,28 +89,28 @@ $(DEST_DIR)/test_common_nistseedexpander: test_common/sp800-185.c $(COMMON_FILES
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
 
-$(DEST_DIR)/functest_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE): $(SCHEME_LIBRARY) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c $(COMMON_HEADERS)
+$(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
-$(DEST_DIR)/testvectors_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE): $(SCHEME_LIBRARY) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS)
+$(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
-$(DEST_DIR)/printparams_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE): crypto_$(TYPE)/printparams.c
+$(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/printparams.c -o $@
 
-$(DEST_DIR)/nistkat_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE): $(SCHEME_LIBRARY) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c $(COMMON_HEADERS)
+$(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: clean
 clean:
-	$(RM) $(DEST_DIR)/functest_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
-	$(RM) $(DEST_DIR)/testvectors_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
-	$(RM) $(DEST_DIR)/printparams_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
-	$(RM) $(DEST_DIR)/nistkat_$(SCHEME_LOWERCASE)_$(IMPLEMENTATION_LOWERCASE)
+	$(RM) $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
+	$(RM) $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
+	$(RM) $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
+	$(RM) $(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/test_common_aes
 	$(RM) $(DEST_DIR)/test_common_fips202
 	$(RM) $(DEST_DIR)/test_common_sha2
