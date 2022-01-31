@@ -3,7 +3,7 @@ param int CHACHA_ROUNDS=20;
 //require "crypto_stream/chacha/common/amd64/avx/chacha.jinc"
 require "../../../common/amd64/avx/chacha.jinc"
 
-export fn jade_stream_chacha_chacha20_amd64_avx(reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_amd64_avx_xor(reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
   __chacha_avx(output, plain, len, nonce, key);

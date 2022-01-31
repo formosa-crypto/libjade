@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-int jade_stream_xsalsa20_amd64_avx(
+int jade_stream_xsalsa20_amd64_avx_xor(
  uint8_t *ciphertext,
  uint8_t *plaintext,
  uint64_t length,

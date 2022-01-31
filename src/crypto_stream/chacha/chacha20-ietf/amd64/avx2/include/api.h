@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-int jade_stream_chacha_chacha20_ietf_amd64_avx2(
+int jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(
  uint8_t *ciphertext,
  uint8_t *plaintext,
  uint64_t length,

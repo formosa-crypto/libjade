@@ -63,6 +63,7 @@ inline static void* malloc_s(size_t size) {
 #define CRYPTO_NONCEBYTES NAMESPACE(NONCEBYTES)
 #define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
+#define crypto_stream_xor NAMESPACE_LC(xor)
 #define crypto_stream JADE_NAMESPACE_LC
 
 #define RETURNS_ZERO(f)                           \
@@ -82,7 +83,7 @@ inline static void* malloc_s(size_t size) {
 #error "namespace not properly defined for header guard"
 #endif
 
-static int test_crypto_stream(void) {
+static int test_crypto_stream_xor(void) {
     /*
      * This is most likely going to be aligned by the compiler.
      * 16 extra bytes for canary
@@ -137,11 +138,11 @@ static int test_crypto_stream(void) {
       write_canary(key + CRYPTO_KEYBYTES + CL);
 
       // crypto_stream
-      RETURNS_ZERO(crypto_stream(ciphertext+CL,
-                                 plaintext1+CL,
-                                 length,
-                                 nonce+CL,
-                                 key+CL));
+      RETURNS_ZERO(crypto_stream_xor(ciphertext+CL,
+                                     plaintext1+CL,
+                                     length,
+                                     nonce+CL,
+                                     key+CL));
         // check canary
         CHECK_C(ciphertext)
         CHECK_C(ciphertext+length+CL)
@@ -153,11 +154,11 @@ static int test_crypto_stream(void) {
         CHECK_C(key+CRYPTO_KEYBYTES+CL)
 
       // crypto_stream
-      RETURNS_ZERO(crypto_stream(plaintext2+CL,
-                                 ciphertext+CL,
-                                 length,
-                                 nonce+CL,
-                                 key+CL));
+      RETURNS_ZERO(crypto_stream_xor(plaintext2+CL,
+                                     ciphertext+CL,
+                                     length,
+                                     nonce+CL,
+                                     key+CL));
 
         // check canary
         CHECK_C(ciphertext)
@@ -194,7 +195,7 @@ int main(void) {
     puts(CRYPTO_ALGNAME);
 
     int result = 0;
-    result += test_crypto_stream();
+    result += test_crypto_stream_xor();
 
     if (result != 0) {
         puts("Errors occurred");
