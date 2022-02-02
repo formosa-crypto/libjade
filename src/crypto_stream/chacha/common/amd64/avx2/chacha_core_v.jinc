@@ -17,7 +17,7 @@ inline fn __rotate_v_avx2(reg u256[16] k, inline int i r, stack u256 r16 r8) -> 
 {
   reg u256 t;
 
-  if(r==16){ 
+  if(r==16){
     k[i] = #VPSHUFB_256(k[i], r16);
 
   } else { if (r==8) {
@@ -129,7 +129,7 @@ inline fn __double_quarter_round_v_0__avx2(reg u256[16] k,
 
 
 // (1.21 cpb/16KiB/Skylake)
-inline fn __double_quarter_round_v_avx2(reg u256[16] k, 
+inline fn __double_quarter_round_v_avx2(reg u256[16] k,
                                         inline int a0 b0 c0 d0
                                                    a1 b1 c1 d1,
                                         stack u256 r16 r8) -> reg u256[16]

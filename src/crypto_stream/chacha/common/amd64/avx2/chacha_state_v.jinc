@@ -48,25 +48,25 @@ inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
 inline fn __increment_counter_v_avx2(stack u256[16] st) -> stack u256[16]
 {
   reg u256 a b x y;
-  
+
   x = st[12]; //6 G 4 E 2 C 0 A
-  y = st[13]; //7 H 5 F 3 D 1 B  
-  
+  y = st[13]; //7 H 5 F 3 D 1 B
+
   a = #VPUNPCKL_8u32(x, y); // 5 4 F E 1 0 B A
   b = #VPUNPCKH_8u32(x, y); // 7 6 H G 3 2 D C
-  
-  a +4u64= CHACHA_P8888_V_AVX2; 
+
+  a +4u64= CHACHA_P8888_V_AVX2;
   b +4u64= CHACHA_P8888_V_AVX2;
-  
+
   x = #VPUNPCKL_8u32(a, b); // H F G E D B C A
   y = #VPUNPCKH_8u32(a, b); // 7 5 6 4 3 1 2 0
-  
+
   a = #VPUNPCKL_8u32(x, y); // 6 G 4 E 2 C 0 A
   b = #VPUNPCKH_8u32(x, y); // 7 H 5 F 3 D 1 B
-  
+
   st[12] = a;
   st[13] = b;
-  
+
   return st;
 }
 

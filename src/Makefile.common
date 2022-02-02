@@ -9,8 +9,8 @@ default: $(SRCS:%.jazz=%.s)
 
 %.s : %.jazz
 %.s : %.jazz $(DEPSDIR)/%.d | $(DEPSDIR)
-	$(DEPS)
-	$(COMPILE)
+	@$(DEPS)
+	@$(COMPILE)
 
 $(DEPSDIR): ; @mkdir -p $@
 

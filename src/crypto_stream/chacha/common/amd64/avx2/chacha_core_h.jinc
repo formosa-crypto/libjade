@@ -16,7 +16,7 @@ inline fn __rotate_h_avx2(reg u256[4] k, inline int i r, reg u256 r16 r8) -> reg
 {
   reg u256 t;
 
-  if(r==16){ 
+  if(r==16){
     k[i] = #VPSHUFB_256(k[i], r16);
 
   } else { if (r==8) {

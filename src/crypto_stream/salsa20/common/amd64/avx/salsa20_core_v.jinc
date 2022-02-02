@@ -48,7 +48,7 @@ inline fn __column_round_v_avx(reg u128[16] k, stack u128 k2 k3) -> reg u128[16]
   stack u128 k12 k13;
 
   k = __quarter_round_v_avx(k,  0,  4,  8, 12); k12 = k[12]; k[2] = k2;
-  k = __quarter_round_v_avx(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3; 
+  k = __quarter_round_v_avx(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3;
   k = __quarter_round_v_avx(k, 10, 14,  2,  6);
   k = __quarter_round_v_avx(k, 15,  3,  7, 11);
 

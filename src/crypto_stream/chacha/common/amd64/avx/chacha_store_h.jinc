@@ -33,7 +33,7 @@ inline fn __store_xor_last_h_avx(reg u64 output plain len, reg u128[4] k)
   { for i=0 to 2
     { k[i] ^= (u128)[plain + 16*i];
       (u128)[output + 16*i] = k[i];
-    }    
+    }
     output, plain, len = __update_ptr_xor_ref(output, plain, len, 32);
     k[0] = k[2];
     k[1] = k[3];
@@ -137,7 +137,7 @@ inline fn __store_last_h_avx(reg u64 output len, reg u128[4] k)
   // write 32 bytes
   if(len >= 32)
   { for i=0 to 2
-    { (u128)[output + 16*i] = k[i]; }    
+    { (u128)[output + 16*i] = k[i]; }
     output, len = __update_ptr_ref(output, len, 32);
     k[0] = k[2];
     k[1] = k[3];

@@ -60,7 +60,7 @@ inline fn __rotate_avx(reg u128[8] x) -> reg u128[8]
 }
 
 
-// same as __rotate_avx, but for stack 
+// same as __rotate_avx, but for stack
 inline fn __rotate_stack_avx(stack u128[8] s) -> reg u128[8]
 {
   inline int i;

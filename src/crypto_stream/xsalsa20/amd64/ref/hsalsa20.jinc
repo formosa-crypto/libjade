@@ -35,13 +35,13 @@ inline fn __hsalsa20_store_ref(reg u32[16] sk) -> reg u32[8]
 {
   inline int i;
   reg u32[8] sks;
-  
+
   for i=0 to 4
   { sks[i] = sk[5*i]; } //sks[0,1,2,3] = sk[0,5,10,15]
 
   for i=0 to 4
   { sks[i+4] = sk[6+i]; } //sks[4,5,6,7] = sk[6,7,8,9]
-  
+
   return sks;
 }
 

@@ -111,25 +111,25 @@ inline fn __init_v_1_avx(reg u64 nonce, reg u32[8] key) -> stack u128[16]
 inline fn __increment_counter_v_avx(stack u128[16] st) -> stack u128[16]
 {
   reg u128 a b x y;
-  
+
   x = st[8]; //2 C 0 A
-  y = st[9]; //3 D 1 B  
-  
+  y = st[9]; //3 D 1 B
+
   a = #VPUNPCKL_4u32(x, y); // 1 0 B A
   b = #VPUNPCKH_4u32(x, y); // 3 2 D C
-  
+
   a +2u64= SALSA20_P44_V_AVX;
   b +2u64= SALSA20_P44_V_AVX;
-  
+
   x = #VPUNPCKL_4u32(a, b); // D B C A
   y = #VPUNPCKH_4u32(a, b); // 3 1 2 0
-  
+
   a = #VPUNPCKL_4u32(x, y); // 2 C 0 A
   b = #VPUNPCKH_4u32(x, y); // 3 D 1 B
-  
+
   st[8] = a;
   st[9] = b;
-  
+
   return st;
 }
 

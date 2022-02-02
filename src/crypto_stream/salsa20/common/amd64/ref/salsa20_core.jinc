@@ -19,7 +19,7 @@ inline fn __copy_state_ref(stack u32[16] st) -> reg u32[16], stack u32, stack u3
 
   for i=4 to 16
   { k[i] = st[i]; }
-  
+
   return k, s_k2, s_k3;
 }
 
@@ -54,7 +54,7 @@ inline fn __column_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], sta
   stack u32 k12 k13;
 
   k = __quarter_round_ref(k,  0,  4,  8, 12); k12 = k[12]; k[2] = k2;
-  k = __quarter_round_ref(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3; 
+  k = __quarter_round_ref(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3;
   k = __quarter_round_ref(k, 10, 14,  2,  6);
   k = __quarter_round_ref(k, 15,  3,  7, 11);
 
