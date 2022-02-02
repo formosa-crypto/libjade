@@ -1,0 +1,25 @@
+// TODO : CHECK my name.
+
+inline fn __crypto_verify_p_u8x16_r_u64x2(reg u64 _h, reg u64[2] h) -> reg u64
+{
+  reg bool cf;
+  reg u64 t r;
+
+  // r = ([_h + 0] ^ h[0]) | ([_h + 8] ^ h[1])
+  r = h[0];
+  r ^= [_h + 0];
+  t = h[1];
+  t ^= [_h + 8];
+  r |= t;
+
+  // check if r has any bit set
+  _,_,_,_,_,t = #set0();
+  cf, r -= 1;
+  _, t += 0 + cf;
+  t -= 1;
+
+  return t;
+}
+
+
+

@@ -4,8 +4,13 @@
 #TYPE=kem
 #SCHEME=kyber/kyber768
 #IMPLEMENTATION=amd64/avx2
-TYPE=stream
-SCHEME=chacha/chacha20
+
+#TYPE=stream
+#SCHEME=chacha/chacha20
+#IMPLEMENTATION=amd64/ref
+
+TYPE=onetimeauth
+SCHEME=poly1305
 IMPLEMENTATION=amd64/ref
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)

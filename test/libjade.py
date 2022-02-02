@@ -38,6 +38,7 @@ class Scheme:
         schemes = []
         schemes.extend(Scheme.all_schemes_of_type('kem'))
         schemes.extend(Scheme.all_schemes_of_type('stream'))
+        schemes.extend(Scheme.all_schemes_of_type('onetimeauth'))
         schemes.extend(Scheme.all_schemes_of_type('sign'))
         return schemes
 
@@ -70,6 +71,8 @@ class Scheme:
                         schemes.append(KEM(d))
                     elif type == 'stream':
                         schemes.append(Stream(d))
+                    elif type == 'onetimeauth':
+                        schemes.append(Onetimeauth(d))
                     elif type == 'sign':
                         schemes.append(Signature(d))
                     else:
@@ -220,6 +223,16 @@ class Stream(Scheme):
     def all_stream() -> list:
         return Scheme.all_schemes_of_type('stream')
 
+class Onetimeauth(Scheme):
+    def __init__(self, name: str):
+        self.type = 'onetimeauth'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_onetimeauth() -> list:
+        return Scheme.all_schemes_of_type('onetimeauth')
 
 class Signature(Scheme):
 
