@@ -1,5 +1,7 @@
 name: XSalsa20
 type: stream
+checksumsmall: 4a45c69505df8f29b5a4dc8b926252c4ecc9de25f6a968002e017ec04d1a17f6
+checksumbig: 06ad44a34c60fd7d081b1436072466789451ef66ff6cebec83e961f7e4d30ef5
 implementations:
     - name: amd64/ref
       version: TODO

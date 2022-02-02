@@ -1,5 +1,7 @@
 name: Chacha20-ietf
 type: stream
+checksumsmall: 9dfc28222edf92880d56152f1c51c0c56a8aff3338503ab3727b6f05d85f4b2c
+checksumbig: aa60fcc9a95ee7b4fbf47d166ad1a56bc1a288b309c70a2be10455db649dcc53
 implementations:
     - name: amd64/ref
       version: TODO

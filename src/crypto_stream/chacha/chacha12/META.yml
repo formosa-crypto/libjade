@@ -1,5 +1,7 @@
 name: Chacha12
 type: stream
+checksumsmall: 28a7bcf9ec6ed8a3a0870972f1e3f6ee652f8e8eaba83756eebb012f57f2565b
+checksumbig: e4193652aacbb2ff30e062d7b9ce0721dbc3653451eed858c0c621872310ab90
 implementations:
     - name: amd64/ref
       version: TODO

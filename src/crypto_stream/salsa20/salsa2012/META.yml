@@ -1,5 +1,7 @@
 name: Salsa2012
 type: stream
+checksumsmall: cf0316befa6ab0b867a5031d26c83bcaa702c0a7ba47dc60571714ba4605166f
+checksumbig: 3e21cd32675f3e2f382a8d3dd04d8bdce3d0ed1cbf527c83a4150cc194a42cc3
 implementations:
     - name: amd64/ref
       version: TODO

@@ -5,8 +5,8 @@
 #SCHEME=kyber/kyber768
 #IMPLEMENTATION=amd64/avx2
 TYPE=stream
-SCHEME=chacha/chacha20-ietf
-IMPLEMENTATION=amd64/avx2
+SCHEME=chacha/chacha20
+IMPLEMENTATION=amd64/ref
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)
 SRC_DIR=$(TOP_DIR)/src
@@ -47,6 +47,8 @@ NTESTS=1
 
 all: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC) \
 	$(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC) \
+	$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC) \
+	$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC) \
 	$(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: build-scheme
@@ -68,6 +70,15 @@ functest: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: testvectors
 testvectors: $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
+
+.PHONY: checksumsmall
+checksumsmall: $(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC)
+
+.PHONY: checksumbig
+checksumbig: $(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC)
+
+.PHONY: checksums
+checksums: checksumbig checksumsmall
 
 .PHONY: printparams
 printparams: $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
@@ -99,6 +110,14 @@ $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYP
 $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS)
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+
+$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c
+	mkdir -p $(DEST_DIR)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+
+$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c
+	mkdir -p $(DEST_DIR)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
 $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)
