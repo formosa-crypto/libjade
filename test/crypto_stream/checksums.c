@@ -10,6 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
+#include "namespace.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -40,12 +41,6 @@ void realign(state*);
 void test(unsigned char*,state *);
 
 // ////////////////////////////////////////////////////////////////////////////
-// TODO : isolate this section
-
-#define PASTER(x, y) x##_##y
-#define EVALUATOR(x, y) PASTER(x, y)
-#define NAMESPACE(fun) EVALUATOR(JADE_NAMESPACE, fun)
-#define NAMESPACE_LC(fun) EVALUATOR(JADE_NAMESPACE_LC, fun)
 
 #define CRYPTO_KEYBYTES NAMESPACE(KEYBYTES)
 #define CRYPTO_NONCEBYTES NAMESPACE(NONCEBYTES)

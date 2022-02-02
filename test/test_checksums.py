@@ -1,5 +1,5 @@
 """
-Checks SUPERCOP 'checksum*' (atm checksumbig)
+Checks SUPERCOP 'checksum*'
 """
 
 import hashlib
@@ -21,7 +21,6 @@ import libjade
 
 @helpers.filtered_test
 def test_testvectors(implementation, impl_path, test_dir, init, destr):
-    # TODO clean this
     if not implementation.supported_on_current_platform():
         raise unittest.SkipTest("Not supported on current platform")
     init()
