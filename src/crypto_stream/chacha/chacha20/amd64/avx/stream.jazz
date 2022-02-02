@@ -6,7 +6,15 @@ require "../../../common/amd64/avx/chacha.jinc"
 export fn jade_stream_chacha_chacha20_amd64_avx_xor(reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
-  __chacha_avx(output, plain, len, nonce, key);
+  __chacha_xor_avx(output, plain, len, nonce, key);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+export fn jade_stream_chacha_chacha20_amd64_avx(reg u64 output len nonce key) -> reg u64
+{
+  reg u64 r;
+  __chacha_avx(output, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
 }

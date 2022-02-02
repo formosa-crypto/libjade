@@ -156,11 +156,7 @@ void test(unsigned char checksum_state[64], state *_s)
     input_prepare(s.n2, s.n, s.nlen);
     input_prepare(s.k2, s.k, s.klen);
 
-    // TODO : implement crypto_stream
-    //result = crypto_stream(s.s, s.slen, s.n, s.k); 
-    memset(s.s, 0, s.slen);
-    result = crypto_stream_xor(s.s, s.s, s.slen, s.n, s.k); 
-
+    result = crypto_stream(s.s, s.slen, s.n, s.k); 
     if (result != 0) fail("crypto_stream returns nonzero");
     checksum(checksum_state, s.s, s.slen);
     output_compare(s.s2, s.s, s.slen, "crypto_stream");
@@ -171,11 +167,7 @@ void test(unsigned char checksum_state[64], state *_s)
     double_canary(s.n2, s.n, s.nlen);
     double_canary(s.k2, s.k, s.klen);
 
-    // TODO : implement crypto_stream
-    //result = crypto_stream(s.s2, s.slen, s.n2, s.k2);
-    memset(s.s2, 0, s.slen);
-    result = crypto_stream_xor(s.s2, s.s2, s.slen, s.n2, s.k2); 
-
+    result = crypto_stream(s.s2, s.slen, s.n2, s.k2);
     if (result != 0) fail("crypto_stream returns nonzero");
     if (memcmp(s.s2, s.s, s.slen) != 0) fail("crypto_stream is nondeterministic");
     

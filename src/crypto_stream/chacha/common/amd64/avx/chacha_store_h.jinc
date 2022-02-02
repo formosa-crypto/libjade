@@ -1,12 +1,13 @@
-require "../ref/chacha_store.jinc" // update_ptr_ref
+require "../ref/chacha_store.jinc" // update_ptr_ref update_ptr_xor_ref
 
 
 ///////////////////////////////////////////////////////////////////////////////
+// store 'xor' ////////////////////////////////////////////////////////////////
+
 // 'core' code for 1 block (64 bytes) /////////////////////////////////////////
 
-
 // 64 bytes
-inline fn __store_h_avx(reg u64 output plain len, reg u128[4] k) -> reg u64, reg u64, reg u64
+inline fn __store_xor_h_avx(reg u64 output plain len, reg u128[4] k) -> reg u64, reg u64, reg u64
 {
   inline int i;
 
@@ -15,13 +16,13 @@ inline fn __store_h_avx(reg u64 output plain len, reg u128[4] k) -> reg u64, reg
     (u128)[output + 16*i] = k[i];
   }
 
-  output, plain, len = __update_ptr_ref(output, plain, len, 64);
+  output, plain, len = __update_ptr_xor_ref(output, plain, len, 64);
 
   return output, plain, len;
 }
 
 // <= 64 bytes
-inline fn __store_last_h_avx(reg u64 output plain len, reg u128[4] k)
+inline fn __store_xor_last_h_avx(reg u64 output plain len, reg u128[4] k)
 {
   inline int i;
   reg u64 r0;
@@ -33,7 +34,7 @@ inline fn __store_last_h_avx(reg u64 output plain len, reg u128[4] k)
     { k[i] ^= (u128)[plain + 16*i];
       (u128)[output + 16*i] = k[i];
     }    
-    output, plain, len = __update_ptr_ref(output, plain, len, 32);
+    output, plain, len = __update_ptr_xor_ref(output, plain, len, 32);
     k[0] = k[2];
     k[1] = k[3];
   }
@@ -42,7 +43,7 @@ inline fn __store_last_h_avx(reg u64 output plain len, reg u128[4] k)
   if(len >= 16)
   { k[0] ^= (u128)[plain + 0];
     (u128)[output + 0] = k[0];
-    output, plain, len = __update_ptr_ref(output, plain, len, 16);
+    output, plain, len = __update_ptr_xor_ref(output, plain, len, 16);
     k[0] = k[1];
   }
 
@@ -52,7 +53,7 @@ inline fn __store_last_h_avx(reg u64 output plain len, reg u128[4] k)
   if(len >= 8)
   { r0 ^= (u64)[plain + 0];
     (u64)[output + 0] = r0;
-    output, plain, len = __update_ptr_ref(output, plain, len, 8);
+    output, plain, len = __update_ptr_xor_ref(output, plain, len, 8);
     r0 = #VPEXTR_64(k[0], 1);
   }
 
@@ -63,17 +64,16 @@ inline fn __store_last_h_avx(reg u64 output plain len, reg u128[4] k)
     r1 ^= (u8)[plain + 0];
     (u8)[output + 0] = r1;
     r0 >>= 8;
-    output, plain, len = __update_ptr_ref(output, plain, len, 1);
+    output, plain, len = __update_ptr_xor_ref(output, plain, len, 1);
   }
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
 // 'core' code for 2 blocks (128 bytes) ///////////////////////////////////////
 
 
 // 128 bytes
-inline fn __store_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2) -> reg u64, reg u64, reg u64
+inline fn __store_xor_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2) -> reg u64, reg u64, reg u64
 {
   inline int i;
 
@@ -87,24 +87,121 @@ inline fn __store_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2) -> reg u
     (u128)[output + 16*(i+4)] = k2[i];
   }
 
-  output, plain, len = __update_ptr_ref(output, plain, len, 128);
+  output, plain, len = __update_ptr_xor_ref(output, plain, len, 128);
 
   return output, plain, len;
 }
 
 
 // <= 128 bytes
-inline fn __store_last_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2)
+inline fn __store_xor_last_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2)
 {
   inline int i;
 
   // write 64 bytes
   if(len >= 64)
-  { output, plain, len = __store_h_avx(output, plain, len, k1);
+  { output, plain, len = __store_xor_h_avx(output, plain, len, k1);
     k1 = #copy(k2);
   }
 
-  __store_last_h_avx(output, plain, len, k1);
+  __store_xor_last_h_avx(output, plain, len, k1);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+// store //////////////////////////////////////////////////////////////////////
+
+
+// 'core' code for 1 block (64 bytes) /////////////////////////////////////////
+
+// 64 bytes
+inline fn __store_h_avx(reg u64 output len, reg u128[4] k) -> reg u64, reg u64
+{
+  inline int i;
+
+  for i=0 to 4
+  { (u128)[output + 16*i] = k[i]; }
+
+  output, len = __update_ptr_ref(output, len, 64);
+
+  return output, len;
+}
+
+// <= 64 bytes
+inline fn __store_last_h_avx(reg u64 output len, reg u128[4] k)
+{
+  inline int i;
+  reg u64 r0;
+  reg u8 r1;
+
+  // write 32 bytes
+  if(len >= 32)
+  { for i=0 to 2
+    { (u128)[output + 16*i] = k[i]; }    
+    output, len = __update_ptr_ref(output, len, 32);
+    k[0] = k[2];
+    k[1] = k[3];
+  }
+
+  // write 16 bytes
+  if(len >= 16)
+  { (u128)[output + 0] = k[0];
+    output, len = __update_ptr_ref(output, len, 16);
+    k[0] = k[1];
+  }
+
+  r0 = #VPEXTR_64(k[0], 0);
+
+  // write 8 bytes
+  if(len >= 8)
+  { (u64)[output + 0] = r0;
+    output, len = __update_ptr_ref(output, len, 8);
+    r0 = #VPEXTR_64(k[0], 1);
+  }
+
+  // write at most 8 bytes
+  while(len > 0)
+  {
+    r1 = (8u) r0;
+    (u8)[output + 0] = r1;
+    r0 >>= 8;
+    output, len = __update_ptr_ref(output, len, 1);
+  }
+}
+
+
+// 'core' code for 2 blocks (128 bytes) ///////////////////////////////////////
+
+
+// 128 bytes
+inline fn __store_h_x2_avx(reg u64 output len, reg u128[4] k1 k2) -> reg u64, reg u64
+{
+  inline int i;
+
+  for i=0 to 4
+  { (u128)[output + 16*i] = k1[i]; }
+
+  for i=0 to 4
+  { (u128)[output + 16*(i+4)] = k2[i]; }
+
+  output, len = __update_ptr_ref(output, len, 128);
+
+  return output, len;
+}
+
+
+// <= 128 bytes
+inline fn __store_last_h_x2_avx(reg u64 output len, reg u128[4] k1 k2)
+{
+  inline int i;
+
+  // write 64 bytes
+  if(len >= 64)
+  { output, len = __store_h_avx(output, len, k1);
+    k1 = #copy(k2);
+  }
+
+  __store_last_h_avx(output, len, k1);
 }
 
 

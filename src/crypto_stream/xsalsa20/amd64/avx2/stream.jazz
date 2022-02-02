@@ -5,7 +5,17 @@ require "xsalsa20.jinc"
 export fn jade_stream_xsalsa20_amd64_avx2_xor(reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
-  __xsalsa20_avx2(output, plain, len, nonce, key);
+  __xsalsa20_xor_avx2(output, plain, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
 }
+
+export fn jade_stream_xsalsa20_amd64_avx2(reg u64 output len nonce key) -> reg u64
+{
+  reg u64 r;
+  __xsalsa20_avx2(output, len, nonce, key);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+

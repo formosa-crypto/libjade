@@ -197,7 +197,7 @@ inline fn __sum_states_v_avx(reg u128[16] k, stack u128[16] st) -> reg u128[16]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __chacha_v_avx(reg u64 output plain len nonce key)
+inline fn __chacha_xor_v_avx(reg u64 output plain len nonce key)
 {
   stack u128[16] st;
   reg u128[16] k;
@@ -215,7 +215,7 @@ inline fn __chacha_v_avx(reg u64 output plain len nonce key)
   { k = __copy_state_v_avx(st);
     k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
-    output, plain, len = __store_v_avx(output, plain, len, k);
+    output, plain, len = __store_xor_v_avx(output, plain, len, k);
     st = __increment_counter_v_avx(st);
   }
 
@@ -223,7 +223,38 @@ inline fn __chacha_v_avx(reg u64 output plain len nonce key)
   { k = __copy_state_v_avx(st);
     k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
-    __store_last_v_avx(output, plain, len, k);
+    __store_xor_last_v_avx(output, plain, len, k);
+  }
+}
+
+
+inline fn __chacha_v_avx(reg u64 output len nonce key)
+{
+  stack u128[16] st;
+  reg u128[16] k;
+  reg u128 _r16 _r8;
+  stack u128 r16 r8;
+
+  _r16 = CHACHA_R16_AVX;
+  _r8  = CHACHA_R8_AVX;
+  r16 = _r16;
+  r8 = _r8;
+
+  st = __init_v_avx(nonce, key);
+
+  while(len >= 256)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
+    k = __sum_states_v_avx(k, st);
+    output, len = __store_v_avx(output, len, k);
+    st = __increment_counter_v_avx(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
+    k = __sum_states_v_avx(k, st);
+    __store_last_v_avx(output, len, k);
   }
 }
 

@@ -15,4 +15,11 @@ int jade_stream_xsalsa20_amd64_ref_xor(
  uint8_t *key /*KEYBYTES*/
 );
 
+int jade_stream_xsalsa20_amd64_ref(
+ uint8_t *stream,
+ uint64_t length,
+ uint8_t *nonce, /*NONCEBYTES*/
+ uint8_t *key /*KEYBYTES*/
+);
+
 #endif

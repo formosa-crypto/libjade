@@ -15,4 +15,12 @@ int jade_stream_salsa20_salsa2012_amd64_avx_xor(
  uint8_t *key /*KEYBYTES*/
 );
 
+int jade_stream_salsa20_salsa2012_amd64_avx(
+ uint8_t *stream,
+ uint64_t length,
+ uint8_t *nonce, /*NONCEBYTES*/
+ uint8_t *key /*KEYBYTES*/
+);
+
+
 #endif

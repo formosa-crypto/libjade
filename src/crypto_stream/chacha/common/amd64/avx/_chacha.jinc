@@ -1,7 +1,17 @@
-inline fn __chacha_avx(reg u64 output plain len nonce key)
+inline fn __chacha_xor_avx(reg u64 output plain len nonce key)
 {
   if(len < 129)
-  { __chacha_h_x2_avx(output, plain, len, nonce, key); }
+  { __chacha_xor_h_x2_avx(output, plain, len, nonce, key); }
   else
-  { __chacha_v_avx(output, plain, len, nonce, key); }
+  { __chacha_xor_v_avx(output, plain, len, nonce, key); }
 }
+
+inline fn __chacha_avx(reg u64 output len nonce key)
+{
+  if(len < 129)
+  { __chacha_h_x2_avx(output, len, nonce, key); }
+  else
+  { __chacha_v_avx(output, len, nonce, key); }
+}
+
+
