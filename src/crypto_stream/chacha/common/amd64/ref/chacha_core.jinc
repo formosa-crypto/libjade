@@ -148,10 +148,11 @@ inline fn __half_round_inline_ref(
   return k;
 }
 
+
 // used;
-inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
+inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k14 k15) -> reg u32[16], stack u32, stack u32
 {
-  stack u32 k14;
+  k[14] = k14;
 
   k = __half_round_inline_ref(k, 0, 4, 8, 12,
                                  2, 6, 10, 14);
@@ -170,23 +171,31 @@ inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k15) -> reg u32[16]
   k = __half_round_inline_ref(k, 2, 7, 8, 13,
                                  3, 4, 9, 14);
 
-  return k, k15;
+  k14 = k[14];
+
+  return k, k14, k15;
 }
 
 
 // used;
 inline fn __rounds_inline_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
 {
-  inline int i;
-  stack u32 c;
+  stack u32 s_c k14;
+  reg u32 c;
 
+  k14 = k[14];
   c = (CHACHA_ROUNDS/2);
+
   while
-  {
-    k, k15 = __double_round_inline_ref(k, k15);
+  { s_c = c;
+    
+    k, k14, k15 = __double_round_inline_ref(k, k14, k15);
+
+    c = s_c;
     (_,_,_,_,c) = #DEC_32(c);
   } (c > 0)
 
+  k[14] = k14;
   return k, k15;
 }
 
@@ -226,14 +235,14 @@ inline fn __chacha_xor_ref(reg u64 output plain len nonce key)
 
   st = __init_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
     k, k15 = __rounds_inline_ref(k, k15);
     s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k15 = __copy_state_ref(st);
     k, k15 = __rounds_inline_ref(k, k15);
     k, k15 = __sum_states_ref(k, k15, st);
@@ -254,18 +263,19 @@ inline fn __chacha_ref(reg u64 output len nonce key)
 
   st = __init_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
     k, k15 = __rounds_inline_ref(k, k15);
     s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k15 = __copy_state_ref(st);
     k, k15 = __rounds_inline_ref(k, k15);
     k, k15 = __sum_states_ref(k, k15, st);
     __store_last_ref(s_output, s_len, k, k15);
   }
 }
+
 

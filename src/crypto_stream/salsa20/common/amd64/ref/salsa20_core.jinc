@@ -87,12 +87,16 @@ inline fn __double_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], sta
 
 inline fn __rounds_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32
 {
-  stack u32 k15 c;
+  stack u32 s_c k15;
+  reg u32 c;
 
   c = (SALSA20_ROUNDS/2);
   while
-  {
+  { s_c = c;
+
     k, k2, k3 = __double_round_ref(k, k2, k3);
+
+    c = s_c;
     (_,_,_,_,c) = #DEC_32(c);
   } (c > 0)
 
@@ -135,14 +139,14 @@ inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
 
   st = __init_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
@@ -163,14 +167,14 @@ inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
 
   st = __init_1_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
@@ -192,14 +196,14 @@ inline fn __salsa20_ref(reg u64 output len nonce key)
 
   st = __init_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
@@ -219,14 +223,14 @@ inline fn __salsa20_1_ref(reg u64 output len nonce, reg u32[8] key)
 
   st = __init_1_ref(nonce, key);
 
-  while(s_len >= 64)
+  while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
-  if(s_len > 0)
+  if(len > 0)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
