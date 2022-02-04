@@ -1,3 +1,13 @@
+###############################################################################
+### temporary section to run some tests (quick solution; to be refactored/extended)
+
+.PHONY: test_checksums
+test_checksums:
+	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}"
+	@python3 test_checksums.py -k "chacha or salsa or poly"
+
+###############################################################################
+
 # This Makefile can be used with GNU Make or BSD Make
 
 # override as desired
