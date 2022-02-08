@@ -1,0 +1,11 @@
+require "../../../../crypto_hash/sha256/amd64/ref/sha256.jinc"
+
+export fn jade_hash_sha256_amd64_ref(reg u64 out in len) -> reg u64
+{
+  reg u64 r;
+  __sha256(out, in, len);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+

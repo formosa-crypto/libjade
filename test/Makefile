@@ -3,8 +3,8 @@
 
 .PHONY: test_checksums
 test_checksums:
-	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}"
-	@python3 test_checksums.py -k "chacha or salsa or poly"
+	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}; SHA256{ref}"
+	@python3 test_checksums.py -k "chacha or salsa or poly or sha256"
 
 ###############################################################################
 
@@ -19,8 +19,12 @@ test_checksums:
 #SCHEME=chacha/chacha20
 #IMPLEMENTATION=amd64/ref
 
-TYPE=onetimeauth
-SCHEME=poly1305
+#TYPE=onetimeauth
+#SCHEME=poly1305
+#IMPLEMENTATION=amd64/ref
+
+TYPE=hash
+SCHEME=sha256
 IMPLEMENTATION=amd64/ref
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)

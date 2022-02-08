@@ -1,0 +1,14 @@
+name: SHA-256
+type: hash
+checksumsmall: 0fb5122d471d9310c4ff212c64a73cc985f0826484c24f34b56cb1d39534ba24
+checksumbig: 55ff5e29282c4d7d192a20b427c000ec121fcda33dd96d53aa8857e3f2dd1469
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
