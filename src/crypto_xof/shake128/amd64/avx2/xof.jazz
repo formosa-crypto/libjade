@@ -1,0 +1,11 @@
+require "shake128.jinc"
+
+export fn jade_xof_shake128_amd64_avx2(reg u64 out outlen in inlen) -> reg u64
+{
+  reg u64 r;
+  __shake128_avx2(out, outlen, in, inlen);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+

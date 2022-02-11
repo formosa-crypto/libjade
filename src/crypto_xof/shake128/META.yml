@@ -1,0 +1,23 @@
+name: SHAKE128
+type: xof
+checksumsmall: 59aaf3f0d67fd33c1f868a8536a3030035732028885b5018b99dd5d00a400ee8
+checksumbig: 17a6602e7d97a9d90b89d652bb00d8fe3484c8c7a9dcc5f895087c1b66d745a7
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
+    - name: amd64/avx2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: #FIXME
+              - avx2
