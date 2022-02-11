@@ -1,7 +1,7 @@
 JFLAGS := $(JFLAGS) -noinsertarraycopy
 JASMINC := jasminc
 DEPSDIR := .deps
-DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) --print-dependencies $<) > $(DEPSDIR)/$*.d
+DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$*.d
 COMPILE = $(JASMINC) $(JFLAGS) -o $@ $<
 
 default: $(SRCS:%.jazz=%.s)
