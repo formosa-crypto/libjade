@@ -1,0 +1,23 @@
+name: SHAKE256
+type: xof
+checksumsmall: d9a536e7f1897b54784ca2980275b8068ea9173a4ac82f6ff52b5179c8d81cad
+checksumbig: ade8345d3e4900d7c17a434c0890c19075954176a2e766acb7858bdbb2e90030
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
+    - name: amd64/avx2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: #FIXME
+              - avx2

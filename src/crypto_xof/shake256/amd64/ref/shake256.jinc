@@ -1,0 +1,14 @@
+require "../../../../common/keccak/keccak1600/amd64/ref/keccak1600.jinc"
+
+inline fn __shake256_ref(reg u64 out outlen in inlen)
+{
+  reg u64 rate;
+  reg u8 trail_byte;
+
+  trail_byte = 0x1F;
+  rate = (1088/8);
+
+  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+}
+
+
