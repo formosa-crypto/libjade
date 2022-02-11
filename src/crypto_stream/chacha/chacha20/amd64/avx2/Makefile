@@ -1,3 +1,3 @@
 SRCS := stream.jazz
-include ../../../common/amd64/avx/Flags.mk
+include ../../../../../crypto_stream/chacha/common/amd64/avx2/Flags.mk
 include ../../../../../Makefile.common
