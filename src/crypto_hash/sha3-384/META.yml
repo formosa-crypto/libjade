@@ -1,0 +1,23 @@
+name: SHA-384
+type: hash
+checksumsmall: ead52bf6e6bb65653ce3fe2e1850f8228a6af202392ebd32df5fd94c4c53cbf8
+checksumbig: 11d1cf5daaf24ba92b678859ac629c9791bcc51eced61da1e1616f76cce5229e
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
+    - name: amd64/avx2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: #FIXME
+              - avx2

@@ -1,0 +1,23 @@
+name: SHA-512
+type: hash
+checksumsmall: a2ad202e4c91b2b22a059308182b692a08c63ab839c2c0dbdc6e31fe1a9c14f4
+checksumbig: f42dc6f0c1663981a0f059bf08ed1c7d5baf7e461125482ed14bf3aa2ba4d94d
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
+    - name: amd64/avx2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: #FIXME
+              - avx2

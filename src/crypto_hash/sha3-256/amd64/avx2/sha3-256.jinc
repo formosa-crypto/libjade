@@ -1,0 +1,15 @@
+require "../../../../common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
+
+inline fn __sha3_256_avx2(reg u64 out in inlen)
+{
+  reg u64 outlen rate;
+  reg u8 trail_byte;
+
+  outlen = (256/8);
+  trail_byte = 0x6;
+  rate = (1088/8);
+
+  _keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate);
+}
+
+
