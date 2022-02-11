@@ -40,6 +40,7 @@ class Scheme:
         schemes.extend(Scheme.all_schemes_of_type('stream'))
         schemes.extend(Scheme.all_schemes_of_type('onetimeauth'))
         schemes.extend(Scheme.all_schemes_of_type('hash'))
+        schemes.extend(Scheme.all_schemes_of_type('xof'))
         schemes.extend(Scheme.all_schemes_of_type('sign'))
         return schemes
 
@@ -76,6 +77,8 @@ class Scheme:
                         schemes.append(Onetimeauth(d))
                     elif type == 'hash':
                         schemes.append(Hash(d))
+                    elif type == 'xof':
+                        schemes.append(Xof(d))
                     elif type == 'sign':
                         schemes.append(Signature(d))
                     else:
@@ -247,6 +250,17 @@ class Hash(Scheme):
     @staticmethod
     def all_hash() -> list:
         return Scheme.all_schemes_of_type('hash')
+
+class Xof(Scheme):
+    def __init__(self, name: str):
+        self.type = 'xof'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_xof() -> list:
+        return Scheme.all_schemes_of_type('xof')
 
 class Signature(Scheme):
 
