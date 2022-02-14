@@ -1,5 +1,5 @@
 
-require "../../../../crypto_verify/16/amd64/common/crypto_verify_16.jinc"
+from Jade require "crypto_verify/16/amd64/common/crypto_verify_16.jinc"
 
 // little endian for loads and stores
 inline fn __load2(reg u64 p) -> reg u64[2]

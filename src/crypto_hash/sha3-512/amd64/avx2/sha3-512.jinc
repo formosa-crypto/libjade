@@ -1,4 +1,4 @@
-require "../../../../common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
 
 inline fn __sha3_512_avx2(reg u64 out in inlen)
 {

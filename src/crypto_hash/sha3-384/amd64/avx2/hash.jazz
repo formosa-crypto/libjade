@@ -1,4 +1,4 @@
-require "../../../../crypto_hash/sha3-384/amd64/avx2/sha3-384.jinc"
+require "sha3-384.jinc"
 
 export fn jade_hash_sha3_384_amd64_avx2(reg u64 out in inlen) -> reg u64
 {

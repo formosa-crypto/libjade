@@ -1,12 +1,11 @@
 param int CHACHA_ROUNDS=20;
 
-require "../../../../../crypto_stream/chacha/chacha20-ietf/amd64/avx2/chacha_state.jinc"
-
-require "../../../../../crypto_stream/chacha/common/amd64/avx2/chacha_store_h.jinc"
-require "../../../../../crypto_stream/chacha/common/amd64/avx2/chacha_core_h.jinc"
-require "../../../../../crypto_stream/chacha/common/amd64/avx2/chacha_store_v.jinc"
-require "../../../../../crypto_stream/chacha/common/amd64/avx2/chacha_core_v.jinc"
-require "../../../../../crypto_stream/chacha/common/amd64/avx2/_chacha.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx2/chacha_state.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha_store_h.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha_core_h.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha_store_v.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha_core_v.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/_chacha.jinc"
 
 export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(reg u64 output plain len nonce key) -> reg u64
 {

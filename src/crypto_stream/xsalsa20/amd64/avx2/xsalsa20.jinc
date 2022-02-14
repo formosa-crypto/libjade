@@ -1,6 +1,5 @@
-
-require "../../../../crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
-require "../../../../crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
+from Jade require "crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
+from Jade require "crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
 
 inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key)
 {

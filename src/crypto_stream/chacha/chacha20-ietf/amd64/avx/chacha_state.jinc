@@ -1,4 +1,4 @@
-require "../../../../../crypto_stream/chacha/common/amd64/avx/chacha_globals.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_globals.jinc"
 
 u128 CHACHA_P0001_H_AVX = (4u32)[0,0,0,1];
 u128 CHACHA_P0002_H_AVX = (4u32)[0,0,0,2];

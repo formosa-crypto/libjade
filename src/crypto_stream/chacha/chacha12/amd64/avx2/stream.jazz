@@ -1,7 +1,6 @@
 param int CHACHA_ROUNDS=12;
 
-//require "crypto_stream/chacha/common/amd64/avx2/chacha.jinc"
-require "../../../common/amd64/avx2/chacha.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha.jinc"
 
 export fn jade_stream_chacha_chacha12_amd64_avx2_xor(reg u64 output plain len nonce key) -> reg u64
 {

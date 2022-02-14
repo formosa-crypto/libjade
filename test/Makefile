@@ -3,7 +3,7 @@
 
 .PHONY: test_checksums
 test_checksums:
-	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}; SHA256{ref}"
+	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}; SHA256{ref}; SHA3-{224,256,384,512}{ref,avx2}; SHAKE{128,256}"
 	@python3 test_checksums.py -k "chacha or salsa or poly or sha256 or sha3 or shake"
 
 ###############################################################################

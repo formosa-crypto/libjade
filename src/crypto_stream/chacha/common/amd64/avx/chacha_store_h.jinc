@@ -1,4 +1,4 @@
-require "../ref/chacha_store.jinc" // update_ptr_ref update_ptr_xor_ref
+from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_store.jinc" // update_ptr_ref update_ptr_xor_ref
 
 
 ///////////////////////////////////////////////////////////////////////////////
