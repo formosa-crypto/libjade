@@ -1,5 +1,5 @@
 JFLAGS := $(JFLAGS) -noinsertarraycopy
-SRC = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+SRC = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 JINCLUDE = -I Jade:$(SRC)
 DEPSDIR := .deps
 JASMINC := jasminc $(JFLAGS) $(JINCLUDE)
