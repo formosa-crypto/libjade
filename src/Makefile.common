@@ -1,8 +1,10 @@
 JFLAGS := $(JFLAGS) -noinsertarraycopy
-JASMINC := jasminc
+SRC = $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+JINCLUDE = -I Jade:$(SRC)
 DEPSDIR := .deps
+JASMINC := jasminc $(JFLAGS) $(JINCLUDE)
 DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$*.d
-COMPILE = $(JASMINC) $(JFLAGS) -o $@ $<
+COMPILE = $(JASMINC) -o $@ $<
 
 default: $(SRCS:%.jazz=%.s)
 	@true
