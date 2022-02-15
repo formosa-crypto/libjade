@@ -560,59 +560,6 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   return ctr, rp;
 }
 
-inline
-fn __gen_matrix_old(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u16[KYBER_K*KYBER_VECN]
-{
-  stack u8[34] extseed;
-  stack u8[GENMATRIX_NBLOCKS*SHAKE128_RATE] buf;
-  stack u64[25] state;
-  stack u16[KYBER_K*KYBER_VECN] rr;
-
-  reg u64 t64;
-  stack u64 t64_s;
-  inline int i, j, k;
-
-  for j = 0 to 4
-  {
-    t64 = seed[u64 j];
-    extseed[u64 j] = t64;
-  }
-
-  for i = 0 to KYBER_K
-  {
-    for j = 0 to KYBER_K
-    {
-      if(transposed == 0)
-      {
-        extseed[KYBER_SYMBYTES] = j;
-        extseed[KYBER_SYMBYTES+1] = i;
-      }
-      else
-      {
-        extseed[KYBER_SYMBYTES] = i;
-        extseed[KYBER_SYMBYTES+1] = j;
-      }
-
-      state = _shake128_absorb34(state, extseed);
-
-      state, buf = __shake128_squeezenblocks(state, buf);
-      t64 = 0;
-      t64, rr[i*KYBER_VECN+j*KYBER_N:KYBER_N] = __rej_uniform(rr[i*KYBER_VECN+j*KYBER_N:KYBER_N], t64, buf, GENMATRIX_NBLOCKS*SHAKE128_RATE);
-      
-      while (t64 < KYBER_N)
-      {
-        t64_s = t64;
-        state, buf[0:SHAKE128_RATE] = _shake128_squeezeblock(state, buf[0:SHAKE128_RATE]);
-        t64 = t64_s;
-        t64, rr[i*KYBER_VECN+j*KYBER_N:KYBER_N] = __rej_uniform(rr[i*KYBER_VECN+j*KYBER_N:KYBER_N], t64, buf, SHAKE128_RATE);
-      }
-      rr[i*KYBER_VECN+j*KYBER_N:KYBER_N] = _nttunpack(rr[i*KYBER_VECN+j*KYBER_N:KYBER_N]);
-    }
-  }
-
-  return rr;
-}
-
 inline fn __r2s(reg u256 f) -> stack u256 {
   stack u256 fs;
   fs = f;
