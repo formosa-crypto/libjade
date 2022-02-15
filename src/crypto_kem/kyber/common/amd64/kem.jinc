@@ -1,22 +1,18 @@
 require "avx2/verify.jinc"
 
 inline
-fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
+fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
 {
   stack u8[32] h_pk;
-  stack u64 s_randomnessp s_skp s_pkp;
+  stack u8[KYBER_SYMBYTES] rb;
+  stack u64 s_skp s_pkp;
   reg u64 t64;
   inline int i;
 
-  s_randomnessp = randomnessp;
   s_pkp = pkp;
   s_skp = skp;
 
-  __indcpa_keypair(pkp, skp, randomnessp);
-
-  randomnessp = s_randomnessp;
-  randomnessp += KYBER_SYMBYTES;
-  s_randomnessp = randomnessp;
+  __indcpa_keypair(pkp, skp);
 
   skp = s_skp;
   skp += KYBER_POLYVECBYTES;
@@ -41,32 +37,41 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
     (u64)[skp] = t64;
     skp += 8;
   }
-  
-  randomnessp = s_randomnessp;
+
+  rb = #randombytes(rb);
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = (u64)[randomnessp + 8*i];
+    t64 = rb[u64 i];
     (u64)[skp] = t64;
     skp += 8;
   }
 }
 
 inline
-fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg u64 randomnessp)
+fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
 {
   stack u8[KYBER_SYMBYTES * 2] buf kr;
-  stack u64 s_pkp s_ctp s_randomnessp s_shkp;
+  stack u8[KYBER_SYMBYTES] rb;
+  stack u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
+  inline int i;
 
   s_pkp = pkp;
   s_ctp = ctp;
   s_shkp = shkp;
+
+  rb = #randombytes(rb);
+
+  for i=0 to KYBER_SYMBYTES/8
+  {
+    t64 = rb[u64 i];
+    kr[u64 i] = t64;
+  }
   
   t64 = KYBER_SYMBYTES;
-  buf[0:KYBER_SYMBYTES] = _isha3_256(buf[0:KYBER_SYMBYTES], randomnessp, t64);
+  buf[0:KYBER_SYMBYTES] = _isha3_256_32(buf[0:KYBER_SYMBYTES], kr[0:KYBER_SYMBYTES]);
 
-  s_randomnessp = randomnessp;
   pkp = s_pkp;
 
   t64 = KYBER_PUBLICKEYBYTES;

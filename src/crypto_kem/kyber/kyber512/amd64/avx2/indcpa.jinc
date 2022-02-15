@@ -4,9 +4,10 @@ require "../../../common/amd64/avx2/polyvec.jinc"
 require "gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
+fn __indcpa_keypair(reg u64 pkp, reg u64 skp)
 {
   stack u64 spkp sskp;
+  stack u8[KYBER_SYMBYTES] rb;
   stack u16[KYBER_K*KYBER_VECN] aa;
   stack u16[KYBER_VECN] e pkpv skpv;
   stack u8[64] buf;
@@ -19,9 +20,11 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp, reg u64 randomnessp)
   spkp = pkp;
   sskp = skp;
 
+  rb = #randombytes(rb);
+
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = (u64)[randomnessp + 8*i];
+    t64 = rb[u64 i];
     inbuf[u64 i] = t64;
   }
 
