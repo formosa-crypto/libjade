@@ -37,18 +37,17 @@ int main(void) {
     uint8_t pk[CRYPTO_PUBLICKEYBYTES];
     uint8_t sendb[CRYPTO_CIPHERTEXTBYTES];
     uint8_t sk_a[CRYPTO_SECRETKEYBYTES];
-    uint8_t rnd[CRYPTO_BYTES*2];
 
     int i, j;
     for (i = 0; i < NTESTS; i++) {
         // Key-pair generation
-        crypto_kem_keypair(pk, sk_a, rnd);
+        crypto_kem_keypair(pk, sk_a);
 
         printbytes(pk, CRYPTO_PUBLICKEYBYTES);
         printbytes(sk_a, CRYPTO_SECRETKEYBYTES);
 
         // Encapsulation
-        crypto_kem_enc(sendb, key_b, pk, rnd);
+        crypto_kem_enc(sendb, key_b, pk);
 
         printbytes(sendb, CRYPTO_CIPHERTEXTBYTES);
         printbytes(key_b, CRYPTO_BYTES);

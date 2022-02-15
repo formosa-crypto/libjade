@@ -51,8 +51,6 @@ int main() {
     uint8_t shared_secret_d[CRYPTO_BYTES];
     int rc;
 
-    uint8_t rnd[2*CRYPTO_BYTES]; // TODO: TO REMOVE (after randomness support in jasmin)
-
     for (uint8_t i = 0; i < 48; i++) {
         entropy_input[i] = i;
     }
@@ -65,9 +63,7 @@ int main() {
 
     nist_kat_init(seed, NULL, 256);
 
-    randombytes(rnd, CRYPTO_BYTES); // TODO: meanwhile, how to initialize rnd?
-    randombytes(rnd+CRYPTO_BYTES, CRYPTO_BYTES); // TODO: meanwhile, how to initialize rnd?
-    rc = crypto_kem_keypair(public_key, secret_key, rnd);
+    rc = crypto_kem_keypair(public_key, secret_key);
     if (rc != 0) {
         fprintf(stderr, "[kat_kem] %s ERROR: crypto_kem_keypair failed!\n", CRYPTO_ALGNAME);
         return -1;
@@ -75,8 +71,7 @@ int main() {
     fprintBstr(fh, "pk = ", public_key, CRYPTO_PUBLICKEYBYTES);
     fprintBstr(fh, "sk = ", secret_key, CRYPTO_SECRETKEYBYTES);
 
-    randombytes(rnd, CRYPTO_BYTES); // TODO: meanwhile, how to initialize rnd?
-    rc = crypto_kem_enc(ciphertext, shared_secret_e, public_key, rnd);
+    rc = crypto_kem_enc(ciphertext, shared_secret_e, public_key);
     if (rc != 0) {
         fprintf(stderr, "[kat_kem] %s ERROR: crypto_kem_enc failed!\n", CRYPTO_ALGNAME);
         return -2;

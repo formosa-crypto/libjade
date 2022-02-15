@@ -87,12 +87,7 @@ static int test_keys(void) {
     uint8_t *pk_aligned    = malloc_s(CRYPTO_PUBLICKEYBYTES + 16 + 1);
     uint8_t *sendb_aligned = malloc_s(CRYPTO_CIPHERTEXTBYTES + 16 + 1);
     uint8_t *sk_a_aligned  = malloc_s(CRYPTO_SECRETKEYBYTES + 16 + 1);
-    uint8_t *rnd_aligned = malloc_s(CRYPTO_BYTES * 2 + 16 + 1);
     
-
-    for(int i=0;i<CRYPTO_BYTES * 2 + 16 + 1;i++)
-      rnd_aligned[i] = 42;
-
     /*
      * Make sure all pointers are odd.
      * This ensures that the implementation does not assume anything about the
@@ -104,7 +99,6 @@ static int test_keys(void) {
     uint8_t *pk    = (uint8_t *) ((uintptr_t) pk_aligned|(uintptr_t) 1);
     uint8_t *sendb = (uint8_t *) ((uintptr_t) sendb_aligned|(uintptr_t) 1);
     uint8_t *sk_a  = (uint8_t *) ((uintptr_t) sk_a_aligned|(uintptr_t) 1);
-    uint8_t *rnd = (uint8_t *) ((uintptr_t) rnd_aligned|(uintptr_t) 1);
 
     /*
      * Write 8 byte canary before and after the actual memory regions.
@@ -122,17 +116,15 @@ static int test_keys(void) {
     write_canary(sendb + CRYPTO_CIPHERTEXTBYTES + 8);
     write_canary(sk_a);
     write_canary(sk_a + CRYPTO_SECRETKEYBYTES + 8);
-    write_canary(rnd);
-    write_canary(rnd + CRYPTO_BYTES*2 + 8);
 
     int i;
 
     for (i = 0; i < NTESTS; i++) {
         // Alice generates a public key
-        RETURNS_ZERO(crypto_kem_keypair(pk + 8, sk_a + 8, rnd));
+        RETURNS_ZERO(crypto_kem_keypair(pk + 8, sk_a + 8));
 
         // Bob derives a secret key and creates a response
-        RETURNS_ZERO(crypto_kem_enc(sendb + 8, key_b + 8, pk + 8, rnd));
+        RETURNS_ZERO(crypto_kem_enc(sendb + 8, key_b + 8, pk + 8));
 
         // Alice uses Bobs response to get her secret key
         RETURNS_ZERO(crypto_kem_dec(key_a + 8, sendb + 8, sk_a + 8));
@@ -148,8 +140,7 @@ static int test_keys(void) {
             check_canary(key_b) || check_canary(key_b + CRYPTO_BYTES + 8 ) ||
             check_canary(pk) || check_canary(pk + CRYPTO_PUBLICKEYBYTES + 8 ) ||
             check_canary(sendb) || check_canary(sendb + CRYPTO_CIPHERTEXTBYTES + 8 ) ||
-            check_canary(sk_a) || check_canary(sk_a + CRYPTO_SECRETKEYBYTES + 8 ) ||
-            check_canary(rnd) || check_canary(rnd + CRYPTO_BYTES*2 + 8)) {
+            check_canary(sk_a) || check_canary(sk_a + CRYPTO_SECRETKEYBYTES + 8 )) {
             printf("ERROR canary overwritten\n");
             res = 1;
             goto end;
@@ -162,7 +153,6 @@ end:
     free(pk_aligned);
     free(sendb_aligned);
     free(sk_a_aligned);
-    free(rnd_aligned);
 
     return res;
 }
@@ -173,17 +163,16 @@ static int test_invalid_sk_a(void) {
     uint8_t *key_b = malloc_s(CRYPTO_BYTES);
     uint8_t *pk    = malloc_s(CRYPTO_PUBLICKEYBYTES);
     uint8_t *sendb = malloc_s(CRYPTO_CIPHERTEXTBYTES);
-    uint8_t *rnd   = malloc_s(CRYPTO_BYTES*2);
     int i;
     int returncode;
     int res = 0;
 
     for (i = 0; i < NTESTS; i++) {
         // Alice generates a public key
-        RETURNS_ZERO(crypto_kem_keypair(pk, sk_a, rnd));
+        RETURNS_ZERO(crypto_kem_keypair(pk, sk_a));
 
         // Bob derives a secret key and creates a response
-        RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk, rnd));
+        RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
         // Replace secret key with random values
         randombytes(sk_a, CRYPTO_SECRETKEYBYTES);
@@ -210,7 +199,6 @@ end:
     free(key_b);
     free(pk);
     free(sendb);
-    free(rnd);
 
     return res;
 }
@@ -221,17 +209,17 @@ static int test_invalid_ciphertext(void) {
     uint8_t *key_b = malloc_s(CRYPTO_BYTES);
     uint8_t *pk = malloc_s(CRYPTO_PUBLICKEYBYTES);
     uint8_t *sendb = malloc_s(CRYPTO_CIPHERTEXTBYTES);
-    uint8_t *rnd   = malloc_s(CRYPTO_BYTES*2);
+
     int i;
     int returncode;
     int res = 0;
 
     for (i = 0; i < NTESTS; i++) {
         // Alice generates a public key
-        RETURNS_ZERO(crypto_kem_keypair(pk, sk_a, rnd));
+        RETURNS_ZERO(crypto_kem_keypair(pk, sk_a));
 
         // Bob derives a secret key and creates a response
-        RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk, rnd));
+        RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
         // Change ciphertext to random value
         randombytes(sendb, sizeof(sendb));
@@ -257,7 +245,6 @@ end:
     free(key_b);
     free(pk);
     free(sendb);
-    free(rnd);
 
     return res;
 }
