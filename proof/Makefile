@@ -24,7 +24,7 @@ endif
 FIXME = -not -name 'kem.jazz'
 
 SRC = $(shell git rev-parse --show-toplevel)/src/
-JSRC := $(shell find $(SRC) -name '*.jazz' $(FIXME)) 
+JSRC := $(subst //,/,$(shell find $(SRC) -name '*.jazz' $(FIXME)))
 ECSRC := $(patsubst %.jazz, %.ec, $(subst $(SRC),,$(JSRC)))
 
 ECSRC2 := \
