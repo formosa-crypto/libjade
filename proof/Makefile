@@ -1,5 +1,3 @@
-# TODO : refactor for common files (ECSRC2-related) (*.jazz are already handled) 
-
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
@@ -22,14 +20,10 @@ endif
 
 # --------------------------------------------------------------------
 FIXME = -not -name 'kem.jazz'
-
-SRC = $(shell git rev-parse --show-toplevel)/src/
-JSRC := $(subst //,/,$(shell find $(SRC) -name '*.jazz' $(FIXME)))
-ECSRC := $(patsubst %.jazz, %.ec, $(subst $(SRC),,$(JSRC)))
-
-ECSRC2 := \
-common/keccak/keccak1600/amd64/ref/keccak1600.ec \
-common/keccak/keccak1600/amd64/avx2/keccak1600.ec
+TOP = $(shell git rev-parse --show-toplevel)
+SRC = $(TOP)/src/
+EDIRS := $(subst //,/,$(shell find $(SRC) -name '*.jazz' $(FIXME) -exec dirname {} \; | sort --unique))
+CDIRS := $(subst //,/,$(shell find $(SRC) -name 'Ec.mk' -exec dirname {} \; | sort --unique))
 
 # --------------------------------------------------------------------
 .PHONY: default usage check check-xunit extract clean
@@ -42,34 +36,9 @@ usage:
 check: extract
 	$(ECCHECK) --bin-args="$(ECARGS)" --jobs="$(ECJOBS)" $(ECCONF) $(CHECKS)
 
-extract: $(ECSRC) $(ECSRC2)
-	@true
+extract:
+	for dir in $(EDIRS); do $(MAKE) -C $$dir extract; done
+	for dir in $(CDIRS); do $(MAKE) -C $$dir -f Ec.mk extract; done
 
-# --------------------------------------------------------------------
-# THIS SECTION WILL BE REMOVED
-common/keccak/keccak1600/amd64/ref/keccak1600.ec: $(SRC)/common/keccak/keccak1600/amd64/ref/keccak1600.jinc
-	(cd $(@D) && jasminc -ec _keccak1600_ref -oec $(@F) $<)
-
-common/keccak/keccak1600/amd64/avx2/keccak1600.ec: $(SRC)/common/keccak/keccak1600/amd64/avx2/keccak1600.jinc
-	(cd $(@D) && jasminc -ec _keccak1600_avx2 -oec $(@F) $<)
-
-# --------------------------------------------------------------------
-$(ECSRC): %.ec : $(SRC)%.jazz
-	make -C $(<D) extract
-	cp  $(<D)/.ec/*.ec $(@D)/
-
-# --------------------------------------------------------------------
 clean:
-	make -C ../src/ clean
-	rm -f $(ECSRC)
-	rm -f $(ECSRC:%.ec=%.eco)
-	for i in $(sort $(dir $(ECSRC))); do \
-		find $$i -name "*Array*.ec*" | while read f; do rm -f $$f; done \
-	done
-	rm -f $(ECSRC2)
-	rm -f $(ECSRC2:%.ec=%.eco)
-	for i in $(sort $(dir $(ECSRC2))); do \
-		find $$i -name "*Array*.ec*" | while read f; do rm -f $$f; done \
-	done
-
-
+	rm -f $(shell find $(TOP) -name '*.eco')

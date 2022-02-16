@@ -1,55 +1,56 @@
 ###
 
-SRC = $(shell git rev-parse --show-toplevel)/src/
+TOP = $(shell git rev-parse --show-toplevel)
+SRC = $(TOP)/src/
 CDIR = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
-OPERATION = $(word 1, $(subst /, , $(subst $(SRC),, $(CDIR))))
-NAMESPACE = $(subst crypto_,jade_, $(subst -,_, $(subst /,_, $(subst $(SRC),, $(CDIR)))))
+RDIR = $(subst $(SRC),,$(CDIR))
+PDIR = $(TOP)/proof/$(RDIR)
+OPERATION = $(word 1, $(subst /, ,$(RDIR)))
+NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 #
-
+JEXT ?= jazz
 JFLAGS := $(JFLAGS) -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
 JASMINC := jasminc $(JFLAGS) $(JINCLUDE)
 COMPILE = $(JASMINC) -o $@ $<
 
 #
-
-ECDIR := .ec
+ECDIR := $(PDIR)
 include $(SRC)/$(OPERATION)/EcFlags.mk
 ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT = cd $(ECDIR) && $(JASMINC) $(ECFLAGS) ../$<
+EXTRACT = cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<
 
 #
-
 DEPSDIR := .deps
-DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(subst ..,.,$*$(@D).d)
+DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d
 
 ###
 
-compile: $(SRCS:%.jazz=%.s)
+compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
 
-extract: $(SRCS:%.jazz=$(ECDIR)/%.ec)
+extract: $(SRCS:%.$(JEXT)=$(ECDIR)/%.ec)
 	@true
 
 ###
 
-%.s : %.jazz
-%.s : %.jazz $(DEPSDIR)/%.d | $(DEPSDIR)
+%.s : %.$(JEXT)
+%.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR)
 	@$(DEPS)
 	@$(COMPILE)
 
-$(ECDIR)/%.ec : %.jazz
-$(ECDIR)/%.ec : %.jazz $(DEPSDIR)/%.ec.d | $(DEPSDIR) $(ECDIR)
+$(ECDIR)/%.ec : %.$(JEXT)
+$(ECDIR)/%.ec : %.$(JEXT) $(DEPSDIR)/%.ec.d | $(DEPSDIR) $(ECDIR)
 	@$(DEPS)
 	@$(EXTRACT)
 
 ###
 
 $(DEPSDIR): ; @mkdir -p $@
-$(ECDIR): ; @mkdir -p $@
+$(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
 
-DEPFILES := $(SRCS:%.jazz=$(DEPSDIR)/%.d) $(SRCS:%.jazz=$(DEPSDIR)/%.ec.d)
+DEPFILES := $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.ec.d)
 $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
@@ -57,4 +58,4 @@ include $(wildcard $(DEPFILES))
 ###
 
 clean:
-	@rm -fr $(DEPSDIR) $(ECDIR) *.s *.o *.a *.ec
+	@rm -fr $(DEPSDIR) *.s *.o *.a
