@@ -1,31 +1,6 @@
 
-u64[24] KECCAK_RC =
-{  0x0000000000000001
-  ,0x0000000000008082
-  ,0x800000000000808a
-  ,0x8000000080008000
-  ,0x000000000000808b
-  ,0x0000000080000001
-  ,0x8000000080008081
-  ,0x8000000000008009
-  ,0x000000000000008a
-  ,0x0000000000000088
-  ,0x0000000080008009
-  ,0x000000008000000a
-  ,0x000000008000808b
-  ,0x800000000000008b
-  ,0x8000000000008089
-  ,0x8000000000008003
-  ,0x8000000000008002
-  ,0x8000000000000080
-  ,0x000000000000800a
-  ,0x800000008000000a
-  ,0x8000000080008081
-  ,0x8000000000008080
-  ,0x0000000080000001
-  ,0x8000000080008008
-};
-
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
@@ -65,36 +40,6 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
   }
 
   return d;
-}
-
-
-inline fn __keccak_rho_offsets(inline int i) -> inline int
-{
-  inline int r x y z t;
-
-  r = 0;
-  x = 1;
-  y = 0;
-
-  for t = 0 to 24 {
-    if (i == x + 5 * y) {
-      r = ((t + 1) * (t + 2) / 2) % 64;
-    }
-    z = (2 * x + 3 * y) % 5;
-    x = y;
-    y = z;
-  }
-
-  return r;
-}
-
-
-inline fn __rhotates(inline int x y) -> inline int
-{
-  inline int i r;
-  i = (x % 5) + 5*(y % 5);
-  r = __keccak_rho_offsets(i);
-  return r;
 }
 
 
@@ -184,7 +129,7 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
   stack u64[25] e;
   reg u64 c rc;
 
-  RC = KECCAK_RC;
+  RC = KECCAK1600_RC;
 
   c = 0;
   while

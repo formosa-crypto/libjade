@@ -4,20 +4,65 @@ from Jasmin require import JModel.
 require import Array5 Array24 Array25.
 require import WArray40 WArray192 WArray200.
 
-abbrev KECCAK_RC = Array24.of_list witness [W64.of_int 1; W64.of_int 32898;
-W64.of_int (-9223372036854742902); W64.of_int (-9223372034707259392);
-W64.of_int 32907; W64.of_int 2147483649; W64.of_int (-9223372034707259263);
-W64.of_int (-9223372036854743031); W64.of_int 138; W64.of_int 136;
-W64.of_int 2147516425; W64.of_int 2147483658; W64.of_int 2147516555;
-W64.of_int (-9223372036854775669); W64.of_int (-9223372036854742903);
-W64.of_int (-9223372036854743037); W64.of_int (-9223372036854743038);
-W64.of_int (-9223372036854775680); W64.of_int 32778;
-W64.of_int (-9223372034707292150); W64.of_int (-9223372034707259263);
-W64.of_int (-9223372036854742912); W64.of_int 2147483649;
-W64.of_int (-9223372034707259384)].
+abbrev KECCAK1600_RC = Array24.of_list witness [W64.of_int 1;
+W64.of_int 32898; W64.of_int (-9223372036854742902);
+W64.of_int (-9223372034707259392); W64.of_int 32907; W64.of_int 2147483649;
+W64.of_int (-9223372034707259263); W64.of_int (-9223372036854743031);
+W64.of_int 138; W64.of_int 136; W64.of_int 2147516425; W64.of_int 2147483658;
+W64.of_int 2147516555; W64.of_int (-9223372036854775669);
+W64.of_int (-9223372036854742903); W64.of_int (-9223372036854743037);
+W64.of_int (-9223372036854743038); W64.of_int (-9223372036854775680);
+W64.of_int 32778; W64.of_int (-9223372034707292150);
+W64.of_int (-9223372034707259263); W64.of_int (-9223372036854742912);
+W64.of_int 2147483649; W64.of_int (-9223372034707259384)].
 
 
 module M = {
+  proc __index (x:int, y:int) : int = {
+    
+    var r:int;
+    
+    r <- ((x %% 5) + (5 * (y %% 5)));
+    return (r);
+  }
+  
+  proc __keccak_rho_offsets (i:int) : int = {
+    var aux: int;
+    
+    var r:int;
+    var x:int;
+    var y:int;
+    var t:int;
+    var z:int;
+    
+    r <- 0;
+    x <- 1;
+    y <- 0;
+    t <- 0;
+    while (t < 24) {
+      if ((i = (x + (5 * y)))) {
+        r <- ((((t + 1) * (t + 2)) %/ 2) %% 64);
+      } else {
+        
+      }
+      z <- (((2 * x) + (3 * y)) %% 5);
+      x <- y;
+      y <- z;
+      t <- t + 1;
+    }
+    return (r);
+  }
+  
+  proc __rhotates (x:int, y:int) : int = {
+    
+    var r:int;
+    var i:int;
+    
+    i <@ __index (x, y);
+    r <@ __keccak_rho_offsets (i);
+    return (r);
+  }
+  
   proc __theta_sum_ref (a:W64.t Array25.t) : W64.t Array5.t = {
     var aux: int;
     
@@ -64,43 +109,6 @@ module M = {
       x <- x + 1;
     }
     return (d);
-  }
-  
-  proc __keccak_rho_offsets (i:int) : int = {
-    var aux: int;
-    
-    var r:int;
-    var x:int;
-    var y:int;
-    var t:int;
-    var z:int;
-    
-    r <- 0;
-    x <- 1;
-    y <- 0;
-    t <- 0;
-    while (t < 24) {
-      if ((i = (x + (5 * y)))) {
-        r <- ((((t + 1) * (t + 2)) %/ 2) %% 64);
-      } else {
-        
-      }
-      z <- (((2 * x) + (3 * y)) %% 5);
-      x <- y;
-      y <- z;
-      t <- t + 1;
-    }
-    return (r);
-  }
-  
-  proc __rhotates (x:int, y:int) : int = {
-    
-    var r:int;
-    var i:int;
-    
-    i <- ((x %% 5) + (5 * (y %% 5)));
-    r <@ __keccak_rho_offsets (i);
-    return (r);
   }
   
   proc __rol_sum_ref (a:W64.t Array25.t, d:W64.t Array5.t, y:int) : W64.t Array5.t = {
@@ -194,7 +202,7 @@ module M = {
     var e:W64.t Array25.t;
     rC <- witness;
     e <- witness;
-    rC <- KECCAK_RC;
+    rC <- KECCAK1600_RC;
     c <- (W64.of_int 0);
     rc <- rC.[(W64.to_uint c)];
     e <@ __round_ref (a, rc);
