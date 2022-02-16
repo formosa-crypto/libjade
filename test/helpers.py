@@ -103,7 +103,7 @@ def isolate_test_files(impl_path, test_prefix,
             )
 
         # Make clean and make *.s in src folder
-        make('clean', 'default', working_dir=impl_path)
+        make('clean', 'compile', working_dir=impl_path)
         shutil.copytree(impl_path, new_impl_dir)
 
     def destructor():
