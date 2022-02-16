@@ -1,25 +1,60 @@
+###
+
+SRC = $(shell git rev-parse --show-toplevel)/src/
+CDIR = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+OPERATION = $(word 1, $(subst /, , $(subst $(SRC),, $(CDIR))))
+NAMESPACE = $(subst crypto_,jade_, $(subst -,_, $(subst /,_, $(subst $(SRC),, $(CDIR)))))
+
+#
+
 JFLAGS := $(JFLAGS) -noinsertarraycopy
-SRC = $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 JINCLUDE = -I Jade:$(SRC)
-DEPSDIR := .deps
 JASMINC := jasminc $(JFLAGS) $(JINCLUDE)
-DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$*.d
 COMPILE = $(JASMINC) -o $@ $<
 
-default: $(SRCS:%.jazz=%.s)
+#
+
+ECDIR := .ec
+include $(SRC)/$(OPERATION)/Ec.mk
+ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
+EXTRACT = cd $(ECDIR) && $(JASMINC) $(ECFLAGS) ../$<
+
+#
+
+DEPSDIR := .deps
+DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(subst ..,.,$*$(@D).d)
+
+###
+
+compile: $(SRCS:%.jazz=%.s)
 	@true
+
+extract: $(SRCS:%.jazz=$(ECDIR)/%.ec)
+	@true
+
+###
 
 %.s : %.jazz
 %.s : %.jazz $(DEPSDIR)/%.d | $(DEPSDIR)
 	@$(DEPS)
 	@$(COMPILE)
 
-$(DEPSDIR): ; @mkdir -p $@
+$(ECDIR)/%.ec : %.jazz
+$(ECDIR)/%.ec : %.jazz $(DEPSDIR)/%.ec.d | $(DEPSDIR) $(ECDIR)
+	@$(DEPS)
+	@$(EXTRACT)
 
-DEPFILES := $(SRCS:%.jazz=$(DEPSDIR)/%.d)
+###
+
+$(DEPSDIR): ; @mkdir -p $@
+$(ECDIR): ; @mkdir -p $@
+
+DEPFILES := $(SRCS:%.jazz=$(DEPSDIR)/%.d) $(SRCS:%.jazz=$(DEPSDIR)/%.ec.d)
 $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
 
+###
+
 clean:
-	@rm -fr $(DEPSDIR) *.s *.o *.a
+	@rm -fr $(DEPSDIR) $(ECDIR) *.s *.o *.a *.ec
