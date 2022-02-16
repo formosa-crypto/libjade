@@ -15,7 +15,7 @@ COMPILE = $(JASMINC) -o $@ $<
 #
 
 ECDIR := .ec
-include $(SRC)/$(OPERATION)/Ec.mk
+include $(SRC)/$(OPERATION)/EcFlags.mk
 ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
 EXTRACT = cd $(ECDIR) && $(JASMINC) $(ECFLAGS) ../$<
 
