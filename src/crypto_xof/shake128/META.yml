@@ -1,7 +1,7 @@
 name: SHAKE128
 type: xof
-checksumsmall: 59aaf3f0d67fd33c1f868a8536a3030035732028885b5018b99dd5d00a400ee8
-checksumbig: 17a6602e7d97a9d90b89d652bb00d8fe3484c8c7a9dcc5f895087c1b66d745a7
+checksumsmall: 8b58328d502a3fc2d9eab9b13303a983ed7599449a00f0308531b6ca2aee82e4
+checksumbig: 9c868497badea35040a1c8b2c37f686f878bbb7a5b32dbee2507fe6a7404add7
 implementations:
     - name: amd64/ref
       version: TODO

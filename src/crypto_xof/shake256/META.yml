@@ -1,7 +1,7 @@
 name: SHAKE256
 type: xof
-checksumsmall: d9a536e7f1897b54784ca2980275b8068ea9173a4ac82f6ff52b5179c8d81cad
-checksumbig: ade8345d3e4900d7c17a434c0890c19075954176a2e766acb7858bdbb2e90030
+checksumsmall: 5c88f8cc3210246c1fb9fdf84b686b024d80f35a061b4208d35a77b3aed9acab
+checksumbig: 013aa03ebe252ca0e7b00733443583546e8580dedadab428db3801381743dbd7
 implementations:
     - name: amd64/spec
       version: TODO

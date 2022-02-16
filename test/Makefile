@@ -23,8 +23,12 @@ test_checksums:
 #SCHEME=poly1305
 #IMPLEMENTATION=amd64/ref
 
-TYPE=hash
-SCHEME=sha256
+#TYPE=hash
+#SCHEME=sha256
+#IMPLEMENTATION=amd64/ref
+
+TYPE=xof
+SCHEME=shake128
 IMPLEMENTATION=amd64/ref
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)
