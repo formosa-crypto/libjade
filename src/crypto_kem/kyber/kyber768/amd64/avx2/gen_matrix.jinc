@@ -560,20 +560,6 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   return ctr, rp;
 }
 
-inline fn __r2s(reg u256 f) -> stack u256 {
-  stack u256 fs;
-  fs = f;
-  return f;
-}
-
-
-inline fn __s2r(stack u256 fs) -> reg u256 {
-  reg u256 f;
-  f = fs;
-  return f;
-}
-
-
 inline
 fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u16[KYBER_K*KYBER_VECN]
 {
@@ -597,7 +583,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
   buf1[u256 0] = f;
   buf2[u256 0] = f;
   buf3[u256 0] = f;
-  fs = __r2s(f);
+  fs = f;
 
   if(transposed == 1)
   {
@@ -676,12 +662,12 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
     _, _, _, _, _, bflg = #OR_8(flg0, bflg);
   }
   
-  f = __s2r(fs);
+  f = fs;
   buf0[u256 0] = f;
   buf1[u256 0] = f;
   buf2[u256 0] = f;
   buf3[u256 0] = f;
-  fs = __r2s(f);
+  fs = f;
 
   if(transposed == 1)
   {
@@ -761,7 +747,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
     _, _, _, _, _, bflg = #OR_8(flg0, bflg);
   }
 
-  f = __s2r(fs);
+  f = fs;
   buf0[u256 0] = f;
   buf0[KYBER_SYMBYTES]   = 2;
   buf0[KYBER_SYMBYTES+1] = 2;

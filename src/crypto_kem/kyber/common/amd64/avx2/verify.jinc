@@ -1,5 +1,5 @@
 inline 
-fn __verify(reg u64 ctp, reg ptr u8[KYBER_CIPHERTEXTBYTES] ctpc) -> reg u64
+fn __verify(reg u64 ctp, reg ptr u8[KYBER_INDCPA_BYTES] ctpc) -> reg u64
 {
   reg u256 f g h;
   reg u64 cnd t64;
@@ -11,7 +11,7 @@ fn __verify(reg u64 ctp, reg ptr u8[KYBER_CIPHERTEXTBYTES] ctpc) -> reg u64
   t64 = 1;
   h = #set0_256();
 
-  for i=0 to KYBER_CIPHERTEXTBYTES/32
+  for i=0 to KYBER_INDCPA_BYTES/32
   {
     f = ctpc.[u256 32*i];
     g = (u256)[ctp + 32*i];

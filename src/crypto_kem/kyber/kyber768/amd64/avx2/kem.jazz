@@ -7,7 +7,7 @@ export fn jade_kem_kyber_kyber768_amd64_avx2_keypair(reg u64 pkp, reg u64 skp) -
 
   __crypto_kem_keypair_jazz(pkp, skp);
 
-  r = #set0();
+  _, _, _, _, _, r = #set0();
   return r;
 }
 
@@ -18,7 +18,7 @@ export fn jade_kem_kyber_kyber768_amd64_avx2_enc(reg u64 ctp, reg u64 shkp, reg 
 
   __crypto_kem_enc_jazz(ctp, shkp, pkp);
 
-  r = #set0();
+  _, _, _, _, _, r = #set0();
   return r;
 }
 
@@ -29,6 +29,6 @@ export fn jade_kem_kyber_kyber768_amd64_avx2_dec(reg u64 shkp, reg u64 ctp, reg 
 
   __crypto_kem_dec_jazz(shkp, ctp, skp);
 
-  r = #set0();
+  _, _, _, _, _, r = #set0();
   return r;
 }

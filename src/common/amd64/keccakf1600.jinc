@@ -185,7 +185,7 @@ fn _keccakf1600_scalar(reg ptr u64[25] a) -> reg ptr u64[25]
 
     iota = iotas_p[(int) round];
     round_s = round;
-    r, a = __round2x_scalar(r, a, iotas_p[(int) round]);
+    r, a = __round2x_scalar(r, a, iota);
     round = round_s;
     round += 1;
   }

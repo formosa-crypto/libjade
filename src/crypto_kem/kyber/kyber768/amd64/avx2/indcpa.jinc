@@ -137,14 +137,14 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
 
 // FIXME: E_EPTR
 inline
-fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_CIPHERTEXTBYTES] ctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] noiseseed) -> reg ptr u8[KYBER_INDCPA_CIPHERTEXTBYTES]
+fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] noiseseed) -> reg ptr u8[KYBER_INDCPA_BYTES]
 {
   stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_K*KYBER_VECN] aat;
   stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
   stack ptr u8[KYBER_SYMBYTES] s_noiseseed;
-  stack ptr u8[KYBER_INDCPA_CIPHERTEXTBYTES] sctp;
+  stack ptr u8[KYBER_INDCPA_BYTES] sctp;
   reg u64 i t64;
   reg u8 nonce;
   inline int w;
@@ -202,7 +202,7 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_CIPHERTEXTBYTES] ctp, reg ptr u8[KYBER
 
 
 inline
-fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp) -> reg ptr u8[KYBER_N/8]
+fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp) -> reg ptr u8[KYBER_INDCPA_MSGBYTES]
 {
   stack u16[KYBER_N] t v mp;
   stack u16[KYBER_VECN] bp skpv;
