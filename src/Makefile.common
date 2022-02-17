@@ -12,7 +12,7 @@ NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 JEXT ?= jazz
 JFLAGS := $(JFLAGS) -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
-JASMINC := jasminc_get_random $(JFLAGS) $(JINCLUDE)
+JASMINC := jasminc $(JFLAGS) $(JINCLUDE)
 COMPILE = $(JASMINC) -o $@ $<
 
 #
