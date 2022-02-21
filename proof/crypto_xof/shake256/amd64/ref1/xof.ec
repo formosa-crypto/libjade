@@ -63,7 +63,7 @@ module M = {
     return (r);
   }
   
-  proc __theta_sum_ref (a:W64.t Array25.t) : W64.t Array5.t = {
+  proc __theta_sum_ref1 (a:W64.t Array25.t) : W64.t Array5.t = {
     var aux: int;
     
     var c:W64.t Array5.t;
@@ -87,7 +87,7 @@ module M = {
     return (c);
   }
   
-  proc __theta_rol_ref (c:W64.t Array5.t) : W64.t Array5.t = {
+  proc __theta_rol_ref1 (c:W64.t Array5.t) : W64.t Array5.t = {
     var aux_1: bool;
     var aux_0: bool;
     var aux: int;
@@ -111,7 +111,8 @@ module M = {
     return (d);
   }
   
-  proc __rol_sum_ref (a:W64.t Array25.t, d:W64.t Array5.t, y:int) : W64.t Array5.t = {
+  proc __rol_sum_ref1 (a:W64.t Array25.t, d:W64.t Array5.t, y:int) : 
+  W64.t Array5.t = {
     var aux_1: bool;
     var aux_0: bool;
     var aux: int;
@@ -145,7 +146,7 @@ module M = {
     return (b);
   }
   
-  proc __set_row_ref (e:W64.t Array25.t, b:W64.t Array5.t, y:int, rc:W64.t) : 
+  proc __set_row_ref1 (e:W64.t Array25.t, b:W64.t Array5.t, y:int, s_rc:W64.t) : 
   W64.t Array25.t = {
     var aux: int;
     
@@ -161,7 +162,7 @@ module M = {
       t <- ((invw b.[x1]) `&` b.[x2]);
       t <- (t `^` b.[x]);
       if (((x = 0) /\ (y = 0))) {
-        t <- (t `^` rc);
+        t <- (t `^` s_rc);
       } else {
         
       }
@@ -171,10 +172,10 @@ module M = {
     return (e);
   }
   
-  proc __round_ref (a:W64.t Array25.t, rc:W64.t) : W64.t Array25.t = {
+  proc __round_ref1 (e:W64.t Array25.t, a:W64.t Array25.t, s_rc:W64.t) : 
+  W64.t Array25.t = {
     var aux: int;
     
-    var e:W64.t Array25.t;
     var c:W64.t Array5.t;
     var d:W64.t Array5.t;
     var y:int;
@@ -182,44 +183,71 @@ module M = {
     b <- witness;
     c <- witness;
     d <- witness;
-    e <- witness;
-    c <@ __theta_sum_ref (a);
-    d <@ __theta_rol_ref (c);
+    c <@ __theta_sum_ref1 (a);
+    d <@ __theta_rol_ref1 (c);
     y <- 0;
     while (y < 5) {
-      b <@ __rol_sum_ref (a, d, y);
-      e <@ __set_row_ref (e, b, y, rc);
+      b <@ __rol_sum_ref1 (a, d, y);
+      e <@ __set_row_ref1 (e, b, y, s_rc);
       y <- y + 1;
     }
     return (e);
   }
   
-  proc __keccakf1600_ref (a:W64.t Array25.t) : W64.t Array25.t = {
+  proc __keccakf1600_ref1 (a:W64.t Array25.t) : W64.t Array25.t = {
     
     var rC:W64.t Array24.t;
-    var c:W64.t;
-    var rc:W64.t;
+    var s_RC:W64.t Array24.t;
+    var s_e:W64.t Array25.t;
     var e:W64.t Array25.t;
+    var c:W64.t;
+    var s_c:W64.t;
+    var rc:W64.t;
+    var s_rc:W64.t;
     rC <- witness;
     e <- witness;
+    s_RC <- witness;
+    s_e <- witness;
     rC <- KECCAK1600_RC;
+    s_RC <- rC;
+    e <- s_e;
     c <- (W64.of_int 0);
+    s_c <- c;
+    rC <- s_RC;
     rc <- rC.[(W64.to_uint c)];
-    e <@ __round_ref (a, rc);
+    s_rc <- rc;
+    e <@ __round_ref1 (e, a, s_rc);
+    rC <- s_RC;
     rc <- rC.[((W64.to_uint c) + 1)];
-    a <@ __round_ref (e, rc);
+    s_rc <- rc;
+    a <@ __round_ref1 (a, e, s_rc);
+    c <- s_c;
     c <- (c + (W64.of_int 2));
     while ((c \ult (W64.of_int 24))) {
+      s_c <- c;
+      rC <- s_RC;
       rc <- rC.[(W64.to_uint c)];
-      e <@ __round_ref (a, rc);
+      s_rc <- rc;
+      e <@ __round_ref1 (e, a, s_rc);
+      rC <- s_RC;
       rc <- rC.[((W64.to_uint c) + 1)];
-      a <@ __round_ref (e, rc);
+      s_rc <- rc;
+      a <@ __round_ref1 (a, e, s_rc);
+      c <- s_c;
       c <- (c + (W64.of_int 2));
     }
     return (a);
   }
   
-  proc __keccak_init_ref () : W64.t Array25.t = {
+  proc _keccakf1600_ref1 (a:W64.t Array25.t) : W64.t Array25.t = {
+    
+    
+    
+    a <@ __keccakf1600_ref1 (a);
+    return (a);
+  }
+  
+  proc __keccak_init_ref1 () : W64.t Array25.t = {
     
     var state:W64.t Array25.t;
     var t:W64.t;
@@ -240,8 +268,8 @@ module M = {
     return (state);
   }
   
-  proc __add_full_block_ref (state:W64.t Array25.t, in_0:W64.t, inlen:W64.t,
-                             rate:W64.t) : W64.t Array25.t * W64.t * W64.t = {
+  proc __add_full_block_ref1 (state:W64.t Array25.t, in_0:W64.t, inlen:W64.t,
+                              rate:W64.t) : W64.t Array25.t * W64.t * W64.t = {
     
     var rate64:W64.t;
     var i:W64.t;
@@ -261,8 +289,9 @@ module M = {
     return (state, in_0, inlen);
   }
   
-  proc __add_final_block_ref (state:W64.t Array25.t, in_0:W64.t, inlen:W64.t,
-                              trail_byte:W8.t, rate:W64.t) : W64.t Array25.t = {
+  proc __add_final_block_ref1 (state:W64.t Array25.t, in_0:W64.t,
+                               inlen:W64.t, trail_byte:W8.t, rate:W64.t) : 
+  W64.t Array25.t = {
     
     var inlen8:W64.t;
     var i:W64.t;
@@ -301,8 +330,9 @@ module M = {
     return (state);
   }
   
-  proc __absorb_ref (state:W64.t Array25.t, in_0:W64.t, inlen:W64.t,
-                     s_trail_byte:W8.t, rate:W64.t) : W64.t Array25.t * W64.t = {
+  proc __absorb_ref1 (state:W64.t Array25.t, in_0:W64.t, inlen:W64.t,
+                      s_trail_byte:W8.t, rate:W64.t) : W64.t Array25.t *
+                                                       W64.t = {
     
     var s_in:W64.t;
     var s_inlen:W64.t;
@@ -311,23 +341,23 @@ module M = {
     
     
     while ((rate \ule inlen)) {
-      (state, in_0, inlen) <@ __add_full_block_ref (state, in_0, inlen,
+      (state, in_0, inlen) <@ __add_full_block_ref1 (state, in_0, inlen,
       rate);
       s_in <- in_0;
       s_inlen <- inlen;
       s_rate <- rate;
-      state <@ __keccakf1600_ref (state);
+      state <@ _keccakf1600_ref1 (state);
       in_0 <- s_in;
       inlen <- s_inlen;
       rate <- s_rate;
     }
     trail_byte <- s_trail_byte;
-    state <@ __add_final_block_ref (state, in_0, inlen, trail_byte, rate);
+    state <@ __add_final_block_ref1 (state, in_0, inlen, trail_byte, rate);
     return (state, rate);
   }
   
-  proc __xtr_full_block_ref (state:W64.t Array25.t, out:W64.t, outlen:W64.t,
-                             rate:W64.t) : W64.t * W64.t = {
+  proc __xtr_full_block_ref1 (state:W64.t Array25.t, out:W64.t, outlen:W64.t,
+                              rate:W64.t) : W64.t * W64.t = {
     
     var rate64:W64.t;
     var i:W64.t;
@@ -348,7 +378,7 @@ module M = {
     return (out, outlen);
   }
   
-  proc __xtr_bytes_ref (state:W64.t Array25.t, out:W64.t, outlen:W64.t) : 
+  proc __xtr_bytes_ref1 (state:W64.t Array25.t, out:W64.t, outlen:W64.t) : 
   W64.t = {
     
     var outlen8:W64.t;
@@ -377,8 +407,8 @@ module M = {
     return (out);
   }
   
-  proc __squeeze_ref (state:W64.t Array25.t, s_out:W64.t, outlen:W64.t,
-                      rate:W64.t) : unit = {
+  proc __squeeze_ref1 (state:W64.t Array25.t, s_out:W64.t, outlen:W64.t,
+                       rate:W64.t) : unit = {
     
     var s_outlen:W64.t;
     var s_rate:W64.t;
@@ -388,23 +418,23 @@ module M = {
     while ((rate \ult outlen)) {
       s_outlen <- outlen;
       s_rate <- rate;
-      state <@ __keccakf1600_ref (state);
+      state <@ _keccakf1600_ref1 (state);
       out <- s_out;
       outlen <- s_outlen;
       rate <- s_rate;
-      (out, outlen) <@ __xtr_full_block_ref (state, out, outlen, rate);
+      (out, outlen) <@ __xtr_full_block_ref1 (state, out, outlen, rate);
       s_out <- out;
     }
     s_outlen <- outlen;
-    state <@ __keccakf1600_ref (state);
+    state <@ _keccakf1600_ref1 (state);
     out <- s_out;
     outlen <- s_outlen;
-    out <@ __xtr_bytes_ref (state, out, outlen);
+    out <@ __xtr_bytes_ref1 (state, out, outlen);
     return ();
   }
   
-  proc __keccak1600_ref (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
-                         trail_byte:W8.t, rate:W64.t) : unit = {
+  proc __keccak1600_ref1 (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
+                          trail_byte:W8.t, rate:W64.t) : unit = {
     
     var s_out:W64.t;
     var s_outlen:W64.t;
@@ -414,20 +444,46 @@ module M = {
     s_out <- out;
     s_outlen <- outlen;
     s_trail_byte <- trail_byte;
-    state <@ __keccak_init_ref ();
-    (state, rate) <@ __absorb_ref (state, in_0, inlen, s_trail_byte, rate);
+    state <@ __keccak_init_ref1 ();
+    (state, rate) <@ __absorb_ref1 (state, in_0, inlen, s_trail_byte, rate);
     outlen <- s_outlen;
-    __squeeze_ref (state, s_out, outlen, rate);
+    __squeeze_ref1 (state, s_out, outlen, rate);
     return ();
   }
   
-  proc _keccak1600_ref (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
-                        trail_byte:W8.t, rate:W64.t) : unit = {
+  proc _keccak1600_ref1 (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
+                         trail_byte:W8.t, rate:W64.t) : unit = {
     
     
     
-    __keccak1600_ref (out, outlen, in_0, inlen, trail_byte, rate);
+    __keccak1600_ref1 (out, outlen, in_0, inlen, trail_byte, rate);
     return ();
+  }
+  
+  proc __shake256_ref1 (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t) : unit = {
+    
+    var trail_byte:W8.t;
+    var rate:W64.t;
+    
+    trail_byte <- (W8.of_int 31);
+    rate <- (W64.of_int (1088 %/ 8));
+    _keccak1600_ref1 (out, outlen, in_0, inlen, trail_byte, rate);
+    return ();
+  }
+  
+  proc jade_xof_shake256_amd64_ref1 (out:W64.t, outlen:W64.t, in_0:W64.t,
+                                     inlen:W64.t) : W64.t = {
+    
+    var r:W64.t;
+    var  _0:bool;
+    var  _1:bool;
+    var  _2:bool;
+    var  _3:bool;
+    var  _4:bool;
+    
+    __shake256_ref1 (out, outlen, in_0, inlen);
+    ( _0,  _1,  _2,  _3,  _4, r) <- set0_64 ;
+    return (r);
   }
 }.
 
