@@ -228,22 +228,7 @@ inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u
 
 fn _keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
-  stack u64[25] state;
-  stack u64 s_out s_outlen;
-  stack u8 s_trail_byte;
-
-  s_out = out;
-  s_outlen = outlen;
-  s_trail_byte = trail_byte;
-
-  state = __keccak_init_ref();
-
-  // absorb
-  state, rate = __absorb_ref(state, in, inlen, s_trail_byte, rate);
-
-  // squeeze
-  outlen = s_outlen;
-  __squeeze_ref(state, s_out, outlen, rate);
+  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
 }
 
 
