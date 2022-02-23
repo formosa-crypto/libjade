@@ -1,7 +1,6 @@
-// TODO: clean up this functest file; for instance, one of the tasks is use "namespace.h" instead;
-
 #include "api.h"
-#include "randombytes.h"
+#include "notrandombytes.h"
+#include "namespace.h"
 
 #include <stdint.h>
 #include <stdio.h>
@@ -43,12 +42,6 @@ inline static void* malloc_s(size_t size) {
     return ptr;
 }
 
-// https://stackoverflow.com/a/1489985/1711232
-#define PASTER(x, y) x##_##y
-#define EVALUATOR(x, y) PASTER(x, y)
-#define NAMESPACE(fun) EVALUATOR(JADE_NAMESPACE, fun)
-#define NAMESPACE_LC(fun) EVALUATOR(JADE_NAMESPACE_LC, fun)
-
 #define CRYPTO_BYTES           NAMESPACE(BYTES)
 #define CRYPTO_PUBLICKEYBYTES  NAMESPACE(PUBLICKEYBYTES)
 #define CRYPTO_SECRETKEYBYTES  NAMESPACE(SECRETKEYBYTES)
@@ -65,16 +58,6 @@ inline static void* malloc_s(size_t size) {
         res = 1;                                  \
         goto end;                                 \
     }
-
-// https://stackoverflow.com/a/55243651/248065
-#define MY_TRUTHY_VALUE_X 1
-#define CAT(x,y) CAT_(x,y)
-#define CAT_(x,y) x##y
-#define HAS_NAMESPACE(x) CAT(CAT(MY_TRUTHY_VALUE_,CAT(JADE_NAMESPACE,CAT(_,x))),X)
-
-#if !HAS_NAMESPACE(API_H)
-#error "namespace not properly defined for header guard"
-#endif
 
 static int test_keys(void) {
     /*
@@ -177,7 +160,7 @@ static int test_invalid_sk_a(void) {
         RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
         // Replace secret key with notrandom values
-        randombytes(sk_a, CRYPTO_SECRETKEYBYTES);
+        notrandombytes(sk_a, CRYPTO_SECRETKEYBYTES);
 
         // Alice uses Bobs response to get her secret key
         if ((returncode = crypto_kem_dec(key_a, sendb, sk_a)) > 0) {
@@ -224,7 +207,7 @@ static int test_invalid_ciphertext(void) {
         RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
         // Change ciphertext to notrandom value
-        randombytes(sendb, sizeof(sendb));
+        notrandombytes(sendb, sizeof(sendb));
 
         // Alice uses Bobs response to get her secret key
         if ((returncode = crypto_kem_dec(key_a, sendb, sk_a)) > 0) {
