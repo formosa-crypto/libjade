@@ -57,7 +57,7 @@ JADE_NAMESPACE_LC=$(shell echo jade_$(TYPE_LOWERCASE)_$(SCHEME_IMPLEMENTATION_LC
 TEST_DIR=$(TOP_DIR)/test
 TEST_COMMON_DIR=$(TEST_DIR)/common1# prev TOP_DIR/test/common # TODO CHECKME
 COMMON_DIR=$(TEST_DIR)/common2# prev TOP_DIR/common # TODO CHECKME
-COMMON_FILES=$(COMMON_DIR)/aes.c $(COMMON_DIR)/sha2.c $(COMMON_DIR)/fips202.c $(COMMON_DIR)/nistseedexpander.c $(COMMON_DIR)/sp800-185.c
+COMMON_FILES=$(COMMON_DIR)/aes.c $(COMMON_DIR)/sha2.c $(COMMON_DIR)/fips202.c $(COMMON_DIR)/sp800-185.c
 COMMON_HEADERS=$(COMMON_DIR)/*.h
 DEST_DIR=$(TEST_DIR)/bin
 
@@ -119,9 +119,6 @@ checksums: checksumbig checksumsmall
 .PHONY: printparams
 printparams: $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
 
-.PHONY: nistkat
-nistkat: $(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC)
-
 $(DEST_DIR)/test_common_aes: test_common/aes.c $(COMMON_FILES)
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
@@ -135,9 +132,7 @@ $(DEST_DIR)/test_common_sp800-185: test_common/sp800-185.c $(COMMON_FILES)
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
 
-$(DEST_DIR)/test_common_nistseedexpander: test_common/sp800-185.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
+
 
 $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c $(COMMON_HEADERS) $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
@@ -147,33 +142,28 @@ $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(TEST_COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR)
 
-$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c
+$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes
 
-$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c
+$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes
+
 
 $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/printparams.c -o $@
-
-$(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c $(COMMON_HEADERS)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/nistkat.c $(COMMON_FILES) $(TEST_COMMON_DIR)/nistkatrng.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
 .PHONY: clean
 clean:
 	$(RM) $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
-	$(RM) $(DEST_DIR)/nistkat_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/test_common_aes
 	$(RM) $(DEST_DIR)/test_common_fips202
 	$(RM) $(DEST_DIR)/test_common_sha2
 	$(RM) $(DEST_DIR)/test_common_sp800-185
-	$(RM) $(DEST_DIR)/test_common_nistseedexpander
 	$(MAKE) -C $(SRC_DIR) clean # TODO CHECKME
 
 .PHONY: distclean

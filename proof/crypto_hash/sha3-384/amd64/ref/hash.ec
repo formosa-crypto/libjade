@@ -403,8 +403,8 @@ module M = {
     return ();
   }
   
-  proc _keccak1600_ref (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
-                        trail_byte:W8.t, rate:W64.t) : unit = {
+  proc __keccak1600_ref (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
+                         trail_byte:W8.t, rate:W64.t) : unit = {
     
     var s_out:W64.t;
     var s_outlen:W64.t;
@@ -418,6 +418,15 @@ module M = {
     (state, rate) <@ __absorb_ref (state, in_0, inlen, s_trail_byte, rate);
     outlen <- s_outlen;
     __squeeze_ref (state, s_out, outlen, rate);
+    return ();
+  }
+  
+  proc _keccak1600_ref (out:W64.t, outlen:W64.t, in_0:W64.t, inlen:W64.t,
+                        trail_byte:W8.t, rate:W64.t) : unit = {
+    
+    
+    
+    __keccak1600_ref (out, outlen, in_0, inlen, trail_byte, rate);
     return ();
   }
   
