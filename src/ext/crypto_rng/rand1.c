@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-unsigned char * __jasmin_syscall_randombytes__(unsigned char *x, uint64_t xlen)
+void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
 asm("__jasmin_syscall_randombytes__");
 
 #if defined(__linux__) 
@@ -8,7 +8,7 @@ asm("__jasmin_syscall_randombytes__");
 #include <unistd.h>
 #include <sys/random.h>
 
-unsigned char * __jasmin_syscall_randombytes__(unsigned char *x, uint64_t xlen)
+void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
 {
 
   int i;
@@ -24,7 +24,6 @@ unsigned char * __jasmin_syscall_randombytes__(unsigned char *x, uint64_t xlen)
     x += i;
     xlen -= i;
   }
-  return x;
 }
 
 #elif defined(__APPLE__)
@@ -35,9 +34,8 @@ unsigned char * __jasmin_syscall_randombytes__(unsigned char *x, uint64_t xlen)
 #error "macOS version not supported (>= 10.12)"
 #endif
 
-unsigned char * __jasmin_syscall_randombytes__(unsigned char *p, uint64_t plen){
+void __jasmin_syscall_randombytes__(uint8_t *p, uint64_t plen){
   arc4random_buf(p, plen);
-  return p;
 }
 
 #endif
