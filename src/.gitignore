@@ -3,5 +3,6 @@
 *.a
 _build/
 libjade.a
+libjade.h
 .deps
 .ec

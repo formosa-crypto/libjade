@@ -1,14 +1,16 @@
 ###############################################################################
 ### temporary section to run some tests (quick solution; to be refactored/extended)
 
-#.PHONY: test_checksums
-#test_checksums:
-#	@echo "Testing (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}; SHA256{ref}; SHA3-{224,256,384,512}{ref,avx2}; SHAKE{128,256}"
-#	@python3 test_checksums.py -k "chacha or salsa or poly or sha256 or sha3 or shake"
+.PHONY: test_checksums
+test_checksums:
+	@echo "Checking checksums for (amd64): ChaCha{12,20,20-ietf}{ref,avx,avx2}; Salsa20{12,}{ref,avx,avx2}; XSalsa20{ref,avx,avx2}; Poly1305{ref}; SHA256{ref}; SHA3-{224,256,384,512}{ref,avx2}; SHAKE128{ref,avx2}; SHAKE256{spec,ref,ref1,avx2}"
+	@python3 test_checksums.py -k "chacha or salsa or poly or sha256 or sha3 or shake"
+	@echo "Checking functest (amd64): Kyber
+	python3 test_functest.py -k "kyber"
 
 ###############################################################################
 
-# This Makefile can be used with GNU Make or BSD Make
+# This Makefile will be refactored.
 
 # override as desired
 TYPE=kem
@@ -118,16 +120,16 @@ $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(
 
 $(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes from SUPERCOP 
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes from SUPERCOP as __jasmin_syscall_randombytes__
 
 $(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes from SUPERCOP
-
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes ... (as prev)
 
 $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/printparams.c -o $@
+
 
 .PHONY: clean
 clean:
