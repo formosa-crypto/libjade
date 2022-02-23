@@ -19,9 +19,10 @@ IMPLEMENTATION=amd64/avx2
 
 TOP_DIR:=$(shell git rev-parse --show-toplevel)
 SRC_DIR=$(TOP_DIR)/src
+EXT_DIR=$(TOP_DIR)/ext
 
 RND_VAR=rand1
-RND_DIR=$(SRC_DIR)/crypto_rng/
+RND_DIR=$(EXT_DIR)/crypto_rng/
 RND_SRC=$(RND_DIR)/$(RND_VAR).c
 RND_OBJ=$(RND_SRC:%.c=%.o)
 RND_LIBRARY:=$(RND_DIR)/lib$(RND_VAR).a
@@ -42,7 +43,7 @@ JADE_NAMESPACE_LC=$(shell echo jade_$(TYPE_LOWERCASE)_$(SCHEME_IMPLEMENTATION_LC
 
 TEST_DIR=$(TOP_DIR)/test
 COMMON_DIR=$(TEST_DIR)/common
-COMMON_FILES=$(COMMON_DIR)/aes.c $(COMMON_DIR)/sha2.c $(COMMON_DIR)/fips202.c $(COMMON_DIR)/sp800-185.c
+COMMON_FILES=
 COMMON_HEADERS=$(COMMON_DIR)/*.h
 DEST_DIR=$(TEST_DIR)/bin
 
@@ -69,7 +70,6 @@ all: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC) \
 .PHONY: build-scheme
 build-scheme: $(SCHEME_LIBRARY)
 
-# TODO CHECKME
 $(SCHEME_DIR)/%.s : $(SCHEME_DIR)/%.jazz
 	$(MAKE) -C $(SCHEME_DIR) clean && $(MAKE) -C $(SCHEME_DIR)
 
@@ -85,6 +85,8 @@ $(RND_LIBRARY): $(RND_OBJ)
 .PHONY: clean-scheme
 clean-scheme:
 	cd $(SCHEME_DIR) && $(MAKE) clean
+
+
 
 .PHONY: functest
 functest: $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
@@ -104,24 +106,11 @@ checksums: checksumbig checksumsmall
 .PHONY: printparams
 printparams: $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
 
-$(DEST_DIR)/test_common_aes: test_common/aes.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
-$(DEST_DIR)/test_common_fips202: test_common/fips202.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
-$(DEST_DIR)/test_common_sha2: test_common/sha2.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
-$(DEST_DIR)/test_common_sp800-185: test_common/sp800-185.c $(COMMON_FILES)
-	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) $< $(COMMON_FILES) -o $@
 
 
-
-$(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c $(COMMON_HEADERS) $(RND_LIBRARY)
+$(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS) $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/randombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR)
+	$(CC) $(CFLAGS) -DNTESTS=$(NTESTS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/functest.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR)
 
 $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c $(COMMON_HEADERS) $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
@@ -129,11 +118,11 @@ $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(
 
 $(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes from SUPERCOP 
 
 $(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(RND_LIBRARY)
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR) # TODO notrandombytes from SUPERCOP
 
 
 $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
@@ -145,11 +134,7 @@ clean:
 	$(RM) $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
-	$(RM) $(DEST_DIR)/test_common_aes
-	$(RM) $(DEST_DIR)/test_common_fips202
-	$(RM) $(DEST_DIR)/test_common_sha2
-	$(RM) $(DEST_DIR)/test_common_sp800-185
-	$(MAKE) -C $(SRC_DIR) clean # TODO CHECKME
+	$(MAKE) -C $(SRC_DIR) clean
 
 .PHONY: distclean
 distclean:

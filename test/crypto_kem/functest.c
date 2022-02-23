@@ -1,3 +1,5 @@
+// TODO: clean up this functest file; for instance, one of the tasks is use "namespace.h" instead;
+
 #include "api.h"
 #include "randombytes.h"
 
@@ -174,7 +176,7 @@ static int test_invalid_sk_a(void) {
         // Bob derives a secret key and creates a response
         RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
-        // Replace secret key with random values
+        // Replace secret key with notrandom values
         randombytes(sk_a, CRYPTO_SECRETKEYBYTES);
 
         // Alice uses Bobs response to get her secret key
@@ -221,7 +223,7 @@ static int test_invalid_ciphertext(void) {
         // Bob derives a secret key and creates a response
         RETURNS_ZERO(crypto_kem_enc(sendb, key_b, pk));
 
-        // Change ciphertext to random value
+        // Change ciphertext to notrandom value
         randombytes(sendb, sizeof(sendb));
 
         // Alice uses Bobs response to get her secret key
