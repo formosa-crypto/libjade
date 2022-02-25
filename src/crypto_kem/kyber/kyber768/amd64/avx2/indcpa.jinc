@@ -1,6 +1,6 @@
-require "../../common/params.jinc"
-require "../../../common/amd64/avx2/poly.jinc"
-require "../../../common/amd64/avx2/polyvec.jinc"
+from Jade require "crypto_kem/kyber/kyber768/common/params.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/avx2/poly.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/avx2/polyvec.jinc"
 require "gen_matrix.jinc"
 
 inline
@@ -28,7 +28,7 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp)
     inbuf[u64 i] = t64;
   }
 
-  buf = _sha3_512_32(buf, inbuf);
+  buf = _isha3_512_32(buf, inbuf);
 
   for i=0 to KYBER_SYMBYTES/8
   {

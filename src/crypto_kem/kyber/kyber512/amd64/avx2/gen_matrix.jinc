@@ -1,5 +1,6 @@
-require "../../../../../common/amd64/fips202.jinc"
-require "../../../../../common/amd64/avx2/fips202_4x.jinc"
+from Jade require "common/keccak/common/fips202_DIRTY.jinc"
+from Jade require "common/keccak/common/fips202_4x_DIRTY.jinc"
+from Jade require "crypto_xof/shake128/amd64/avx2/shake128_4x.jinc"
 
 param int GENMATRIX_NBLOCKS = ((12*KYBER_N/8*4096/KYBER_Q + SHAKE128_RATE)/SHAKE128_RATE);
 param int REJ_UNIFORM_AVX_BUFLEN = GENMATRIX_NBLOCKS * SHAKE128_RATE;
@@ -260,19 +261,6 @@ u8[2048] ru_idx = {-1, -1, -1, -1, -1, -1, -1, -1,
                 0,  4,  6,  8, 10, 12, 14, -1,
                 2,  4,  6,  8, 10, 12, 14, -1,
                 0,  2,  4,  6,  8, 10, 12, 14};
-
-inline
-fn __shake128_squeezenblocks(stack u64[25] state, stack u8[REJ_UNIFORM_AVX_BUFLEN] out)
-      -> stack u64[25], stack u8[REJ_UNIFORM_AVX_BUFLEN]
-{
-  inline int i;
-
-  for i = 0 to GENMATRIX_NBLOCKS 
-  {
-      state, out[i*SHAKE128_RATE:SHAKE128_RATE] = _shake128_squeezeblock(state, out[i*SHAKE128_RATE:SHAKE128_RATE]);
-  }
-  return state, out;
-}
 
 inline
 fn __shake128_squeezenblocks4x(reg ptr u256[25] state, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] h0 h1 h2 h3)

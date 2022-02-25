@@ -1,8 +1,9 @@
+from Jade require "common/keccak/common/fips202_DIRTY.jinc"
+from Jade require "common/keccak/common/fips202_4x_DIRTY.jinc"
+from Jade require "crypto_xof/shake256/amd64/avx2/shake256_4x.jinc"
 require "shuffle.jinc"
 require "consts.jinc"
 require "reduce.jinc"
-require "../../../../../common/amd64/fips202.jinc"
-require "../../../../../common/amd64/avx2/fips202_4x.jinc"
 
 fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> stack u16[KYBER_N]
 {
@@ -679,7 +680,7 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
   }
   extseed[KYBER_SYMBYTES] = nonce;
 
-  buf = _shake256_128_33(buf, extseed);
+  buf = _ishake256_128_33(buf, extseed);
 
   mask55 = #VPBROADCAST_8u32(mask55_s);
   mask33 = #VPBROADCAST_8u32(mask33_s);

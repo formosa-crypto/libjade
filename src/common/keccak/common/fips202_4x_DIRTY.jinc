@@ -1,0 +1,101 @@
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
+from Jade require "common/keccak/common/fips202_params_DIRTY.jinc"
+
+fn _shake128_absorb4x_34(reg ptr u256[25] s, reg ptr u8[34] m0 m1 m2 m3) -> reg ptr u256[25]
+{
+	inline int i;
+  reg u256 t0 t1;
+  reg u16 t16;
+	reg u64 t64;
+
+  for i = 0 to 25
+  {
+    t0 = #set0_256();
+    s[i] = t0;
+  }
+
+	for i = 0 to 4
+  {
+    t64 = m0[u64 i];
+    s[u64 4 * i] ^= t64;
+    t64 = m1[u64 i];
+    s[u64 4 * i + 1] ^= t64;
+    t64 = m2[u64 i];
+    s[u64 4 * i + 2] ^= t64;
+    t64 = m3[u64 i];
+    s[u64 4 * i + 3] ^= t64;
+  }
+
+  t16 = m0.[u16 32];
+  s[u16 64] ^= t16;
+  s[u8 130] ^= 0x1F;
+
+  t16 = m1.[u16 32];
+  s[u16 68] ^= t16;
+  s[u8 138] ^= 0x1F;
+
+  t16 = m2.[u16 32];
+  s[u16 72] ^= t16;
+  s[u8 146] ^= 0x1F;
+
+  t16 = m3.[u16 32];
+  s[u16 76] ^= t16;
+  s[u8 154] ^= 0x1F;
+
+  t0 = shake_sep[u256 0];
+  t1 = s[SHAKE128_RATE / 8 - 1];
+  t0 = t0 ^ t1;
+  s[SHAKE128_RATE / 8 - 1] = t0;
+
+	return s;
+}
+
+
+fn _shake256_absorb4x_33(reg ptr u256[25] s, reg ptr u8[33] m0 m1 m2 m3) -> reg ptr u256[25]
+{
+	inline int i;
+  reg u256 t0 t1;
+	reg u64 t64;
+  reg u8 t8;
+
+  for i = 0 to 25
+  {
+    t0 = #set0_256();
+    s[i] = t0;
+  }
+
+	for i = 0 to 4
+  {
+    t64 = m0[u64 i];
+    s[u64 4 * i] ^= t64;
+    t64 = m1[u64 i];
+    s[u64 4 * i + 1] ^= t64;
+    t64 = m2[u64 i];
+    s[u64 4 * i + 2] ^= t64;
+    t64 = m3[u64 i];
+    s[u64 4 * i + 3] ^= t64;
+  }
+
+  t8 = m0[32];
+  s[u8 128] ^= t8;
+  s[u8 129] ^= 0x1F;
+
+  t8 = m1[32];
+  s[u8 136] ^= t8;
+  s[u8 137] ^= 0x1F;
+
+  t8 = m2[32];
+  s[u8 144] ^= t8;
+  s[u8 145] ^= 0x1F;
+
+  t8 = m3[32];
+  s[u8 152] ^= t8;
+  s[u8 153] ^= 0x1F;
+
+  t0 = shake_sep[u256 0];
+  t1 = s[SHAKE256_RATE / 8 - 1];
+  t0 = t0 ^ t1;
+  s[SHAKE256_RATE / 8 - 1] = t0;
+
+	return s;
+}

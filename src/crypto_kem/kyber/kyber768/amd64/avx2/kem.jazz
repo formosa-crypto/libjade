@@ -1,5 +1,5 @@
 require "indcpa.jinc"
-require "../../../common/amd64/kem.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/kem.jinc"
 
 export fn jade_kem_kyber_kyber768_amd64_avx2_keypair(reg u64 pkp, reg u64 skp) -> reg u64
 {

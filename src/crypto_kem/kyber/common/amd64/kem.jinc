@@ -76,7 +76,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
   t64 = KYBER_PUBLICKEYBYTES;
   buf[KYBER_SYMBYTES:32] = _isha3_256(buf[KYBER_SYMBYTES:32], pkp, t64);
 
-  kr = _sha3_512_64(kr, buf);
+  kr = _isha3_512_64(kr, buf);
 
   pkp = s_pkp;
 
@@ -116,7 +116,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   s_skp = skp;
 
-  kr = _sha3_512_64(kr, buf);
+  kr = _isha3_512_64(kr, buf);
 
   pkp = s_skp;
   pkp += 12 * KYBER_K * KYBER_N>>3;

@@ -1,4 +1,3 @@
-
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates
 

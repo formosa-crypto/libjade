@@ -52,6 +52,7 @@ inline fn __add_full_block_avx2(
     j += 1;
   }
 
+  //TODO: check & change to #VPBROADCAST_4u64
   t = s_state[0];
   s_state[1] = t;
   s_state[2] = t;
