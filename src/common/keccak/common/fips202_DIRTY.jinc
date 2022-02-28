@@ -55,7 +55,7 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[ (int)l] = t;
+    s_state[(int) l] = t;
   }
 
   l = a_jagged_p[KYBER_SYMBYTES/8];
@@ -64,7 +64,9 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
 
   l = a_jagged_p[(SHA3_256_RATE-1)/8];
   l <<= 3;
-  s_state[u8 (int)l] = 0x80;
+  t = SHA3_256_RATE - 1; t &= 0x7;
+  l += t;
+  s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
   
@@ -106,17 +108,18 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 
   l = a_jagged_p[8];
   l <<= 3;
+
   s_state[u8 (int)l] = 0x1f;
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
   l <<= 3;
+  t = SHAKE256_RATE - 1; t &= 0x7;
+  l += t;
   s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
   
-  state = __keccakf1600_avx2(state);
-
   t = SHAKE256_RATE;
   __squeeze_avx2(state, out, outlen, t);
 }
@@ -154,6 +157,8 @@ fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[1
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
   l <<= 3;
+  t = SHAKE256_RATE - 1; t &= 0x7;
+  l += t;
   s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7
@@ -201,6 +206,8 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
   l <<= 3;
+  t = SHA3_512_RATE - 1; t &= 0x7;
+  l += t;
   s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7
@@ -248,6 +255,8 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
   l <<= 3;
+  t = SHA3_512_RATE - 1; t &= 0x7;
+  l += t;
   s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7
@@ -305,6 +314,8 @@ fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7
 
   l = a_jagged_p[(SHAKE128_RATE-1)/8];
   l <<= 3;
+  t = SHAKE128_RATE - 1; t &= 0x7;
+  l += t;
   s_state[u8 (int)l] = 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
