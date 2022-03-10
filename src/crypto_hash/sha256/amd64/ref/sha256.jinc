@@ -207,7 +207,9 @@ fn _blocks_0_ref(reg ptr u32[8] H, reg u64 in inlen) -> reg ptr u32[8], reg u64,
     for t=16 to 64
     { W = __Wt_ref(W, t); }
 
-    a, b, c, d, e, f, g, h = __load_H_ref(Hp);
+    H = Hp;
+    a, b, c, d, e, f, g, h = __load_H_ref(H);
+    Hp = H;
 
     tr = 0;
     while(tr < 64)
@@ -262,7 +264,7 @@ fn _blocks_0_ref(reg ptr u32[8] H, reg u64 in inlen) -> reg ptr u32[8], reg u64,
   return H, in, inlen;
 }
 
-fn _blocks_1_ref(reg ptr u32[8] H, reg ptr u32[32] sblocks, reg u64 nblocks) -> reg ptr u32[8]
+fn _blocks_1_ref(reg ptr u32[8] H, reg ptr u32[32] sblocks, reg u64 nblocks) -> reg ptr u32[8], reg ptr u32[32]
 {
   inline int t;
   reg u32 T1 T2 a b c d e f g h r v;
@@ -291,7 +293,9 @@ fn _blocks_1_ref(reg ptr u32[8] H, reg ptr u32[32] sblocks, reg u64 nblocks) -> 
     for t=16 to 64
     { W = __Wt_ref(W, t); }
 
-    a, b, c, d, e, f, g, h = __load_H_ref(Hp);
+    H = Hp;
+    a, b, c, d, e, f, g, h = __load_H_ref(H);
+    Hp = H;
 
     tr = 0;
     while(tr < 64)
@@ -343,7 +347,7 @@ fn _blocks_1_ref(reg ptr u32[8] H, reg ptr u32[32] sblocks, reg u64 nblocks) -> 
   }
 
   H = Hp;
-  return H;
+  return H, sblocks;
 }
 
 
@@ -400,7 +404,9 @@ inline fn __sha256(reg u64 out in inlen)
   reg u64 bits nblocks;
   stack u64 s_out s_bits;
   stack u32[8] H;
+  reg ptr u32[8] Hp;
   stack u32[32] sblocks;
+  reg ptr u32[32] sblocksp;
 
   s_out = out;
 
@@ -409,13 +415,16 @@ inline fn __sha256(reg u64 out in inlen)
   s_bits = bits;
 
   H = __initH_ref();
-  H, in, inlen = _blocks_0_ref(H, in, inlen);
+  Hp = H;
+  Hp, in, inlen = _blocks_0_ref(Hp, in, inlen);
 
   bits = s_bits;
   sblocks, nblocks = __lastblocks_ref(in, inlen, bits);
-  H = _blocks_1_ref(H, sblocks, nblocks);
+  sblocksp = sblocks;
+  Hp, _ = _blocks_1_ref(Hp, sblocksp, nblocks);
 
   out = s_out;
+  H = Hp;
   __store_ref(out, H);
 }
 
