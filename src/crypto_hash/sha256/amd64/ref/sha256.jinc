@@ -18,7 +18,8 @@ inline fn __initH_ref() -> stack u32[8]
 }
 
 inline fn __load_H_ref(reg ptr u32[8] H) -> reg u32, reg u32, reg u32, reg u32,
-                                            reg u32, reg u32, reg u32, reg u32
+                                            reg u32, reg u32, reg u32, reg u32,
+                                            reg ptr u32[8]
 {
   reg u32 a b c d e f g h;
 
@@ -31,7 +32,7 @@ inline fn __load_H_ref(reg ptr u32[8] H) -> reg u32, reg u32, reg u32, reg u32,
   g = H[6];
   h = H[7];
 
-  return a, b, c, d, e, f, g, h;
+  return a, b, c, d, e, f, g, h, H;
 }
 
 inline fn __store_H_ref(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u32[8]
@@ -196,6 +197,8 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
   Kp = SHA256_K;
   Hp = _H;
 
+  H = Hp;
+
   while(inlen >= 64)
   {
     for t=0 to 16
@@ -208,8 +211,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     for t=16 to 64
     { W = __Wt_ref(W, t); }
 
-    H = Hp;
-    a, b, c, d, e, f, g, h = __load_H_ref(H);
+    a, b, c, d, e, f, g, h, H = __load_H_ref(H);
     Hp = H;
 
     tr = 0;
@@ -254,14 +256,14 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     h += H[7];
 
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
-    Hp = H;
+    //Hp = H;
 
     in = in_s;
     in += 64;
     inlen -= 64;
   }
 
-  _H = Hp;
+  _H = H;
   return _H, in, inlen;
 }
 
@@ -281,6 +283,8 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
   Hp = _H;
   oblocks = 0;
 
+  H = Hp;
+
   while(nblocks > 0)
   {
     for t=0 to 16
@@ -295,8 +299,7 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     for t=16 to 64
     { W = __Wt_ref(W, t); }
 
-    H = Hp;
-    a, b, c, d, e, f, g, h = __load_H_ref(H);
+    a, b, c, d, e, f, g, h, H = __load_H_ref(H);
     Hp = H;
 
     tr = 0;
@@ -341,14 +344,13 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     h += H[7];
 
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
-    Hp = H;
 
     sblocks = s_sblocks;
     oblocks = s_oblocks;
     nblocks -= 1;
   }
 
-  _H = Hp;
+  _H = H;
   return _H, sblocks;
 }
 
