@@ -80,6 +80,7 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
   stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
   stack ptr u8[KYBER_SYMBYTES] s_noiseseed;
+  reg ptr u8[KYBER_SYMBYTES] lnoiseseed;
   reg u64 i ctp t64;
   reg u8 nonce;
   inline int w;
@@ -100,14 +101,14 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
 
   s_noiseseed = noiseseed;
   aat = __gen_matrix(publicseed, 1);
-  noiseseed = s_noiseseed;
+  lnoiseseed = s_noiseseed;
 
   nonce = 0;
-  sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N] = _poly_getnoise_eta1122_4x(sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N], noiseseed, nonce);
+  sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N] = _poly_getnoise_eta1122_4x(sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N], lnoiseseed, nonce);
 
   nonce = 4;
-  noiseseed = s_noiseseed;
-  epp = _poly_getnoise(epp, noiseseed, nonce);
+  lnoiseseed = s_noiseseed;
+  epp = _poly_getnoise(epp, lnoiseseed, nonce);
 
   sp = __polyvec_ntt(sp);
 
@@ -142,6 +143,7 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
   stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
   stack ptr u8[KYBER_SYMBYTES] s_noiseseed;
+  reg ptr u8[KYBER_SYMBYTES] lnoiseseed;
   stack ptr u8[KYBER_INDCPA_BYTES] sctp;
   reg u64 i t64;
   reg u8 nonce;
@@ -165,14 +167,14 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
 
   s_noiseseed = noiseseed;
   aat = __gen_matrix(publicseed, 1);
-  noiseseed = s_noiseseed;
+  lnoiseseed = s_noiseseed;
 
   nonce = 0;
-  sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N] = _poly_getnoise_eta1122_4x(sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N], noiseseed, nonce);
+  sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N] = _poly_getnoise_eta1122_4x(sp[0:KYBER_N], sp[KYBER_N:KYBER_N], ep[0:KYBER_N], ep[KYBER_N:KYBER_N], lnoiseseed, nonce);
 
   nonce = 4;
-  noiseseed = s_noiseseed;
-  epp = _poly_getnoise(epp, noiseseed, nonce);
+  lnoiseseed = s_noiseseed;
+  epp = _poly_getnoise(epp, lnoiseseed, nonce);
 
   sp = __polyvec_ntt(sp);
     
