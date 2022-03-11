@@ -14,13 +14,19 @@ Supporting multiple architectures is on [our TODO list](#future-plans).
 
 ## API documentation
 
-
 ## Security assumptions guarantees
 
 ### Properties guaranteed by jasmin
 
-TODO: write this.
-Memory safety, constant time, Spectre v1, Spectre v4, stack zeroing, etc.
+#### Memory safety
+
+#### Timing attack protection
+
+#### Protection against Spectre v1
+
+#### Protection against Spectre v4
+
+#### Stack cleanup
 
 ### Properties proven in EasyCrypt
 
@@ -34,6 +40,7 @@ Explain how to read what has been proven for each scheme
   - [Sike](https://sike.org/), and
   - [SPHINCS+](https://sphincs.org).
 * Complete missing EasyCrypt proofs.
+* Support for Windows
 * Support multiple architectures, most importantly 32-bit and 64-bit Arm and RISCV CPUs.
 * Add interfaces to other languages (e.g., [Rust](https://www.rust-lang.org/) and [Go](https://go.dev/)).
 * Implement a libjade-agent that wraps libjade crypto functionality in a separate process.
