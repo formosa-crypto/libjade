@@ -14,7 +14,7 @@ Supporting multiple architectures is on [our TODO list](#future-plans).
 
 ## API documentation
 
-## Security assumptions guarantees
+## Security guarantees
 
 ### Properties guaranteed by jasmin
 
