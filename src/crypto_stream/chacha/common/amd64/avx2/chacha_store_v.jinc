@@ -146,7 +146,7 @@ inline fn __store_xor_last_v_avx2(reg u64 output plain len, reg u256[16] k)
   reg u256[4] k0_3 k4_7;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
-  s_k0_7 = #copy(k0_7);
+  s_k0_7 = #copy_256(k0_7);
 
   k8_15 = __rotate_second_half_v_avx2(s_k8_15);
   k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 0);
@@ -200,7 +200,7 @@ inline fn __store_last_v_avx2(reg u64 output len, reg u256[16] k)
   reg u256[4] k0_3 k4_7;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
-  s_k0_7 = #copy(k0_7);
+  s_k0_7 = #copy_256(k0_7);
 
   k8_15 = __rotate_second_half_v_avx2(s_k8_15);
   k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 0);

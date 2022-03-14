@@ -6,3 +6,4 @@ libjade.a
 libjade.h
 .deps
 .ec
+.log

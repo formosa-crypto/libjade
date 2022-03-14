@@ -7,7 +7,7 @@ require "chacha_globals.jinc"
 inline fn __copy_state_v_avx(stack u128[16] st) -> reg u128[16]
 {
   reg u128[16] k;
-  k = #copy(st);
+  k = #copy_128(st);
   return k;
 }
 

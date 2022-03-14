@@ -7,7 +7,7 @@ require "chacha_globals.jinc"
 inline fn __copy_state_h_avx(reg u128[4] st) -> reg u128[4]
 {
   reg u128[4] k;
-  k = #copy(st);
+  k = #copy_128(st);
   return k;
 }
 
@@ -125,8 +125,8 @@ inline fn __sum_states_h_avx(reg u128[4] k st) -> reg u128[4]
 inline fn __copy_state_h_x2_avx(reg u128[4] st) -> reg u128[4], reg u128[4]
 {
   reg u128[4] k1 k2;
-  k1 = #copy(st);
-  k2 = #copy(st);
+  k1 = #copy_128(st);
+  k2 = #copy_128(st);
   k2 = __increment_counter01_h_avx(k2);
   return k1, k2;
 }

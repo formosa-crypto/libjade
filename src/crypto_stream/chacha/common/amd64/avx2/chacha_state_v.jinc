@@ -25,7 +25,7 @@ inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
   for i=0 to 2
   { st[14+i] = #VPBROADCAST_8u32((u32)[nonce + 4*i]); }
 
-  _st = #copy(st);
+  _st = #copy_256(st);
 
   //  _st:
   //   _st[0]  = { ... , sigma0     , sigma0     }
