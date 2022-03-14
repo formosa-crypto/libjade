@@ -18,7 +18,7 @@ TOP_DIR:=$(shell git rev-parse --show-toplevel)
 SRC_DIR=$(TOP_DIR)/src
 EXT_DIR=$(TOP_DIR)/ext
 
-RND_VAR=rand1
+RND_VAR=randombytes
 RND_DIR=$(EXT_DIR)/crypto_rng/
 RND_SRC=$(RND_DIR)/$(RND_VAR).c
 RND_OBJ=$(RND_SRC:%.c=%.o)
