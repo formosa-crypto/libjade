@@ -103,7 +103,7 @@ void realign(state *s)
 }
 
 
-void test(unsigned char checksum_state[64], state *_s)
+void test(unsigned char *checksum_state, state *_s)
 {
   unsigned long long loop;
   int result;
