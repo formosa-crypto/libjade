@@ -1,0 +1,3 @@
+[submodule "ext/ssbd-tools"]
+	path = ext/ssbd-tools
+	url = https://github.com/tyhicks/ssbd-tools.git
