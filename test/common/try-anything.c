@@ -186,7 +186,7 @@ void output_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const ch
 
 // ////////////////////////////////////////////////////////////////////////////
 
-void checksum(uint8_t checksum_state[64], uint8_t *x, uint64_t xlen)
+void checksum(uint8_t *checksum_state, uint8_t *x, uint64_t xlen)
 {
   uint8_t block[16];
   uint64_t i;
