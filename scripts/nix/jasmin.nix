@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> {}
-, jasminRev ? "5b233eba24740dc20a4abfbaaaf241fb6c7ddea3"
-, jasminSha ? "sha256:4644iGtyijP5BP0jUDiUY8cwZ1Cl+258nJZLAs7hup8="
+, jasminRev ? "d33e055dbb596c31e85e93b3b7da05d7bc341ace"
+, jasminSha ? "sha256:QD8mbYEBge4cEQEVRsB7nJWYO4cyEPuOdeffmwp/MFE="
 }:
 
 with pkgs;
