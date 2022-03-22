@@ -2,7 +2,7 @@
 , ocamlP  ? pkgs.ocamlPackages
 , provers ? with pkgs; [ z3 cvc4 alt-ergo ]
 , ecRev   ? "77aac4b0be22fc83a02d9ea6e32164d893206d94"
-, ecSha   ? "rIKrV1+PBTpzOWFwCvHsk3fK+WqhH8uqKB/S35h8P6I="
+, ecSha   ? "sha256:rIKrV1+PBTpzOWFwCvHsk3fK+WqhH8uqKB/S35h8P6I="
 
 , bJobs   ? 4
 , cJobs   ? 4
@@ -12,8 +12,8 @@ with pkgs;
 let
   inherit (lib) optionals;
 
-  name  = "easycrypt";
-  pname = "${name}-git-" + (builtins.substring 0 7 ecRev);
+  pname   = "easycrypt";
+  version = "git-" + builtins.substring 0 8 ecRev;
 
   minimalOcamlVersion = "4.09";
   maximalOcamlVersion = "4.13.1";
@@ -30,8 +30,9 @@ then    throw  "ocaml <= ${maximalOcamlVersion} is required"
 else
 
 stdenv.mkDerivation {
-  name = name + "-git";
-  src = fetchgit {
+  inherit pname version;
+
+  src     = fetchgit {
     url    = "https://github.com/easycrypt/easycrypt";
     rev    = ecRev;
     sha256 = ecSha;
@@ -75,19 +76,19 @@ index 15f0b785..c41ae20c 100644
 
   buildPhase = ''
     runHook preBuild
-    dune build -p ${name} -j${toString bJobs}
+    dune build -p ${pname} -j${toString bJobs}
     runHook postBuild
   '';
 
   checkPhase = ''
     runHook preCheck
-    dune runtest -p ${name} -j${toString cJobs}
+    dune runtest -p ${pname} -j${toString cJobs}
     runHook postCheck
   '';
 
   installPhase = ''
     runHook preInstall
-    dune install --prefix $out -p ${name} -j${toString bJobs}
+    dune install --prefix $out -p ${pname} -j${toString bJobs}
     runHook postInstall
   '';
 }

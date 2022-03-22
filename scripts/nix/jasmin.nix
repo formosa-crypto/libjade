@@ -1,6 +1,6 @@
 { pkgs ? import <nixpkgs> {}
-, jasminRev ? "1876e97717691e18d6be78c3bc1952a7f319786e"
-, jasminSha ? "GcbrMGdemenJcY9i/i0Dal2cA8/w0lN67AtM/NR85ho="
+, jasminRev ? "5b233eba24740dc20a4abfbaaaf241fb6c7ddea3"
+, jasminSha ? "sha256:4644iGtyijP5BP0jUDiUY8cwZ1Cl+258nJZLAs7hup8="
 }:
 
 with pkgs;
@@ -16,7 +16,8 @@ then throw "Jasmin requires OCaml ≥ 4.08"
 else
 
 stdenv.mkDerivation {
-  name = "jasmin-git";
+  pname   = "jasmin";
+  version = "git-" + builtins.substring 0 8 jasminRev;
 
   src = fetchgit {
     url    = "https://github.com/jasmin-lang/jasmin";
