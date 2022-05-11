@@ -1,1 +1,4 @@
 *.eco
+*_s.ec
+*_ct.ec
+*Array*.ec

@@ -42,3 +42,8 @@ extract:
 
 clean:
 	rm -f $(shell find $(TOP) -name '*.eco')
+
+full-clean: clean
+	rm -f $(shell find $(TOP) -name '*Array*.ec')
+	rm -f $(shell find $(TOP) -name '*_s.ec')
+	rm -f $(shell find $(TOP) -name '*_ct.ec')
