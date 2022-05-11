@@ -45,18 +45,18 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 
 %.s : %.$(JEXT)
 %.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR)
-	$(DEPS)
-	$(COMPILE)
+	@$(DEPS)
+	@$(COMPILE)
 
 $(ECDIR)/%_s.ec : %.$(JEXT)
 $(ECDIR)/%_s.ec : %.$(JEXT) $(DEPSDIR)/%_s.ec.d | $(DEPSDIR) $(ECDIR)
-	$(DEPS)
-	$(EXTRACT)
+	@$(DEPS)
+	@$(EXTRACT)
 
 $(ECDIR)/%_ct.ec : %.$(JEXT)
 $(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR)
-	$(DEPS)
-	$(EXTRACT_CT)
+	@$(DEPS)
+	@$(EXTRACT_CT)
 
 ###
 
