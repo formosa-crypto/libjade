@@ -48,6 +48,10 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 check-sct: $(SRCS)
 	$(JASMINC) -checkSCT $<
 
+# usage: """make check-scton F=[funtion_name]"""
+check-scton: $(SRCS)
+	$(JASMINC) -checkSCTon $(F) $<
+
 ###
 
 %.s : %.$(JEXT)
