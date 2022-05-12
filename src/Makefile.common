@@ -32,6 +32,8 @@ DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR
 compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
 
+###
+
 extract: extract_s extract_ct
 	@true
 
@@ -40,6 +42,11 @@ extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
 
 extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
+
+###
+
+check-sct: $(SRCS)
+	$(JASMINC) -checkSCT $<
 
 ###
 
