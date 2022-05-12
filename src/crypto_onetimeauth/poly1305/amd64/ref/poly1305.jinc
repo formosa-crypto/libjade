@@ -293,5 +293,3 @@ inline fn __poly1305_verify_ref(reg u64 _h in _inlen _k) -> reg u64
   return ret;
 }
 
-
-
