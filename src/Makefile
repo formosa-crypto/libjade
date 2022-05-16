@@ -1,49 +1,63 @@
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
-TOP:=$(shell git rev-parse --show-toplevel)
-SRC=$(TOP)/src
-EXT=$(TOP)/ext
-
-# --------------------------------------------------------------------
-# NOTE: atm. all implementations are considered; in the future they will be filtered by architecture, ..., depending on the target/requirements;
-# Hence, the following variables' initialization will change;
-
-JAZZ   := $(shell find $(SRC)/crypto_* -name '*.jazz' -exec dirname {} \; | sort --unique)
-API    := $(shell find $(SRC)/crypto_* -name 'api.h')
-ASM    := $(shell find $(SRC)/crypto_* -name '*.s')
-EXT    := $(shell find $(EXT)/crypto_* -name '*.c')
-
-OBJ    := $(ASM:%.s=_build/%.o)
 AS     := as
 CC     := gcc
 CFLAGS := -Wall -Ofast
+CI     ?= 0
+export CI
 
 # --------------------------------------------------------------------
-.PHONY: default clean __real_libjade __force
+SRC   :=
+BUILD := .build
+ERR   := .error
+
+ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
+JAZZ   := $(shell find $(SRC) -name '*.jazz')
+API    := $(shell find $(SRC) -name 'api.h')
+ASM    := $(shell find $(SRC) -name '*.s')
+OBJ    := $(ASM:%.s=$(BUILD)/%.o)
+SOURCE := $(dir $(JAZZ))
+
+# --------------------------------------------------------------------
+.PHONY: default __libjade.a source $(SOURCE) check.tar.gz clean distclean
 
 default: libjade.a libjade.h
 
-jasmin:
-	@for i in $(JAZZ); do $(MAKE) -C $$i; done
+libjade.a: source
+	$(MAKE) __$@
 
-libjade.a: jasmin __force
-	$(MAKE) __real_libjade
+__libjade.a: $(OBJ)
+	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
+	@$(MAKE) check.tar.gz
 
 libjade.h: $(API)
 	cat $(API) > $@
 
-__real_libjade: $(OBJ)
-	ar -rc libjade.a $(OBJ) && ranlib libjade.a
+source: $(SOURCE)
+$(SOURCE):
+	@$(MAKE) -C $@ || touch $(ERR)
 
-_build/%.c: %.c
-	@mkdir -p _build/`dirname $<`; cp $< _build/`dirname $<`
-	@echo '$< --> _build/'
-
-_build/%.s: %.s
-	@mkdir -p _build/`dirname $<`; cp $< _build/`dirname $<`
-	@echo '$< --> _build/'
+$(BUILD)/%.s: %.s
+	@mkdir -p $(dir $@); cp $< $(dir $@)
 
 clean:
-	for i in $(JAZZ); do $(MAKE) -C $$i clean; done
-	rm -fr _build libjade.a
+	@for i in $(SOURCE); do $(MAKE) -C $$i clean; done
+	@for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
+
+distclean: clean
+	rm -fr libjade.a libjade.h $(ERR) $(BUILD) check.tar.gz
+
+# --------------------------------------------------------------------
+FAIL := $(shell find $(SRC) -name '*.fail')
+CIL := $(shell find $(SRC) -name '.ci')
+check.tar.gz:
+	$(shell tar -zcvf $@ $(CIL))
+ifeq ($(CI),1)
+ifneq ($(words $(FAIL)),0)
+	$(error $(FAIL))
+endif
+endif
+
+
+
