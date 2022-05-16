@@ -4,20 +4,28 @@ from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/ref/chacha_state.jin
 from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_store.jinc"
 from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_core.jinc"
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_ref_xor(reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_ref_xor(#transient reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
-  __chacha_xor_ref(output, plain, len, nonce, key);
+  #msf reg u64 ms;
+
+  ms = #init_msf();
+  ms = __chacha_xor_ref(output, plain, len, nonce, key, ms);
   _,_,_,_,_,r = #set0();
+  ms = #init_msf();
+
   return r;
 }
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_ref(reg u64 output len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_ref(#transient reg u64 output len nonce key) -> reg u64
 {
   reg u64 r;
-  __chacha_ref(output, len, nonce, key);
+  #msf reg u64 ms;
+
+  ms = #init_msf();
+  ms = __chacha_ref(output, len, nonce, key, ms);
   _,_,_,_,_,r = #set0();
+  ms = #init_msf();
+
   return r;
 }
-
-
