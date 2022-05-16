@@ -5,7 +5,7 @@
 // - inline fn __increment_counter_ref(stack u32[16] state) -> stack u32[16] (check salsa20_state.jinc)
 
 // used;
-inline fn __copy_state_ref(stack u32[16] st) -> reg u32[16], stack u32, stack u32
+#nomodmsf inline fn __copy_state_ref(stack u32[16] st) -> reg u32[16], stack u32, stack u32
 {
   inline int i;
   reg u32[16] k;
@@ -28,7 +28,7 @@ inline fn __copy_state_ref(stack u32[16] st) -> reg u32[16], stack u32, stack u3
 
 
 // computes: k[a] ^= (k[b] + k[c]) <<< r;
-inline fn __line_ref(reg u32[16] k, inline int a b c r) -> reg u32[16]
+#nomodmsf inline fn __line_ref(reg u32[16] k, inline int a b c r) -> reg u32[16]
 {
   reg u32 t;
   t  = k[b];
@@ -39,7 +39,7 @@ inline fn __line_ref(reg u32[16] k, inline int a b c r) -> reg u32[16]
 }
 
 
-inline fn __quarter_round_ref(reg u32[16] k, inline int a b c d) -> reg u32[16]
+#nomodmsf inline fn __quarter_round_ref(reg u32[16] k, inline int a b c d) -> reg u32[16]
 {
   k = __line_ref(k, b, a, d, 7);
   k = __line_ref(k, c, b, a, 9);
@@ -49,7 +49,7 @@ inline fn __quarter_round_ref(reg u32[16] k, inline int a b c d) -> reg u32[16]
 }
 
 
-inline fn __column_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+#nomodmsf inline fn __column_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
 {
   stack u32 k12 k13;
 
@@ -61,8 +61,7 @@ inline fn __column_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], sta
   return k, k12, k13;
 }
 
-
-inline fn __line_round_ref(reg u32[16] k, stack u32 k12 k13) -> reg u32[16], stack u32, stack u32
+#nomodmsf inline fn __line_round_ref(reg u32[16] k, stack u32 k12 k13) -> reg u32[16], stack u32, stack u32
 {
   stack u32 k2 k3;
 
@@ -75,7 +74,7 @@ inline fn __line_round_ref(reg u32[16] k, stack u32 k12 k13) -> reg u32[16], sta
 }
 
 
-inline fn __double_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+#nomodmsf inline fn __double_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
 {
   stack u32 k12 k13;
 
@@ -85,23 +84,29 @@ inline fn __double_round_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], sta
 }
 
 
-inline fn __rounds_ref(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32
+inline fn __rounds_ref(reg u32[16] k, stack u32 k2 k3, #msf reg u64 ms) -> reg u32[16], stack u32, #msf reg u64
 {
   stack u32 s_c k15;
   reg u32 c;
+  reg bool b;
 
-  c = (SALSA20_ROUNDS/2);
+  // c = (SALSA20_ROUNDS/2);
+  c = 20 / 2;
   while
   { s_c = c;
 
     k, k2, k3 = __double_round_ref(k, k2, k3);
 
     c = s_c;
+    c = #protect_32(c, ms);
+
     (_,_,_,_,c) = #DEC_32(c);
-  } (c > 0)
+    b = (c > 0);
+  } (b){ ms = #set_msf(b, ms); }
+  ms = #set_msf(!b, ms);
 
   k15 = k[15]; k[2] = k2; k[3] = k3;
-  return k, k15;
+  return k, k15, ms;
 }
 
 
@@ -126,12 +131,13 @@ inline fn __sum_states_ref(reg u32[16] k, stack u32 k15, stack u32[16] st) -> re
 }
 
 
-inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
+inline fn __salsa20_xor_ref(reg u64 output plain len nonce key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 s_output s_plain s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
+  reg bool b;
 
   s_output = output;
   s_plain = plain;
@@ -139,27 +145,45 @@ inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
 
   st = __init_ref(nonce, key);
 
-  while {len = s_len;} (len >= 64)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
+  while {
+  len = s_len;
+  len = #protect(len, ms);
+  b = (len >= 64);
+  } (b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
+    // TODO
+    // s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
+  ms = #set_msf(!b, ms);
 
-  if(len > 0)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
+  b = (len > 0);
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+    // TODO
+    //__store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+  } else {
+    ms = #set_msf(!b, ms);
   }
+
+  return ms;
 }
 
-inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
+
+inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 s_output s_plain s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
+  reg bool b;
 
   s_output = output;
   s_plain = plain;
@@ -167,74 +191,124 @@ inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
 
   st = __init_1_ref(nonce, key);
 
-  while {len = s_len;} (len >= 64)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
+  while {
+    len = s_len;
+    len = #protect(len, ms);
+    b = (len >= 64);
+  } (b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
+    // TODO
+    // s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
+  ms = #set_msf(!b, ms);
 
-  if(len > 0)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
+  b = (len > 0);
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+    // TODO
+    //__store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+  } else {
+    ms = #set_msf(!b, ms);
   }
+
+  return ms;
 }
 
 //
 
-inline fn __salsa20_ref(reg u64 output len nonce key)
+inline fn __salsa20_ref(reg u64 output len nonce key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 s_output s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
+  reg bool b;
 
   s_output = output;
   s_len = len;
 
   st = __init_ref(nonce, key);
 
-  while {len = s_len;} (len >= 64)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
+  while {
+    len = s_len;
+    len = #protect(len, ms);
+    b = len >= 64;
+  } (b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
+    // TODO
+    // s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
+  ms = #set_msf(!b, ms);
 
-  if(len > 0)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
+  b = (len > 0);
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_last_ref(s_output, s_len, k, k15);
+    // TODO
+    // __store_last_ref(s_output, s_len, k, k15);
+  } else {
+    ms = #set_msf(!b, ms);
   }
+
+  return ms;
 }
 
-inline fn __salsa20_1_ref(reg u64 output len nonce, reg u32[8] key)
+
+inline fn __salsa20_1_ref(reg u64 output len nonce, reg u32[8] key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 s_output s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
+  reg bool b;
 
   s_output = output;
   s_len = len;
 
   st = __init_1_ref(nonce, key);
 
-  while {len = s_len;} (len >= 64)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
+  while {
+    len = s_len;
+    len = #protect(len, ms);
+    b = (len >= 64);
+  } (b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
+    // TODO
+    // s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
+  ms = #set_msf(!b, ms);
 
-  if(len > 0)
-  { k, k2, k3 = __copy_state_ref(st);
-    k, k15 = __rounds_ref(k, k2, k3);
+  b = (len > 0);
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    k, k2, k3 = __copy_state_ref(st);
+    k, k15, ms = __rounds_ref(k, k2, k3, ms);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_last_ref(s_output, s_len, k, k15);
+    // TODO
+    // __store_last_ref(s_output, s_len, k, k15);
+  } else {
+    ms = #set_msf(!b, ms);
   }
-}
 
+  return ms;
+}
