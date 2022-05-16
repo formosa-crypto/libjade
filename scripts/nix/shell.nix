@@ -4,8 +4,8 @@
 with pkgs;
 
 let
-  easycrypt = callPackage (import ./scripts/nix/easycrypt.nix) { };
-  jasmin    = callPackage (import ./scripts/nix/jasmin.nix) { };
+  easycrypt = callPackage (import ./easycrypt.nix) { };
+  jasmin    = callPackage (import ./jasmin.nix) { };
 
   pythonEnv = python3.withPackages (p: with p; [ pyyaml ]);
 
