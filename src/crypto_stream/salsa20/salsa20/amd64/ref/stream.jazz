@@ -27,3 +27,4 @@ export fn jade_stream_salsa20_salsa20_amd64_ref(#transient reg u64 output len no
 
   return r;
 }
+
