@@ -1,5 +1,8 @@
 #!/bin/bash
 
+where="$(cd $(dirname "${BASH_SOURCE[0]}") && pwd)"
+top=$(realpath $where/../../)
+
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
 GREEN='\033[0;32m'
@@ -14,7 +17,7 @@ implementations_status()
   pattern=$1;
   output=$2;
 
-  find . -name $pattern | \
+  find $top -name $pattern | \
   while read file; do
    d=$(dirname $(dirname $file));
    c=$(cat $file | wc -l);
@@ -27,24 +30,24 @@ implementations_status '*_s.log' $warning;
 implementations_status '*_s.error' $error;
 
 # compilation status
-echo -e "${BOLD}Compilation status: ${NORMAL}" 
+echo -e "${BOLD}Compilation status: ${NORMAL}"
 
 # print implementations with zero warnings in 'green'
 cat $warning | egrep -E "^0, " | \
 while read line; do
- echo -e "${GREEN}${BOLD}${line}${NORMAL}" 
+ echo -e "${GREEN}${BOLD}OK, ${line}${NORMAL}"
 done
 
 # print implementations with some warnings in 'yellow'
 cat $warning | egrep -vE "^0, " | \
 while read line; do
- echo -e "${YELLOW}${BOLD}${line}${NORMAL}" 
+ echo -e "${YELLOW}${BOLD}W, ${line}${NORMAL}"
 done
 
 # print non-compiling implementations in red 'yellow'
 cat $error | \
 while read line; do
- echo -e "${RED}${BOLD}${line}${NORMAL}" 
+ echo -e "${RED}${BOLD}E, ${line}${NORMAL}"
 done
 
 rm $warning $error

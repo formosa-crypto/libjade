@@ -10,7 +10,6 @@ export CI
 # --------------------------------------------------------------------
 SRC   :=
 BUILD := .build
-ERR   := .error
 
 ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
 JAZZ   := $(shell find $(SRC) -name '*.jazz')
@@ -29,7 +28,10 @@ libjade.a: source
 
 __libjade.a: $(OBJ)
 	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
+ifeq ($(CI),1)
 	$(MAKE) check.tar.gz
+	$(MAKE) err
+endif
 
 libjade.h: $(API)
 	cat $(API) > $@
@@ -46,19 +48,22 @@ clean:
 	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
 
 distclean: clean
-	rm -fr libjade.a libjade.h $(ERR) $(BUILD) check.tar.gz
+	rm -fr libjade.a libjade.h $(BUILD) check.tar.gz
 
 # --------------------------------------------------------------------
-FAIL := $(shell find $(SRC) -name '*.error')
-CIL := $(shell find $(SRC) -name '.ci')
-check.tar.gz:
 ifeq ($(CI),1)
+
+ERR := $(shell find $(SRC) -name '*.error')
+CIL := $(shell find $(SRC) -name '.ci')
+
+check.tar.gz:
+	@tar -zcvf $@ $(CIL)
 	./../scripts/ci/jsrcr
-ifneq ($(words $(FAIL)),0)
-	$(shell tar -zcvf $@ $(CIL))
-	$(error $(FAIL))
-endif
+
+err:
+ifneq ($(words $(ERR)),0)
+	$(error $(ERR))
 endif
 
-
+endif
 
