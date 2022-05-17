@@ -19,11 +19,10 @@ endif
 endif
 
 # --------------------------------------------------------------------
-FIXME = -not -name 'kem.jazz'
-TOP = $(shell git rev-parse --show-toplevel)
-SRC = $(TOP)/src/
-EDIRS := $(subst //,/,$(shell find $(SRC) -name '*.jazz' $(FIXME) -exec dirname {} \; | sort --unique))
-CDIRS := $(subst //,/,$(shell find $(SRC) -name 'Ec.mk' -exec dirname {} \; | sort --unique))
+TOP := $(realpath ../)
+SRC := $(TOP)/src/
+EDIRS := $(shell find $(SRC) -name '*.jazz' -exec dirname {} \; | sort --unique)
+CDIRS := $(shell find $(SRC) -name 'Ec.mk' -exec dirname {} \; | sort --unique)
 
 # --------------------------------------------------------------------
 .PHONY: default usage check check-xunit extract clean
@@ -43,7 +42,7 @@ extract:
 clean:
 	rm -f $(shell find $(TOP) -name '*.eco')
 
-full-clean: clean
+distclean: clean
 	rm -f $(shell find $(TOP) -name '*Array*.ec')
 	rm -f $(shell find $(TOP) -name '*_s.ec')
 	rm -f $(shell find $(TOP) -name '*_ct.ec')

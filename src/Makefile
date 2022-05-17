@@ -29,32 +29,33 @@ libjade.a: source
 
 __libjade.a: $(OBJ)
 	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
-	@$(MAKE) check.tar.gz
+	$(MAKE) check.tar.gz
 
 libjade.h: $(API)
 	cat $(API) > $@
 
 source: $(SOURCE)
 $(SOURCE):
-	@$(MAKE) -C $@ || touch $(ERR)
+	$(MAKE) -C $@ || true
 
 $(BUILD)/%.s: %.s
-	@mkdir -p $(dir $@); cp $< $(dir $@)
+	mkdir -p $(dir $@); cp $< $(dir $@)
 
 clean:
-	@for i in $(SOURCE); do $(MAKE) -C $$i clean; done
-	@for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
+	for i in $(SOURCE); do $(MAKE) -C $$i clean; done
+	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
 
 distclean: clean
 	rm -fr libjade.a libjade.h $(ERR) $(BUILD) check.tar.gz
 
 # --------------------------------------------------------------------
-FAIL := $(shell find $(SRC) -name '*.fail')
+FAIL := $(shell find $(SRC) -name '*.error')
 CIL := $(shell find $(SRC) -name '.ci')
 check.tar.gz:
-	$(shell tar -zcvf $@ $(CIL))
 ifeq ($(CI),1)
+	./../scripts/ci/jsrcr
 ifneq ($(words $(FAIL)),0)
+	$(shell tar -zcvf $@ $(CIL))
 	$(error $(FAIL))
 endif
 endif

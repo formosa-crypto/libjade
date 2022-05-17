@@ -14,7 +14,11 @@ CIT :=
 CIDIR :=
 ifeq ($(CI),1)
 CIDIR := .ci
-CIT = 2> $(CIDIR)/$(CIN).log || (echo $$? > $(CIDIR)/$(CIN).error && mv $(CIDIR)/$(CIN).log $(CIDIR)/$(CIN).fail && exit 100)
+CIT = 2> $(CIDIR)/$(CIN).log || \
+     (echo $$? > $(CIDIR)/$(CIN).error && \
+      cat $(CIDIR)/$(CIN).log >> $(CIDIR)/$(CIN).error && \
+      rm $(CIDIR)/$(CIN).log && \
+      exit 100)
 endif
 
 #
