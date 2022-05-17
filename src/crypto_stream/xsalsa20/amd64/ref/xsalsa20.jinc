@@ -16,9 +16,13 @@ inline fn __xsalsa20_xor_ref(reg u64 output plain len nonce key, #msf reg u64 ms
   subkey, ms = __hsalsa20_ref(nonce, key, ms);
 
   output = _output;
+  output = #protect(output, ms);
   plain = _plain;
+  plain = #protect(plain, ms);
   len = _len;
+  len = #protect(len, ms);
   nonce = _nonce;
+  nonce = #protect(nonce, ms);
   nonce += 16;
 
   ms = __salsa20_xor_1_ref(output, plain, len, nonce, subkey, ms);
@@ -38,11 +42,13 @@ inline fn __xsalsa20_ref(reg u64 output len nonce key, #msf reg u64 ms) -> #msf 
   subkey, ms = __hsalsa20_ref(nonce, key, ms);
 
   output = _output;
+  output = #protect(output, ms);
   len = _len;
+  len = #protect(len, ms);
   nonce = _nonce;
+  nonce = #protect(nonce, ms);
   nonce += 16;
 
   ms = __salsa20_1_ref(output, len, nonce, subkey, ms);
   return ms;
 }
-
