@@ -1,6 +1,7 @@
 #!/bin/sh
 
 top=$(cd "$(dirname "$0")/../../" ; pwd -P)
+extension=$1
 
 RED='\033[0;31m'
 YELLOW='\033[1;33m'
@@ -18,15 +19,16 @@ implementations_status()
 
   find $top -name $pattern | \
   while read file; do
-   d=$(dirname $(dirname $file));
+   d=$(dirname $file);
+   b=$(basename $file);
    c=$(cat $file | wc -l);
-   echo "$c, $d";
+   echo "$c, $d/$b";
   done | \
   sort -t',' -g -k1 | sed -e 's/^[ \t]*//' -e 's/, \.\//, /' > $output
 }
 
-implementations_status '*_s.log' $warning;
-implementations_status '*_s.error' $error;
+implementations_status "*.${extension}.log" $warning;
+implementations_status "*.${extension}.error" $error;
 
 # compilation status
 echo "${BOLD}Compilation status: ${NORMAL}"
