@@ -9,10 +9,10 @@ export CI
 EXCLUDE ?=
 
 # --------------------------------------------------------------------
-SRC   := .
-BUILD := .build
+SRC    := .
+BUILD  := .build
 
-ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
+ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk')) # just for cleaning .deps and .ci
 JAZZ   := $(shell find $(SRC) -name '*.jazz')
 API    := $(shell find $(SRC) -name 'api.h')
 ASM    := $(shell find $(SRC) -name '*.s')
