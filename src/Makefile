@@ -1,11 +1,12 @@
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
-AS     := as
-CC     := gcc
-CFLAGS := -Wall -Ofast
-CI     ?= 0
+AS      := as
+CC      := gcc
+CFLAGS  := -Wall -Ofast
+CI      ?= 0
 export CI
+EXCLUDE ?=
 
 # --------------------------------------------------------------------
 SRC   := .
@@ -16,7 +17,7 @@ JAZZ   := $(shell find $(SRC) -name '*.jazz')
 API    := $(shell find $(SRC) -name 'api.h')
 ASM    := $(shell find $(SRC) -name '*.s')
 OBJ    := $(ASM:%.s=$(BUILD)/%.o)
-SOURCE := $(dir $(JAZZ))
+SOURCE := $(filter-out $(EXCLUDE), $(dir $(JAZZ)))
 
 # --------------------------------------------------------------------
 .PHONY: default __libjade.a source $(SOURCE) check.tar.gz clean distclean
