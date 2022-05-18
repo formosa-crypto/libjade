@@ -8,7 +8,7 @@ CI     ?= 0
 export CI
 
 # --------------------------------------------------------------------
-SRC   :=
+SRC   := .
 BUILD := .build
 
 ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))

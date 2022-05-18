@@ -1,8 +1,8 @@
 ###
 
-TOP = $(realpath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
+TOP = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
 SRC = $(TOP)/src/
-CDIR = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+CDIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 RDIR = $(subst $(SRC),,$(CDIR))
 PDIR = $(TOP)/proof/$(RDIR)
 OPERATION = $(word 1, $(subst /, ,$(RDIR)))
@@ -38,7 +38,7 @@ EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
 #
 DEPSDIR := .deps
-DEPS = ((sh -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
+DEPS = ((printf "$@: "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
 
 ###
 
