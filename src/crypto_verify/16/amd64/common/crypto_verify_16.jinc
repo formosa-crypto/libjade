@@ -1,5 +1,3 @@
-// TODO : CHECK my name.
-
 inline fn __crypto_verify_p_u8x16_r_u64x2(reg u64 _h, reg u64[2] h) -> reg u64
 {
   reg bool cf;

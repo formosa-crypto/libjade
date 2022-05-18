@@ -1,0 +1,1 @@
+ECFN := -ec namespace
