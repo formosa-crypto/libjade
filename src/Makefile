@@ -17,7 +17,7 @@ JAZZ   := $(shell find $(SRC) -name '*.jazz')
 API    := $(shell find $(SRC) -name 'api.h')
 ASM    := $(shell find $(SRC) -name '*.s')
 OBJ    := $(ASM:%.s=$(BUILD)/%.o)
-SOURCE := $(filter-out $(EXCLUDE), $(dir $(JAZZ)))
+SOURCE := $(filter-out $(EXCLUDE), $(sort $(dir $(JAZZ))))
 
 # --------------------------------------------------------------------
 .PHONY: default __libjade.a source $(SOURCE) check.tar.gz clean distclean
