@@ -53,12 +53,12 @@ distclean: clean
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-ERR := $(shell find $(SRC) -name '*.error')
+ERR := $(shell find $(SRC) -name '*.s.error')
 CIL := $(shell find $(SRC) -name '.ci')
 
 check.tar.gz:
 	@tar -zcvf $@ $(CIL)
-	./../scripts/ci/jsrcr
+	./../scripts/ci/jsrc
 
 err:
 ifneq ($(words $(ERR)),0)
