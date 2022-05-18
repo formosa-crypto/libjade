@@ -1,1 +1,1 @@
-ECFN = -ec namespace -ec namespace_verify
+ECFN ?= -ec namespace -ec namespace_verify
