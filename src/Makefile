@@ -1,9 +1,9 @@
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
-AS      := as
-CC      := gcc
-CFLAGS  := -Wall -Ofast
+AS      ?= as
+CC      ?= gcc
+CFLAGS  ?= -Wall -Ofast
 CI      ?= 0
 export CI
 EXCLUDE ?=
@@ -30,6 +30,7 @@ __libjade.a: $(OBJ)
 	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
 ifeq ($(CI),1)
 	$(MAKE) check.tar.gz
+	$(MAKE) report
 	$(MAKE) err
 endif
 
@@ -58,6 +59,8 @@ CIL := $(shell find $(SRC) -name '.ci')
 
 check.tar.gz:
 	@tar -zcvf $@ $(CIL)
+
+report:
 	./../scripts/ci/jsrc
 
 err:

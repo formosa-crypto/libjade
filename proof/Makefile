@@ -33,6 +33,8 @@ JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jaz
 default: check
 ifeq ($(CI),1)
 	$(MAKE) check.tar.gz
+	$(MAKE) ecfiles.tar.gz
+	$(MAKE) report
 	$(MAKE) err
 endif
 
@@ -59,15 +61,22 @@ distclean: clean
 	rm -f $(shell find $(PROOF) -name '*Array*.ec')
 	rm -f $(shell find $(PROOF) -name '*_s.ec')
 	rm -f $(shell find $(PROOF) -name '*_ct.ec')
+	rm -f check.tar.gz ecfiles.tar.gz
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-ERR := $(shell find $(SRC) -name '*.ec.error')
-CIL := $(shell find $(SRC) -name '.ci')
+ECFILES := $(sort $(dir $(shell find $(PROOF) -name '*.ec')))
+ERR     := $(shell find $(SRC) -name '*.ec.error')
+CIL     := $(shell find $(SRC) -name '.ci')
 
 check.tar.gz:
 	@tar -zcvf $@ $(CIL)
+
+ecfiles.tar.gz:
+	@tar -zcvf $@ $(PROOF)/tests.config $(ECFILES)
+
+report:
 	./../scripts/ci/jproof
 
 err:
