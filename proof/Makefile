@@ -21,14 +21,14 @@ endif
 endif
 
 # --------------------------------------------------------------------
-TOP := $(abspath ../)
-SRC := $(TOP)/src/
-PROOF := $(TOP)/proof/
-EDIRS := $(shell find $(SRC) -name '*.jazz' -exec dirname {} \; | sort --unique)
-CDIRS := $(shell find $(SRC) -name 'Ec.mk' -exec dirname {} \; | sort --unique)
+SRC    := ../src
+PROOF  := .
+
+ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
+JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 
 # --------------------------------------------------------------------
-.PHONY: default usage check check-xunit extract clean
+.PHONY: default usage check check-xunit extract $(ECMK) $(JAZZ) clean
 
 default: check
 ifeq ($(CI),1)
@@ -42,9 +42,15 @@ usage:
 check: extract
 	$(ECCHECK) --bin-args="$(ECARGS)" --jobs="$(ECJOBS)" $(ECCONF) $(CHECKS)
 
-extract:
-	for dir in $(EDIRS); do $(MAKE) -C $$dir extract; done
-	for dir in $(CDIRS); do $(MAKE) -C $$dir -f Ec.mk extract; done
+extract: $(JAZZ) $(ECMK)
+
+$(JAZZ):
+	$(MAKE) -C $@ extract_s || true
+	$(MAKE) -C $@ extract_ct || true
+
+$(ECMK):
+	$(MAKE) -C $@ -f Ec.mk extract_s || true
+	$(MAKE) -C $@ -f Ec.mk extract_ct || true
 
 clean:
 	rm -f $(shell find $(PROOF) -name '*.eco')

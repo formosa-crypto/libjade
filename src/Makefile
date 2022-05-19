@@ -13,14 +13,13 @@ SRC    := .
 BUILD  := .build
 
 ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk')) # just for cleaning .deps and .ci
-JAZZ   := $(shell find $(SRC) -name '*.jazz')
+JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 API    := $(shell find $(SRC) -name 'api.h')
 ASM    := $(shell find $(SRC) -name '*.s')
 OBJ    := $(ASM:%.s=$(BUILD)/%.o)
-SOURCE := $(filter-out $(EXCLUDE), $(sort $(dir $(JAZZ))))
 
 # --------------------------------------------------------------------
-.PHONY: default __libjade.a source $(SOURCE) check.tar.gz clean distclean
+.PHONY: default __libjade.a source $(JAZZ) check.tar.gz clean distclean
 
 default: libjade.a libjade.h
 
@@ -37,15 +36,15 @@ endif
 libjade.h: $(API)
 	cat $(API) > $@
 
-source: $(SOURCE)
-$(SOURCE):
+source: $(JAZZ)
+$(JAZZ):
 	$(MAKE) -C $@ || true
 
 $(BUILD)/%.s: %.s
 	mkdir -p $(dir $@); cp $< $(dir $@)
 
 clean:
-	for i in $(SOURCE); do $(MAKE) -C $$i clean; done
+	for i in $(JAZZ); do $(MAKE) -C $$i clean; done
 	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
 
 distclean: clean

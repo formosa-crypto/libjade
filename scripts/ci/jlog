@@ -31,7 +31,7 @@ implementations_status "*.${extension}.log" $warning;
 implementations_status "*.${extension}.error" $error;
 
 # compilation status
-echo "${BOLD}Compilation status: ${NORMAL}"
+echo "${BOLD}Status: ${NORMAL}"
 
 # print implementations with zero warnings in 'green'
 cat $warning | egrep -E "^0, " | \
