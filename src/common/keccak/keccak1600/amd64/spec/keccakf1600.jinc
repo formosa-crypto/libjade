@@ -1,7 +1,7 @@
 
 require "keccakf1600_globals.jinc"
 
-inline fn __index(inline int x y) -> inline int
+#nomodmsf inline fn __index(inline int x y) -> inline int
 {
   inline int r;
   r = (x % 5) + 5 * (y % 5);
@@ -9,7 +9,7 @@ inline fn __index(inline int x y) -> inline int
 }
 
 
-inline fn __keccak_rho_offsets(inline int i) -> inline int
+inline fn __keccak_rho_offsets(inline int i, #msf reg u64 ms) -> inline int, #msf reg u64
 {
   inline int r x y z t;
 
@@ -18,7 +18,7 @@ inline fn __keccak_rho_offsets(inline int i) -> inline int
   y = 0;
 
   for t = 0 to 24 {
-    if (i == x + 5 * y) {
+    #inline if (i == x + 5 * y) {
       r = ((t + 1) * (t + 2) / 2) % 64;
     }
     z = (2 * x + 3 * y) % 5;
@@ -26,20 +26,20 @@ inline fn __keccak_rho_offsets(inline int i) -> inline int
     y = z;
   }
 
-  return r;
+  return r, ms;
 }
 
 
-inline fn __rhotates(inline int x y) -> inline int
+inline fn __rhotates(inline int x y, #msf reg u64 ms) -> inline int, #msf reg u64
 {
   inline int i r;
   i = __index(x, y);
-  r = __keccak_rho_offsets(i);
-  return r;
+  r, ms = __keccak_rho_offsets(i, ms);
+  return r, ms;
 }
 
 
-inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
+#nomodmsf inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
 {
   inline int x y;
   reg u64[5] c d;
@@ -67,19 +67,19 @@ inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
 }
 
 
-inline fn __rho_spec(stack u64[25] a) -> stack u64[25]
+inline fn __rho_spec(stack u64[25] a, #msf reg u64 ms) -> stack u64[25], #msf reg u64
 {
   inline int x y i z;
 
   for x = 0 to 5 {
     for y = 0 to 5 {
       i = __index(x, y);
-      z = __keccak_rho_offsets(i);
+      z, ms = __keccak_rho_offsets(i, ms);
       _, _, a[i] = #ROL_64(a[i], z);
     }
   }
 
-  return a;
+  return a, ms;
 }
 
 
@@ -133,32 +133,35 @@ inline fn __iota_spec(stack u64[25] a, reg u64 c) -> stack u64[25]
 }
 
 
-inline fn __keccakP1600_round_spec(stack u64[25] state, reg u64 c) -> stack u64[25]
+inline fn __keccakP1600_round_spec(stack u64[25] state, reg u64 c, #msf reg u64 ms) -> stack u64[25], #msf reg u64
 {
   state = __theta_spec(state);
-  state = __rho_spec(state);
+  state, ms = __rho_spec(state, ms);
   state = __pi_spec(state);
   state = __chi_spec(state);
   state = __iota_spec(state, c);
-  return state;
+  return state, ms;
 }
 
 
-inline fn __keccakf1600_spec(stack u64[25] state) -> stack u64[25]
+inline fn __keccakf1600_spec(stack u64[25] state, #msf reg u64 ms) -> stack u64[25], #msf reg u64
 {
   reg u64 round RC;
   reg ptr u64[24] kRCp;
+  reg bool b;
 
   kRCp = KECCAK1600_RC;
   round = 0;
-  while(round < 24)
+  while{
+    b = round < 24;
+  }(b)
   {
+    ms = #set_msf(b, ms);
     RC = kRCp[(int) round];
-    state = __keccakP1600_round_spec(state, RC);
+    state, ms = __keccakP1600_round_spec(state, RC, ms);
     round += 1;
   }
+  ms = #set_msf(!b, ms);
 
-  return state;
+  return state, ms;
 }
-
-
