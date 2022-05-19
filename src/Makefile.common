@@ -93,6 +93,11 @@ $(DEPFILES):
 include $(wildcard $(DEPFILES))
 
 ###
+.PHONY: clean-ci clean
 
-clean:
-	@rm -fr $(DEPSDIR) *.s *.o *.a $(CIDIR)
+clean-ci:
+	@rm -fr $(CIDIR)
+
+clean: clean-ci
+	@rm -fr $(DEPSDIR) *.s *.o *.a
+

@@ -19,7 +19,7 @@ ASM    := $(shell find $(SRC) -name '*.s')
 OBJ    := $(ASM:%.s=$(BUILD)/%.o)
 
 # --------------------------------------------------------------------
-.PHONY: default __libjade.a source $(JAZZ) check.tar.gz clean distclean
+.PHONY: default __libjade.a source $(JAZZ) clean-ci clean distclean check.tar.gz report err
 
 default: libjade.a libjade.h
 
@@ -43,6 +43,12 @@ $(JAZZ):
 
 $(BUILD)/%.s: %.s
 	mkdir -p $(dir $@); cp $< $(dir $@)
+
+# --------------------------------------------------------------------
+
+clean-ci:
+	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
+	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
 
 clean:
 	for i in $(JAZZ); do $(MAKE) -C $$i clean; done

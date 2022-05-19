@@ -28,7 +28,7 @@ ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
 JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 
 # --------------------------------------------------------------------
-.PHONY: default usage check check-xunit extract $(ECMK) $(JAZZ) clean
+.PHONY: default usage check check-xunit extract $(ECMK) $(JAZZ) clean-ci clean distclean check.tar.gz ecfiles.tar.gz report err
 
 default: check
 ifeq ($(CI),1)
@@ -54,10 +54,16 @@ $(ECMK):
 	$(MAKE) -C $@ -f Ec.mk extract_s || true
 	$(MAKE) -C $@ -f Ec.mk extract_ct || true
 
+# --------------------------------------------------------------------
+
+clean-ci:
+	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
+	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
+
 clean:
 	rm -f $(shell find $(PROOF) -name '*.eco')
 
-distclean: clean
+distclean: clean clean-ci
 	rm -f $(shell find $(PROOF) -name '*Array*.ec')
 	rm -f $(shell find $(PROOF) -name '*_s.ec')
 	rm -f $(shell find $(PROOF) -name '*_ct.ec')
