@@ -21,7 +21,7 @@ inline fn __theta_sum_ref1(reg ptr u64[25] a) -> reg u64[5]
 }
 
 
-// D[x] = C[x-1] ^ ROT(C[x+1], 1) 
+// D[x] = C[x-1] ^ ROT(C[x+1], 1)
 inline fn __theta_rol_ref1(reg u64[5] c) -> reg u64[5]
 {
   inline int x;
@@ -50,8 +50,9 @@ inline fn __theta_rol_ref1(reg u64[5] c) -> reg u64[5]
 inline fn __rol_sum_ref1(
   reg ptr u64[25] a,
   reg u64[5] d,
-  inline int y
-) -> reg u64[5]
+  inline int y,
+  #msf reg u64 ms
+) -> reg u64[5], #msf reg u64
 {
   inline int r x x_ y_;
   reg u64[5] b;
@@ -60,7 +61,7 @@ inline fn __rol_sum_ref1(
   {
     x_ = (x + 3*y) % 5;
     y_ = x;
-    r = __rhotates(x_, y_);
+    r, ms = __rhotates(x_, y_, ms);
 
     // B[x] = A[x',y']
     b[x] = a[x_ + y_*5];
@@ -69,12 +70,12 @@ inline fn __rol_sum_ref1(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    if(r != 0)
+    #inline if(r != 0)
     { _, _, b[x] = #ROL_64(b[x], r); }
 
   }
 
-  return b;
+  return b, ms;
 }
 
 
@@ -91,12 +92,12 @@ inline fn __set_row_ref1(
   reg u64 t;
 
   for x=0 to 5
-  { 
+  {
     x1 = (x + 1) % 5;
     x2 = (x + 2) % 5;
     t  = !b[x1] & b[x2];
     t ^= b[x];
-    if( x==0 && y==0 ){ t ^= s_rc; }
+    #inline if( x==0 && y==0 ){ t ^= s_rc; }
     e[x + y*5] = t;
   }
 
@@ -104,7 +105,7 @@ inline fn __set_row_ref1(
 }
 
 
-inline fn __round_ref1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25]
+inline fn __round_ref1(reg ptr u64[25] e a, stack u64 s_rc, #msf reg u64 ms) -> reg ptr u64[25], #msf reg u64
 {
   inline int y;
   reg u64[5] b c d;
@@ -113,15 +114,15 @@ inline fn __round_ref1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25]
   d = __theta_rol_ref1(c);
 
   for y = 0 to 5
-  { b = __rol_sum_ref1(a, d, y);
+  { b, ms = __rol_sum_ref1(a, d, y, ms);
     e = __set_row_ref1(e, b, y, s_rc);
   }
 
-  return e;
+  return e, ms;
 }
 
 
-inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
+inline fn __keccakf1600_ref1(reg ptr u64[25] a, #msf reg u64 ms) -> reg ptr u64[25], #msf reg u64
 {
   reg ptr u64[24] RC;
   stack ptr u64[24] s_RC;
@@ -129,6 +130,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
   reg ptr u64[25] e;
   reg u64 c rc;
   stack u64 s_c s_rc;
+  reg bool b;
 
   RC = KECCAK1600_RC;
   s_RC = RC;
@@ -140,28 +142,31 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
     s_c = c;
 
     RC = s_RC;
+    RC = #protect_ptr(RC, ms);
     rc = RC[(int) c];
     s_rc = rc;
-    e = __round_ref1(e, a, s_rc);
+    e, ms = __round_ref1(e, a, s_rc, ms);
 
     RC = s_RC;
+    RC = #protect_ptr(RC, ms);
     rc = RC[(int) c + 1];
     s_rc = rc;
-    a = __round_ref1(a, e, s_rc);
+    a, ms = __round_ref1(a, e, s_rc, ms);
 
     c = s_c;
+    c = #protect(c, ms);
     c += 2;
-  } (c < KECCAK_ROUNDS)
+    b = c < KECCAK_ROUNDS;
+  } (b) { ms = #set_msf(b, ms); }
+  ms = #set_msf(!b, ms);
 
-  return a;
+  return a, ms;
 }
 
 
 #[returnaddress="stack"]
-fn _keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
+fn _keccakf1600_ref1(reg ptr u64[25] a, #msf reg u64 ms) -> reg ptr u64[25], #msf reg u64
 {
-  a = __keccakf1600_ref1(a);
-  return a;
+  a, ms = __keccakf1600_ref1(a, ms);
+  return a, ms;
 }
-
-
