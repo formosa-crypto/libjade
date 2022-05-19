@@ -137,13 +137,13 @@ inline fn __keccakf1600_ref(stack u64[25] a, #msf reg u64 ms) -> stack u64[25], 
   while
   {
     RC = s_RC;
-    //RC = #protect(RC, ms);
+    RC = #protect_ptr(RC, ms);
     rc = RC[(int) c];
     s_RC = RC;
     e, ms = __round_ref(a, rc, ms);
 
     RC = s_RC;
-    //RC = #protect(RC, ms);
+    RC = #protect_ptr(RC, ms);
     rc = RC[(int) c + 1];
     s_RC = RC;
     a, ms = __round_ref(e, rc, ms);
