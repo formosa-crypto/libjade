@@ -122,23 +122,30 @@ inline fn __round_ref(stack u64[25] a, reg u64 rc, #msf reg u64 ms) -> stack u64
   return e, ms;
 }
 
-
 inline fn __keccakf1600_ref(stack u64[25] a, #msf reg u64 ms) -> stack u64[25], #msf reg u64
 {
   reg ptr u64[24] RC;
+  stack ptr u64[24] s_RC;
   stack u64[25] e;
   reg u64 c rc;
   reg bool b;
 
   RC = KECCAK1600_RC;
+  s_RC = RC;
 
   c = 0;
   while
   {
+    RC = s_RC;
+    //RC = #protect(RC, ms);
     rc = RC[(int) c];
+    s_RC = RC;
     e, ms = __round_ref(a, rc, ms);
 
+    RC = s_RC;
+    //RC = #protect(RC, ms);
     rc = RC[(int) c + 1];
+    s_RC = RC;
     a, ms = __round_ref(e, rc, ms);
 
     c += 2;
