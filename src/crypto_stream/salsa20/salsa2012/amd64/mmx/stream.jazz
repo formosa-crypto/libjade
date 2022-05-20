@@ -1,6 +1,6 @@
 param int SALSA20_ROUNDS=12;
 
-from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
+from Jade require "crypto_stream/salsa20/common/amd64/mmx/salsa20.jinc"
 
 export fn jade_stream_salsa20_salsa2012_amd64_mmx_xor(reg u64 output plain len nonce key) -> reg u64
 {

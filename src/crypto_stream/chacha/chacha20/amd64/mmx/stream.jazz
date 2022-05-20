@@ -1,6 +1,6 @@
 param int CHACHA_ROUNDS=20;
 
-from Jade require "crypto_stream/chacha/common/amd64/ref/chacha.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/mmx/chacha.jinc"
 
 export fn jade_stream_chacha_chacha20_amd64_mmx_xor(reg u64 output plain len nonce key) -> reg u64
 {

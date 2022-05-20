@@ -1,4 +1,4 @@
-from Jade require "common/keccak/keccak1600/amd64/ref/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/mmx/keccak1600.jinc"
 
 inline fn __sha3_224_mmx(reg u64 out in inlen)
 {

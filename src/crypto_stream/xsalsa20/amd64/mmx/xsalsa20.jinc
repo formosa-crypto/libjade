@@ -1,6 +1,6 @@
 
 require "hsalsa20.jinc"
-from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
+from Jade require "crypto_stream/salsa20/common/amd64/mmx/salsa20.jinc"
 
 inline fn __xsalsa20_xor_mmx(reg u64 output plain len nonce key)
 {

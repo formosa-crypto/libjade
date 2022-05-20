@@ -1,5 +1,5 @@
 
-from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
+from Jade require "crypto_stream/salsa20/common/amd64/mmx/salsa20.jinc"
 
 // nonce : 16 bytes
 // key : 32 bytes
