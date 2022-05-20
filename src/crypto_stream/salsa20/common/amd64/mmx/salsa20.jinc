@@ -1,0 +1,3 @@
+require "salsa20_state.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_store.jinc"
+require "salsa20_core.jinc"

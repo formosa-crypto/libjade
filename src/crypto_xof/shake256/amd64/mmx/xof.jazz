@@ -1,0 +1,11 @@
+require "shake256.jinc"
+
+export fn jade_xof_shake256_amd64_ref(reg u64 out outlen in inlen) -> reg u64
+{
+  reg u64 r;
+  __shake256_ref(out, outlen, in, inlen);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+

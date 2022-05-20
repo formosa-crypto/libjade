@@ -1,0 +1,15 @@
+from Jade require "common/keccak/keccak1600/amd64/ref/keccak1600.jinc"
+
+inline fn __sha3_256_ref(reg u64 out in inlen)
+{
+  reg u64 outlen rate;
+  reg u8 trail_byte;
+
+  outlen = (256/8);
+  trail_byte = 0x6;
+  rate = (1088/8);
+
+  _keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+}
+
+
