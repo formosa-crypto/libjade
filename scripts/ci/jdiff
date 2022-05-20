@@ -13,6 +13,12 @@
                                 # - counts the number of lines that 'diff *.s.tag1 *.s.tag2' produces
                                 # --- if different than 0, red message is printed, return will not be 0;
                                 # --- otherwise, green message is printed, return status is not changed
+# additional note:
+# './jdiff diff tag1 tag2' can produce a different output of './jdiff diff tag2 tag1':
+# - if the first used version of the Jasmin compiler is not able to compile
+#   a given implementation but the second version of the Jasmin compiler is,
+#   then a line starting by "E, -1," will be printed for that given
+#   implementation and the return will not be 0
 
 #set -x #verbose
 
@@ -48,16 +54,18 @@ then
     fn=$(basename $f1 .$tag1)
     f2=$fd/$fn.$tag2
     fd=$(dirname $fd)
+    wf1=$(cat $f1 | wc -l | sed -e 's/\s*//g');
 
     if [ -f $f2 ]
     then
+      wf2=$(cat $f2 | wc -l | sed -e 's/\s*//g');
       dl=$(diff $f1 $f2 | wc -l | sed -e 's/\s*//g')
       if [ "$dl" = "0" ]
-      then echo "${GREEN}${BOLD}OK, ${dl}, ${fd}, ${tag1}, ${tag2} ${NORMAL}"
-      else echo "${RED}${BOLD}E, ${dl}, ${fd}, ${tag1}, ${tag2} ${NORMAL}"; ok=1
+      then echo "${GREEN}${BOLD}OK, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"
+      else echo "${RED}${BOLD}E, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"; ok=1
       fi
     else
-      echo "${RED}${BOLD}E, -1, ${fd}, ${tag1}, ${tag2} ${NORMAL}"; ok=1
+      echo "${RED}${BOLD}E, -1, ${fd}, ${tag1} (${wf1}), ${tag2}(-1), ${NORMAL}"; ok=1
     fi
   done
   exit $ok
