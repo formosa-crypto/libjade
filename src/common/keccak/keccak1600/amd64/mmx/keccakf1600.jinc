@@ -2,7 +2,7 @@ from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc"
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
-inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
+inline fn __theta_sum_mmx(stack u64[25] a) -> reg u64[5]
 {
   inline int x y;
   reg u64[5] c;
@@ -22,7 +22,7 @@ inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
 
 
 // D[x] = C[x-1] ^ ROT(C[x+1], 1) 
-inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
+inline fn __theta_rol_mmx(reg u64[5] c) -> reg u64[5]
 {
   inline int x;
   reg u64[5] d;
@@ -47,7 +47,7 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
 // M = (0 1)  M^-1 = (1 3)  x' = 1x + 3y
 //     (2 3)         (1 0)  y' = 1x + 0y
 //
-inline fn __rol_sum_ref(
+inline fn __rol_sum_mmx(
   stack u64[25] a,
   reg u64[5] d,
   inline int y
@@ -80,7 +80,7 @@ inline fn __rol_sum_ref(
 
 // E[x, y] = B[x] ^ ( (!B[x+1]) & B[x+2] )
 // -- when x and y are 0: E[0,0] ^= RC[i];
-inline fn __set_row_ref(
+inline fn __set_row_mmx(
   stack u64[25] e,
   reg u64[5] b,
   inline int y,
@@ -104,25 +104,25 @@ inline fn __set_row_ref(
 }
 
 
-inline fn __round_ref(stack u64[25] a, reg u64 rc) -> stack u64[25]
+inline fn __round_mmx(stack u64[25] a, reg u64 rc) -> stack u64[25]
 {
   inline int y;
   reg u64[5] b c d;
   stack u64[25] e;
 
-  c = __theta_sum_ref(a);
-  d = __theta_rol_ref(c);
+  c = __theta_sum_mmx(a);
+  d = __theta_rol_mmx(c);
 
   for y = 0 to 5
-  { b = __rol_sum_ref(a, d, y);
-    e = __set_row_ref(e, b, y, rc);
+  { b = __rol_sum_mmx(a, d, y);
+    e = __set_row_mmx(e, b, y, rc);
   }
 
   return e;
 }
 
 
-inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
+inline fn __keccakf1600_mmx(stack u64[25] a) -> stack u64[25]
 {
   reg ptr u64[24] RC;
   stack u64[25] e;
@@ -134,10 +134,10 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
   while
   {
     rc = RC[(int) c];
-    e = __round_ref(a, rc);
+    e = __round_mmx(a, rc);
 
     rc = RC[(int) c + 1];
-    a = __round_ref(e, rc);
+    a = __round_mmx(e, rc);
 
     c += 2;
   } (c < KECCAK_ROUNDS)

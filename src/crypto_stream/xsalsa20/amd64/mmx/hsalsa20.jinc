@@ -3,7 +3,7 @@ from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
 
 // nonce : 16 bytes
 // key : 32 bytes
-inline fn __hsalsa20_init_ref(reg u64 nonce key) -> reg u32[16], stack u32, stack u32
+inline fn __hsalsa20_init_mmx(reg u64 nonce key) -> reg u32[16], stack u32, stack u32
 {
   inline int i;
   reg u32[16] st;
@@ -32,7 +32,7 @@ inline fn __hsalsa20_init_ref(reg u64 nonce key) -> reg u32[16], stack u32, stac
   return st, st2, st3;
 }
 
-inline fn __hsalsa20_store_ref(reg u32[16] sk) -> reg u32[8]
+inline fn __hsalsa20_store_mmx(reg u32[16] sk) -> reg u32[8]
 {
   inline int i;
   reg u32[8] sks;
@@ -46,16 +46,16 @@ inline fn __hsalsa20_store_ref(reg u32[16] sk) -> reg u32[8]
   return sks;
 }
 
-inline fn __hsalsa20_ref(reg u64 nonce key) -> reg u32[8]
+inline fn __hsalsa20_mmx(reg u64 nonce key) -> reg u32[8]
 {
   reg u32[16] st;
   reg u32[8] sk;
   stack u32 st2 st3 st15;
 
-  st, st2, st3 = __hsalsa20_init_ref(nonce, key);
-  st, st15 = __rounds_ref(st, st2, st3);
+  st, st2, st3 = __hsalsa20_init_mmx(nonce, key);
+  st, st15 = __rounds_mmx(st, st2, st3);
   st[15] = st15;
-  sk = __hsalsa20_store_ref(st);
+  sk = __hsalsa20_store_mmx(st);
 
   return sk;
 }

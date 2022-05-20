@@ -2,7 +2,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // store 'xor' ////////////////////////////////////////////////////////////////
 
-inline fn __update_ptr_xor_ref(reg u64 output plain len, inline int n) -> reg u64, reg u64, reg u64
+inline fn __update_ptr_xor_mmx(reg u64 output plain len, inline int n) -> reg u64, reg u64, reg u64
 {
   output += n;
   plain += n;
@@ -11,7 +11,7 @@ inline fn __update_ptr_xor_ref(reg u64 output plain len, inline int n) -> reg u6
 }
 
 // 64 bytes
-inline fn __store_xor_ref(stack u64 s_output s_plain s_len, reg u32[16] k, stack u32 k15) -> stack u64, stack u64, stack u64
+inline fn __store_xor_mmx(stack u64 s_output s_plain s_len, reg u32[16] k, stack u32 k15) -> stack u64, stack u64, stack u64
 {
   inline int i;
   reg u64[8] kk;
@@ -48,7 +48,7 @@ inline fn __store_xor_ref(stack u64 s_output s_plain s_len, reg u32[16] k, stack
 
   len = s_len;
 
-  output, plain, len = __update_ptr_xor_ref(output, plain, len, 64);
+  output, plain, len = __update_ptr_xor_mmx(output, plain, len, 64);
 
   s_output = output;
   s_plain = plain;
@@ -57,7 +57,7 @@ inline fn __store_xor_ref(stack u64 s_output s_plain s_len, reg u32[16] k, stack
   return s_output, s_plain, s_len;
 }
 
-inline fn __sum_states_store_xor_ref(
+inline fn __sum_states_store_xor_mmx(
   stack u64 s_output s_plain s_len,
   reg u32[16] k, stack u32 k15,
   stack u32[16] st
@@ -106,7 +106,7 @@ inline fn __sum_states_store_xor_ref(
 
   len = s_len;
 
-  output, plain, len = __update_ptr_xor_ref(output, plain, len, 64);
+  output, plain, len = __update_ptr_xor_mmx(output, plain, len, 64);
 
   s_output = output;
   s_plain = plain;
@@ -115,7 +115,7 @@ inline fn __sum_states_store_xor_ref(
   return s_output, s_plain, s_len;
 }
 
-inline fn __store_xor_last_ref(stack u64 s_output s_plain s_len, reg u32[16] k, stack u32 k15)
+inline fn __store_xor_last_mmx(stack u64 s_output s_plain s_len, reg u32[16] k, stack u32 k15)
 {
   inline int i;
   reg u64 t j output plain len len8;
@@ -159,7 +159,7 @@ inline fn __store_xor_last_ref(stack u64 s_output s_plain s_len, reg u32[16] k, 
 ///////////////////////////////////////////////////////////////////////////////
 // store //////////////////////////////////////////////////////////////////////
 
-inline fn __update_ptr_ref(reg u64 output len, inline int n) -> reg u64, reg u64
+inline fn __update_ptr_mmx(reg u64 output len, inline int n) -> reg u64, reg u64
 {
   output += n;
   len -= n;
@@ -167,7 +167,7 @@ inline fn __update_ptr_ref(reg u64 output len, inline int n) -> reg u64, reg u64
 }
 
 // 64 bytes
-inline fn __store_ref(stack u64 s_output s_len, reg u32[16] k, stack u32 k15) -> stack u64, stack u64
+inline fn __store_mmx(stack u64 s_output s_len, reg u32[16] k, stack u32 k15) -> stack u64, stack u64
 {
   inline int i;
   reg u64[8] kk;
@@ -200,7 +200,7 @@ inline fn __store_ref(stack u64 s_output s_len, reg u32[16] k, stack u32 k15) ->
 
   len = s_len;
 
-  output, len = __update_ptr_ref(output, len, 64);
+  output, len = __update_ptr_mmx(output, len, 64);
 
   s_output = output;
   s_len = len;
@@ -208,7 +208,7 @@ inline fn __store_ref(stack u64 s_output s_len, reg u32[16] k, stack u32 k15) ->
   return s_output, s_len;
 }
 
-inline fn __sum_states_store_ref(
+inline fn __sum_states_store_mmx(
   stack u64 s_output s_len,
   reg u32[16] k, stack u32 k15,
   stack u32[16] st
@@ -253,7 +253,7 @@ inline fn __sum_states_store_ref(
 
   len = s_len;
 
-  output, len = __update_ptr_ref(output, len, 64);
+  output, len = __update_ptr_mmx(output, len, 64);
 
   s_output = output;
   s_len = len;
@@ -261,7 +261,7 @@ inline fn __sum_states_store_ref(
   return s_output, s_len;
 }
 
-inline fn __store_last_ref(stack u64 s_output s_len, reg u32[16] k, stack u32 k15)
+inline fn __store_last_mmx(stack u64 s_output s_len, reg u32[16] k, stack u32 k15)
 {
   inline int i;
   reg u64 t j output len len8;

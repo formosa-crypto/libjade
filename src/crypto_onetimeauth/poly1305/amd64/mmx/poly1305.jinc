@@ -211,7 +211,7 @@ inline fn __freeze(reg u64[3] h) -> reg u64[2]
 }
 
 
-inline fn __poly1305_setup_ref(reg u64 k) -> reg u64[3], reg u64[3], reg u64
+inline fn __poly1305_setup_mmx(reg u64 k) -> reg u64[3], reg u64[3], reg u64
 {
   inline int i;
   reg u64[3] h r;
@@ -224,7 +224,7 @@ inline fn __poly1305_setup_ref(reg u64 k) -> reg u64[3], reg u64[3], reg u64
 }
 
 
-inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r) -> reg u64, reg u64, reg u64[3]
+inline fn __poly1305_update_mmx(reg u64 in inlen, reg u64[3] h r) -> reg u64, reg u64, reg u64[3]
 {
   reg bool cf;
   reg u64[2] m;
@@ -241,7 +241,7 @@ inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r) -> reg u64, re
 }
 
 
-inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
+inline fn __poly1305_last_mmx(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
 {
   reg u64[2] m s h2;
 
@@ -257,25 +257,25 @@ inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
   return h2;
 }
 
-inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
+inline fn __poly1305_r_mmx(reg u64 in inlen k) -> reg u64[2]
 {
   reg u64[3] h r;
   reg u64[2] h2;
 
-  h, r, k = __poly1305_setup_ref(k);
-  in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
-  h2 = __poly1305_last_ref(in, inlen, k, h, r);
+  h, r, k = __poly1305_setup_mmx(k);
+  in, inlen, h = __poly1305_update_mmx(in, inlen, h, r);
+  h2 = __poly1305_last_mmx(in, inlen, k, h, r);
   
   return h2;
 }
 
 #[returnaddress="stack"]
-fn _poly1305_r_ref(reg u64 in inlen k) -> reg u64, reg u64
+fn _poly1305_r_mmx(reg u64 in inlen k) -> reg u64, reg u64
 {
   reg u64[2] h;
   reg u64 h0 h1;
  
-  h = __poly1305_r_ref(in, inlen, k);
+  h = __poly1305_r_mmx(in, inlen, k);
   
   h0 = h[0];
   h1 = h[1];
@@ -284,24 +284,24 @@ fn _poly1305_r_ref(reg u64 in inlen k) -> reg u64, reg u64
 
 //
 
-inline fn __poly1305_ref(reg u64 out in inlen k)
+inline fn __poly1305_mmx(reg u64 out in inlen k)
 {
   reg u64[2] h;
   reg u64 h0 h1;
 
-  h0, h1 = _poly1305_r_ref(in, inlen, k);
+  h0, h1 = _poly1305_r_mmx(in, inlen, k);
   h[0] = h0;
   h[1] = h1;
   __store2(out, h);
 }
 
-inline fn __poly1305_verify_ref(reg u64 h in inlen k) -> reg u64
+inline fn __poly1305_verify_mmx(reg u64 h in inlen k) -> reg u64
 {
   reg u64[2] hc;
   reg u64 hc0 hc1;
   reg u64 r;
 
-  hc0, hc1 = _poly1305_r_ref(in, inlen, k);
+  hc0, hc1 = _poly1305_r_mmx(in, inlen, k);
   hc[0] = hc0;
   hc[1] = hc1;
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);

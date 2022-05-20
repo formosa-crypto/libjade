@@ -2,7 +2,7 @@ param int KECCAK_ROUNDS=24;
 
 require "keccakf1600.jinc"
 
-inline fn __keccak_init_ref() -> stack u64[25]
+inline fn __keccak_init_mmx() -> stack u64[25]
 {
   stack u64[25] state;
   reg u64 i t;
@@ -18,7 +18,7 @@ inline fn __keccak_init_ref() -> stack u64[25]
 }
 
 
-inline fn __add_full_block_ref(
+inline fn __add_full_block_mmx(
   stack u64[25] state,
   reg u64 in inlen,
   reg u64 rate
@@ -44,7 +44,7 @@ inline fn __add_full_block_ref(
 
 
 // obs: @pre: inlen < rate_in_bytes
-inline fn __add_final_block_ref(
+inline fn __add_final_block_mmx(
   stack u64[25] state,
   reg   u64 in inlen,
   reg   u8  trail_byte,
@@ -82,7 +82,7 @@ inline fn __add_final_block_ref(
 }
 
 
-inline fn __absorb_ref(
+inline fn __absorb_mmx(
   stack u64[25] state,
   reg   u64 in inlen,
   stack u8  s_trail_byte,
@@ -96,12 +96,12 @@ inline fn __absorb_ref(
   // intermediate blocks
   while ( inlen >= rate )
   {
-    state, in, inlen = __add_full_block_ref(state, in, inlen, rate);
+    state, in, inlen = __add_full_block_mmx(state, in, inlen, rate);
     s_in = in;
     s_inlen = inlen; 
     s_rate = rate;
 
-    state = __keccakf1600_ref(state);
+    state = __keccakf1600_mmx(state);
     in = s_in;
     inlen = s_inlen;
     rate = s_rate;
@@ -110,13 +110,13 @@ inline fn __absorb_ref(
   // final block
   trail_byte = s_trail_byte;
 
-  state = __add_final_block_ref(state, in, inlen, trail_byte, rate);
+  state = __add_final_block_mmx(state, in, inlen, trail_byte, rate);
 
   return state, rate;
 }
 
 
-inline fn __xtr_full_block_ref(
+inline fn __xtr_full_block_mmx(
   stack u64[25] state,
   reg u64 out outlen,
   reg u64 rate
@@ -141,7 +141,7 @@ inline fn __xtr_full_block_ref(
 }
 
 
-inline fn __xtr_bytes_ref(
+inline fn __xtr_bytes_mmx(
   stack u64[25] state,
   reg u64 out outlen
 ) -> reg u64
@@ -172,7 +172,7 @@ inline fn __xtr_bytes_ref(
 }
 
 
-inline fn __squeeze_ref(
+inline fn __squeeze_mmx(
   stack u64[25] state,
   stack u64 s_out,
   reg   u64 outlen,
@@ -187,25 +187,25 @@ inline fn __squeeze_ref(
   {
     s_outlen = outlen;
     s_rate = rate;
-    state = __keccakf1600_ref(state);
+    state = __keccakf1600_mmx(state);
     out = s_out;
     outlen = s_outlen;
     rate = s_rate;
 
-    out, outlen = __xtr_full_block_ref(state, out, outlen, rate);
+    out, outlen = __xtr_full_block_mmx(state, out, outlen, rate);
     s_out = out;
   }
 
   s_outlen = outlen;
-  state = __keccakf1600_ref(state);
+  state = __keccakf1600_mmx(state);
   out = s_out;
   outlen = s_outlen;
 
-  out = __xtr_bytes_ref(state, out, outlen);
+  out = __xtr_bytes_mmx(state, out, outlen);
 }
 
 
-inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+inline fn __keccak1600_mmx(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
   stack u64[25] state;
   stack u64 s_out s_outlen;
@@ -215,20 +215,20 @@ inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u
   s_outlen = outlen;
   s_trail_byte = trail_byte;
 
-  state = __keccak_init_ref();
+  state = __keccak_init_mmx();
 
   // absorb
-  state, rate = __absorb_ref(state, in, inlen, s_trail_byte, rate);
+  state, rate = __absorb_mmx(state, in, inlen, s_trail_byte, rate);
 
   // squeeze
   outlen = s_outlen;
-  __squeeze_ref(state, s_out, outlen, rate);
+  __squeeze_mmx(state, s_out, outlen, rate);
 }
 
 
-fn _keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+fn _keccak1600_mmx(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
-  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+  __keccak1600_mmx(out, outlen, in, inlen, trail_byte, rate);
 }
 
 
