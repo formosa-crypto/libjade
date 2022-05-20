@@ -54,12 +54,12 @@ then
     fn=$(basename $f1 .$tag1)
     f2=$fd/$fn.$tag2
     fd=$(dirname $fd)
-    wf1=$(cat $f1 | wc -l | sed -e 's/\s*//g');
+    wf1=$(cat $f1 | wc -l | sed -e 's/^[[:blank:]]*//g');
 
     if [ -f $f2 ]
     then
-      wf2=$(cat $f2 | wc -l | sed -e 's/\s*//g');
-      dl=$(diff $f1 $f2 | wc -l | sed -e 's/\s*//g')
+      wf2=$(cat $f2 | wc -l | sed -e 's/^[[:blank:]]*//g');
+      dl=$(diff $f1 $f2 | wc -l | sed -e 's/^[[:blank:]]*//g')
       if [ "$dl" = "0" ]
       then echo "${GREEN}${BOLD}OK, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"
       else echo "${RED}${BOLD}E, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"; ok=1
