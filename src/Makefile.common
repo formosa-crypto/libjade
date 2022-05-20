@@ -13,7 +13,7 @@ CIDIR =
 CIT =
 ifeq ($(CI),1)
 CIDIR := .ci
-CIT = 2> $(CIDIR)/$(@F).log || \
+CIT = 2> $(CIDIR)/$(@F).log && rm -f $(CIDIR)/$(@F).error || \
      (echo $$? > $(CIDIR)/$(@F).error && \
       cat $(CIDIR)/$(@F).log >> $(CIDIR)/$(@F).error && \
       rm $(CIDIR)/$(@F).log && \
