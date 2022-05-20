@@ -29,6 +29,25 @@ inline fn __keccak_rho_offsets(inline int i, #msf reg u64 ms) -> inline int, #ms
   return r, ms;
 }
 
+inline fn __keccak_rho_offsets_nomodmsf(inline int i) -> inline int
+{
+  inline int r x y z t;
+
+  r = 0;
+  x = 1;
+  y = 0;
+
+  for t = 0 to 24 {
+    if (i == x + 5 * y) {
+      r = ((t + 1) * (t + 2) / 2) % 64;
+    }
+    z = (2 * x + 3 * y) % 5;
+    x = y;
+    y = z;
+  }
+
+  return r;
+}
 
 inline fn __rhotates(inline int x y, #msf reg u64 ms) -> inline int, #msf reg u64
 {
@@ -38,6 +57,13 @@ inline fn __rhotates(inline int x y, #msf reg u64 ms) -> inline int, #msf reg u6
   return r, ms;
 }
 
+inline fn __rhotates_nomodmsf(inline int x y) -> inline int
+{
+  inline int i r;
+  i = __index(x, y);
+  r = __keccak_rho_offsets_nomodmsf(i);
+  return r;
+}
 
 #nomodmsf inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
 {

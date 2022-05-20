@@ -60,7 +60,7 @@ inline fn __rol_sum_mmx1(
   {
     x_ = (x + 3*y) % 5;
     y_ = x;
-    r = __rhotates(x_, y_);
+    r = __rhotates_nomodmsf(x_, y_);
 
     // B[x] = A[x',y']
     b[x] = a[x_ + y_*5];
