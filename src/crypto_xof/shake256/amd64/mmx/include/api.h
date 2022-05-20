@@ -5,7 +5,7 @@
 
 #include <stdint.h>
 
-int jade_xof_shake256_amd64_ref(
+int jade_xof_shake256_amd64_mmx(
  uint8_t *out,
  uint64_t outlen,
  uint8_t *in,

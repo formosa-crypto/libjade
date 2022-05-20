@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-int jade_stream_chacha_chacha20_ietf_amd64_ref_xor(
+int jade_stream_chacha_chacha20_ietf_amd64_mmx_xor(
  uint8_t *ciphertext,
  uint8_t *plaintext,
  uint64_t length,
@@ -15,7 +15,7 @@ int jade_stream_chacha_chacha20_ietf_amd64_ref_xor(
  uint8_t *key /*KEYBYTES*/
 );
 
-int jade_stream_chacha_chacha20_ietf_amd64_ref(
+int jade_stream_chacha_chacha20_ietf_amd64_mmx(
  uint8_t *stream,
  uint64_t length,
  uint8_t *nonce, /*NONCEBYTES*/

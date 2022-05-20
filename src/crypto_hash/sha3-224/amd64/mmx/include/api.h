@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-int jade_hash_sha3_224_amd64_ref(
+int jade_hash_sha3_224_amd64_mmx(
  uint8_t *out,
  uint8_t *in,
  uint64_t length
