@@ -105,20 +105,31 @@ inline fn __set_row_ref1(
 }
 
 
-inline fn __round_ref1(reg ptr u64[25] e a, stack u64 s_rc, #msf reg u64 ms) -> reg ptr u64[25], #msf reg u64
+inline fn __round_ref1(reg ptr u64[25] e a, stack u64 s_rc, #msf reg u64 ms) -> reg ptr u64[25], reg ptr u64[25], #msf reg u64
 {
   inline int y;
+  stack ptr u64[25] s_e s_a;
   reg u64[5] b c d;
+
+  s_e = e;
 
   c = __theta_sum_ref1(a);
   d = __theta_rol_ref1(c);
 
   for y = 0 to 5
   { b, ms = __rol_sum_ref1(a, d, y, ms);
+    e = s_e;
+    e = #protect_ptr(e, ms);
+    s_a = a;
     e = __set_row_ref1(e, b, y, s_rc);
+    s_e = e;
+    a = s_a;
+    a = #protect_ptr(a, ms);
   }
+  e = s_e;
+  e = #protect_ptr(e, ms);
 
-  return e, ms;
+  return e, a, ms;
 }
 
 
@@ -145,13 +156,13 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a, #msf reg u64 ms) -> reg ptr u64[
     RC = #protect_ptr(RC, ms);
     rc = RC[(int) c];
     s_rc = rc;
-    e, ms = __round_ref1(e, a, s_rc, ms);
+    e, a, ms = __round_ref1(e, a, s_rc, ms);
 
     RC = s_RC;
     RC = #protect_ptr(RC, ms);
     rc = RC[(int) c + 1];
     s_rc = rc;
-    a, ms = __round_ref1(a, e, s_rc, ms);
+    a, e, ms = __round_ref1(a, e, s_rc, ms);
 
     c = s_c;
     c = #protect(c, ms);
