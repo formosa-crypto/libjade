@@ -2,7 +2,7 @@
 // nonce : 8 bytes
 // key : 32 bytes
 // counter : 8 bytes (starts at 0)
-inline fn __init_mmx(reg u64 nonce key) -> stack u32[16]
+#nomodmsf inline fn __init_mmx(reg u64 nonce key) -> stack u32[16]
 {
   inline int i;
   stack u32[16] st;
@@ -30,7 +30,7 @@ inline fn __init_mmx(reg u64 nonce key) -> stack u32[16]
 }
 
 // increments 64-bit counter
-inline fn __increment_counter_mmx(stack u32[16] st) -> stack u32[16]
+#nomodmsf inline fn __increment_counter_mmx(stack u32[16] st) -> stack u32[16]
 {
   reg u64 t;
 

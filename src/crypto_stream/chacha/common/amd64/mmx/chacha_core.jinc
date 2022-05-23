@@ -24,7 +24,7 @@ inline fn __copy_state_mmx(stack u32[16] st) -> reg u32[16], stack u32
 
 ///////////////////////////////////////////////////////////////////////////////
 
-
+/*
 // not exported; may be useful as spec;
 inline fn __line_mmx(reg u32[16] k, inline int a b c r) -> reg u32[16]
 {
@@ -78,6 +78,7 @@ inline fn __double_round_mmx(reg u32[16] k, stack u32 k15) -> reg u32[16], stack
   return k, k15;
 }
 
+
 // not exported; may be useful as spec;
 inline fn __rounds_mmx(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
 {
@@ -95,7 +96,7 @@ inline fn __rounds_mmx(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
 
 
 ///////////////////////////////////////////////////////////////////////////////
-
+*/
 
 // used; performs two quarter rounds, inlined 'line's;
 inline fn __half_round_inline_mmx(
@@ -180,18 +181,19 @@ inline fn __double_round_inline_mmx(reg u32[16] k, stack u32 k14 k15) -> reg u32
 // used;
 inline fn __rounds_inline_mmx(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
 {
-  stack u32 s_c k14;
+  stack u32 k14;
+  regx u32 x_c;
   reg u32 c;
 
   k14 = k[14];
   c = (CHACHA_ROUNDS/2);
 
   while
-  { s_c = c;
-    
+  { x_c = #MOVX_32(c);
+
     k, k14, k15 = __double_round_inline_mmx(k, k14, k15);
 
-    c = s_c;
+    c = #MOVX_32(x_c);
     (_,_,_,_,c) = #DEC_32(c);
   } (c > 0)
 
@@ -224,21 +226,21 @@ inline fn __sum_states_mmx(reg u32[16] k, stack u32 k15, stack u32[16] st) -> re
 
 inline fn __chacha_xor_mmx(reg u64 output plain len nonce key)
 {
-  stack u64 s_output s_plain s_len;
+  regx u64 x_output x_plain x_len;
   stack u32[16] st;
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
-  s_output = output;
-  s_plain = plain;
-  s_len = len;
+  x_output = #MOVX(output);
+  x_plain = #MOVX(plain);
+  x_len = #MOVX(len);
 
   st = __init_mmx(nonce, key);
 
-  while {len = s_len;} (len >= 64)
+  while {len = #MOVX(x_len);} (len >= 64)
   { k, k15 = __copy_state_mmx(st);
     k, k15 = __rounds_inline_mmx(k, k15);
-    s_output, s_plain, s_len = __sum_states_store_xor_mmx(s_output, s_plain, s_len, k, k15, st);
+    x_output, x_plain, x_len = __sum_states_store_xor_mmx(x_output, x_plain, x_len, k, k15, st);
     st = __increment_counter_mmx(st);
   }
 
@@ -246,27 +248,27 @@ inline fn __chacha_xor_mmx(reg u64 output plain len nonce key)
   { k, k15 = __copy_state_mmx(st);
     k, k15 = __rounds_inline_mmx(k, k15);
     k, k15 = __sum_states_mmx(k, k15, st);
-    __store_xor_last_mmx(s_output, s_plain, s_len, k, k15);
+    __store_xor_last_mmx(x_output, x_plain, x_len, k, k15);
   }
 }
 
 
 inline fn __chacha_mmx(reg u64 output len nonce key)
 {
-  stack u64 s_output s_len;
+  regx u64 x_output x_len;
   stack u32[16] st;
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
-  s_output = output;
-  s_len = len;
+  x_output = #MOVX(output);
+  x_len = #MOVX(len);
 
   st = __init_mmx(nonce, key);
 
-  while {len = s_len;} (len >= 64)
+  while {len = #MOVX(x_len);} (len >= 64)
   { k, k15 = __copy_state_mmx(st);
     k, k15 = __rounds_inline_mmx(k, k15);
-    s_output, s_len = __sum_states_store_mmx(s_output, s_len, k, k15, st);
+    x_output, x_len = __sum_states_store_mmx(x_output, x_len, k, k15, st);
     st = __increment_counter_mmx(st);
   }
 
@@ -274,8 +276,6 @@ inline fn __chacha_mmx(reg u64 output len nonce key)
   { k, k15 = __copy_state_mmx(st);
     k, k15 = __rounds_inline_mmx(k, k15);
     k, k15 = __sum_states_mmx(k, k15, st);
-    __store_last_mmx(s_output, s_len, k, k15);
+    __store_last_mmx(x_output, x_len, k, k15);
   }
 }
-
-
