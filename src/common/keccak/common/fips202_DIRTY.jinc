@@ -5,7 +5,7 @@ from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600.jinc"
 require "fips202_params_DIRTY.jinc"
 
 #[returnaddress="stack"]
-fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
+fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen, #msf reg u64 ms) -> reg ptr u8[32], #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -18,27 +18,28 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 
   trail_byte = 0x06;
   t = SHA3_256_RATE;
-  state = __absorb_avx2(state, in, inlen, trail_byte, t);
+  state, ms = __absorb_avx2(state, in, inlen, trail_byte, t, ms);
 
-  state = __keccakf1600_avx2(state);
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7 { s_state[u256 i] = state[i]; }
-  
+
   a_jagged_p = KECCAK_A_JAGGED;
 
   for i=0 to 4
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int) l];
     out[u64 i] = t;
   }
 
-  return out;
+  return out, ms;
 }
 
 
 #[returnaddress="stack"]
-fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
+fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in, #msf reg u64 ms) -> reg ptr u8[32], #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -55,38 +56,42 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
   {
     t = in[u64 i];
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     s_state[(int) l] = t;
   }
 
   l = a_jagged_p[KYBER_SYMBYTES/8];
+  l = #protect(l, ms);
   l <<= 3;
   s_state[u8 (int)l] = 0x06;
 
   l = a_jagged_p[(SHA3_256_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHA3_256_RATE - 1; t &= 0x7;
   l += t;
   s_state[u8 (int)l] ^= 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
-  
-  state = __keccakf1600_avx2(state);
+
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7 { s_state[u256 i] = state[i]; }
 
   for i=0 to 4
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int)l];
     out[u64 i] = t;
   }
 
-  return out;
+  return out, ms;
 }
 
 
 #[returnaddress="stack"]
-fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
+fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in, #msf reg u64 ms) -> #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -98,20 +103,23 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   s_state = __init_s_state_avx2();
 
   state[0] = #VPBROADCAST_4u64(in[u64 0]);
-  
+
   for i=1 to 8
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = in[u64 i];
     s_state[(int)l] = t;
   }
 
   l = a_jagged_p[8];
+  l = #protect(l, ms);
   l <<= 3;
 
   s_state[u8 (int)l] = 0x1f;
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHAKE256_RATE - 1; t &= 0x7;
   l += t;
@@ -119,14 +127,15 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
-  
+
   t = SHAKE256_RATE;
-  __squeeze_avx2(state, out, outlen, t);
+  ms = __squeeze_avx2(state, out, outlen, t, ms);
+  return ms;
 }
 
 
 #[returnaddress="stack"]
-fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
+fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in, #msf reg u64 ms) -> stack u8[128], #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -144,18 +153,21 @@ fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[1
   {
     t = in[u64 i];
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     s_state[(int)l] = t;
   }
 
   c = in[u8 32];
   l = a_jagged_p[4];
+  l = #protect(l, ms);
   l <<= 3;
   s_state[u8 (int)l] = c;
-  
+
   l += 1;
   s_state[u8 (int)l] = 0x1f;
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHAKE256_RATE - 1; t &= 0x7;
   l += t;
@@ -164,7 +176,7 @@ fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[1
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
 
-  state = __keccakf1600_avx2(state);
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -172,15 +184,16 @@ fn _ishake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[1
   for i = 0 to 16
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int)l];
     out[u64 i] = t;
   }
 
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
-fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
+fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in, #msf reg u64 ms) -> stack u8[64], #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -192,19 +205,22 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
   s_state = __init_s_state_avx2();
 
   state[0] = #VPBROADCAST_4u64(in[u64 0]);
-  
+
   for i = 1 to 8
   {
     t = in[u64 i];
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     s_state[(int)l] = t;
   }
 
   l = a_jagged_p[8];
+  l = #protect(l, ms);
   l <<= 3;
   s_state[u8 (int)l] = 0x06;
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHA3_512_RATE - 1; t &= 0x7;
   l += t;
@@ -212,8 +228,8 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
-  
-  state = __keccakf1600_avx2(state);
+
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -221,15 +237,16 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
   for i = 0 to 8
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int) l];
     out[u64 i] = t;
   }
 
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
-fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in, #msf reg u64 ms) -> stack u8[64], #msf reg u64
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -241,19 +258,22 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
   s_state = __init_s_state_avx2();
 
   state[0] = #VPBROADCAST_4u64(in[u64 0]);
-  
+
   for i = 1 to 4
   {
     t = in[u64 i];
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     s_state[(int)l] = t;
   }
 
   l = a_jagged_p[4];
+  l = #protect(l, ms);
   l <<= 3;
   s_state[u8 (int)l] = 0x06;
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHA3_512_RATE - 1; t &= 0x7;
   l += t;
@@ -261,8 +281,8 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
-  
-  state = __keccakf1600_avx2(state);
+
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -270,16 +290,17 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
   for i = 0 to 8
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int) l];
     out[u64 i] = t;
   }
 
-  return out;
+  return out, ms;
 }
 
 //FIXME: remove inline when register arrays are supported in "real" functions
 inline
-fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7]
+fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in, #msf reg u64 ms) -> reg u256[7], #msf reg u64
 {
   reg u128 t128;
   stack u64[28] s_state;
@@ -290,18 +311,20 @@ fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7
 
   a_jagged_p = KECCAK_A_JAGGED;
   s_state = __init_s_state_avx2();
-  
+
   state[0] = #VPBROADCAST_4u64(in[u64 0]);
 
   for i=1 to 4
   {
     t = in[u64 i];
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     s_state[(int)l] = t;
   }
 
   t8 = in[32];
   l = a_jagged_p[(int) 4];
+  l = #protect(l, ms);
   l <<= 3;
   s_state[u8 (int)l] = t8;
 
@@ -313,25 +336,26 @@ fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7
   s_state[u8 (int)l] = 0x1f;
 
   l = a_jagged_p[(SHAKE128_RATE-1)/8];
+  l = #protect(l, ms);
   l <<= 3;
   t = SHAKE128_RATE - 1; t &= 0x7;
   l += t;
   s_state[u8 (int)l] = 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
-  
-  return state;
+
+  return state, ms;
 }
 
 inline
-fn __shake128_squeezeblock(reg u256[7] state, reg ptr u8[SHAKE128_RATE] out) -> reg u256[7], reg ptr u8[SHAKE128_RATE]
+fn __shake128_squeezeblock(reg u256[7] state, reg ptr u8[SHAKE128_RATE] out, #msf reg u64 ms) -> reg u256[7], reg ptr u8[SHAKE128_RATE], #msf reg u64
 {
   stack u64[28] s_state;
   stack u64[25] a_jagged_p;
   reg u64 t l;
   inline int i;
 
-  state = __keccakf1600_avx2(state);
+  state, ms = __keccakf1600_avx2(state, ms);
 
   for i=0 to 7
   { s_state[u256 i] = state[i]; }
@@ -341,9 +365,10 @@ fn __shake128_squeezeblock(reg u256[7] state, reg ptr u8[SHAKE128_RATE] out) -> 
   for i = 0 to SHAKE128_RATE/8
   {
     l = a_jagged_p[i];
+    l = #protect(l, ms);
     t = s_state[(int) l];
     out[u64 i] = t;
   }
 
-  return state, out;
+  return state, out, ms;
 }

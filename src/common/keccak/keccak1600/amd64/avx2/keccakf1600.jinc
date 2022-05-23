@@ -27,7 +27,7 @@ u256[24] KECCAK_IOTAS =
 };
 
 
-u256[6] KECCAK_RHOTATES_LEFT = 
+u256[6] KECCAK_RHOTATES_LEFT =
 {
   (4u64)[41, 36, 18,  3],
   (4u64)[27, 28, 62,  1],
@@ -49,7 +49,7 @@ u256[6] KECCAK_RHOTATES_RIGHT =
 };
 
 
-u64[25] KECCAK_A_JAGGED = 
+u64[25] KECCAK_A_JAGGED =
 {
    0,  4,  5,  6,  7,
   10, 24, 13, 18, 23,
@@ -59,7 +59,7 @@ u64[25] KECCAK_A_JAGGED =
 };
 
 
-inline fn __keccakf1600_avx2(reg u256[7] state) -> reg u256[7]
+inline fn __keccakf1600_avx2(reg u256[7] state, #msf reg u64 ms) -> reg u256[7], #msf reg u64
 {
   reg u256[9] t;
   reg u256 c00 c14 d00 d14;
@@ -70,6 +70,7 @@ inline fn __keccakf1600_avx2(reg u256[7] state) -> reg u256[7]
   reg ptr u256[24] iotas_p;
   reg ptr u256[6] rhotates_left_p;
   reg ptr u256[6] rhotates_right_p;
+  reg bool b;
 
   iotas_p = KECCAK_IOTAS;
   iotas_o = 0;
@@ -194,9 +195,9 @@ inline fn __keccakf1600_avx2(reg u256[7] state) -> reg u256[7]
     iotas_o += 32;
 
     _,_,_,zf,r = #DEC_64(r);
-  }(!zf)
+	b = !zf;
+  }(b) {ms = #set_msf(b, ms); }
+  ms = #set_msf(!b, ms);
 
-  return state;
+  return state, ms;
 }
-
-
