@@ -89,7 +89,7 @@ inline fn __absorb_mmx(
   reg   u64 rate // rate already in bytes -- it is returned bc of spills
 ) -> stack u64[25], reg u64
 {
-  stack u64 s_in s_inlen s_rate;
+  regx u64 x_in x_inlen x_rate;
   reg u8 trail_byte;
   reg u64 t;
 
@@ -97,14 +97,14 @@ inline fn __absorb_mmx(
   while ( inlen >= rate )
   {
     state, in, inlen = __add_full_block_mmx(state, in, inlen, rate);
-    s_in = in;
-    s_inlen = inlen; 
-    s_rate = rate;
+    x_in = #MOVX(in);
+    x_inlen = #MOVX(inlen);
+    x_rate = #MOVX(rate);
 
     state = __keccakf1600_mmx(state);
-    in = s_in;
-    inlen = s_inlen;
-    rate = s_rate;
+    in = #MOVX(x_in);
+    inlen = #MOVX(x_inlen);
+    rate = #MOVX(x_rate);
   }
 
   // final block
@@ -174,32 +174,32 @@ inline fn __xtr_bytes_mmx(
 
 inline fn __squeeze_mmx(
   stack u64[25] state,
-  stack u64 s_out,
+  regx u64 x_out,
   reg   u64 outlen,
   reg   u64 rate
 )
 {
   reg u64 out;
-  stack u64 s_outlen s_rate;
+  regx u64 x_outlen x_rate;
 
   // intermediate blocks
   while ( outlen > rate )
   {
-    s_outlen = outlen;
-    s_rate = rate;
+    x_outlen = #MOVX(outlen);
+    x_rate = #MOVX(rate);
     state = __keccakf1600_mmx(state);
-    out = s_out;
-    outlen = s_outlen;
-    rate = s_rate;
+    out = #MOVX(x_out);
+    outlen = #MOVX(x_outlen);
+    rate = #MOVX(x_rate);
 
     out, outlen = __xtr_full_block_mmx(state, out, outlen, rate);
-    s_out = out;
+    x_out = #MOVX(out);
   }
 
-  s_outlen = outlen;
+  x_outlen = #MOVX(outlen);
   state = __keccakf1600_mmx(state);
-  out = s_out;
-  outlen = s_outlen;
+  out = #MOVX(x_out);
+  outlen = #MOVX(x_outlen);
 
   out = __xtr_bytes_mmx(state, out, outlen);
 }
@@ -208,11 +208,11 @@ inline fn __squeeze_mmx(
 inline fn __keccak1600_mmx(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
   stack u64[25] state;
-  stack u64 s_out s_outlen;
+  regx u64 x_out x_outlen;
   stack u8 s_trail_byte;
 
-  s_out = out;
-  s_outlen = outlen;
+  x_out = #MOVX(out);
+  x_outlen = #MOVX(outlen);
   s_trail_byte = trail_byte;
 
   state = __keccak_init_mmx();
@@ -221,8 +221,8 @@ inline fn __keccak1600_mmx(reg u64 out outlen in inlen, reg u8 trail_byte, reg u
   state, rate = __absorb_mmx(state, in, inlen, s_trail_byte, rate);
 
   // squeeze
-  outlen = s_outlen;
-  __squeeze_mmx(state, s_out, outlen, rate);
+  outlen = #MOVX(x_outlen);
+  __squeeze_mmx(state, x_out, outlen, rate);
 }
 
 
@@ -230,5 +230,3 @@ fn _keccak1600_mmx(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
   __keccak1600_mmx(out, outlen, in, inlen, trail_byte, rate);
 }
-
-

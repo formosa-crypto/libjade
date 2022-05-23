@@ -1,13 +1,17 @@
 require "indcpa.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/kem.jinc"
 
-export fn jade_kem_kyber_kyber512_amd64_avx2_keypair(reg u64 pkp, reg u64 skp) -> reg u64
+export fn jade_kem_kyber_kyber512_amd64_avx2_keypair(#transient reg u64 pkp, reg u64 skp) -> reg u64
 {
   reg u64 r;
+  #msf reg u64 ms;
 
+  ms = #init_msf();
   __crypto_kem_keypair_jazz(pkp, skp);
 
   _, _, _, _, _, r = #set0();
+  ms = #init_msf();
+
   return r;
 }
 

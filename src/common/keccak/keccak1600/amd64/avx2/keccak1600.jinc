@@ -33,24 +33,31 @@ inline fn __add_full_block_avx2(
   stack u64[28] s_state,
   reg ptr u64[25] a_jagged_p,
   reg u64 in inlen,
-  reg u64 rate
-) -> reg u256[7], stack u64[28], reg u64, reg u64
+  reg u64 rate,
+  #msf reg u64 ms
+) -> reg u256[7], stack u64[28], reg u64, reg u64, #msf reg u64
 {
 
   inline int i;
   reg u64 j l t rate8;
   reg u8 c;
+  reg bool b;
 
   rate8 = rate;
   rate8 >>= 3;
   j = 0;
-  while ( j < rate8 )
+  while{
+    b = j < rate8 ;
+  } (b)
   {
+    ms = #set_msf(b, ms);
     t = [in + 8*j];
     l = a_jagged_p[(int) j];
+    l = #protect(l, ms);
     s_state[(int) l] = t;
     j += 1;
   }
+  ms = #set_msf(!b, ms);
 
   //TODO: check & change to #VPBROADCAST_4u64
   t = s_state[0];
@@ -64,7 +71,7 @@ inline fn __add_full_block_avx2(
   in += rate;
   inlen -= rate;
 
-  return state, s_state, in, inlen;
+  return state, s_state, in, inlen, ms;
 }
 
 
@@ -220,9 +227,11 @@ inline fn __absorb_avx2(
   s_state = __init_s_state_avx2();
 
   // intermediate blocks
-  while ( inlen >= rate )
+  while{
+
+  } ( inlen >= rate )
   {
-    state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
+    state, s_state, in, inlen, ms = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate, ms);
     state = __keccakf1600_avx2(state);
   }
 
@@ -270,5 +279,3 @@ fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate
 {
   __keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate);
 }
-
-

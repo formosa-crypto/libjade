@@ -1,11 +1,14 @@
 require "sha3-224.jinc"
 
-export fn jade_hash_sha3_224_amd64_mmx(reg u64 out in inlen) -> reg u64
+export fn jade_hash_sha3_224_amd64_mmx(#transient reg u64 out in inlen) -> reg u64
 {
   reg u64 r;
+  #msf reg u64 ms;
+
+  ms = #init_msf();
   __sha3_224_mmx(out, in, inlen);
   _,_,_,_,_,r = #set0();
+  ms = #init_msf();
+
   return r;
 }
-
-

@@ -183,7 +183,7 @@ inline fn __Wt_ref(stack u32[64] W, inline int t) -> stack u32[64]
   return W;
 }
 
-fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64, reg u64
+fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg ptr u32[8], reg u64, reg u64, #msf reg u64
 {
   inline int t;
   reg u32 T1 T2 a b c d e f g h r v;
@@ -193,14 +193,19 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
   reg ptr u32[8] H;
   reg u64 tr;
   stack u64 in_s;
+  reg bool b1, b2;
 
   Kp = SHA256_K;
   Hp = _H;
 
   H = Hp;
+  H = #protect_ptr(H, ms);
 
-  while(inlen >= 64)
+  while{
+    b1 = inlen >= 64;
+  }(b1)
   {
+    ms = #set_msf(b1, ms);
     for t=0 to 16
     { v = (u32)[in + t*4];
       v = #BSWAP_32(v);
@@ -215,8 +220,11 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     Hp = H;
 
     tr = 0;
-    while(tr < 64)
+    while{
+      b2 = tr < 64;
+    }(b2)
     {
+      ms = #set_msf(b2, ms);
       //T1 = h + BSIG1(e) + CH(e,f,g) + Kt + Wt
       T1  = h;
       r   = __BSIG1_ref(e);
@@ -244,8 +252,10 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
 
       tr+= 1;
     }
+    ms = #set_msf(!b2, ms);
 
     H = Hp;
+    H = #protect_ptr(H, ms);
     a += H[0];
     b += H[1];
     c += H[2];
@@ -259,15 +269,17 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     //Hp = H;
 
     in = in_s;
+    in = #protect(in, ms);
     in += 64;
     inlen -= 64;
   }
+  ms = #set_msf(!b1, ms);
 
   _H = H;
-  return _H, in, inlen;
+  return _H, in, inlen, ms;
 }
 
-fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) -> reg ptr u32[8], reg ptr u32[32]
+fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks, #msf reg u64 ms) -> reg ptr u32[8], reg ptr u32[32], #msf reg u64
 {
   inline int t;
   reg u32 T1 T2 a b c d e f g h r v;
@@ -278,15 +290,20 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
   stack ptr u32[32] s_sblocks;
   reg u64 oblocks tr;
   stack u64 s_oblocks;
+  reg bool b1, b2;
 
   Kp = SHA256_K;
   Hp = _H;
   oblocks = 0;
 
   H = Hp;
+  H = #protect_ptr(H, ms);
 
-  while(nblocks > 0)
+  while{
+    b1 = nblocks > 0;
+  }(b1)
   {
+    ms = #set_msf(b1, ms);
     for t=0 to 16
     { v = sblocks[(int)oblocks + t];
       v = #BSWAP_32(v);
@@ -303,8 +320,11 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     Hp = H;
 
     tr = 0;
-    while(tr < 64)
+    while{
+      b2 = tr < 64;
+    }(b2)
     {
+      ms = #set_msf(b2, ms);
       //T1 = h + BSIG1(e) + CH(e,f,g) + Kt + Wt
       T1  = h;
       r   = __BSIG1_ref(e);
@@ -332,8 +352,10 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
 
       tr+= 1;
     }
+    ms = #set_msf(!b2, ms);
 
     H = Hp;
+    H = #protect_ptr(H, ms);
     a += H[0];
     b += H[1];
     c += H[2];
@@ -346,64 +368,89 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
 
     sblocks = s_sblocks;
+    sblocks = #protect_ptr(sblocks, ms);
     oblocks = s_oblocks;
+    oblocks = #protect(oblocks, ms);
     nblocks -= 1;
   }
+  ms = #set_msf(!b1, ms);
 
   _H = H;
-  return _H, sblocks;
+  return _H, sblocks, ms;
 }
 
 
-inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
+inline fn __lastblocks_ref(reg u64 in inlen bits, #msf reg u64 ms) -> stack u32[32], reg u64, #msf reg u64
 {
   stack u32[32] sblocks;
   reg u64 i j nblocks;
   reg u8 v;
+  reg bool b;
 
   // copy in to sblocks
   i = 0;
-  while(i < inlen)
-  { v = (u8)[in + i];
+  while{
+    b = i < inlen;
+  }(b)
+  {
+    ms = #set_msf(b, ms);
+    v = (u8)[in + i];
     sblocks[u8 (int)i] = v;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
 
-  // set first byte after input to 0x80 
+  // set first byte after input to 0x80
   sblocks[u8 (int)i] = 0x80;
   i += 1;
 
   // check if one or two blocks are needed
-  if(inlen < 56) 
-  { j = (64-8); nblocks = 1; }
+  b = inlen < 56;
+  if(b)
+  { ms = #set_msf(b, ms); j = (64-8); nblocks = 1; }
   else
-  { j = (128-8); nblocks = 2; }
+  { ms = #set_msf(!b, ms); j = (128-8); nblocks = 2; }
 
   // set remaining bytes to zero (can be optimized)
   v = 0;
-  while(i < j)
-  { sblocks[u8 (int)i] = v;
+  while{
+    b = i < j;
+  }(b)
+  {
+    ms = #set_msf(b, ms);
+    sblocks[u8 (int)i] = v;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
   i += 7; // i=63 || i=127
 
-  while(i >= j)
-  { sblocks[u8 (int)i] = (8u) bits;
+  while{
+    b = i >= j;
+  }(b)
+  {
+    ms = #set_msf(b, ms);
+    sblocks[u8 (int)i] = (8u) bits;
     bits >>= 8;
     i -= 1;
   }
-  i += 9; 
+  ms = #set_msf(!b, ms);
+  i += 9;
 
   // set remaining bytes to zero (can be optimized)
-  while(i < 128)
-  { sblocks[u8 (int)i] = v;
+  while{
+    b = i < 128;
+  }(b)
+  {
+    ms = #set_msf(b, ms);
+    sblocks[u8 (int)i] = v;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
 
-  return sblocks, nblocks;
+  return sblocks, nblocks, ms;
 }
 
-inline fn __sha256(reg u64 out in inlen)
+inline fn __sha256(reg u64 out in inlen, #msf reg u64 ms) -> #msf reg u64
 {
   reg u64 bits nblocks;
   stack u64 s_out s_bits;
@@ -420,16 +467,17 @@ inline fn __sha256(reg u64 out in inlen)
 
   H = __initH_ref();
   Hp = H;
-  Hp, in, inlen = _blocks_0_ref(Hp, in, inlen);
+  Hp, in, inlen, ms = _blocks_0_ref(Hp, in, inlen, ms);
 
   bits = s_bits;
-  sblocks, nblocks = __lastblocks_ref(in, inlen, bits);
+  sblocks, nblocks, ms = __lastblocks_ref(in, inlen, bits, ms);
   sblocksp = sblocks;
-  Hp, _ = _blocks_1_ref(Hp, sblocksp, nblocks);
+  Hp, _, ms = _blocks_1_ref(Hp, sblocksp, nblocks, ms);
 
   out = s_out;
+  out = #protect(out, ms);
   H = Hp;
   __store_ref(out, H);
+
+  return ms;
 }
-
-
