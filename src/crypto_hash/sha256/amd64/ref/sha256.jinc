@@ -183,6 +183,7 @@ inline fn __Wt_ref(stack u32[64] W, inline int t) -> stack u32[64]
   return W;
 }
 
+#[returnaddress="stack"]
 fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg ptr u32[8], reg u64, reg u64, #msf reg u64
 {
   inline int t;
@@ -192,7 +193,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg pt
   stack ptr u32[8] Hp;
   reg ptr u32[8] H;
   reg u64 tr;
-  stack u64 in_s;
+  stack u64 in_s inlen_s;
   reg bool b1, b2;
 
   Kp = SHA256_K;
@@ -206,6 +207,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg pt
   }(b1)
   {
     ms = #set_msf(b1, ms);
+    inlen_s = inlen;
     for t=0 to 16
     { v = (u32)[in + t*4];
       v = #BSWAP_32(v);
@@ -271,6 +273,8 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg pt
     in = in_s;
     in = #protect(in, ms);
     in += 64;
+    inlen = inlen_s;
+    inlen = #protect(inlen, ms);
     inlen -= 64;
   }
   ms = #set_msf(!b1, ms);
@@ -279,6 +283,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen, #msf reg u64 ms) -> reg pt
   return _H, in, inlen, ms;
 }
 
+#[returnaddress="stack"]
 fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks, #msf reg u64 ms) -> reg ptr u32[8], reg ptr u32[32], #msf reg u64
 {
   inline int t;
@@ -289,7 +294,7 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks, #m
   reg ptr u32[8] H;
   stack ptr u32[32] s_sblocks;
   reg u64 oblocks tr;
-  stack u64 s_oblocks;
+  stack u64 s_oblocks s_nblocks;
   reg bool b1, b2;
 
   Kp = SHA256_K;
@@ -304,6 +309,7 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks, #m
   }(b1)
   {
     ms = #set_msf(b1, ms);
+    s_nblocks = nblocks;
     for t=0 to 16
     { v = sblocks[(int)oblocks + t];
       v = #BSWAP_32(v);
@@ -371,6 +377,8 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks, #m
     sblocks = #protect_ptr(sblocks, ms);
     oblocks = s_oblocks;
     oblocks = #protect(oblocks, ms);
+    nblocks = s_nblocks;
+    nblocks = #protect(nblocks, ms);
     nblocks -= 1;
   }
   ms = #set_msf(!b1, ms);
