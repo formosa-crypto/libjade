@@ -24,8 +24,8 @@ endif
 SRC    := ../src
 PROOF  := .
 
-ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk'))
-JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+ECMK   := $(filter-out $(addprefix ../src/,$(EXCLUDE)), $(dir $(shell find $(SRC) -name 'Ec.mk')))
+JAZZ   := $(filter-out $(addprefix ../src/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 
 # --------------------------------------------------------------------
 .PHONY: default usage check check-xunit extract $(ECMK) $(JAZZ) clean-ci clean distclean check.tar.gz ecfiles.tar.gz report err

@@ -12,8 +12,8 @@ EXCLUDE ?=
 SRC    := .
 BUILD  := .build
 
-ECMK   := $(dir $(shell find $(SRC) -name 'Ec.mk')) # just for cleaning .deps and .ci
-JAZZ   := $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+ECMK   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(dir $(shell find $(SRC) -name 'Ec.mk'))) # just for cleaning .deps and .ci
+JAZZ   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 API    := $(shell find $(SRC) -name 'api.h')
 ASM    := $(shell find $(SRC) -name '*.s')
 OBJ    := $(ASM:%.s=$(BUILD)/%.o)
