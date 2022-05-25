@@ -40,11 +40,12 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
 
 inline
-fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int sign) -> reg u256, reg u256, reg u256, reg u256
+fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int sign, #msf reg u64 ms) -> reg u256, reg u256, reg u256, reg u256, #msf reg u64
 {
   reg u256 a b c d x0 x1 y0 y1;
   reg u256 bdlo bdhi bclo bchi adlo adhi aclo achi bd;
   reg u256 rbdlo rbdhi bc0 bc1 ad0 ad1 ac0 ac1 rbd0 rbd1;
+  reg bool cond;
 
   b = ap.[u256 32*1];
   d = bp.[u256 32*1];
@@ -76,20 +77,23 @@ fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int si
   rbd0 = #VPUNPCKL_16u16(rbdlo, rbdhi);
   rbd1 = #VPUNPCKH_16u16(rbdlo, rbdhi);
 
-  if (sign == 0)
+  cond = sign == 0;
+  if (cond)
   {
+    ms = #set_msf(cond, ms);
     x0 = #VPADD_8u32(ac0, rbd0);
     x1 = #VPADD_8u32(ac1, rbd1);
   }
   else
   {
+    ms = #set_msf(!cond, ms);
     x0 = #VPSUB_8u32(ac0, rbd0);
     x1 = #VPSUB_8u32(ac1, rbd1);
   }
   y0 = #VPADD_8u32(bc0, ad0);
   y1 = #VPADD_8u32(bc1, ad1);
 
-  return x0, x1, y0, y1;
+  return x0, x1, y0, y1, ms;
 }
 
 inline
@@ -123,25 +127,25 @@ fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
 }
 
 inline
-fn __basemul32x(reg ptr u16[64] rp ap bp, reg u256 zeta qx16 qinvx16) -> reg ptr u16[64]
+fn __basemul32x(reg ptr u16[64] rp ap bp, reg u256 zeta qx16 qinvx16, #msf reg u64 ms) -> reg ptr u16[64], #msf reg u64
 {
   reg u256 x0 y0 x1 y1;
 
-  x0, x1, y0, y1 = __schoolbook(ap[0:32], bp[0:32], zeta, qx16, qinvx16, 0);
+  x0, x1, y0, y1, ms = __schoolbook(ap[0:32], bp[0:32], zeta, qx16, qinvx16, 0, ms);
   x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
   rp.[u256 32*0] = x0;
   rp.[u256 32*1] = x1;
 
-  x0, x1, y0, y1 = __schoolbook(ap[32:32], bp[32:32], zeta, qx16, qinvx16, 1);
+  x0, x1, y0, y1, ms = __schoolbook(ap[32:32], bp[32:32], zeta, qx16, qinvx16, 1, ms);
   x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
   rp.[u256 32*2] = x0;
   rp.[u256 32*3] = x1;
 
-  return rp;
+  return rp, ms;
 }
 
 
-fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
+fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
   reg u256 zeta qx16 qinvx16;
 
@@ -149,15 +153,15 @@ fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
   qinvx16 = jqinvx16.[u256 0];
 
   zeta = jzetas_exp.[u256 304];
-  rp[0:64]   = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16);
+  rp[0:64], ms  = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16, ms);
   zeta = jzetas_exp.[u256 368];
-  rp[64:64]  = __basemul32x(rp[64:64],  ap[64:64],  bp[64:64], zeta, qx16, qinvx16);
+  rp[64:64], ms  = __basemul32x(rp[64:64],  ap[64:64],  bp[64:64], zeta, qx16, qinvx16, ms);
   zeta = jzetas_exp.[u256 696];
-  rp[128:64] = __basemul32x(rp[128:64], ap[128:64], bp[128:64], zeta, qx16, qinvx16);
+  rp[128:64], ms = __basemul32x(rp[128:64], ap[128:64], bp[128:64], zeta, qx16, qinvx16, ms);
   zeta = jzetas_exp.[u256 760];
-  rp[192:64] = __basemul32x(rp[192:64], ap[192:64], bp[192:64], zeta, qx16, qinvx16);
+  rp[192:64], ms = __basemul32x(rp[192:64], ap[192:64], bp[192:64], zeta, qx16, qinvx16, ms);
 
-  return rp;
+  return rp, ms;
 }
 
 u16 pc_shift1_s = 0x200;
@@ -632,24 +636,36 @@ fn __cbd2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf) -> reg 
 
 /* buf 32 bytes longer for cbd3 (KYBER_ETA1 == 3) */
 inline
-fn __poly_cbd_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8] buf) -> reg ptr u16[KYBER_N]
+fn __poly_cbd_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8] buf, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
-  if(KYBER_ETA1 == 2) { // resolved at compile-time
+  reg bool b;
+
+  b = KYBER_ETA1 == 2;
+  if(b) { // resolved at compile-time
+    ms = #set_msf(b, ms);
     rp = __cbd2(rp, buf[0:KYBER_ETA2*KYBER_N/4]);
   } else {
+    ms = #set_msf(!b, ms);
     rp = __cbd3(rp, buf);
   }
 
-  return rp;
+  return rp, ms;
 }
 
 inline
-fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf) -> reg ptr u16[KYBER_N]
+fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
-  if(KYBER_ETA2 == 2) {
+  reg bool b;
+
+  b = KYBER_ETA2 == 2;
+  if(b) {
+    ms = #set_msf(b, ms);
     rp = __cbd2(rp, buf);
+  } else {
+    ms = #set_msf(!b, ms);
   }
-  return rp;
+
+  return rp, ms;
 }
 
 
@@ -745,7 +761,7 @@ fn __shake256_squeezenblocks4x(reg ptr u256[25] state, reg ptr u8[NOISE_NBLOCKS 
 }
 
 #[returnaddress="stack"]
-fn _poly_getnoise_eta1_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N]
+fn _poly_getnoise_eta1_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, #msf reg u64 ms) -> reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], #msf reg u64
 {
   reg u256 f;
   stack u256[25] state;
@@ -768,16 +784,16 @@ fn _poly_getnoise_eta1_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYM
   state = _shake256_absorb4x_33(state, buf0[0:33], buf1[0:33], buf2[0:33], buf3[0:33]);
   state, buf0, buf1, buf2, buf3 = __shake256_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
 
-  r0 = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
-  r1 = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
-  r2 = __poly_cbd_eta1(r2, buf2[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
-  r3 = __poly_cbd_eta1(r3, buf3[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
+  r0, ms = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
+  r1, ms = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
+  r2, ms = __poly_cbd_eta1(r2, buf2[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
+  r3, ms = __poly_cbd_eta1(r3, buf3[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
 
-  return r0, r1, r2, r3;
+  return r0, r1, r2, r3, ms;
 }
 
 #[returnaddress="stack"]
-fn _poly_getnoise_eta1122_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N]
+fn _poly_getnoise_eta1122_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, #msf reg u64 ms) -> reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], reg ptr u16[KYBER_N], #msf reg u64
 {
   reg u256 f;
   stack u256[25] state;
@@ -800,12 +816,12 @@ fn _poly_getnoise_eta1122_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_
   state = _shake256_absorb4x_33(state, buf0[0:33], buf1[0:33], buf2[0:33], buf3[0:33]);
   state, buf0, buf1, buf2, buf3 = __shake256_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
 
-  r0 = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
-  r1 = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
-  r2 = __poly_cbd_eta2(r2, buf2[0:KYBER_ETA2*KYBER_N/4]);
-  r3 = __poly_cbd_eta2(r3, buf3[0:KYBER_ETA2*KYBER_N/4]);
+  r0, ms = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
+  r1, ms = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8], ms);
+  r2, ms = __poly_cbd_eta2(r2, buf2[0:KYBER_ETA2*KYBER_N/4], ms);
+  r3, ms = __poly_cbd_eta2(r3, buf3[0:KYBER_ETA2*KYBER_N/4], ms);
 
-  return r0, r1, r2, r3;
+  return r0, r1, r2, r3, ms;
 }
 
 
