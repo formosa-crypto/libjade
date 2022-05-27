@@ -15,7 +15,7 @@ COMMON  := common
 EXT     := ../ext
 RANDLIB ?= $(EXT)/randombytes/librandombytes.a
 
-JAZZ    ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name 'kem.jazz'))))
+JAZZ    ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 BENCH   := $(subst $(SRC),$(BIN), $(JAZZ))
 BENCHS  := $(addsuffix bench, $(BENCH))
 
