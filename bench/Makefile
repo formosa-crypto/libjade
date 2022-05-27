@@ -9,11 +9,12 @@ export CI
 EXCLUDE ?=
 
 # --------------------------------------------------------------------
-SRC     := ../src
-BIN     ?= bin
-COMMON  := common
-EXT     := ../ext
-RANDLIB ?= $(EXT)/randombytes/librandombytes.a
+SRC      := ../src
+BIN      ?= bin
+COMMON   := common
+EXT      := ../ext
+RANDLIB  ?= $(EXT)/randombytes/librandombytes.a
+SSBD_DIR := $(EXT)/ssbd-tools
 
 JAZZ    ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 BENCH   := $(subst $(SRC),$(BIN), $(JAZZ))
@@ -30,7 +31,7 @@ ASM        = $(IDIR)/$(OPERATION).s
 
 MAIN       = $(COMMON)/crypto_$(OPERATION).c
 DEFINES    = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
-INCLUDES   = -I$(IDIR)/include/ -I$(COMMON)/ -I../ext/randombytes/
+INCLUDES   = -I$(IDIR)/include/ -I$(COMMON)/ -I$(EXT)/randombytes/
 COMPILE    = $(CC) $(CFLAGS) -o $@ $(DEFINES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB)
 
 # --------------------------------------------------------------------
@@ -51,6 +52,11 @@ $(BENCH): ; @mkdir -p $@
 
 run: benchs
 	for d in $(BENCH); do (cd $$d && ./bench); done
+
+# --------------------------------------------------------------------
+.PHONY: ssbd-tools
+ssbd-tools:
+	make -C $(SSBD_DIR)
 
 # --------------------------------------------------------------------
 clean:
