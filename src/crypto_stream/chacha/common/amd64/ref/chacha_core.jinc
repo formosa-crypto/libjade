@@ -121,8 +121,8 @@ inline fn __rounds_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
   k[d0] ^= k[a0];
   k[d1] ^= k[a1];
 
-  k[d0] = #ROL_32(k[d0], 16);
-  k[d1] = #ROL_32(k[d1], 16);
+  _, _, k[d0] = #ROL_32(k[d0], 16);
+  _, _, k[d1] = #ROL_32(k[d1], 16);
 
   //k = line(k, c, d, b, 12);
   k[c0] += k[d0];
@@ -131,8 +131,8 @@ inline fn __rounds_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
   k[b0] ^= k[c0];
   k[b1] ^= k[c1];
 
-  k[b0] = #ROL_32(k[b0], 12);
-  k[b1] = #ROL_32(k[b1], 12);
+  _, _, k[b0] = #ROL_32(k[b0], 12);
+  _, _, k[b1] = #ROL_32(k[b1], 12);
 
   //k = line(k, a, b, d, 8);
   k[a0] += k[b0];
@@ -141,8 +141,8 @@ inline fn __rounds_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
   k[d0] ^= k[a0];
   k[d1] ^= k[a1];
 
-  k[d0] = #ROL_32(k[d0], 8);
-  k[d1] = #ROL_32(k[d1], 8);
+  _, _, k[d0] = #ROL_32(k[d0], 8);
+  _, _, k[d1] = #ROL_32(k[d1], 8);
 
   //k = line(k, c, d, b, 7);
   k[c0] += k[d0];
@@ -151,8 +151,8 @@ inline fn __rounds_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
   k[b0] ^= k[c0];
   k[b1] ^= k[c1];
 
-  k[b0] = #ROL_32(k[b0], 7);
-  k[b1] = #ROL_32(k[b1], 7);
+  _, _, k[b0] = #ROL_32(k[b0], 7);
+  _, _, k[b1] = #ROL_32(k[b1], 7);
 
   return k;
 }
