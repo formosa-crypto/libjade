@@ -70,7 +70,7 @@ int main(void)
     for (i = 0; i < TIMINGS; i++)
     { cycles[i] = cpucycles();
       crypto_kem_dec(ss1, ct, sk); }
-    results[1][loop] = cpucycles_median(cycles, TIMINGS);
+    results[2][loop] = cpucycles_median(cycles, TIMINGS);
   }
 
   cpucycles_fprintf_2(results, op_str);
