@@ -66,7 +66,7 @@ static void cpucycles_fprintf_2(uint64_t results[OP][LOOPS], char *op_str[])
   for (op = 0; op < OP; op++)
   { f = fopen(op_str[op], "w");
     loop = 0;
-    fprintf(f, "%lu\n", results[op][loop]);
+    fprintf(f, "%" PRIu64 "\n", results[op][loop]);
     fclose(f);
   }
 }
@@ -97,7 +97,7 @@ static void cpucycles_fprintf_3(uint64_t* results[OP][LOOPS], char *op_str[])
     loop = 0;
     for (len = MINBYTES, r=0; len <= MAXBYTES; len += inc(len), r +=1)
     { cpb = ((double)results[op][loop][r]) / ((double)len);
-      fprintf(f, "%lu, %lu, %.2f\n", len, results[op][loop][r], cpb ); }
+      fprintf(f, "%" PRIu64 ", %" PRIu64 ", %.2f\n", len, results[op][loop][r], cpb ); }
     fclose(f);
   }
 }
@@ -135,7 +135,7 @@ static void cpucycles_fprintf_4(uint64_t** results[OP][LOOPS], char *op_str[])
     for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
     { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
       { cpb = ((double)results[op][loop][r0][r1]) / ((double)inlen); // cycles per input byte
-        fprintf(f, "%lu, %lu, %lu, %.2f\n", outlen, inlen, results[op][loop][r0][r1], cpb ); }
+        fprintf(f, "%" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %.2f\n", outlen, inlen, results[op][loop][r0][r1], cpb ); }
     }
     fclose(f);
   }
