@@ -1252,6 +1252,7 @@ reg u256 Ca, reg u256 Ce, reg u256 Ci, reg u256 Co, reg u256 Cu)
     return A_4x, E_4x;
 }
 
+#[returnaddress="stack"]
 fn _KeccakF1600_StatePermute4x(reg ptr u256[25] A_4x) -> reg ptr u256[25]
 {
     reg u256 Ca, Ce, Ci, Co, Cu;
