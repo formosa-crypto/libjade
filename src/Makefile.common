@@ -56,13 +56,14 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
 ###
+.PHONY: check-sct check-scton
 
-check-sct: $(SRCS)
-	$(JASMINC) -checkSCT $<
+check-sct: $(SRCS) | $(CIDIR)
+	($(JASMINC) -checkSCT $<) $(CIT)
 
 # usage: """make check-scton F=[funtion_name]"""
-check-scton: $(SRCS)
-	$(JASMINC) -checkSCTon $(F) $<
+check-scton: $(SRCS) | $(CIDIR)
+	($(JASMINC) -checkSCTon $(F) $<) $(CIT)
 
 ###
 
