@@ -77,16 +77,13 @@ fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int si
   rbd0 = #VPUNPCKL_16u16(rbdlo, rbdhi);
   rbd1 = #VPUNPCKH_16u16(rbdlo, rbdhi);
 
-  cond = sign == 0;
-  if (cond)
+  #inline if (sign == 0)
   {
-    ms = #set_msf(cond, ms);
     x0 = #VPADD_8u32(ac0, rbd0);
     x1 = #VPADD_8u32(ac1, rbd1);
   }
   else
   {
-    ms = #set_msf(!cond, ms);
     x0 = #VPSUB_8u32(ac0, rbd0);
     x1 = #VPSUB_8u32(ac1, rbd1);
   }
@@ -640,12 +637,9 @@ fn __poly_cbd_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYB
 {
   reg bool b;
 
-  b = KYBER_ETA1 == 2;
-  if(b) { // resolved at compile-time
-    ms = #set_msf(b, ms);
+  #inline if(KYBER_ETA1 == 2) { // resolved at compile-time
     rp = __cbd2(rp, buf[0:KYBER_ETA2*KYBER_N/4]);
   } else {
-    ms = #set_msf(!b, ms);
     rp = __cbd3(rp, buf);
   }
 
@@ -655,14 +649,8 @@ fn __poly_cbd_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYB
 inline
 fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
-  reg bool b;
-
-  b = KYBER_ETA2 == 2;
-  if(b) {
-    ms = #set_msf(b, ms);
+  #inline if(KYBER_ETA2 == 2) {
     rp = __cbd2(rp, buf);
-  } else {
-    ms = #set_msf(!b, ms);
   }
 
   return rp, ms;
