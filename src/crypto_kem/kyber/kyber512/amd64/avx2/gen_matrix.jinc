@@ -296,10 +296,10 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
 
   _, _, _, _, b = #TEST_8(fl1, fl2);
 
-  b1 = !b;
-  while(b1)
+  // b1 = !b;
+  while(!b)
   {
-    ms = #set_msf(b1, ms);
+    ms = #set_msf(!b, ms);
     val0 = (16u)buf[(int)pos];
     val0 = #protect_16(val0, ms);
     pos += 1;
@@ -354,9 +354,9 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
     fl2 = #SETcc(cf || zf);  //SETBE
 
     _, _, _, _, b = #TEST_8(fl1, fl2);
-    b1 = !b;
+    // b1 = !b;
   }
-  ms = #set_msf(!b1, ms);
+  ms = #set_msf(!(!b), ms);
 
   return ctr, rp, ms;
 }
