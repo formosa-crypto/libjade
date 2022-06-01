@@ -692,7 +692,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     _, _, _, _, _, bflg = #OR_8(flg0, bflg);
     b = bflg == 0;
   }
-  ms = #set_msf(b, ms);
+  ms = #set_msf(!(!b), ms);
 
   for i = 0 to KYBER_K
   {
