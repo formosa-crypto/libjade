@@ -600,7 +600,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
   stack u8[REJ_UNIFORM_AVX_BUFLEN] buf3;
   stack u256[25] state;
   stack u16[KYBER_K*KYBER_VECN] rr;
-  reg u256 f;
+  #secret reg u256 f;
   reg u64 ctr0 ctr1 ctr2 ctr3 tmp;
   reg u8 flg0 flg1 bflg;
   reg bool cf zf, b;
