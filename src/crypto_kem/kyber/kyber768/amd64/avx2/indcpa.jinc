@@ -99,8 +99,7 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
 
   i = 0;
   pkp += KYBER_POLYVECBYTES;
-  b = i < KYBER_SYMBYTES/8;
-  while (b)
+  while { b = i < KYBER_SYMBYTES/8; } (b)
   {
     ms = #set_msf(b, ms);
     #declassify t64 = (u64)[pkp];
@@ -172,8 +171,7 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
 
   i = 0;
   pkp += KYBER_POLYVECBYTES;
-  b = i < KYBER_SYMBYTES/8;
-  while (b)
+  while { b = i < KYBER_SYMBYTES/8; } (b)
   {
     ms = #set_msf(b, ms);
     #declassify t64 = (u64)[pkp];
