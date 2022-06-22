@@ -19,10 +19,10 @@ inline fn __keccak_init_ref1() -> stack u64[25]
 
 
 inline fn __add_full_block_ref1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 in inlen,
   reg u64 rate
-) -> stack u64[25], reg u64, reg u64
+) -> reg ptr u64[25], reg u64, reg u64
 {
   reg u64 i t rate64;
 
@@ -45,11 +45,11 @@ inline fn __add_full_block_ref1(
 
 // obs: @pre: inlen < rate_in_bytes
 inline fn __add_final_block_ref1(
-  stack u64[25] state,
-  reg   u64 in inlen,
-  reg   u8  trail_byte,
-  reg   u64 rate
-) -> stack u64[25]
+  reg ptr u64[25] state,
+  reg     u64 in inlen,
+  reg     u8  trail_byte,
+  reg     u64 rate
+) -> reg ptr u64[25]
 {
   reg u64 i t inlen8;
   reg u8 c;
@@ -83,11 +83,11 @@ inline fn __add_final_block_ref1(
 
 
 inline fn __absorb_ref1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg   u64 in inlen,
   stack u8  s_trail_byte,
   reg   u64 rate // rate already in bytes -- it is returned bc of spills
-) -> stack u64[25], reg u64
+) -> reg ptr u64[25], reg u64
 {
   stack u64 s_in s_inlen s_rate;
   reg u8 trail_byte;
@@ -119,7 +119,7 @@ inline fn __absorb_ref1(
 
 
 inline fn __xtr_full_block_ref1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 out outlen,
   reg u64 rate
 ) -> reg u64, reg u64
@@ -144,7 +144,7 @@ inline fn __xtr_full_block_ref1(
 
 
 inline fn __xtr_bytes_ref1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 out outlen
 ) -> reg u64
 {
@@ -175,10 +175,10 @@ inline fn __xtr_bytes_ref1(
 
 
 inline fn __squeeze_ref1(
-  stack u64[25] state,
-  stack u64 s_out,
-  reg   u64 outlen,
-  reg   u64 rate
+  reg mut ptr u64[25] state,
+  stack   u64 s_out,
+  reg     u64 outlen,
+  reg     u64 rate
 )
 {
   reg u64 out;
@@ -213,7 +213,8 @@ inline fn __squeeze_ref1(
 
 inline fn __keccak1600_ref1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   stack u64 s_out s_outlen;
   stack u8 s_trail_byte;
 
@@ -221,7 +222,8 @@ inline fn __keccak1600_ref1(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
   s_outlen = outlen;
   s_trail_byte = trail_byte;
 
-  state = __keccak_init_ref1();
+  _state = __keccak_init_ref1();
+  state = _state;
 
   // absorb
   state, rate = __absorb_ref1(state, in, inlen, s_trail_byte, rate);
