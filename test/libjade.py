@@ -42,6 +42,7 @@ class Scheme:
         schemes.extend(Scheme.all_schemes_of_type('hash'))
         schemes.extend(Scheme.all_schemes_of_type('xof'))
         schemes.extend(Scheme.all_schemes_of_type('sign'))
+        schemes.extend(Scheme.all_schemes_of_type('scalarmult'))
         return schemes
 
     @staticmethod
@@ -81,6 +82,8 @@ class Scheme:
                         schemes.append(Xof(d))
                     elif type == 'sign':
                         schemes.append(Signature(d))
+                    elif type == 'scalarmult':
+                        schemes.append(Scalarmult(d))
                     else:
                         assert('Unknown type')
         return schemes
@@ -273,3 +276,15 @@ class Signature(Scheme):
     @staticmethod
     def all_sigs():
         return Scheme.all_schemes_of_type('sign')
+
+class Scalarmult(Scheme):
+
+    def __init__(self, name: str):
+        self.type = 'scalarmult'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_scalarmult():
+        return Scheme.all_schemes_of_type('scalarmult')
