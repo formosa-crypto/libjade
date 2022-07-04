@@ -1,0 +1,28 @@
+inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
+{
+  reg u64 p bit;
+
+  p = ctr;
+  p >>= 3;
+  bit = (64u) k[(int) p];
+
+  p = ctr;
+  p &= 7;
+  bit >>= p;
+
+  bit &= 1;
+
+  return bit;
+}
+
+inline fn __next_bit(stack u64 k) -> reg u64, stack u64
+{
+  reg bool cf;
+  reg u64 b one;
+
+  ?{}, b = #set0();
+  one = 1;
+  _, cf, _, _, _, k = #SHL(k, 1);
+  b = one if cf;
+  return b, k;
+}

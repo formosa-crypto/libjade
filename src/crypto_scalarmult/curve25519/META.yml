@@ -1,0 +1,32 @@
+name: Curve25519
+type: scalarmult
+checksumsmall: a541e0997ead1f170fdfdc2bed3acf8cec8994ba57025a9cf51862afd615d53f
+checksumbig: d45bd6e4b5fd18187efb2ebf8ce3455f30933c1b4a2aefcadf4b6923b31b86a1
+implementations:
+    - name: amd64/ref4
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+          required_flags: # FIXME
+              - popcnt
+implementations:
+    - name: amd64/ref5
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+          required_flags: # FIXME
+              - popcnt
+implementations:
+    - name: amd64/mulx
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+          required_flags: # FIXME
+              - popcnt
+

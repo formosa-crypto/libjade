@@ -1,0 +1,67 @@
+inline fn __decode_u_coordinate4(reg u64 up) -> reg u64[4]
+{
+  inline int i;
+  reg u64[4] u;
+
+  for i=0 to 4
+  { u[i] = [up + 8*i]; }
+  u[3] &= 0x7fffffffffffffff;
+
+  return u;
+}
+
+inline fn __init_points4(
+  reg u64[4] initr)
+  ->
+  stack u64[4],
+  reg u64[4],
+  stack u64[4],
+  stack u64[4]
+{
+  inline int i;
+  stack u64[4] x2 x3 z3;
+  reg u64[4] z2r;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  x2[0] = 1;
+  z2r[0] = 0;
+  x3 = #copy(initr);
+  z3[0] = 1;
+
+  for i=1 to 4
+  { x2[i] = z;
+    z2r[i] = z;
+    z3[i] = z; }
+
+  //     (1,   0, init, 1)
+  return x2, z2r, x3,  z3;
+}
+
+inline fn __init_points4_x3()
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4]
+{
+  inline int i;
+  stack u64[4] f1s f3s;
+  reg   u64[4] f2;
+  reg   u64 z;
+
+  ?{}, z = #set0();
+
+  f1s[0] = 1;
+  f2[0]  = 1;
+  f3s[0] = 1;
+
+  for i=1 to 4
+  { f1s[i] = z;
+    f2[i]  = z;
+    f3s[i] = z;
+  }
+
+  return f1s, f2, f3s;
+}
+
