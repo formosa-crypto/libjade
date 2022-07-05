@@ -104,15 +104,15 @@ inline fn __sqr4_rs(stack u64[4] xa) -> reg u64[4]
   return r;
 }
 
-inline fn __sqr4_ss(stack u64[4] fs) -> stack u64[4]
+inline fn __sqr4_ss(stack u64[4] xa) -> stack u64[4]
 {
-  stack u64[4] hs;
-  reg u64[4] h;
+  stack u64[4] rs;
+  reg u64[4] r;
 
-  h = __sqr4_rs(fs);
-  hs = #copy(h);
+  r = __sqr4_rs(xa);
+  rs = #copy(r);
 
-  return hs;
+  return rs;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -283,7 +283,6 @@ inline fn _it_sqr4_s_(stack u64[4] x, reg u32 i) -> stack u64[4]
 
 inline fn _it_sqr4_ss_(stack u64[4] r x, reg u32 i) -> stack u64[4]
 {
-  stack u32 is;
   inline int j;
   reg ptr u64[4] rp;
   reg u64 t;

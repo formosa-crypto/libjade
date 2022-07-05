@@ -11,7 +11,7 @@ inline fn __cswap4(
   stack u64[4]
 {
   inline int i;
-  reg u64[4] t4 x2r, x3r, z3r;
+  reg u64[4] t4 x2r x3r z3r;
   reg u64 t mask;
 
   ?{}, mask = #set0();
@@ -83,7 +83,7 @@ inline fn __cswap4_rsrs(
   stack u64[4] ys,
   reg   u64    swap)
   ->
-  reg u64[4],
+  reg   u64[4],
   stack u64[4]
 {
   inline int i;

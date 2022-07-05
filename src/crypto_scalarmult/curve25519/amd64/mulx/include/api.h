@@ -18,6 +18,7 @@ int jade_scalarmult_curve25519_amd64_mulx_base(
  uint8_t *k
 );
 
+// TODO : to be replaced for opt. Jasmin implementation
 int jade_scalarmult_curve25519_amd64_mulx_base(
  uint8_t *r,
  uint8_t *k

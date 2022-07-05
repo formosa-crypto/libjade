@@ -24,7 +24,6 @@ inline fn __add_and_double4(
   stack u64[4]
 {
   stack u64[4] z2 t0 t1 t2;
-  reg u64[4] t1r;
 
   t0  = __sub4_ssr(x2, z2r);
   x2  = __add4_ssr(x2, z2r);

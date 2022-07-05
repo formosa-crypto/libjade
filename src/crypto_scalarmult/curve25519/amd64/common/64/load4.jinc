@@ -33,7 +33,8 @@ inline fn __init_points4(
   for i=1 to 4
   { x2[i] = z;
     z2r[i] = z;
-    z3[i] = z; }
+    z3[i] = z;
+  }
 
   //     (1,   0, init, 1)
   return x2, z2r, x3,  z3;
