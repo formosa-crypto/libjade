@@ -1,0 +1,46 @@
+inline fn __add5_rrs(reg u64[5] f, stack u64[5] g) -> reg u64[5]
+{
+  inline int i;
+  reg u64[5] h;
+
+  h = #copy(f);
+
+  h[0] += g[0];
+  for i=1 to 5
+  { h[i] += g[i]; }
+
+  return h;
+}
+
+inline fn __add5_sss(stack u64[5] fs gs) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h f;
+
+  f = #copy(fs);
+  h = __add5_rrs(f, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add5_ssr(stack u64[5] fs, reg u64[5] g) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h;
+
+  h = __add5_rrs(g, fs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add5_rsr(stack u64[5] fs, reg u64[5] g) -> reg u64[5]
+{
+  reg u64[5] h;
+
+  h = __add5_rrs(g, fs);
+
+  return h;
+}
+
