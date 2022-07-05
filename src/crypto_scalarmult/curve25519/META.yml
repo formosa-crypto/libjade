@@ -9,24 +9,11 @@ implementations:
         - architecture: x86_64
           operating_systems:
               - Linux
-          required_flags: # FIXME
-              - popcnt
-implementations:
-    - name: amd64/ref5
-      version: TODO
-      supported_platforms:
-        - architecture: x86_64
-          operating_systems:
-              - Linux
-          required_flags: # FIXME
-              - popcnt
-implementations:
+              - Darwin
     - name: amd64/mulx
       version: TODO
       supported_platforms:
         - architecture: x86_64
           operating_systems:
               - Linux
-          required_flags: # FIXME
-              - popcnt
-
+              - Darwin
