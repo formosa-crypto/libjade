@@ -198,6 +198,8 @@ class Implementation:
                 if (platform_['architecture'] == 'x86_64' and
                         platform.architecture()[0] == '32bit'):
                     continue
+                if not 'required_flags' in platform_:
+                   return True
                 if all([flag in cpuinfo['flags']
                         for flag in platform_['required_flags']]):
                     return True
