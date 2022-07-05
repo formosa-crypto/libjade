@@ -1,6 +1,9 @@
 require "mul4.jinc"
 require "sqr4.jinc"
 
+// TODO:
+// - rewrite invert4 (& aux. functions) once reg arrays are supported in non-inline functions
+// - this should reduce the size of scalarmult.s to half
 inline fn __invert4(reg u64[4] f) -> reg u64[4]
 {
   reg u32 i;
