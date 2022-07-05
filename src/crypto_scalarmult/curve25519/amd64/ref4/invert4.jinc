@@ -7,10 +7,10 @@ inline fn __invert4(stack u64[4] fs) -> stack u64[4]
   reg u32 i;
 
   // z2 = z1^2^1
-  t0s = _sqr4_ss_(t0s, fs);
+  t0s = _sqr4_ss_(fs);
 
   // z8 = z2^2^2
-  t1s = _sqr4_ss_(t1s, t0s);
+  t1s = _sqr4_ss_(t0s);
   t1s = _sqr4_s_(t1s);
 
   // z9 = z1*z8
@@ -20,13 +20,13 @@ inline fn __invert4(stack u64[4] fs) -> stack u64[4]
   t0s = _mul4_ss_(t0s,t1s);
 
   // z22 = z11^2^1
-  t2s = _sqr4_ss_(t2s, t0s);
+  t2s = _sqr4_ss_(t0s);
 
   // z_5_0 = z9*z22
   t1s = _mul4_ss_(t1s,t2s);
 
   // z_10_5 = z_5_0^2^5
-  t2s = _sqr4_ss_(t2s, t1s);
+  t2s = _sqr4_ss_(t1s);
   i = 4;
   t2s = _it_sqr4_s_(t2s, i);
 

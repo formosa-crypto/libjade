@@ -50,15 +50,15 @@ inline fn __mul4_rss(stack u64[4] xa ya) -> reg u64[4]
   return r;
 }
 
-inline fn __mul4_sss(stack u64[4] fs gs) -> stack u64[4]
+inline fn __mul4_sss(stack u64[4] xa ya) -> stack u64[4]
 {
-  stack u64[4] hs;
-  reg u64[4] h;
+  stack u64[4] rs;
+  reg u64[4] r;
 
-  h = __mul4_rss(fs, gs);
-  hs = #copy(h);
+  r = __mul4_rss(xa, ya);
+  rs = #copy(r);
 
-  return hs;
+  return rs;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -131,23 +131,23 @@ inline fn _mul4_ss_(stack u64[4] xa ya) -> stack u64[4]
 
 // ////////////////////////////////////////////////////////////////////////////
 
-inline fn __mul4_a24(stack u64[4] xa, inline u64 a24) -> reg u64[4]
+inline fn __mul4_a24_rs(stack u64[4] xa, inline u64 a24) -> reg u64[4]
 {
   reg u64 rax rdx c t1 t2 t3 t4;
-  reg u64[4] z;
+  reg u64[4] r;
   reg bool cf;
 
   c = a24;
 
   rax = xa[0];
   rdx, rax = rax * c;
-  z[0] = rax;
-  z[1] = rdx;
+  r[0] = rax;
+  r[1] = rdx;
 
   rax = xa[2];
   rdx, rax = rax * c;
-  z[2] = rax;
-  z[3] = rdx;
+  r[2] = rax;
+  r[3] = rdx;
 
   rax = xa[1];
   rdx, rax = rax * c;
@@ -159,33 +159,33 @@ inline fn __mul4_a24(stack u64[4] xa, inline u64 a24) -> reg u64[4]
   t3 = rax;
   t4 = rdx;
 
-  cf, z[1] += t1;
-  cf, z[2] += t2 + cf;
-  cf, z[3] += t3 + cf;
+  cf, r[1] += t1;
+  cf, r[2] += t2 + cf;
+  cf, r[3] += t3 + cf;
   _, t4 += 0 + cf;
   _, t4 *= 38;
 
-  cf, z[0] += t4;
-  cf, z[1] += 0 + cf;
-  cf, z[2] += 0 + cf;
-  cf, z[3] += 0 + cf;
+  cf, r[0] += t4;
+  cf, r[1] += 0 + cf;
+  cf, r[2] += 0 + cf;
+  cf, r[3] += 0 + cf;
 
   t1 = 38;
   t2 = #MOV(0);
   t1 = t2 if !cf;
-  z[0] += t1;
+  r[0] += t1;
 
-  return z;
+  return r;
 }
 
-inline fn __mul4_a24_ss(stack u64[4] fs, inline u64 a24) -> stack u64[4]
+inline fn __mul4_a24_ss(stack u64[4] xa, inline u64 a24) -> stack u64[4]
 {
-  stack u64[4] hs;
-  reg u64[4] h;
+  stack u64[4] rs;
+  reg u64[4] r;
 
-  h = __mul4_a24(fs, a24);
-  hs = #copy(h);
+  r = __mul4_a24_rs(xa, a24);
+  rs = #copy(r);
 
-  return hs;
+  return rs;
 }
 

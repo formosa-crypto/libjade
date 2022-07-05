@@ -1,6 +1,6 @@
 require "reduce4.jinc"
 
-inline fn __sqr4_rs(stack u64[4] x) -> reg u64[4]
+inline fn __sqr4_rs(stack u64[4] xa) -> reg u64[4]
 {
   reg u64 zero rax rdx;
   reg u64[8] z;
@@ -14,32 +14,32 @@ inline fn __sqr4_rs(stack u64[4] x) -> reg u64[4]
   // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[1];
-  rdx, rax = rax * x[0];
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
   z[1] = rax;
   z[2] = rdx;
 
-  rax = x[2];
-  rdx, rax = rax * x[1];
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
   z[3] = rax;
   z[4] = rdx;
 
-  rax = x[3];
-  rdx, rax = rax * x[2];
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
   z[5] = rax;
   z[6] = rdx;
 
   // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[2];
-  rdx, rax = rax * x[0];
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
   cf, z[2] += rax;
   cf, z[3] += rdx + cf;
    _, z[4] += zero   + cf;
 
-  rax = x[3];
-  rdx, rax = rax * x[1];
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
   cf, z[4] += rax;
   cf, z[5] += rdx + cf;
    _, z[6] += zero   + cf;
@@ -47,8 +47,8 @@ inline fn __sqr4_rs(stack u64[4] x) -> reg u64[4]
   // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[3];
-  rdx, rax = rax * x[0];
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
   cf, z[3] += rax;
   cf, z[4] += rdx + cf;
   cf, z[5] += zero   + cf;
@@ -71,18 +71,18 @@ inline fn __sqr4_rs(stack u64[4] x) -> reg u64[4]
 
   // x00 + x11 + x22 + x33
 
-  rax = x[0];
-  rdx, rax = rax * x[0];
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
   z[0] = rax;
   t[0] = rdx;
 
-  rax = x[1];
-  rdx, rax = rax * x[1];
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
   t[1] = rax;
   t[2] = rdx;
 
-  rax = x[2];
-  rdx, rax = rax * x[2];
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
   t[3] = rax;
   t[4] = rdx;
 
@@ -94,8 +94,8 @@ inline fn __sqr4_rs(stack u64[4] x) -> reg u64[4]
   cf, z[6] += 0 + cf;
    _, z[7] += 0 + cf;
 
-  rax = x[3];
-  rdx, rax = rax * x[3];
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
   cf, z[6] += rax;
    _, z[7] += rdx + cf;
 
@@ -119,7 +119,7 @@ inline fn __sqr4_ss(stack u64[4] fs) -> stack u64[4]
 
 // TODO replace "-> reg ptr u64[4]" by "reg u64[4]" when r.a. @ f call
 #[returnaddress="stack"]
-fn _sqr4_p(reg ptr u64[4] x) -> reg ptr u64[4]
+fn _sqr4_p(reg ptr u64[4] xa) -> reg ptr u64[4]
 {
   inline int i;
   reg u64 zero rax rdx;
@@ -134,32 +134,32 @@ fn _sqr4_p(reg ptr u64[4] x) -> reg ptr u64[4]
   // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[1];
-  rdx, rax = rax * x[0];
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
   z[1] = rax;
   z[2] = rdx;
 
-  rax = x[2];
-  rdx, rax = rax * x[1];
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
   z[3] = rax;
   z[4] = rdx;
 
-  rax = x[3];
-  rdx, rax = rax * x[2];
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
   z[5] = rax;
   z[6] = rdx;
 
   // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[2];
-  rdx, rax = rax * x[0];
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
   cf, z[2] += rax;
   cf, z[3] += rdx + cf;
    _, z[4] += zero   + cf;
 
-  rax = x[3];
-  rdx, rax = rax * x[1];
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
   cf, z[4] += rax;
   cf, z[5] += rdx + cf;
    _, z[6] += zero   + cf;
@@ -167,8 +167,8 @@ fn _sqr4_p(reg ptr u64[4] x) -> reg ptr u64[4]
   // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
   // + x00 + x11 + x22 + x33
 
-  rax = x[3];
-  rdx, rax = rax * x[0];
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
   cf, z[3] += rax;
   cf, z[4] += rdx + cf;
   cf, z[5] += zero   + cf;
@@ -191,18 +191,18 @@ fn _sqr4_p(reg ptr u64[4] x) -> reg ptr u64[4]
 
   // x00 + x11 + x22 + x33
 
-  rax = x[0];
-  rdx, rax = rax * x[0];
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
   z[0] = rax;
   t[0] = rdx;
 
-  rax = x[1];
-  rdx, rax = rax * x[1];
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
   t[1] = rax;
   t[2] = rdx;
 
-  rax = x[2];
-  rdx, rax = rax * x[2];
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
   t[3] = rax;
   t[4] = rdx;
 
@@ -214,33 +214,34 @@ fn _sqr4_p(reg ptr u64[4] x) -> reg ptr u64[4]
   cf, z[6] += 0 + cf;
    _, z[7] += 0 + cf;
 
-  rax = x[3];
-  rdx, rax = rax * x[3];
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
   cf, z[6] += rax;
    _, z[7] += rdx + cf;
 
   r = __reduce4(z);
 
   for i=0 to 4
-  { x[i] = r[i]; }
+  { xa[i] = r[i]; }
 
-  return x;
+  return xa;
 }
 
-inline fn _sqr4_ss_(stack u64[4] r x) -> stack u64[4]
+inline fn _sqr4_ss_(stack u64[4] xa) -> stack u64[4]
 {
   inline int j;
+  stack u64[4] ra;
   reg ptr u64[4] rp;
   reg u64 t;
 
   for j=0 to 4
-  { t = x[j]; r[j] = t; }
+  { t = xa[j]; ra[j] = t; }
 
-  rp = r;
+  rp = ra;
   rp = _sqr4_p(rp);
-  r = rp;
+  ra = rp;
 
-  return r;
+  return ra;
 }
 
 inline fn _sqr4_s_(stack u64[4] x) -> stack u64[4]
