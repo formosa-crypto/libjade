@@ -81,20 +81,21 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
   return h;
 }
 
-inline fn __it_sqr4_x2(reg u32 i, reg u64[4] f) -> reg u64[4]
+inline fn __it_sqr4_x2(reg u64[4] f, reg u32 i) -> reg u64[4]
 {
+  reg bool zf;
   reg u64[4] h;
-  stack u32 is;
+  stack u32 _i;
 
   while
-  { is = i;
+  { _i = i;
 
     h = __sqr4_rr(f);
     f = __sqr4_rr(h);
 
-    i = is;
-    i -= 1;
-  } (i > 0)
+    i = _i;
+    _,_,_,zf,i = #DEC_32(i);
+  } (!zf)
 
   return f;
 }
