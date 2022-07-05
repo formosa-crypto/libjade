@@ -1,0 +1,153 @@
+from Jade require "crypto_scalarmult/curve25519/amd64/common/bit.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/decode.jinc"
+
+from Jade require "crypto_scalarmult/curve25519/amd64/common/64/add4.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/64/sub4.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/64/cswap4.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/64/load4.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/64/tobytes4.jinc"
+
+require "mul4.jinc"
+require "sqr4.jinc"
+require "invert4.jinc"
+
+inline fn __add_and_double4(
+  stack u64[4] init,
+  stack u64[4] x2,
+  reg   u64[4] z2r,
+  stack u64[4] x3,
+  stack u64[4] z3)
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4],
+  stack u64[4]
+{
+  stack u64[4] z2 t0 t1 t2;
+  reg u64[4] t1r;
+
+  t0  = __sub4_ssr(x2, z2r);
+  x2  = __add4_ssr(x2, z2r);
+
+  t1  = __sub4_sss(x3, z3);
+  z2  = __add4_sss(x3, z3);
+
+  z3  = __mul4_sss(x2, t1);
+  z2  = __mul4_sss(z2, t0);
+
+  t2  = __sqr4_ss(x2);
+  t1  = __sqr4_ss(t0);
+
+  x3  = __add4_sss(z3, z2);
+  z2  = __sub4_sss(z3, z2);
+
+  x2  = __mul4_sss(t2, t1);
+  t0  = __sub4_sss(t2, t1);
+
+  z2  = __sqr4_ss(z2);
+  z3  = __mul4_a24_ss(t0, 121665);
+  x3  = __sqr4_ss(x3);
+
+  t2  = __add4_sss(t2, z3);
+  z3  = __mul4_sss(init, z2);
+  z2r = __mul4_rss(t0, t2);
+
+  return x2, z2r, x3, z3;
+}
+
+inline fn __montgomery_ladder_step4(
+  stack u8[32] k,
+  stack u64[4] init,
+  stack u64[4] x2,
+  reg   u64[4] z2r,
+  stack u64[4] x3,
+  stack u64[4] z3,
+  stack u64    swapped,
+  reg   u64    ctr)
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4],
+  stack u64[4],
+  stack u64
+{
+  reg u64 toswap bit;
+
+  bit = __ith_bit(k, ctr);
+
+  toswap  = swapped;
+  toswap ^= bit;
+
+  x2, z2r, x3, z3 = __cswap4(x2, z2r, x3, z3, toswap);
+  swapped = bit;
+
+  x2, z2r, x3, z3 = __add_and_double4(init, x2, z2r, x3, z3);
+
+  return x2, z2r, x3, z3, swapped;
+}
+
+
+inline fn __montgomery_ladder4(
+  reg u64[4] u,
+  stack u8[32] k)
+  ->
+  stack u64[4],
+  reg u64[4]
+{
+  stack u64[4] us x2 x3 z3;
+  reg u64[4] z2r;
+  stack u64 ctrs swapped;
+  reg u64 ctr;
+
+  (x2,z2r,x3,z3) = __init_points4(u); 
+  us = #copy(u);
+
+  ctr = 255;
+  swapped = 0;
+
+  while
+  {
+    ctr -= 1;
+    ctrs = ctr;
+
+    (x2, z2r, x3, z3, swapped) = 
+      __montgomery_ladder_step4(k, us, x2, z2r, x3, z3, swapped, ctr);
+
+    ctr = ctrs;
+  } (ctr > 0)
+
+  return x2, z2r;
+}
+
+inline fn __encode_point4(stack u64[4] x2, reg u64[4] z2r) -> reg u64[4]
+{
+  stack u64[4] z2;
+  reg u64[4] r;
+
+  z2 = #copy(z2r);
+  z2 = __invert4(z2);
+  r = __mul4_rss(x2, z2);
+  r = __tobytes4(r);
+
+  return r;
+}
+
+inline fn __curve25519_ref4(reg u64 rp kp up)
+{
+  inline int i;
+  stack u8[32] k;
+  stack u64[4] x2;
+  reg u64[4] u z2r r;
+  stack u64 rps;
+
+  rps = rp;
+  k = __decode_scalar(kp);
+  u = __decode_u_coordinate4(up);
+  (x2,z2r) = __montgomery_ladder4(u, k);
+  r = __encode_point4(x2,z2r);
+
+  rp = rps;
+  for i=0 to 4
+  { [rp + 8*i] = r[i]; }
+}
+

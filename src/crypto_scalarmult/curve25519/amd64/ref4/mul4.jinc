@@ -1,0 +1,191 @@
+require "reduce4.jinc"
+
+inline fn __mul4_rss(stack u64[4] xa ya) -> reg u64[4]
+{
+  reg u64[8] z;
+  reg u64[4] r x y;
+  reg u64 h l hprev;
+  reg bool cf;
+  inline int i j;
+
+  for i = 2 to 8 { z[i] = #MOV(0); }
+
+  x[0] = xa[0];
+  for j = 0 to 4 {
+    y[j] = ya[j];
+    h, l = y[j] * x[0];
+    if (j == 0) {
+      z[0] = l;
+      z[1] = h;
+    } else {
+      cf, z[j] += l;
+      _, z[j + 1] += h + cf;
+    }
+  }
+
+  for i = 1 to 4 {
+    x[i] = xa[i];
+    for j = 0 to 4 {
+      y[j] = ya[j];
+      h, l = y[j] * x[i];
+      cf, z[i+j] += l;
+      if (j == 0) {
+        hprev = #MOV(0);
+        _, hprev += h + cf;
+      } else {
+        _, h += 0 + cf;
+        cf, z[i+j] += hprev;
+        if (1 <= j && j < 4 - 1) {
+          hprev = #MOV(0);
+          _, hprev += h + cf;
+        } else { /* j = 4 */
+          cf, z[i + j + 1] += h + cf;
+        }
+      }
+    }
+  }
+
+  r = __reduce4(z);
+
+  return r;
+}
+
+inline fn __mul4_sss(stack u64[4] fs gs) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h;
+
+  h = __mul4_rss(fs, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _mul4_pp(reg ptr u64[4] xa ya) -> reg ptr u64[4]
+{
+  reg u64[8] z;
+  reg u64[4] r x y;
+  reg u64 h l hprev;
+  reg bool cf;
+  inline int i j;
+
+  for i = 2 to 8 { z[i] = #MOV(0); }
+
+  x[0] = xa[0];
+  for j = 0 to 4 {
+    y[j] = ya[j];
+    h, l = y[j] * x[0];
+    if (j == 0) {
+      z[0] = l;
+      z[1] = h;
+    } else {
+      cf, z[j] += l;
+      _, z[j + 1] += h + cf;
+    }
+  }
+
+  for i = 1 to 4 {
+    x[i] = xa[i];
+    for j = 0 to 4 {
+      y[j] = ya[j];
+      h, l = y[j] * x[i];
+      cf, z[i+j] += l;
+      if (j == 0) {
+        hprev = #MOV(0);
+        _, hprev += h + cf;
+      } else {
+        _, h += 0 + cf;
+        cf, z[i+j] += hprev;
+        if (1 <= j && j < 4 - 1) {
+          hprev = #MOV(0);
+          _, hprev += h + cf;
+        } else { /* j = 4 */
+          cf, z[i + j + 1] += h + cf;
+        }
+      }
+    }
+  }
+
+  r = __reduce4(z);
+
+  for i=0 to 4
+  { xa[i] = r[i]; }
+
+  return xa;
+}
+
+inline fn _mul4_ss_(stack u64[4] xa ya) -> stack u64[4]
+{
+  reg ptr u64[4] xp yp;
+
+  xp = xa;
+  yp = ya;
+  xp = _mul4_pp(xp, yp);
+
+  xa = xp;
+  return xa;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+inline fn __mul4_a24(stack u64[4] xa, inline u64 a24) -> reg u64[4]
+{
+  reg u64 rax rdx c t1 t2 t3 t4;
+  reg u64[4] z;
+  reg bool cf;
+
+  c = a24;
+
+  rax = xa[0];
+  rdx, rax = rax * c;
+  z[0] = rax;
+  z[1] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * c;
+  z[2] = rax;
+  z[3] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * c;
+  t1 = rax;
+  t2 = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * c;
+  t3 = rax;
+  t4 = rdx;
+
+  cf, z[1] += t1;
+  cf, z[2] += t2 + cf;
+  cf, z[3] += t3 + cf;
+  _, t4 += 0 + cf;
+  _, t4 *= 38;
+
+  cf, z[0] += t4;
+  cf, z[1] += 0 + cf;
+  cf, z[2] += 0 + cf;
+  cf, z[3] += 0 + cf;
+
+  t1 = 38;
+  t2 = #MOV(0);
+  t1 = t2 if !cf;
+  z[0] += t1;
+
+  return z;
+}
+
+inline fn __mul4_a24_ss(stack u64[4] fs, inline u64 a24) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h;
+
+  h = __mul4_a24(fs, a24);
+  hs = #copy(h);
+
+  return hs;
+}
+
