@@ -1,0 +1,299 @@
+require "reduce4.jinc"
+
+inline fn __sqr4_rs(stack u64[4] xa) -> reg u64[4]
+{
+  reg u64 zero rax rdx;
+  reg u64[8] z;
+  reg u64[4] r;
+  reg u64[5] t;
+  reg bool cf;
+
+  z[7] = #MOV(0);
+  zero = #MOV(0);
+
+  // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
+  z[1] = rax;
+  z[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
+  z[3] = rax;
+  z[4] = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
+  z[5] = rax;
+  z[6] = rdx;
+
+  // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
+  cf, z[2] += rax;
+  cf, z[3] += rdx + cf;
+   _, z[4] += zero   + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
+  cf, z[4] += rax;
+  cf, z[5] += rdx + cf;
+   _, z[6] += zero   + cf;
+
+  // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
+  cf, z[3] += rax;
+  cf, z[4] += rdx + cf;
+  cf, z[5] += zero   + cf;
+  cf, z[6] += zero   + cf;
+  _,  z[7] += zero   + cf;
+
+  // x01 + x02 + x03 + x12 + x13 + x23
+  // + x00 + x11 + x22 + x33
+
+  // set z<1..2n+1> = 2*z<1..2n+1> since
+  // we have summed all x_i*x_j with i<>j
+  // so far and these occur twice
+  cf, z[1] += z[1];
+  cf, z[2] += z[2] + cf;
+  cf, z[3] += z[3] + cf;
+  cf, z[4] += z[4] + cf;
+  cf, z[5] += z[5] + cf;
+  cf, z[6] += z[6] + cf;
+  cf, z[7] += z[7] + cf;
+
+  // x00 + x11 + x22 + x33
+
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
+  z[0] = rax;
+  t[0] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
+  t[1] = rax;
+  t[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
+  t[3] = rax;
+  t[4] = rdx;
+
+  cf, z[1] += t[0];
+  cf, z[2] += t[1] + cf;
+  cf, z[3] += t[2] + cf;
+  cf, z[4] += t[3] + cf;
+  cf, z[5] += t[4] + cf;
+  cf, z[6] += 0 + cf;
+   _, z[7] += 0 + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
+  cf, z[6] += rax;
+   _, z[7] += rdx + cf;
+
+  r = __reduce4(z);
+
+  return r;
+}
+
+inline fn __sqr4_ss(stack u64[4] xa) -> stack u64[4]
+{
+  stack u64[4] rs;
+  reg u64[4] r;
+
+  r = __sqr4_rs(xa);
+  rs = #copy(r);
+
+  return rs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+// TODO replace "-> reg ptr u64[4]" by "reg u64[4]" when r.a. @ f call
+#[returnaddress="stack"]
+fn _sqr4_p(reg ptr u64[4] xa) -> reg ptr u64[4]
+{
+  inline int i;
+  reg u64 zero rax rdx;
+  reg u64[8] z;
+  reg u64[4] r;
+  reg u64[5] t;
+  reg bool cf;
+
+  z[7] = #MOV(0);
+  zero = #MOV(0);
+
+  // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
+  z[1] = rax;
+  z[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
+  z[3] = rax;
+  z[4] = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
+  z[5] = rax;
+  z[6] = rdx;
+
+  // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
+  cf, z[2] += rax;
+  cf, z[3] += rdx + cf;
+   _, z[4] += zero   + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
+  cf, z[4] += rax;
+  cf, z[5] += rdx + cf;
+   _, z[6] += zero   + cf;
+
+  // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
+  cf, z[3] += rax;
+  cf, z[4] += rdx + cf;
+  cf, z[5] += zero   + cf;
+  cf, z[6] += zero   + cf;
+  _,  z[7] += zero   + cf;
+
+  // x01 + x02 + x03 + x12 + x13 + x23
+  // + x00 + x11 + x22 + x33
+
+  // set z<1..2n+1> = 2*z<1..2n+1> since
+  // we have summed all x_i*x_j with i<>j
+  // so far and these occur twice
+  cf, z[1] += z[1];
+  cf, z[2] += z[2] + cf;
+  cf, z[3] += z[3] + cf;
+  cf, z[4] += z[4] + cf;
+  cf, z[5] += z[5] + cf;
+  cf, z[6] += z[6] + cf;
+  cf, z[7] += z[7] + cf;
+
+  // x00 + x11 + x22 + x33
+
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
+  z[0] = rax;
+  t[0] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
+  t[1] = rax;
+  t[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
+  t[3] = rax;
+  t[4] = rdx;
+
+  cf, z[1] += t[0];
+  cf, z[2] += t[1] + cf;
+  cf, z[3] += t[2] + cf;
+  cf, z[4] += t[3] + cf;
+  cf, z[5] += t[4] + cf;
+  cf, z[6] += 0 + cf;
+   _, z[7] += 0 + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
+  cf, z[6] += rax;
+   _, z[7] += rdx + cf;
+
+  r = __reduce4(z);
+
+  for i=0 to 4
+  { xa[i] = r[i]; }
+
+  return xa;
+}
+
+inline fn _sqr4_ss_(stack u64[4] xa) -> stack u64[4]
+{
+  inline int j;
+  stack u64[4] ra;
+  reg ptr u64[4] rp;
+  reg u64 t;
+
+  for j=0 to 4
+  { t = xa[j]; ra[j] = t; }
+
+  rp = ra;
+  rp = _sqr4_p(rp);
+  ra = rp;
+
+  return ra;
+}
+
+inline fn _sqr4_s_(stack u64[4] x) -> stack u64[4]
+{
+  reg ptr u64[4] xp;
+
+  xp = x;
+  xp = _sqr4_p(xp);
+  x = xp;
+
+  return x;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _it_sqr4_p(reg ptr u64[4] x, reg u32 i) -> reg ptr u64[4]
+{
+  reg bool zf;
+
+  while {
+    x = _sqr4_p(x);
+    _,_,_,zf,i = #DEC_32(i);
+  }(!zf)
+
+  return x;
+}
+
+inline fn _it_sqr4_s_(stack u64[4] x, reg u32 i) -> stack u64[4]
+{
+  reg ptr u64[4] xp;
+
+  xp = x;
+  xp = _it_sqr4_p(xp, i);
+  x = xp;
+
+  return x;
+}
+
+inline fn _it_sqr4_ss_(stack u64[4] r x, reg u32 i) -> stack u64[4]
+{
+  inline int j;
+  reg ptr u64[4] rp;
+  reg u64 t;
+
+  for j=0 to 4
+  { t = x[j]; r[j] = t; }
+
+  rp = r;
+  rp = _it_sqr4_p(rp, i);
+  r = rp;
+
+  return r;
+}
+
