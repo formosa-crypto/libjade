@@ -89,17 +89,20 @@ inline fn __montgomery_ladder_step4(
 
 inline fn __montgomery_ladder4(
   reg u64[4] u,
-  stack u8[32] k)
+  stack u8[32] k,
+  #msf reg u64 ms)
   ->
   stack u64[4],
-  reg u64[4]
+  reg u64[4],
+  #msf reg u64
 {
   stack u64[4] us x2 x3 z3;
   reg u64[4] z2r;
   stack u64 ctrs swapped;
   reg u64 ctr;
+  reg bool b;
 
-  (x2,z2r,x3,z3) = __init_points4(u); 
+  (x2,z2r,x3,z3) = __init_points4(u);
   us = #copy(u);
 
   ctr = 255;
@@ -110,27 +113,30 @@ inline fn __montgomery_ladder4(
     ctr -= 1;
     ctrs = ctr;
 
-    (x2, z2r, x3, z3, swapped) = 
+    (x2, z2r, x3, z3, swapped) =
       __montgomery_ladder_step4(k, us, x2, z2r, x3, z3, swapped, ctr);
 
     ctr = ctrs;
-  } (ctr > 0)
+    ctr = #protect(ctr, ms);
+    b = ctr > 0;
+  } (b) { ms = #set_msf(b, ms); }
+  ms = #set_msf(!b, ms);
 
-  return x2, z2r;
+  return x2, z2r, ms;
 }
 
-inline fn __encode_point4(stack u64[4] x2, reg u64[4] z2r) -> reg u64[4]
+inline fn __encode_point4(stack u64[4] x2, reg u64[4] z2r, #msf reg u64 ms) -> reg u64[4], #msf reg u64
 {
   reg u64[4] r;
 
-  z2r = __invert4(z2r);
+  z2r, ms = __invert4(z2r, ms);
   r = __mul4_rsr(x2, z2r);
   r = __tobytes4(r);
 
-  return r;
+  return r, ms;
 }
 
-inline fn __curve25519_mulx(reg u64 rp kp up)
+inline fn __curve25519_mulx(reg u64 rp kp up, #msf reg u64 ms) -> #msf reg u64
 {
   inline int i;
   stack u8[32] k;
@@ -141,11 +147,13 @@ inline fn __curve25519_mulx(reg u64 rp kp up)
   rps = rp;
   k = __decode_scalar(kp);
   u = __decode_u_coordinate4(up);
-  (x2,z2r) = __montgomery_ladder4(u, k);
-  r = __encode_point4(x2,z2r);
+  (x2,z2r, ms) = __montgomery_ladder4(u, k, ms);
+  r, ms = __encode_point4(x2,z2r, ms);
 
   rp = rps;
+  rp = #protect(rp, ms);
   for i=0 to 4
   { [rp + 8*i] = r[i]; }
-}
 
+  return ms;
+}

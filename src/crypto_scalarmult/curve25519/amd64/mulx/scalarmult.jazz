@@ -1,10 +1,12 @@
 require "curve25519.jinc"
 
-export fn jade_scalarmult_curve25519_amd64_mulx(reg u64 rp kp up) -> reg u64
+export fn jade_scalarmult_curve25519_amd64_mulx(#transient reg u64 rp kp up) -> reg u64
 {
   reg u64 r;
-  __curve25519_mulx(rp, kp, up);
+  #msf reg u64 ms;
+  ms = #init_msf();
+  ms = __curve25519_mulx(rp, kp, up, ms);
+  ms = #init_msf();
   ?{}, r = #set0();
   return r;
 }
-
