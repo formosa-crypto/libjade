@@ -41,8 +41,8 @@ inline fn __add_and_double4(
   x3  = __add4_sss(z3, z2);
   z2  = __sub4_sss(z3, z2);
 
-  x2  = __mul4_ssr(t2, t1r);
   t0  = __sub4_ssr(t2, t1r);
+  x2  = __mul4_ssr(t2, t1r);
 
   z2  = __sqr4_ss(z2);
   z3  = __mul4_a24_ss(t0, 121665);
