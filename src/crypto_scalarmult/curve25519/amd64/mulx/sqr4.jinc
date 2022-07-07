@@ -8,6 +8,8 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
   reg u64[4] h r;
   reg u64 z _38 fx;
 
+stack u64 r0s;
+
   of, cf, _, _, _, z = #set0();
 
   // 0
@@ -33,6 +35,8 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
   (r[1], t[4]) = #MULX ( fx,   f[3]     ); // f1*f3
      of, r[0]  = #ADOX ( r[0], t[4], of );
 
+r0s = r[0];
+
   (t[3], t[2]) = #MULX ( fx,   fx       ); // f1*f1
 
   // 2
@@ -56,6 +60,8 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
   //
   cf, h[1] = #ADCX ( h[1], h[1], cf );
   of, h[1] = #ADOX ( h[1], t[1], of );
+
+r[0] = r0s;
 
   cf, h[2] = #ADCX ( h[2], h[2], cf );
   of, h[2] = #ADOX ( h[2], t[2], of );
