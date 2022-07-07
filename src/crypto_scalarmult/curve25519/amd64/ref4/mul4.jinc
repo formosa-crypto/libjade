@@ -14,7 +14,7 @@ inline fn __mul4_rss(stack u64[4] xa ya) -> reg u64[4]
   for j = 0 to 4 {
     y[j] = ya[j];
     h, l = y[j] * x[0];
-    if (j == 0) {
+    #inline if (j == 0) {
       z[0] = l;
       z[1] = h;
     } else {
@@ -29,13 +29,13 @@ inline fn __mul4_rss(stack u64[4] xa ya) -> reg u64[4]
       y[j] = ya[j];
       h, l = y[j] * x[i];
       cf, z[i+j] += l;
-      if (j == 0) {
+      #inline if (j == 0) {
         hprev = #MOV(0);
         _, hprev += h + cf;
       } else {
         _, h += 0 + cf;
         cf, z[i+j] += hprev;
-        if (1 <= j && j < 4 - 1) {
+        #inline if (1 <= j && j < 4 - 1) {
           hprev = #MOV(0);
           _, hprev += h + cf;
         } else { /* j = 4 */
@@ -78,7 +78,7 @@ fn _mul4_pp(reg ptr u64[4] xa ya) -> reg ptr u64[4]
   for j = 0 to 4 {
     y[j] = ya[j];
     h, l = y[j] * x[0];
-    if (j == 0) {
+    #inline if (j == 0) {
       z[0] = l;
       z[1] = h;
     } else {
@@ -93,13 +93,13 @@ fn _mul4_pp(reg ptr u64[4] xa ya) -> reg ptr u64[4]
       y[j] = ya[j];
       h, l = y[j] * x[i];
       cf, z[i+j] += l;
-      if (j == 0) {
+      #inline if (j == 0) {
         hprev = #MOV(0);
         _, hprev += h + cf;
       } else {
         _, h += 0 + cf;
         cf, z[i+j] += hprev;
-        if (1 <= j && j < 4 - 1) {
+        #inline if (1 <= j && j < 4 - 1) {
           hprev = #MOV(0);
           _, hprev += h + cf;
         } else { /* j = 4 */
@@ -188,4 +188,3 @@ inline fn __mul4_a24_ss(stack u64[4] xa, inline u64 a24) -> stack u64[4]
 
   return rs;
 }
-
