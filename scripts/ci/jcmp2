@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#
+# how to use jcmp2:
+# $ scripts/ci/jcmp baseline.csv input.csv output.csv 
+#
+
+baseline="$1"
+input="$2"
+output="$3"
+
+paste -d' ' \
+  <(cat $baseline | cut -d',' -f1 | sed -e 's/^ //') \
+  <(cat $baseline | cut -d',' -f2 | sed -e 's/^ //') \
+  <(cat $baseline | cut -d',' -f3 | sed -e 's/^ //') \
+  <(cat $input    | cut -d',' -f3 | sed -e 's/^ //') \
+| awk '{printf "%ld, %ld, %ld, %ld, %.02f\n", $1, $2, $3, $4, (($4*100/$3)-100)}' > $output
+
+cat $output | \
+awk 'BEGIN { FS = ", "; sum = 0; } ; { sum+=$5; } ; END { print sum / NR }' > ${output/.csv/.avg}
