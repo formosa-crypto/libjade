@@ -1,0 +1,32 @@
+#!/bin/bash
+
+baseline="$1"
+compare="$2"
+output="$3"
+
+#
+
+scripts=$(cd $(dirname "$0") ; pwd -P)
+mkdir -p $output
+
+#
+
+find $baseline -name "*.csv" | \
+while read bfile;
+do
+  # check if bfile exists in $compare dir
+  cfile=${bfile/$baseline/$compare}
+  if [ ! -f $cfile ]; then
+    echo "CHECKME, $cfile" >&2
+    continue
+  fi
+
+  # initialize output file and create output directory
+  ofile=${output}/$(basename $bfile)
+
+  # get the type of the file, it can be 0 (jcmp1), 1 (jcmp2), or 2 (jcmp3)
+  type=$(head -n1 $bfile | sed -e 's/[^,]//g' -e 's/,,/,/' | awk '{print length}');
+
+  ./${scripts}/jcmp${type} $bfile $cfile $ofile
+
+done
