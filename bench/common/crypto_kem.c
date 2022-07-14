@@ -8,6 +8,7 @@
 #include <string.h>
 
 //
+
 #define CRYPTO_BYTES           NAMESPACE(BYTES)
 #define CRYPTO_PUBLICKEYBYTES  NAMESPACE(PUBLICKEYBYTES)
 #define CRYPTO_SECRETKEYBYTES  NAMESPACE(SECRETKEYBYTES)
@@ -17,9 +18,6 @@
 #define crypto_kem_keypair NAMESPACE_LC(keypair)
 #define crypto_kem_enc NAMESPACE_LC(enc)
 #define crypto_kem_dec NAMESPACE_LC(dec)
-
-#define xstr(s,e) str(s)#e
-#define str(s) #s
 
 //
 
@@ -36,11 +34,14 @@
 //
 
 #include "cpucycles.c"
+
+#define PRINTBENCH_1 1
 #include "printbench.c"
+#undef PRINTBENCH_1
 
 //
 
-int main(void)
+int main(int argc, char**argv)
 {
   int loop, i;
   char *op_str[] = {xstr(crypto_kem_keypair,.csv), xstr(crypto_kem_enc,.csv), xstr(crypto_kem_dec,.csv)};
@@ -73,7 +74,7 @@ int main(void)
     results[2][loop] = cpucycles_median(cycles, TIMINGS);
   }
 
-  cpucycles_fprintf_2(results, op_str);
+  cpucycles_fprintf_1(argc, results, op_str);
 
   return 0;
 }
