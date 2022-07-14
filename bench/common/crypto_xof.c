@@ -21,12 +21,12 @@
 #define LOOPS 3
 #endif
 
-#ifndef MININBYTES
-#define MININBYTES 32
+#ifndef MINBYTES
+#define MINBYTES 32
 #endif
 
-#ifndef MAXINBYTES
-#define MAXINBYTES 16384
+#ifndef MAXBYTES
+#define MAXBYTES 16384
 #endif
 
 #ifndef MINOUTBYTES
@@ -45,7 +45,7 @@
 
 //
 
-#define inc_32 inc_in
+#define inc_32 inc
 #define inc_4 inc_out
 #include "increment.c"
 #include "cpucycles.c"
@@ -57,17 +57,17 @@ int main(void)
 {
   int loop, r0, r1, i;
   char *op_str[] = {xstr(crypto_xof,.csv)};
-  uint8_t out[MAXOUTBYTES], in[MAXINBYTES];
+  uint8_t out[MAXOUTBYTES], in[MAXBYTES];
   size_t outsize, outlen, inlen;
   uint64_t cycles[TIMINGS];
   uint64_t** results[OP][LOOPS];
 
   outsize = size_inc_4(MINOUTBYTES,MAXOUTBYTES);
-  alloc_4(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
+  alloc_4(results, outsize, size_inc_32(MINBYTES,MAXBYTES));
 
   for(loop = 0; loop < LOOPS; loop++)
   { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+    { for (inlen = MINBYTES, r1 = 0; inlen <= MAXBYTES; inlen += inc(inlen), r1 += 1)
       { for (i = 0; i < TIMINGS; i++)
         { cycles[i] = cpucycles();
           crypto_xof(out, outlen, in, inlen); }

@@ -106,8 +106,8 @@ static void cpucycles_fprintf_3(uint64_t* results[OP][LOOPS], char *op_str[])
 
 #ifdef MINOUTBYTES
 #ifdef MAXOUTBYTES
-#ifdef MININBYTES
-#ifdef MAXINBYTES
+#ifdef MINBYTES
+#ifdef MAXBYTES
 static void cpucycles_fprintf_4(uint64_t** results[OP][LOOPS], char *op_str[])
 {
   int op, loop, r0, r1;
@@ -117,7 +117,7 @@ static void cpucycles_fprintf_4(uint64_t** results[OP][LOOPS], char *op_str[])
 
   // get min median of LOOP runs
   for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-  { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+  { for (inlen = MINBYTES, r1 = 0; inlen <= MAXBYTES; inlen += inc(inlen), r1 += 1)
     { for (op = 0; op < OP; op++)
       { min = results[op][0][r0][r1];
         for (loop = 1; loop < LOOPS; loop++)
@@ -133,7 +133,7 @@ static void cpucycles_fprintf_4(uint64_t** results[OP][LOOPS], char *op_str[])
   { f = fopen(op_str[op], "w");
     loop = 0;
     for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+    { for (inlen = MINBYTES, r1 = 0; inlen <= MAXBYTES; inlen += inc(inlen), r1 += 1)
       { cpb = ((double)results[op][loop][r0][r1]) / ((double)inlen); // cycles per input byte
         fprintf(f, "%" PRIu64 ", %" PRIu64 ", %" PRIu64 ", %.2f\n", outlen, inlen, results[op][loop][r0][r1], cpb ); }
     }
