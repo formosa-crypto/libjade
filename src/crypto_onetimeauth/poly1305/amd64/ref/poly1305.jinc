@@ -257,6 +257,8 @@ inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
   return h2;
 }
 
+
+// TODO: remove inline when ra
 inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
 {
   reg u64[3] h r;
@@ -269,41 +271,21 @@ inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
   return h2;
 }
 
-#[returnaddress="stack"]
-fn _poly1305_r_ref(reg u64 in inlen k) -> reg u64, reg u64
-{
-  reg u64[2] h;
-  reg u64 h0 h1;
- 
-  h = __poly1305_r_ref(in, inlen, k);
-  
-  h0 = h[0];
-  h1 = h[1];
-  return h0, h1; // TODO missing feature: reg arrays for local functions.
-}
-
-//
 
 inline fn __poly1305_ref(reg u64 out in inlen k)
 {
-  reg u64[2] h;
-  reg u64 h0 h1;
-
-  h0, h1 = _poly1305_r_ref(in, inlen, k);
-  h[0] = h0;
-  h[1] = h1;
-  __store2(out, h);
+  reg u64[2] h2;
+  h2 = __poly1305_r_ref(in, inlen, k);
+  __store2(out, h2);
 }
+
 
 inline fn __poly1305_verify_ref(reg u64 h in inlen k) -> reg u64
 {
   reg u64[2] hc;
-  reg u64 hc0 hc1;
   reg u64 r;
 
-  hc0, hc1 = _poly1305_r_ref(in, inlen, k);
-  hc[0] = hc0;
-  hc[1] = hc1;
+  hc = __poly1305_r_ref(in, inlen, k);
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
   return r;
 }
