@@ -15,9 +15,6 @@
 #define crypto_scalarmult      JADE_NAMESPACE_LC
 #define crypto_scalarmult_base NAMESPACE_LC(base)
 
-#define xstr(s,e) str(s)#e
-#define str(s) #s
-
 //
 
 #ifndef LOOPS
@@ -33,11 +30,14 @@
 //
 
 #include "cpucycles.c"
+
+#define PRINTBENCH_1 1
 #include "printbench.c"
+#undef PRINTBENCH_1
 
 //
 
-int main(void)
+int main(int argc, char**argv)
 {
   int loop, i;
   char *op_str[] = {xstr(crypto_scalarmult,.csv), xstr(crypto_scalarmult_base,.csv)};
@@ -63,7 +63,7 @@ int main(void)
     results[1][loop] = cpucycles_median(cycles, TIMINGS);
   }
 
-  cpucycles_fprintf_2(results, op_str);
+  cpucycles_fprintf_1(argc, results, op_str);
 
   return 0;
 }

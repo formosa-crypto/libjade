@@ -8,12 +8,10 @@
 #include <string.h>
 
 //
+
 #define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
 #define crypto_xof JADE_NAMESPACE_LC
-
-#define xstr(s,e) str(s)#e
-#define str(s) #s
 
 //
 
@@ -45,15 +43,19 @@
 
 //
 
-#define inc_32 inc_in
-#define inc_4 inc_out
-#include "increment.c"
 #include "cpucycles.c"
+#include "increment.c"
+
+#define inc_in  inc_32
+#define inc_out inc_4
+
+#define PRINTBENCH_3 1
 #include "printbench.c"
+#undef PRINTBENCH_3
 
 //
 
-int main(void)
+int main(int argc, char**argv)
 {
   int loop, r0, r1, i;
   char *op_str[] = {xstr(crypto_xof,.csv)};
@@ -63,7 +65,7 @@ int main(void)
   uint64_t** results[OP][LOOPS];
 
   outsize = size_inc_4(MINOUTBYTES,MAXOUTBYTES);
-  alloc_4(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
+  alloc_3(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
 
   for(loop = 0; loop < LOOPS; loop++)
   { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
@@ -76,8 +78,8 @@ int main(void)
     }
   }
 
-  cpucycles_fprintf_4(results, op_str);
-  free_4(results, outsize);
+  cpucycles_fprintf_3(argc, results, op_str);
+  free_3(results, outsize);
 
   return 0;
 }

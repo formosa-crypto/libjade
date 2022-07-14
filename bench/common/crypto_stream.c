@@ -16,21 +16,18 @@
 #define crypto_stream_xor NAMESPACE_LC(xor)
 #define crypto_stream JADE_NAMESPACE_LC
 
-#define xstr(s,e) str(s)#e
-#define str(s) #s
-
 //
 
 #ifndef LOOPS
 #define LOOPS 3
 #endif
 
-#ifndef MINBYTES
-#define MINBYTES 32
+#ifndef MININBYTES
+#define MININBYTES 32
 #endif
 
-#ifndef MAXBYTES
-#define MAXBYTES 16384
+#ifndef MAXINBYTES
+#define MAXINBYTES 16384
 #endif
 
 #ifndef TIMINGS
@@ -41,27 +38,31 @@
 
 //
 
-#define inc_32 inc
-#include "increment.c"
 #include "cpucycles.c"
+#include "increment.c"
+
+#define inc_in inc_32
+
+#define PRINTBENCH_2 1
 #include "printbench.c"
+#undef PRINTBENCH_2
 
 //
 
-int main(void)
+int main(int argc, char**argv)
 {
   int loop, r, i;
   char *op_str[] = {xstr(crypto_stream,.csv), xstr(crypto_stream_xor,.csv)};
-  uint8_t ciphertext[MAXBYTES], plaintext[MAXBYTES],
+  uint8_t ciphertext[MAXINBYTES], plaintext[MAXINBYTES],
           nonce[CRYPTO_NONCEBYTES], key[CRYPTO_KEYBYTES];
   size_t len;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
 
-  alloc_3(results, size_inc_32(MINBYTES,MAXBYTES));
+  alloc_2(results, size_inc_32(MININBYTES,MAXINBYTES));
 
   for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MINBYTES, r = 0; len <= MAXBYTES; len += inc(len), r += 1)
+  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len += inc_in(len), r += 1)
     { for (i = 0; i < TIMINGS; i++)
       { cycles[i] = cpucycles();
         crypto_stream(ciphertext, len, nonce, key); }
@@ -74,8 +75,8 @@ int main(void)
     }
   }
 
-  cpucycles_fprintf_3(results, op_str);
-  free_3(results);
+  cpucycles_fprintf_2(argc, results, op_str);
+  free_2(results);
 
   return 0;
 }

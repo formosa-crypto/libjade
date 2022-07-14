@@ -22,17 +22,18 @@ BENCHS  := $(addsuffix bench, $(BENCH))
 
 # --------------------------------------------------------------------
 
-RDIR       = $(subst $(BIN)/,,$(@D))
-OPERATION  = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
-NAMESPACE  = $(subst crypto_,jade_,$(subst -,_,$(subst /,_,$(RDIR))))
-NAMESPACE1 = $(shell echo $(NAMESPACE) | tr a-z A-Z)
-IDIR       = $(subst $(BIN),$(SRC),$(@D))
-ASM        = $(IDIR)/$(OPERATION).s
+RDIR        = $(subst $(BIN)/,,$(@D))
+OPERATION   = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
+NAMESPACE   = $(subst crypto_,jade_,$(subst -,_,$(subst /,_,$(RDIR))))
+NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
+IDIR        = $(subst $(BIN),$(SRC),$(@D))
+ASM         = $(IDIR)/$(OPERATION).s
 
-MAIN       = $(COMMON)/crypto_$(OPERATION).c
-DEFINES    = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
-INCLUDES   = -I$(IDIR)/include/ -I$(COMMON)/ -I$(EXT)/randombytes/
-COMPILE    = $(CC) $(CFLAGS) -o $@ $(DEFINES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB)
+MAIN        = $(COMMON)/crypto_$(OPERATION).c
+DEFINE     ?=
+DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
+INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(EXT)/randombytes/
+COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB)
 
 # --------------------------------------------------------------------
 .PHONY: __phony benchs
