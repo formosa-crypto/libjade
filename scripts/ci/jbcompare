@@ -3,6 +3,7 @@
 baseline="$1"
 compare="$2"
 output="$3"
+filters=("" "$4" "$5")
 
 #
 
@@ -27,6 +28,5 @@ do
   # get the type of the file, it can be 0 (jcmp1), 1 (jcmp2), or 2 (jcmp3)
   type=$(head -n1 $bfile | sed -e 's/[^,]//g' -e 's/,,/,/' | awk '{print length}');
 
-  ./${scripts}/jcmp${type} $bfile $cfile $ofile
-
+  ${scripts}/jbcmp${type} $bfile $cfile $ofile ${filters[$type]}
 done
