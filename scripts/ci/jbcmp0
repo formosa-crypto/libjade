@@ -15,4 +15,4 @@ paste -d' ' \
 | awk '{printf "%ld,%ld,%.03f\n", $1, $2, (($2*100.0/$1)-100.0)}' > $output
 
 cat $output | \
-awk 'BEGIN { FS = ", "; sum = 0; } ; { sum+=$3; } ; END { print sum / NR }' > ${output/.csv/.avg}
+awk 'BEGIN { FS = ","; sum = 0; } ; { sum+=$3; } ; END { print sum / NR }' > ${output/.csv/.avg}

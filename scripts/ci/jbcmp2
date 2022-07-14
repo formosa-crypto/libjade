@@ -18,4 +18,4 @@ paste -d' ' \
 | awk '{printf "%ld,%ld,%ld,%ld,%.02f\n", $1, $2, $3, $4, (($4*100/$3)-100)}' | grep -E ${filter} > $output
 
 cat $output | \
-awk 'BEGIN { FS = ", "; sum = 0; } ; { sum+=$5; } ; END { print sum / NR }' > ${output/.csv/.avg}
+awk 'BEGIN { FS = ","; sum = 0; } ; { sum+=$5; } ; END { print sum / NR }' > ${output/.csv/.avg}

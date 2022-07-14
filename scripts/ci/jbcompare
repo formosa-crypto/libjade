@@ -5,12 +5,12 @@ compare="$2"
 output="$3"
 filters=("" "$4" "$5")
 
-#
+###
 
 scripts=$(cd $(dirname "$0") ; pwd -P)
 mkdir -p $output
 
-#
+###
 
 find $baseline -name "*.csv" | \
 while read bfile;
@@ -30,3 +30,8 @@ do
 
   ${scripts}/jbcmp${type} $bfile $cfile $ofile ${filters[$type]}
 done
+
+###
+
+cat $output/*.avg | \
+awk 'BEGIN { sum = 0; } ; { sum += $1 } ; END { print sum / NR }'
