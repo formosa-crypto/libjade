@@ -1,5 +1,3 @@
-param int SALSA20_ROUNDS=20;
-
 require "xsalsa20.jinc"
 
 export fn jade_stream_xsalsa20_amd64_ref_xor(#transient reg u64 output plain len nonce key) -> reg u64
@@ -27,5 +25,4 @@ export fn jade_stream_xsalsa20_amd64_ref(#transient reg u64 output len nonce key
 
   return r;
 }
-
 

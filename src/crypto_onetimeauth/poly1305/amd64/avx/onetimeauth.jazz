@@ -1,0 +1,23 @@
+require "poly1305.jinc"
+
+export fn jade_onetimeauth_poly1305_amd64_avx(reg u64 out in _inlen _key) -> reg u64
+{
+  reg u64 r inlen key;
+
+  inlen = _inlen;
+  key = _key;
+  __poly1305_avx(out, in, inlen, key);
+  _,_,_,_,_,r = #set0();
+  return r;
+}
+
+export fn jade_onetimeauth_poly1305_amd64_avx_verify(reg u64 h in _inlen _key) -> reg u64
+{
+  reg u64 r inlen key;
+
+  inlen = _inlen;
+  key = _key;
+  r = __poly1305_verify_avx(h, in, inlen, key);
+  return r;
+}
+
