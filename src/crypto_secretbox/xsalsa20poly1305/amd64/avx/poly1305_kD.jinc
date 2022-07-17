@@ -1,0 +1,42 @@
+
+from Jade require "crypto_secretbox/xsalsa20poly1305/amd64/ref/poly1305_kD.jinc"
+from Jade require "crypto_onetimeauth/poly1305/amd64/avx/poly1305.jinc"
+
+inline fn __poly1305_r_avx_k(
+  reg u64 in inlen,
+  reg const ptr u8[32] k)
+  ->
+  reg u64[2]
+{
+  reg u64[2] h2;
+  reg u64[3] h r;
+  stack u128[5] r44   r22   r12;
+  stack u128[4] r44x5 r22x5 r12x5;
+
+  if(inlen >= 1024)
+  { h, r = __poly1305_setup_ref_k(k);
+    r44, r44x5, r22, r22x5, r12, r12x5 = __poly1305_avx_setup(r);
+    in, inlen, h = __poly1305_avx_update(in, inlen, r44, r44x5, r22, r22x5, r12, r12x5);
+    in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
+    h2 = __poly1305_last_ref_k(in, inlen, k, h, r);
+  }
+  else
+  { h2 = __poly1305_r_ref_k(in, inlen, k); }
+
+  return h2;
+}
+
+inline fn __poly1305_verify_avx_k(
+  reg u64 h in inlen,
+  reg const ptr u8[32] k)
+  ->
+  reg u64
+{
+  reg u64[2] hc;
+  reg u64 r;
+
+  hc = __poly1305_r_avx_k(in, inlen, k);
+  r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
+  return r;
+}
+

@@ -1,0 +1,31 @@
+name: XSalsa20Poly1305
+type: secretbox
+checksumsmall: 427582fba973e3df3b66dd8cafd068c8c460937838e825b940c308b0a70b52e5
+checksumbig: 0f29726cd0c2bc85f1cc155af4f573a3570c11b16c5dbb758a7f1e75c3b5c51e
+implementations:
+    - name: amd64/ref
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+    - name: amd64/avx
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags:
+              - avx
+    - name: amd64/avx2
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags:
+              - avx2
+

@@ -1,0 +1,185 @@
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+inline fn __init_ref_32(reg u64 nonce, reg u32[8] key) -> stack u32[16]
+{
+  inline int i;
+  stack u32[16] st;
+  reg u32 t;
+
+  // st[1,2,3,4, 11,12,13,14] = key[0,1,2,3, 4,5,6,7]
+  for i=0 to 4
+  { st[i+1] = key[i]; }
+
+  for i=4 to 8
+  { st[i+7] = key[i]; }
+
+  // st[0,5,10,15] = sigma[0,1,2,3]
+  st[0]  = 0x61707865;
+  st[5]  = 0x3320646e;
+  st[10] = 0x79622d32;
+  st[15] = 0x6b206574;
+
+  // st[6,7] = nonce[0,1]
+  for i=0 to 2
+  { t = (u32)[nonce + i*4];
+    st[i+6] = t; }
+
+  // st[8,9] = 0
+  for i=0 to 2
+  { st[i+8] = 0; }
+
+  return st;
+}
+
+
+inline fn __copy_state_ref_32(stack u32[16] st) -> reg u32[16], stack u32, stack u32
+{
+  inline int i;
+  reg u32[16] k;
+  stack u32 s_k2 s_k3;
+
+  for i=0 to 4
+  { k[i] = st[i]; }
+
+  s_k2 = k[2];
+  s_k3 = k[3];
+
+  for i=4 to 16
+  { k[i] = st[i]; }
+
+  return k, s_k2, s_k3;
+}
+
+
+// computes: k[a] ^= (k[b] + k[c]) <<< r;
+inline fn __line_ref_32(reg u32[16] k, inline int a b c r) -> reg u32[16]
+{
+  reg u32 t;
+  t  = k[b];
+  t += k[c];
+  _, _, t = #ROL_32(t, r);
+  k[a] ^= t;
+  return k;
+}
+
+
+inline fn __quarter_round_ref_32(reg u32[16] k, inline int a b c d) -> reg u32[16]
+{
+  k = __line_ref_32(k, b, a, d, 7);
+  k = __line_ref_32(k, c, b, a, 9);
+  k = __line_ref_32(k, d, c, b, 13);
+  k = __line_ref_32(k, a, d, c, 18);
+  return k;
+}
+
+
+inline fn __column_round_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+{
+  stack u32 k12 k13;
+
+  k = __quarter_round_ref_32(k,  0,  4,  8, 12); k12 = k[12]; k[2] = k2;
+  k = __quarter_round_ref_32(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3;
+  k = __quarter_round_ref_32(k, 10, 14,  2,  6);
+  k = __quarter_round_ref_32(k, 15,  3,  7, 11);
+
+  return k, k12, k13;
+}
+
+
+inline fn __line_round_ref_32(reg u32[16] k, stack u32 k12 k13) -> reg u32[16], stack u32, stack u32
+{
+  stack u32 k2 k3;
+
+  k = __quarter_round_ref_32(k,  0,  1,  2,  3); k2 = k[2]; k[12] = k12;
+  k = __quarter_round_ref_32(k,  5,  6,  7,  4); k3 = k[3]; k[13] = k13;
+  k = __quarter_round_ref_32(k, 10, 11,  8,  9);
+  k = __quarter_round_ref_32(k, 15, 12, 13, 14);
+
+  return k, k2, k3;
+}
+
+
+inline fn __double_round_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+{
+  stack u32 k12 k13;
+
+  k, k12, k13 = __column_round_ref_32(k, k2, k3);
+  k, k2,  k3  = __line_round_ref_32(k, k12, k13);
+  return k, k2, k3;
+}
+
+
+inline fn __rounds_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32
+{
+  stack u32 s_c k15;
+  reg u32 c;
+
+  c = 10;
+  while
+  { s_c = c;
+    k, k2, k3 = __double_round_ref_32(k, k2, k3);
+    c = s_c;
+    ?{}, c = #DEC_32(c);
+  } (c > 0)
+
+  k15 = k[15];
+  k[2] = k2;
+  k[3] = k3;
+  return k, k15;
+}
+
+
+inline fn __sum_states_ref_32(reg u32[16] k, stack u32 k15, stack u32[16] st) -> reg u32[16], stack u32
+{
+  inline int i;
+
+  for i=0 to 8
+  { k[i] += st[i]; }
+
+  return k, k15;
+}
+
+
+inline fn __store_ref_32(
+  reg mut ptr u8[32] out,
+  reg u32[16] k,
+  stack u32 k15)
+  ->
+  reg ptr u8[32]
+{
+  inline int i;
+
+  for i=0 to 8
+  { out[u32 i] = k[i]; }
+
+  return out;
+}
+
+
+inline fn __salsa20_ref_32(
+  reg mut ptr u8[32] out,
+  reg u64 nonce,
+  reg u32[8] key)
+  ->
+  reg ptr u8[32]
+{
+  stack ptr u8[32] s_out;
+  stack u32[16] st;
+  reg u32[16] k;
+  stack u32 k2 k3 k15;
+
+  s_out = out;
+
+  st = __init_ref_32(nonce, key);
+  k, k2, k3 = __copy_state_ref_32(st);
+  k, k15 = __rounds_ref_32(k, k2, k3);
+  k, k15 = __sum_states_ref_32(k, k15, st);
+
+  out = s_out;
+  out = __store_ref_32(out, k, k15);
+
+  return out;
+}
+
