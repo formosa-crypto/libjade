@@ -1,0 +1,89 @@
+
+from Jade require "crypto_onetimeauth/poly1305/amd64/ref/poly1305.jinc"
+
+inline fn __clamp_ref_k(
+  reg const ptr u8[32] k)
+  ->
+  reg u64[3]
+{
+  reg u64[3] r;
+
+  r[0] = k[u64 0];
+  r[1] = k[u64 1];
+  r[0] &= 0x0ffffffc0fffffff;
+  r[1] &= 0x0ffffffc0ffffffc;
+  r[2] = r[1];
+  r[2] >>= 2;
+  r[2] += r[1];
+
+  return r;
+}
+
+inline fn __poly1305_setup_ref_k(
+  reg const ptr u8[32] k)
+  ->
+  reg u64[3],
+  reg u64[3]
+{
+  inline int i;
+  reg u64[3] h r;
+
+  for i=0 to 3 { h[i] = 0; }
+  r = __clamp_ref_k(k);
+
+  return h, r;
+}
+
+inline fn __poly1305_last_ref_k(
+  reg u64 in inlen,
+  reg const ptr u8[32] k,
+  reg u64[3] h r)
+  ->
+  reg u64[2]
+{
+  reg bool cf;
+  reg u64[2] m s h2;
+
+  if(inlen > 0)
+  { h = __load_last_add(h, in, inlen);
+    h = __mulmod(h, r);
+  }
+
+  h2 = __freeze(h);
+
+  cf, h2[0] += k[u64 2];
+   _, h2[1] += k[u64 3] + cf;
+
+  return h2;
+}
+
+inline fn __poly1305_r_ref_k(
+  reg u64 in inlen,
+  reg const ptr u8[32] k)
+  ->
+  reg u64[2]
+{
+  reg u64[3] h r;
+  reg u64[2] h2;
+
+  h, r = __poly1305_setup_ref_k(k);
+  in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
+  h2 = __poly1305_last_ref_k(in, inlen, k, h, r);
+  
+  return h2;
+}
+
+inline fn __poly1305_verify_ref_k(
+  reg u64 h in inlen,
+  reg const ptr u8[32] k)
+  ->
+  reg u64
+{
+  reg u64[2] hc;
+  reg u64 r;
+
+  hc = __poly1305_r_ref_k(in, inlen, k);
+  r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
+  return r;
+}
+
