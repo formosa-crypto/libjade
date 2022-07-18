@@ -26,7 +26,7 @@ inline fn __load_add(reg u64[3] h, reg u64 in) -> reg u64[3]
 
 
 // @pre: 0 <= len <= 15
-inline fn __load_last_add_mask(reg u64 len) -> reg u64[2], reg u64[2]
+#nomodmsf inline fn __load_last_add_mask(reg u64 len) -> reg u64[2], reg u64[2]
 {
   reg bool cf;
   reg u64 s0 s1 s2 nb b m;
@@ -47,7 +47,7 @@ inline fn __load_last_add_mask(reg u64 len) -> reg u64[2], reg u64[2]
 
   // swap if < 8
   s2  = s1;
-  s2 &= m; 
+  s2 &= m;
   s0 ^= s2;
   s1 ^= s2;
 
@@ -83,7 +83,7 @@ inline fn __load_last_add(reg u64[3] h, reg u64 in len) -> reg u64[3]
   cf, h[0] += v[0];
   cf, h[1] += v[1] + cf;
    _, h[2] +=    0 + cf;
- 
+
   return h;
 }
 
@@ -158,7 +158,7 @@ inline fn __mulmod(reg u64[3] h r) -> reg u64[3]
   _ , h[2] += rdx + cf;  // (* h[2] = mulhi h[0] r[1] + h[2] + CF *)
 
   h[0] = 0xfffffffffffffffc;
-    t2 = h[2]; 
+    t2 = h[2];
     t2 >>= 2;
   h[0] &= h[2];
 
@@ -224,69 +224,79 @@ inline fn __poly1305_setup_ref(reg u64 k) -> reg u64[3], reg u64[3], reg u64
 }
 
 
-inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r) -> reg u64, reg u64, reg u64[3]
+inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r, #msf reg u64 ms) -> reg u64, reg u64, reg u64[3], #msf reg u64
 {
   reg bool cf;
   reg u64[2] m;
+  reg bool b;
 
-  while(inlen >= 16)
+  b = inlen >= 16;
+  while(b)
   {
+    ms = #set_msf(b, ms);
     h = __load_add(h, in);
     h = __mulmod(h, r);
     in += 16;
     inlen -= 16;
   }
+  ms = #set_msf(!b, ms);
 
-  return in, inlen, h;
+  return in, inlen, h, ms;
 }
 
 
-inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
+inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
   reg u64[2] m s h2;
+  reg bool b;
 
-  if(inlen > 0)
-  { h = __load_last_add(h, in, inlen);
+  b = inlen > 0;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    h = __load_last_add(h, in, inlen);
     h = __mulmod(h, r);
+  } else {
+   ms = #set_msf(!b, ms);
   }
 
   h2 = __freeze(h);
   s = __load2(k);
   h2 = __add2(h2, s);
 
-  return h2;
+  return h2, ms;
 }
 
 
 // TODO: remove inline when ra
-inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
+inline fn __poly1305_r_ref(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
   reg u64[3] h r;
   reg u64[2] h2;
 
   h, r, k = __poly1305_setup_ref(k);
-  in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
-  h2 = __poly1305_last_ref(in, inlen, k, h, r);
-  
-  return h2;
+  in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
+  h2, ms = __poly1305_last_ref(in, inlen, k, h, r, ms);
+
+  return h2, ms;
 }
 
 
-inline fn __poly1305_ref(reg u64 out in inlen k)
+inline fn __poly1305_ref(reg u64 out in inlen k, #msf reg u64 ms) -> #msf reg u64
 {
   reg u64[2] h2;
-  h2 = __poly1305_r_ref(in, inlen, k);
+  h2, ms = __poly1305_r_ref(in, inlen, k, ms);
   __store2(out, h2);
+  return ms;
 }
 
 
-inline fn __poly1305_verify_ref(reg u64 h in inlen k) -> reg u64
+inline fn __poly1305_verify_ref(reg u64 h in inlen k, #msf reg u64 ms) -> reg u64, #msf reg u64
 {
   reg u64[2] hc;
   reg u64 r;
 
-  hc = __poly1305_r_ref(in, inlen, k);
+  hc, ms = __poly1305_r_ref(in, inlen, k, ms);
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
-  return r;
+  return r, ms;
 }
-
