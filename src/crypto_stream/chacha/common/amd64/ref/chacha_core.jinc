@@ -188,7 +188,7 @@ inline fn __rounds_inline_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stac
 
   while
   { s_c = c;
-    
+
     k, k14, k15 = __double_round_inline_ref(k, k14, k15);
 
     c = s_c;
@@ -229,11 +229,11 @@ inline fn __chacha_xor_ref(reg u64 output plain len nonce key)
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
+  st = __init_ref(nonce, key);
+
   s_output = output;
   s_plain = plain;
   s_len = len;
-
-  st = __init_ref(nonce, key);
 
   while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
@@ -258,10 +258,10 @@ inline fn __chacha_ref(reg u64 output len nonce key)
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
+  st = __init_ref(nonce, key);
+
   s_output = output;
   s_len = len;
-
-  st = __init_ref(nonce, key);
 
   while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
@@ -277,5 +277,3 @@ inline fn __chacha_ref(reg u64 output len nonce key)
     __store_last_ref(s_output, s_len, k, k15);
   }
 }
-
-
