@@ -2,9 +2,12 @@ param int CHACHA_ROUNDS=12;
 
 from Jade require "crypto_stream/chacha/common/amd64/ref/chacha.jinc"
 
-export fn jade_stream_chacha_chacha12_amd64_ref_xor(reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha12_amd64_ref_xor(#transient reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
+  reg u64 ms;
+
+  ms = #init_msf();
   __chacha_xor_ref(output, plain, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
@@ -13,8 +16,12 @@ export fn jade_stream_chacha_chacha12_amd64_ref_xor(reg u64 output plain len non
 export fn jade_stream_chacha_chacha12_amd64_ref(reg u64 output len nonce key) -> reg u64
 {
   reg u64 r;
+  reg u64 ms;
+
+  ms = #init_msf();
   __chacha_ref(output, len, nonce, key);
   _,_,_,_,_,r = #set0();
+  ms = #init_msf();
   return r;
 }
 
