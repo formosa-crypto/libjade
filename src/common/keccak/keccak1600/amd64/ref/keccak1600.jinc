@@ -5,14 +5,13 @@ require "keccakf1600.jinc"
 inline fn __keccak_init_ref() -> stack u64[25]
 {
   stack u64[25] state;
-  reg u64 i t;
+  reg u64 t;
+  inline int i;
 
   _,_,_,_,_, t = #set0();
-  i = 0;
-  while (i < 25)
-  { state[(int)i] = t;
-    i += 1;
-  }
+
+  for i = 0 to 25
+  { state[i] = t; }
 
   return state;
 }
@@ -21,25 +20,29 @@ inline fn __keccak_init_ref() -> stack u64[25]
 inline fn __add_full_block_ref(
   stack u64[25] state,
   reg u64 in inlen,
-  reg u64 rate
-) -> stack u64[25], reg u64, reg u64
+  reg u64 rate,
+  reg u64 ms
+) -> stack u64[25], reg u64, reg u64, reg u64
 {
   reg u64 i t rate64;
+  reg bool b;
 
   rate64 = rate;
   rate64 >>= 3;
   i = 0;
-  while( i < rate64)
+  while { b = i < rate64; }(b)
   {
+    ms = #set_msf(b, ms);
     t = [in + 8*i];
     state[(int)i] ^= t;
     i+=1;
   }
+  ms = #set_msf(!b, ms);
 
   in += rate;
   inlen -= rate;
 
-  return state, in, inlen;
+  return state, in, inlen, ms;
 }
 
 
@@ -48,29 +51,35 @@ inline fn __add_final_block_ref(
   stack u64[25] state,
   reg   u64 in inlen,
   reg   u8  trail_byte,
-  reg   u64 rate
-) -> stack u64[25]
+  reg   u64 rate,
+  reg   u64 ms
+) -> stack u64[25], reg u64
 {
   reg u64 i t inlen8;
   reg u8 c;
+  reg bool b;
 
   inlen8 = inlen;
   inlen8 >>= 3;
   i = 0;
-  while ( i < inlen8 )
+  while { b = i < inlen8; }(b)
   {
+    ms = #set_msf(b, ms);
     t = [in + 8*i];
     state[(int)i] ^= t;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
 
   i <<= 3;
-  while ( i < inlen )
+  while { b = i < inlen; }(b)
   {
+    ms = #set_msf(b, ms);
     c = (u8)[in + i];
     state[u8 (int)i] ^= c;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
 
   state[u8 (int)i] ^= trail_byte;
 
@@ -78,7 +87,7 @@ inline fn __add_final_block_ref(
   i -= 1;
   state[u8 (int)i] ^= 0x80;
 
-  return state;
+  return state, ms;
 }
 
 
@@ -86,58 +95,70 @@ inline fn __absorb_ref(
   stack u64[25] state,
   reg   u64 in inlen,
   stack u8  s_trail_byte,
-  reg   u64 rate // rate already in bytes -- it is returned bc of spills
-) -> stack u64[25], reg u64
+  reg   u64 rate, // rate already in bytes -- it is returned bc of spills
+  reg   u64 ms
+) -> stack u64[25], reg u64, reg u64
 {
   stack u64 s_in s_inlen s_rate;
   reg u8 trail_byte;
   reg u64 t;
+  reg bool b;
 
   // intermediate blocks
-  while ( inlen >= rate )
+
+  while { b = inlen >= rate; }(b)
   {
-    state, in, inlen = __add_full_block_ref(state, in, inlen, rate);
+    ms = #set_msf(b, ms);
+    state, in, inlen, ms = __add_full_block_ref(state, in, inlen, rate, ms);
     s_in = in;
     s_inlen = inlen; 
     s_rate = rate;
 
-    state = __keccakf1600_ref(state);
+    state, ms = __keccakf1600_ref(state, ms);
     in = s_in;
+    in = #protect(in, ms);
     inlen = s_inlen;
     rate = s_rate;
+    rate = #protect(rate, ms);
   }
+  ms = #set_msf(!b, ms);
+  inlen = #protect(inlen, ms);
 
   // final block
   trail_byte = s_trail_byte;
 
-  state = __add_final_block_ref(state, in, inlen, trail_byte, rate);
+  state, ms = __add_final_block_ref(state, in, inlen, trail_byte, rate, ms);
 
-  return state, rate;
+  return state, rate, ms;
 }
 
 
 inline fn __xtr_full_block_ref(
   stack u64[25] state,
   reg u64 out outlen,
-  reg u64 rate
-) -> reg u64, reg u64
+  reg u64 rate,
+  reg u64 ms
+) -> reg u64, reg u64, reg u64
 {
   reg u64 i t rate64;
+  reg bool b;
 
   rate64 = rate;
   rate64 >>= 3;
   i = 0;
-  while ( i < rate64 )
+  while { b = i < rate64; }(b)
   {
+    ms = #set_msf(b, ms);
     t = state[(int)i];
     [out + 8*i] = t;
     i += 1;
   }
+  ms = #set_msf(!b, ms);
 
   out += rate;
   outlen -= rate;
 
-  return out, outlen;
+  return out, outlen, ms;
 }
 
 
@@ -176,36 +197,50 @@ inline fn __squeeze_ref(
   stack u64[25] state,
   stack u64 s_out,
   reg   u64 outlen,
-  reg   u64 rate
-)
+  reg   u64 rate,
+  reg   u64 ms
+) -> reg u64
 {
   reg u64 out;
   stack u64 s_outlen s_rate;
+  reg bool b;
 
   // intermediate blocks
-  while ( outlen > rate )
+  while { b = outlen > rate; }(b)
   {
+    ms = #set_msf(b, ms);
+
     s_outlen = outlen;
     s_rate = rate;
-    state = __keccakf1600_ref(state);
+
+    state, ms = __keccakf1600_ref(state, ms);
+
     out = s_out;
     outlen = s_outlen;
     rate = s_rate;
+     
+    out = #protect(out, ms);
 
-    out, outlen = __xtr_full_block_ref(state, out, outlen, rate);
+    out, outlen, ms = __xtr_full_block_ref(state, out, outlen, rate, ms);
     s_out = out;
   }
+  ms = #set_msf(!b, ms); 
 
   s_outlen = outlen;
-  state = __keccakf1600_ref(state);
+  state, ms = __keccakf1600_ref(state, ms);
   out = s_out;
   outlen = s_outlen;
 
+  out = #protect(out, ms);
+  outlen = #protect(outlen, ms);
   out = __xtr_bytes_ref(state, out, outlen);
+
+  return ms;
 }
 
 
-inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg
+u64 rate, reg u64 ms) -> reg u64
 {
   stack u64[25] state;
   stack u64 s_out s_outlen;
@@ -218,17 +253,21 @@ inline fn __keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u
   state = __keccak_init_ref();
 
   // absorb
-  state, rate = __absorb_ref(state, in, inlen, s_trail_byte, rate);
+  state, rate, ms = __absorb_ref(state, in, inlen, s_trail_byte, rate, ms);
 
   // squeeze
   outlen = s_outlen;
-  __squeeze_ref(state, s_out, outlen, rate);
+  ms = __squeeze_ref(state, s_out, outlen, rate, ms);
+
+  return ms;
 }
 
 
-fn _keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+fn _keccak1600_ref(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate,
+reg u64 ms) -> reg u64
 {
-  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+  ms =  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate, ms);
+  return ms;
 }
 
 
