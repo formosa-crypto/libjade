@@ -45,7 +45,10 @@ $(BUILD)/%.s: %.s
 	mkdir -p $(dir $@); cp $< $(dir $@)
 
 # --------------------------------------------------------------------
+check-sct:
+	for i in $(JAZZ); do $(MAKE) -C $$i $@; done
 
+# --------------------------------------------------------------------
 clean-ci:
 	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
 	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
@@ -75,4 +78,3 @@ ifneq ($(words $(ERR)),0)
 endif
 
 endif
-

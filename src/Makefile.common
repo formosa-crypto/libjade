@@ -56,6 +56,16 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
 ###
+.PHONY: check-sct check-scton
+
+check-sct: $(SRCS) | $(CIDIR)
+	($(JASMINC) -checkSCT $<) $(CIT)
+
+# usage: """make check-scton F=[funtion_name]"""
+check-scton: $(SRCS) | $(CIDIR)
+	($(JASMINC) -checkSCTon $(F) $<) $(CIT)
+
+###
 
 %.s : %.$(JEXT)
 %.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
@@ -100,4 +110,3 @@ clean-ci:
 
 clean: clean-ci
 	@rm -fr $(DEPSDIR) *.s *.o *.a
-
