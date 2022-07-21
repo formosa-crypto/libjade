@@ -12,6 +12,15 @@ implementations:
               - Darwin
           required_flags: # FIXME
               - popcnt
+    - name: amd64/ref2
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - popcnt
     - name: amd64/mmx
       version: TODO
       supported_platforms:
@@ -39,4 +48,3 @@ implementations:
               - Darwin
           required_flags:
               - avx2
-
