@@ -5,11 +5,9 @@ require "salsa20_32D.jinc"
 
 inline fn __xsalsa20_ref_32(
   reg mut ptr u8[32] out,
-  reg u64 nonce key,
-  #msf reg u64 ms)
+  reg u64 nonce key)
   ->
-  reg ptr u8[32],
-  #msf reg u64
+  reg ptr u8[32]
 {
   stack ptr u8[32] out_s;
   stack u64 nonce_s key_s;
@@ -19,13 +17,13 @@ inline fn __xsalsa20_ref_32(
   nonce_s = nonce;
   key_s = key;
 
-  subkey, ms = __hsalsa20_ref(nonce, key, ms);
+  subkey = __hsalsa20_ref(nonce, key);
 
   out = out_s;
   nonce = nonce_s;
-  nonce = #protect(nonce, ms);
   nonce += 16;
-  out, ms = __salsa20_ref_32(out, nonce, subkey, ms);
+  out = __salsa20_ref_32(out, nonce, subkey);
 
-  return out, ms;
+  return out;
 }
+
