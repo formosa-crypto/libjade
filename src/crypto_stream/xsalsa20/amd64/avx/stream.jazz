@@ -6,7 +6,7 @@ export fn jade_stream_xsalsa20_amd64_avx_xor(#transient reg u64 output plain len
   #msf reg u64 ms;
 
   ms = #init_msf();
-  __xsalsa20_xor_avx(output, plain, len, nonce, key, ms);
+  ms = __xsalsa20_xor_avx(output, plain, len, nonce, key, ms);
   _,_,_,_,_,r = #set0();
   ms = #init_msf();
 

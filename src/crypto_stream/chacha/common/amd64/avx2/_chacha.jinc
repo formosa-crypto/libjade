@@ -1,17 +1,19 @@
-inline fn __chacha_xor_avx2(reg u64 output plain len nonce key)
+inline fn __chacha_xor_avx2(reg u64 output plain len nonce key, #msf reg u64 ms)
 {
-  if(len < 257)
-  { __chacha_xor_h_x2_avx2(output, plain, len, nonce, key); }
+  reg bool b;
+  b = len < 257;
+  if(b)
+  { ms = #set_msf(b, ms); __chacha_xor_h_x2_avx2(output, plain, len, nonce, key, ms); }
   else
-  { __chacha_xor_v_avx2(output, plain, len, nonce, key); }
+  { ms = #set_msf(!b, ms); __chacha_xor_v_avx2(output, plain, len, nonce, key, ms); }
 }
 
-inline fn __chacha_avx2(reg u64 output len nonce key)
+inline fn __chacha_avx2(reg u64 output len nonce key, #msf reg u64 ms)
 {
-  if(len < 257)
-  { __chacha_h_x2_avx2(output, len, nonce, key); }
+  reg bool b;
+  b = len < 257;
+  if(b)
+  { ms = #set_msf(b, ms); __chacha_h_x2_avx2(output, len, nonce, key, ms); }
   else
-  { __chacha_v_avx2(output, len, nonce, key); }
+  { ms = #set_msf(!b, ms); __chacha_v_avx2(output, len, nonce, key, ms); }
 }
-
-
