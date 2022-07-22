@@ -5,73 +5,92 @@ from Jade require "crypto_onetimeauth/poly1305/amd64/ref/poly1305.jinc"
 require "xsalsa20_32D.jinc"
 require "poly1305_kD.jinc"
 
-inline fn __xsalsa20poly1305_ref(reg u64 c m mlen nonce key) -> reg u64
+inline fn __xsalsa20poly1305_ref(reg u64 c m mlen nonce key, #msf reg u64 ms) -> reg u64
 {
   reg u64 r tag ct skey;
   stack u64 c_s mlen_s;
+  reg bool b;
 
-  if(mlen >= 32)
-  { c_s = c;
+  b = mlen >= 32;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    c_s = c;
     mlen_s = mlen;
 
-    __xsalsa20_xor_ref(c, m, mlen, nonce, key);
+    ms = __xsalsa20_xor_ref(c, m, mlen, nonce, key, ms);
 
     c    = c_s;
+    c = #protect(c, ms);
     mlen = mlen_s;
+    mlen = #protect(mlen, ms);
     tag  = #LEA(c + 16);
     ct   = #LEA(c + 32);
     mlen = #LEA(mlen - 32);
     skey = c;
 
-    __poly1305_ref(tag, ct, mlen, skey);
+    ms = __poly1305_ref(tag, ct, mlen, skey, ms);
 
     c = c_s;
+    c = #protect(c, ms);
     (u64)[c + 0] = 0;
     (u64)[c + 8] = 0;
     r = 0;
   }
   else
-  { r = -1; }
+  { ms = #set_msf(!b, ms); r = -1; }
 
   return r;
-} 
+}
 
 
-inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
+inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key, #msf reg u64 ms) -> reg u64
 {
   reg u64 r tag ct;
   stack u8[32] subkey;
   reg ptr u8[32] subkey_p;
   stack u64 m_s c_s clen_s nonce_s key_s;
+  reg bool b1 b2;
 
-  if(clen >= 32)
-  { m_s = m;
+  b1 = clen >= 32;
+  if(b1)
+  {
+    ms = #set_msf(b1, ms);
+    m_s = m;
     c_s = c;
     clen_s = clen;
     nonce_s = nonce;
     key_s = key;
 
     subkey_p = subkey;
-    subkey_p = __xsalsa20_ref_32(subkey_p, nonce, key);
+    subkey_p, ms = __xsalsa20_ref_32(subkey_p, nonce, key, ms);
 
     c    = c_s;
+    c = #protect(c, ms);
     clen = clen_s;
+    clen = #protect(clen, ms);
     tag  = #LEA(c + 16);
     ct   = #LEA(c + 32);
     clen = #LEA(clen - 32);
 
-    r = __poly1305_verify_ref_k(tag, ct, clen, subkey_p);
-
-    if(r == 0)
-    { m = m_s;
+    #declassify r, ms = __poly1305_verify_ref_k(tag, ct, clen, subkey_p, ms);
+    r = #protect(r, ms);
+    b2 = r == 0;
+    if(b2)
+    {
+      ms = #set_msf(b2, ms);
+      m = m_s;
       c = c_s;
       clen = clen_s;
       nonce = nonce_s;
+      nonce = #protect(nonce, ms);
       key = key_s;
+      key = #protect(key, ms);
 
-      __xsalsa20_xor_ref(m, c, clen, nonce, key);
+      ms = __xsalsa20_xor_ref(m, c, clen, nonce, key, ms);
 
       m = m_s;
+      m = #protect(m, ms);
       (u64)[m + 0]  = 0;
       (u64)[m + 8]  = 0;
       (u64)[m + 16] = 0;
@@ -79,11 +98,10 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
       r = 0; // this frees 'r' for the xsalsa20_xor_ref f. call
     }
     else
-    { r = -1; }
+    { ms = #set_msf(!b2, ms); r = -1; }
   }
   else
-  { r = -1; }
+  { ms = #set_msf(!b1, ms); r = -1; }
 
   return r;
 }
-
