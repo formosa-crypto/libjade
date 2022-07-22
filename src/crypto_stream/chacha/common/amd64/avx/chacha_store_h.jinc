@@ -74,8 +74,8 @@ inline fn __store_xor_last_h_avx(reg u64 output plain len, reg u128[4] k, #msf r
   }
 
   // write at most 8 bytes
-  b = len > 0;
-  while(b)
+
+  while {b = len > 0;}(b)
   {
     ms = #set_msf(b, ms);
     r1 = (8u) r0;

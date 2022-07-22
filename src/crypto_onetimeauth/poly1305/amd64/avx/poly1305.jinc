@@ -577,8 +577,8 @@ inline fn __poly1305_avx_update(
   t = #VPBROADCAST_2u64(mask26_u64); s_mask26 = t; mask26 = t;
   t = #VPBROADCAST_2u64(bit25_u64); s_bit25 = t;
 
-  b = inlen >= 64;
-  while(b)
+
+  while {b = inlen >= 64;}(b)
   {
     ms = #set_msf(b, ms);
     h, in = __mainloop_avx_v1(h, in, r44, r44x5, r22, r22x5, s_mask26, s_bit25);

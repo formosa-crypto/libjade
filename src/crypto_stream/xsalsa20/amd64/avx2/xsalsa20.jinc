@@ -3,7 +3,7 @@ param int SALSA20_ROUNDS=20;
 from Jade require "crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
 from Jade require "crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
 
-inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key, #msf reg u64 ms)
+inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 _output _plain _len _nonce _key;
   reg u32[8] subkey;
@@ -26,11 +26,12 @@ inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key, #msf reg u64 m
   nonce = #protect(nonce, ms);
   nonce += 16;
 
-  __salsa20_xor_1_avx2(output, plain, len, nonce, subkey);
+  ms = __salsa20_xor_1_avx2(output, plain, len, nonce, subkey, ms);
+  return ms;
 }
 
 
-inline fn __xsalsa20_avx2(reg u64 output len nonce key, #msf reg u64 ms)
+inline fn __xsalsa20_avx2(reg u64 output len nonce key, #msf reg u64 ms) -> #msf reg u64
 {
   stack u64 _output _len _nonce _key;
   reg u32[8] subkey;
@@ -50,5 +51,6 @@ inline fn __xsalsa20_avx2(reg u64 output len nonce key, #msf reg u64 ms)
   nonce = #protect(nonce, ms);
   nonce += 16;
 
-  __salsa20_1_avx2(output, len, nonce, subkey);
+  ms = __salsa20_1_avx2(output, len, nonce, subkey, ms);
+  return ms;
 }

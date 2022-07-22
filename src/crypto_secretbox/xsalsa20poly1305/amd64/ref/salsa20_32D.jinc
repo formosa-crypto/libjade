@@ -182,4 +182,3 @@ inline fn __salsa20_ref_32(
 
   return out;
 }
-

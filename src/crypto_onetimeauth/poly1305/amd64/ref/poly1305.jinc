@@ -229,8 +229,8 @@ inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r, #msf reg u64 m
   reg bool b;
   reg u64[2] m;
 
-  b = inlen >= 16;
-  while(b)
+
+  while {b = inlen >= 16;}(b)
   {
     ms = #set_msf(b, ms);
     h = __load_add(h, in);

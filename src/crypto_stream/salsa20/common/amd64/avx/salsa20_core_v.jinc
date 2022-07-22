@@ -227,8 +227,8 @@ inline fn __salsa20_v_1_avx(reg u64 output len nonce, reg u32[8] key, #msf reg u
 
   st = __init_v_1_avx(nonce, key);
 
-  b = len >= 256;
-  while(b)
+
+  while {b = len >= 256; }(b)
   {
     ms = #set_msf(b, ms);
     k = __copy_state_v_avx(st);
