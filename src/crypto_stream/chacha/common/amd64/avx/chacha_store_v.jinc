@@ -164,12 +164,13 @@ inline fn __store_xor_v_avx(reg u64 output plain len, reg u128[16] k) -> reg u64
 
 
 // <= 256 bytes
-inline fn __store_xor_last_v_avx(reg u64 output plain len, reg u128[16] k)
+inline fn __store_xor_last_v_avx(reg u64 output plain len, reg u128[16] k, #msf reg u64 ms) -> #msf reg u64
 {
   inline int i;
   stack u128[8] s_k0_7 s_k8_15;
   reg u128[8] k0_7 k8_15;
   reg u128[4] k0_3 k4_7;
+  reg bool b;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx(k);
   s_k0_7 = #copy_128(k0_7);
@@ -177,12 +178,19 @@ inline fn __store_xor_last_v_avx(reg u64 output plain len, reg u128[16] k)
   k8_15 = __rotate_second_half_v_avx(s_k8_15);
   k0_3, k4_7 = __interleave_avx(s_k0_7, k8_15, 0);
 
-  if(len >= 128)
-  { output, plain, len = __store_xor_h_x2_avx(output, plain, len, k0_3, k4_7);
+  b = len >= 128;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    output, plain, len = __store_xor_h_x2_avx(output, plain, len, k0_3, k4_7);
     k0_3, k4_7 = __interleave_avx(s_k0_7, k8_15, 4);
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
-  __store_xor_last_h_x2_avx(output, plain, len, k0_3, k4_7);
+
+  ms = __store_xor_last_h_x2_avx(output, plain, len, k0_3, k4_7, ms);
+  return ms;
 }
 
 
@@ -238,5 +246,3 @@ inline fn __store_last_v_avx(reg u64 output len, reg u128[16] k)
 
   __store_last_h_x2_avx(output, len, k0_3, k4_7);
 }
-
-

@@ -22,50 +22,71 @@ inline fn __store_xor_h_avx(reg u64 output plain len, reg u128[4] k) -> reg u64,
 }
 
 // <= 64 bytes
-inline fn __store_xor_last_h_avx(reg u64 output plain len, reg u128[4] k)
+inline fn __store_xor_last_h_avx(reg u64 output plain len, reg u128[4] k, #msf reg u64 ms) -> #msf reg u64
 {
   inline int i;
   reg u64 r0;
   reg u8 r1;
+  reg bool b;
 
   // write 32 bytes
-  if(len >= 32)
-  { for i=0 to 2
+  b = len >= 32;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    for i=0 to 2
     { k[i] ^= (u128)[plain + 16*i];
       (u128)[output + 16*i] = k[i];
     }
     output, plain, len = __update_ptr_xor_ref(output, plain, len, 32);
     k[0] = k[2];
     k[1] = k[3];
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
   // write 16 bytes
-  if(len >= 16)
-  { k[0] ^= (u128)[plain + 0];
+  b = len >= 16;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    k[0] ^= (u128)[plain + 0];
     (u128)[output + 0] = k[0];
     output, plain, len = __update_ptr_xor_ref(output, plain, len, 16);
     k[0] = k[1];
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
   r0 = #VPEXTR_64(k[0], 0);
 
   // write 8 bytes
-  if(len >= 8)
-  { r0 ^= (u64)[plain + 0];
+  b = len >= 8;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    r0 ^= (u64)[plain + 0];
     (u64)[output + 0] = r0;
     output, plain, len = __update_ptr_xor_ref(output, plain, len, 8);
     r0 = #VPEXTR_64(k[0], 1);
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
   // write at most 8 bytes
-  while(len > 0)
+  b = len > 0;
+  while(b)
   {
+    ms = #set_msf(b, ms);
     r1 = (8u) r0;
     r1 ^= (u8)[plain + 0];
     (u8)[output + 0] = r1;
     r0 >>= 8;
     output, plain, len = __update_ptr_xor_ref(output, plain, len, 1);
   }
+  ms = #set_msf(!b, ms);
+
+  return ms;
 }
 
 
@@ -94,17 +115,24 @@ inline fn __store_xor_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2) -> r
 
 
 // <= 128 bytes
-inline fn __store_xor_last_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2)
+inline fn __store_xor_last_h_x2_avx(reg u64 output plain len, reg u128[4] k1 k2, #msf reg u64 ms) -> #msf reg u64
 {
   inline int i;
+  reg bool b;
 
   // write 64 bytes
-  if(len >= 64)
-  { output, plain, len = __store_xor_h_avx(output, plain, len, k1);
+  b = len >= 64;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    output, plain, len = __store_xor_h_avx(output, plain, len, k1);
     k1 = #copy_128(k2);
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
-  __store_xor_last_h_avx(output, plain, len, k1);
+  ms = __store_xor_last_h_avx(output, plain, len, k1, ms);
+  return ms;
 }
 
 
@@ -203,5 +231,3 @@ inline fn __store_last_h_x2_avx(reg u64 output len, reg u128[4] k1 k2)
 
   __store_last_h_avx(output, len, k1);
 }
-
-

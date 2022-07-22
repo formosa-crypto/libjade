@@ -37,16 +37,22 @@ inline fn __poly1305_setup_ref_k(
 inline fn __poly1305_last_ref_k(
   reg u64 in inlen,
   reg const ptr u8[32] k,
-  reg u64[3] h r)
+  reg u64[3] h r,
+  #msf reg u64 ms)
   ->
-  reg u64[2]
+  reg u64[2], #msf reg u64
 {
-  reg bool cf;
+  reg bool cf b;
   reg u64[2] m s h2;
 
-  if(inlen > 0)
-  { h = __load_last_add(h, in, inlen);
+  b = inlen > 0;
+  if(b)
+  {
+    ms = #set_msf(b, ms);
+    h = __load_last_add(h, in, inlen);
     h = __mulmod(h, r);
+  } else {
+    ms = #set_msf(!b, ms);
   }
 
   h2 = __freeze(h);
@@ -54,36 +60,37 @@ inline fn __poly1305_last_ref_k(
   cf, h2[0] += k[u64 2];
    _, h2[1] += k[u64 3] + cf;
 
-  return h2;
+  return h2, ms;
 }
 
 inline fn __poly1305_r_ref_k(
   reg u64 in inlen,
-  reg const ptr u8[32] k)
+  reg const ptr u8[32] k,
+  #msf reg u64 ms)
   ->
-  reg u64[2]
+  reg u64[2], #msf reg u64
 {
   reg u64[3] h r;
   reg u64[2] h2;
 
   h, r = __poly1305_setup_ref_k(k);
-  in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
-  h2 = __poly1305_last_ref_k(in, inlen, k, h, r);
-  
-  return h2;
+  in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
+  h2, ms = __poly1305_last_ref_k(in, inlen, k, h, r, ms);
+
+  return h2, ms;
 }
 
 inline fn __poly1305_verify_ref_k(
   reg u64 h in inlen,
-  reg const ptr u8[32] k)
+  reg const ptr u8[32] k,
+  #msf reg u64 ms)
   ->
-  reg u64
+  reg u64, #msf reg u64
 {
   reg u64[2] hc;
   reg u64 r;
 
-  hc = __poly1305_r_ref_k(in, inlen, k);
+  hc, ms = __poly1305_r_ref_k(in, inlen, k, ms);
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
-  return r;
+  return r, ms;
 }
-
