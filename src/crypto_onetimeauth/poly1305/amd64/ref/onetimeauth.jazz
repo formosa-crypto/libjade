@@ -5,11 +5,10 @@ export fn jade_onetimeauth_poly1305_amd64_ref(#transient reg u64 out in _inlen _
   reg u64 r inlen key;
   #msf reg u64 ms;
 
-  ms = #init_msf();
   inlen = _inlen;
   key = _key;
-
-  __poly1305_ref(out, in, inlen, key);
+  ms = #init_msf();
+  ms = __poly1305_ref(out, in, inlen, key, ms);
   _,_,_,_,_,r = #set0();
   ms = #init_msf();
 
@@ -21,13 +20,11 @@ export fn jade_onetimeauth_poly1305_amd64_ref_verify(#transient reg u64 h in _in
   reg u64 r inlen key;
   #msf reg u64 ms;
 
-  ms = #init_msf();
   inlen = _inlen;
   key = _key;
-
-  r = __poly1305_verify_ref(h, in, inlen, key);
+  ms = #init_msf();
+  r, ms = __poly1305_verify_ref(h, in, inlen, key, ms);
   ms = #init_msf();
 
-  return r;
+  return r;       // returning a secret
 }
-
