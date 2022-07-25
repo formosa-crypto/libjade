@@ -1,6 +1,6 @@
 from Jade require "common/keccak/keccak1600/amd64/mmx1/keccak1600.jinc"
 
-inline fn __shake256_mmx1(reg u64 out outlen in inlen, #msf reg u64 ms)
+inline fn __shake256_mmx1(reg u64 out outlen in inlen)
 {
   reg u64 rate;
   reg u8 trail_byte;
@@ -8,5 +8,5 @@ inline fn __shake256_mmx1(reg u64 out outlen in inlen, #msf reg u64 ms)
   trail_byte = 0x1F;
   rate = (1088/8);
 
-  _keccak1600_mmx1(out, outlen, in, inlen, trail_byte, rate, ms);
+  _keccak1600_mmx1(out, outlen, in, inlen, trail_byte, rate);
 }

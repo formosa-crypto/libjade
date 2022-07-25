@@ -104,7 +104,7 @@ inline fn __set_row_mmx1(
 }
 
 
-inline fn __round_mmx1(reg ptr u64[25] e a, stack u64 s_rc, #msf reg u64 ms) -> reg ptr u64[25], reg ptr u64[25], #msf reg u64
+inline fn __round_mmx1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25], reg ptr u64[25]
 {
   inline int y;
   reg u64[5] b c d;
@@ -118,55 +118,51 @@ inline fn __round_mmx1(reg ptr u64[25] e a, stack u64 s_rc, #msf reg u64 ms) -> 
     e = __set_row_mmx1(e, b, y, s_rc);
   }
 
-  return e, a, ms;
+  return e, a;
 }
 
 
-inline fn __keccakf1600_mmx1(reg ptr u64[25] a, reg u64 ms) -> reg ptr u64[25], #msf reg u64
+inline fn __keccakf1600_mmx1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   reg ptr u64[24] RC;
   regx ptr u64[24] x_RC;
   stack u64[25] s_e;
   reg ptr u64[25] e;
   reg u64 c rc;
-  stack u64 s_c s_rc;
+  regx u64 x_c x_rc;
   reg bool b;
-  #msf reg u64 ms;
 
   RC = KECCAK1600_RC;
   x_RC = RC;
   e = s_e;
-  ms = #init_msf();
 
   c = 0;
   while
   {
-    s_c = c;
+    x_c = c;
 
     RC = x_RC;
     rc = RC[(int) c];
-    s_rc = rc;
-    e, a, ms = __round_mmx1(e, a, s_rc, ms);
+    x_rc = rc;
+    e, a = __round_mmx1(e, a, x_rc);
 
     RC = x_RC;
     rc = RC[(int) c + 1];
-    s_rc = rc;
-    a, e, ms = __round_mmx1(a, e, s_rc, ms);
+    x_rc = rc;
+    a, e = __round_mmx1(a, e, x_rc);
 
-    c = s_c;
-    c = #protect(c, ms);
+    c = x_c;
     c += 2;
     b = c < KECCAK_ROUNDS;
-  } (b) {ms = #set_msf(b, ms); }
-  ms = #set_msf(!b, ms);
+  } (b) { }
 
-  return a, ms;
+  return a;
 }
 
 
 #[returnaddress="stack"]
-fn _keccakf1600_mmx1(reg ptr u64[25] a, reg u64 ms) -> reg ptr u64[25], #msf reg u64
+fn _keccakf1600_mmx1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
-  a, ms = __keccakf1600_mmx1(a, ms);
-  return a, ms;
+  a = __keccakf1600_mmx1(a);
+  return a;
 }
