@@ -189,10 +189,10 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
   reg u32 T1 T2 a b c d e f g h r v;
   stack u32[64] W;
   reg ptr u32[64] Kp;
-  stack ptr u32[8] Hp;
+  regx ptr u32[8] Hp;
   reg ptr u32[8] H;
   reg u64 tr;
-  stack u64 in_s;
+  regx u64 in_s;
 
   Kp = SHA256_K;
   Hp = _H;
@@ -256,7 +256,7 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     h += H[7];
 
     H = __store_H_mmx(H,a,b,c,d,e,f,g,h);
-    //Hp = H;
+    Hp = H;
 
     in = in_s;
     in += 64;
@@ -273,11 +273,11 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
   reg u32 T1 T2 a b c d e f g h r v;
   stack u32[64] W;
   reg ptr u32[64] Kp;
-  stack ptr u32[8] Hp;
+  regx ptr u32[8] Hp;
   reg ptr u32[8] H;
-  stack ptr u32[32] s_sblocks;
+  regx ptr u32[32] s_sblocks;
   reg u64 oblocks tr;
-  stack u64 s_oblocks;
+  regx u64 s_oblocks;
 
   Kp = SHA256_K;
   Hp = _H;
@@ -344,6 +344,7 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     h += H[7];
 
     H = __store_H_mmx(H,a,b,c,d,e,f,g,h);
+    Hp = H;
 
     sblocks = s_sblocks;
     oblocks = s_oblocks;
@@ -369,12 +370,12 @@ inline fn __lastblocks_mmx(reg u64 in inlen bits) -> stack u32[32], reg u64
     i += 1;
   }
 
-  // set first byte after input to 0x80 
+  // set first byte after input to 0x80
   sblocks[u8 (int)i] = 0x80;
   i += 1;
 
   // check if one or two blocks are needed
-  if(inlen < 56) 
+  if(inlen < 56)
   { j = (64-8); nblocks = 1; }
   else
   { j = (128-8); nblocks = 2; }
@@ -392,7 +393,7 @@ inline fn __lastblocks_mmx(reg u64 in inlen bits) -> stack u32[32], reg u64
     bits >>= 8;
     i -= 1;
   }
-  i += 9; 
+  i += 9;
 
   // set remaining bytes to zero (can be optimized)
   while(i < 128)
@@ -406,7 +407,8 @@ inline fn __lastblocks_mmx(reg u64 in inlen bits) -> stack u32[32], reg u64
 inline fn __sha256(reg u64 out in inlen)
 {
   reg u64 bits nblocks;
-  stack u64 s_out s_bits;
+  stack u64 s_bits;
+  regx u64 s_out;
   stack u32[8] H;
   reg ptr u32[8] Hp;
   stack u32[32] sblocks;
@@ -431,5 +433,3 @@ inline fn __sha256(reg u64 out in inlen)
   H = Hp;
   __store_mmx(out, H);
 }
-
-
