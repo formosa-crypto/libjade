@@ -595,6 +595,7 @@ inline fn __poly1305_avx_update(
 
 inline fn __poly1305_r_avx(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
+  stack u64 s_k;
   reg u64[2] h2;
   reg u64[3] h r;
   stack u128[5] r44   r22   r12;
@@ -606,10 +607,11 @@ inline fn __poly1305_r_avx(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #
   {
     ms = #set_msf(b, ms);
     h, r, k = __poly1305_setup_ref(k);
+    s_k = k;
     r44, r44x5, r22, r22x5, r12, r12x5 = __poly1305_avx_setup(r);
     in, inlen, h, ms = __poly1305_avx_update(in, inlen, r44, r44x5, r22, r22x5, r12, r12x5, ms);
     in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-    h2, ms = __poly1305_last_ref(in, inlen, k, h, r, ms);
+    h2, ms = __poly1305_last_ref(in, inlen, s_k, h, r, ms);
   }
   else
   { ms = #set_msf(!b, ms); h2, ms = __poly1305_r_ref(in, inlen, k, ms); }

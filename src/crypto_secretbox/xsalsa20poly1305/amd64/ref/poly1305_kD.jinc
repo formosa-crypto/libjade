@@ -36,12 +36,13 @@ inline fn __poly1305_setup_ref_k(
 
 inline fn __poly1305_last_ref_k(
   reg u64 in inlen,
-  reg const ptr u8[32] k,
+  stack mut ptr u8[32] s_k, // TODO const
   reg u64[3] h r,
   #msf reg u64 ms)
   ->
   reg u64[2], #msf reg u64
 {
+  reg ptr u8[32] k;
   reg bool cf b;
   reg u64[2] m s h2;
 
@@ -55,6 +56,9 @@ inline fn __poly1305_last_ref_k(
     ms = #set_msf(!b, ms);
   }
 
+  k = s_k;
+  k = #protect_ptr(k, ms);
+
   h2 = __freeze(h);
 
   cf, h2[0] += k[u64 2];
@@ -65,24 +69,26 @@ inline fn __poly1305_last_ref_k(
 
 inline fn __poly1305_r_ref_k(
   reg u64 in inlen,
-  reg const ptr u8[32] k,
+  reg mut ptr u8[32] k, // TODO const
   #msf reg u64 ms)
   ->
   reg u64[2], #msf reg u64
 {
+  stack ptr u8[32] s_k;
   reg u64[3] h r;
   reg u64[2] h2;
 
-  h, r = __poly1305_setup_ref_k(k);
+  s_k = k;
+  h, r = __poly1305_setup_ref_k(k); // TODO: CHECKME: RAX :r= #MOV_64(RBX);
   in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-  h2, ms = __poly1305_last_ref_k(in, inlen, k, h, r, ms);
+  h2, ms = __poly1305_last_ref_k(in, inlen, s_k, h, r, ms);
 
   return h2, ms;
 }
 
 inline fn __poly1305_verify_ref_k(
   reg u64 h in inlen,
-  reg const ptr u8[32] k,
+  reg mut ptr u8[32] k, // TODO const
   #msf reg u64 ms)
   ->
   reg u64, #msf reg u64

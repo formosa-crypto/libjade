@@ -4,16 +4,19 @@ from Jade require "crypto_onetimeauth/poly1305/amd64/avx2/poly1305.jinc"
 
 inline fn __poly1305_r_avx2_k(
   reg u64 in inlen,
-  reg const ptr u8[32] k,
+  reg mut ptr u8[32] k, // TODO const
   #msf reg u64 ms)
   ->
   reg u64[2], #msf reg u64
 {
+  stack ptr u8[32] s_k;
   reg u64[2] h2;
   reg u64[3] h r;
   stack u256[5] r4444   r1234;
   stack u256[4] r4444x5 r1234x5;
   reg bool b;
+
+  s_k = k;
 
   b = inlen >= 256;
   if(b)
@@ -23,10 +26,12 @@ inline fn __poly1305_r_avx2_k(
     r4444, r4444x5, r1234, r1234x5 = __poly1305_avx2_setup(r);
     in, inlen, h, ms = __poly1305_avx2_update(in, inlen, r4444, r4444x5, r1234, r1234x5, ms);
     in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-    h2, ms = __poly1305_last_ref_k(in, inlen, k, h, r, ms);
+    h2, ms = __poly1305_last_ref_k(in, inlen, s_k, h, r, ms);
   }
   else
-  { ms = #set_msf(!b, ms); h2, ms = __poly1305_r_ref_k(in, inlen, k, ms); }
+  { ms = #set_msf(!b, ms);
+    k = s_k;
+    h2, ms = __poly1305_r_ref_k(in, inlen, k, ms); }
 
   return h2, ms;
 }
@@ -34,7 +39,7 @@ inline fn __poly1305_r_avx2_k(
 
 inline fn __poly1305_verify_avx2_k(
   reg u64 h in inlen,
-  reg const ptr u8[32] k,
+  reg mut ptr u8[32] k, // TODO const
   #msf reg u64 ms)
   ->
   reg u64, #msf reg u64
