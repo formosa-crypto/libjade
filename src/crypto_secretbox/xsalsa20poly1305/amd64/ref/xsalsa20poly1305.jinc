@@ -1,6 +1,6 @@
 
 from Jade require "crypto_stream/xsalsa20/amd64/ref/xsalsa20.jinc"
-from Jade require "crypto_onetimeauth/poly1305/amd64/ref/poly1305.jinc"
+require "poly1305.jinc"
 
 require "xsalsa20_32D.jinc"
 require "poly1305_kD.jinc"

@@ -245,8 +245,9 @@ inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r, #msf reg u64 m
 }
 
 
-inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r, #msf reg u64 ms) -> reg u64[2], #msf reg u64
+inline fn __poly1305_last_ref(reg u64 in inlen, stack u64 s_k, reg u64[3] h r, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
+  reg u64 k;
   reg u64[2] m s h2;
   reg bool b;
 
@@ -260,6 +261,9 @@ inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r, #msf reg u64 m
     ms = #set_msf(!b, ms);
   }
 
+  k = s_k;
+  k = #protect(k, ms);
+
   h2 = __freeze(h);
   s = __load2(k);
   h2 = __add2(h2, s);
@@ -271,12 +275,14 @@ inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r, #msf reg u64 m
 // TODO: remove inline when ra
 inline fn __poly1305_r_ref(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
+  stack u64 s_k;
   reg u64[3] h r;
   reg u64[2] h2;
 
   h, r, k = __poly1305_setup_ref(k);
+  s_k = k;
   in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-  h2, ms = __poly1305_last_ref(in, inlen, k, h, r, ms);
+  h2, ms = __poly1305_last_ref(in, inlen, s_k, h, r, ms);
 
   return h2, ms;
 }
