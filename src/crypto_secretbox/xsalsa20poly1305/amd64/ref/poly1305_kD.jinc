@@ -1,5 +1,5 @@
 
-from Jade require "crypto_verify/16/amd64/common/crypto_verify_16.jinc"
+from Jade require "crypto_onetimeauth/poly1305/amd64/ref/poly1305.jinc"
 
 inline fn __clamp_ref_k(
   reg const ptr u8[32] k)

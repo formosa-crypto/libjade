@@ -690,6 +690,7 @@ inline fn __poly1305_avx2_update(
 // TODO: remove inline when ra
 inline fn __poly1305_r_avx2(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
 {
+  stack u64 s_k;
   reg u64[2] h2;
   reg u64[3] h r;
   stack u256[5] r4444   r1234;
@@ -701,10 +702,11 @@ inline fn __poly1305_r_avx2(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], 
   {
     ms = #set_msf(b, ms);
     h, r, k = __poly1305_setup_ref(k);
+    s_k = k;
     r4444, r4444x5, r1234, r1234x5 = __poly1305_avx2_setup(r);
     in, inlen, h, ms = __poly1305_avx2_update(in, inlen, r4444, r4444x5, r1234, r1234x5, ms);
     in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-    h2, ms = __poly1305_last_ref(in, inlen, k, h, r, ms);
+    h2, ms = __poly1305_last_ref(in, inlen, s_k, h, r, ms);
   }
   else
   { ms = #set_msf(!b, ms); h2, ms = __poly1305_r_ref(in, inlen, k, ms); }
