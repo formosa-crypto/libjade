@@ -17,10 +17,10 @@ inline fn __rotate_v_avx(reg u128[16] k, inline int i r, stack u128 r16 r8) -> r
 {
   reg u128 t;
 
-  #inline if(r==16){
+  if(r==16){
     k[i] = #VPSHUFB_128(k[i], r16);
 
-  } else { #inline if (r==8) {
+  } else { if (r==8) {
     k[i] = #VPSHUFB_128(k[i], r8);
 
   } else {
@@ -167,11 +167,10 @@ inline fn __double_round_v_1_avx(reg u128[16] k, stack u128 k15 r16 r8) -> reg u
 }
 
 
-inline fn __rounds_v_avx(reg u128[16] k, stack u128 r16 r8, #msf reg u64 ms) -> reg u128[16], #msf reg u64
+inline fn __rounds_v_avx(reg u128[16] k, stack u128 r16 r8) -> reg u128[16]
 {
   reg u32 c;
   stack u128 k15;
-  reg bool b;
 
   k15 = k[15];
   c = (CHACHA_ROUNDS/2);
@@ -179,12 +178,10 @@ inline fn __rounds_v_avx(reg u128[16] k, stack u128 r16 r8, #msf reg u64 ms) -> 
   {
     k, k15 = __double_round_v_avx(k, k15, r16, r8);
     (_,_,_,_,c) = #DEC_32(c);
-    b = c > 0;
-  } (b) {ms = #set_msf(b, ms);}
-  ms = #set_msf(!b, ms);
+  } (c > 0)
 
   k[15] = k15;
-  return k, ms;
+  return k;
 }
 
 
@@ -200,13 +197,12 @@ inline fn __sum_states_v_avx(reg u128[16] k, stack u128[16] st) -> reg u128[16]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __chacha_xor_v_avx(reg u64 output plain len nonce key, #msf reg u64 ms)
+inline fn __chacha_xor_v_avx(reg u64 output plain len nonce key)
 {
   stack u128[16] st;
   reg u128[16] k;
   reg u128 _r16 _r8;
   stack u128 r16 r8;
-  reg bool b;
 
   _r16 = CHACHA_R16_AVX;
   _r8  = CHACHA_R8_AVX;
@@ -215,38 +211,29 @@ inline fn __chacha_xor_v_avx(reg u64 output plain len nonce key, #msf reg u64 ms
 
   st = __init_v_avx(nonce, key);
 
-  while{ b = len >= 256; } (b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx(st);
-    k, ms = __rounds_v_avx(k, r16, r8, ms);
+  while(len >= 256)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
     output, plain, len = __store_xor_v_avx(output, plain, len, k);
     st = __increment_counter_v_avx(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx(st);
-    k, ms = __rounds_v_avx(k, r16, r8, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
-    ms = __store_xor_last_v_avx(output, plain, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_xor_last_v_avx(output, plain, len, k);
   }
 }
 
 
-inline fn __chacha_v_avx(reg u64 output len nonce key, #msf reg u64 ms)
+inline fn __chacha_v_avx(reg u64 output len nonce key)
 {
   stack u128[16] st;
   reg u128[16] k;
   reg u128 _r16 _r8;
   stack u128 r16 r8;
-  reg bool b;
 
   _r16 = CHACHA_R16_AVX;
   _r8  = CHACHA_R8_AVX;
@@ -255,27 +242,20 @@ inline fn __chacha_v_avx(reg u64 output len nonce key, #msf reg u64 ms)
 
   st = __init_v_avx(nonce, key);
 
-
-  while {b = len >= 256;} (b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx(st);
-    k, ms = __rounds_v_avx(k, r16, r8, ms);
+  while(len >= 256)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
     output, len = __store_v_avx(output, len, k);
     st = __increment_counter_v_avx(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx(st);
-    k, ms = __rounds_v_avx(k, r16, r8, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx(st);
+    k = __rounds_v_avx(k, r16, r8);
     k = __sum_states_v_avx(k, st);
     __store_last_v_avx(output, len, k);
-  } else {
-    ms = #set_msf(!b, ms);
   }
 }
+
+

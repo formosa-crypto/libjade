@@ -16,10 +16,10 @@ inline fn __rotate_h_avx2(reg u256[4] k, inline int i r, reg u256 r16 r8) -> reg
 {
   reg u256 t;
 
-  #inline if(r==16){
+  if(r==16){
     k[i] = #VPSHUFB_256(k[i], r16);
 
-  } else { #inline if (r==8) {
+  } else { if (r==8) {
     k[i] = #VPSHUFB_256(k[i], r8);
 
   } else {
@@ -94,21 +94,18 @@ inline fn __double_round_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
 }
 
 
-inline fn __rounds_h_avx2(reg u256[4] k, reg u256 r16 r8, #msf reg u64 ms) -> reg u256[4], #msf reg u64
+inline fn __rounds_h_avx2(reg u256[4] k, reg u256 r16 r8) -> reg u256[4]
 {
   reg u32 c;
-  reg bool b;
 
   c = (CHACHA_ROUNDS/2);
   while
   {
     k = __double_round_h_avx2(k, r16, r8);
     (_,_,_,_,c) = #DEC_32(c);
-    b = c > 0;
-  } (b) { ms = #set_msf(b, ms); }
-  ms = #set_msf(!b, ms);
+  } (c > 0)
 
-  return k, ms;
+  return k;
 }
 
 
@@ -242,21 +239,18 @@ inline fn __double_round_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u2
 }
 
 
-inline fn __rounds_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8, #msf reg u64 ms) -> reg u256[4], reg u256[4], #msf reg u64
+inline fn __rounds_h_x2_avx2(reg u256[4] k1 k2, reg u256 r16 r8) -> reg u256[4], reg u256[4]
 {
   reg u32 c;
-  reg bool b;
 
   c = (CHACHA_ROUNDS/2);
   while
   {
     k1, k2 = __double_round_h_x2_avx2(k1, k2, r16, r8);
     (_,_,_,_,c) = #DEC_32(c);
-    b = c > 0;
-  } (b) { ms = #set_msf(b, ms); }
-  ms = #set_msf(!b, ms);
+  } (c > 0)
 
-  return k1, k2, ms;
+  return k1, k2;
 }
 
 
@@ -281,86 +275,68 @@ inline fn __perm_h_x2_avx2(reg u256[4] k1 k2) -> reg u256[4], reg u256[4]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __chacha_xor_h_avx2(reg u64 output plain len nonce key, #msf reg u64 ms)
+inline fn __chacha_xor_h_avx2(reg u64 output plain len nonce key)
 {
   reg u256[4] st k;
   reg u256 r16 r8;
-  reg bool b;
 
   r16 = CHACHA_R16_AVX2;
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, key);
 
-
-  while {  b = len >= 128; } (b)
+  while(len >= 128)
   {
-    ms = #set_msf(b, ms);
     k = __copy_state_h_avx2(st);
-    k, ms = __rounds_h_avx2(k, r16, r8, ms);
+    k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
     output, plain, len = __store_xor_h_avx2(output, plain, len, k);
     st = __increment_counter0202_h_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_h_avx2(st);
-    k, ms = __rounds_h_avx2(k, r16, r8, ms);
+  if(len > 0)
+  { k = __copy_state_h_avx2(st);
+    k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
-    ms = __store_xor_last_h_avx2(output, plain, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_xor_last_h_avx2(output, plain, len, k);
   }
 }
 
 
-inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key, #msf reg u64 ms)
+inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key)
 {
   reg u256[4] st k1 k2;
   reg u256 r16 r8;
-  reg bool b;
 
   r16 = CHACHA_R16_AVX2;
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, key);
 
-
-  while { b = len >= 256;} (b)
+  while(len >= 256)
   {
-    ms = #set_msf(b, ms);
     k1, k2 = __copy_state_h_x2_avx2(st);
-    k1, k2, ms = __rounds_h_x2_avx2(k1, k2, r16, r8, ms);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
     output, plain, len = __store_xor_h_x2_avx2(output, plain, len, k1, k2);
     st = __increment_counter0404_h_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 128;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k1, k2 = __copy_state_h_x2_avx2(st);
-    k1, k2, ms = __rounds_h_x2_avx2(k1, k2, r16, r8, ms);
+  if(len > 128)
+  { k1, k2 = __copy_state_h_x2_avx2(st);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
     output, plain, len = __store_xor_h_avx2(output, plain, len, k1);
-    ms = __store_xor_last_h_avx2(output, plain, len, k2, ms);
+    __store_xor_last_h_avx2(output, plain, len, k2);
   }
   else
-  {
-    ms = #set_msf(!b, ms);
-    k1 = __copy_state_h_avx2(st);
-    k1, ms = __rounds_h_avx2(k1, r16, r8, ms);
+  { k1 = __copy_state_h_avx2(st);
+    k1 = __rounds_h_avx2(k1, r16, r8);
     k1 = __sum_states_h_avx2(k1, st);
     k1 = __perm_h_avx2(k1);
-    ms = __store_xor_last_h_avx2(output, plain, len, k1, ms);
+    __store_xor_last_h_avx2(output, plain, len, k1);
   }
 }
 
@@ -368,85 +344,69 @@ inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key, #msf reg u6
 //
 
 
-inline fn __chacha_h_avx2(reg u64 output len nonce key, #msf reg u64 ms)
+inline fn __chacha_h_avx2(reg u64 output len nonce key)
 {
   reg u256[4] st k;
   reg u256 r16 r8;
-  reg bool b;
 
   r16 = CHACHA_R16_AVX2;
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, key);
 
-
-  while {b = len >= 128;} (b)
+  while(len >= 128)
   {
-    ms = #set_msf(b, ms);
     k = __copy_state_h_avx2(st);
-    k, ms = __rounds_h_avx2(k, r16, r8, ms);
+    k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
     output, len = __store_h_avx2(output, len, k);
     st = __increment_counter0202_h_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_h_avx2(st);
-    k, ms = __rounds_h_avx2(k, r16, r8, ms);
+  if(len > 0)
+  { k = __copy_state_h_avx2(st);
+    k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
-    ms = __store_last_h_avx2(output, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_last_h_avx2(output, len, k);
   }
 }
 
 
-inline fn __chacha_h_x2_avx2(reg u64 output len nonce key, #msf reg u64 ms)
+inline fn __chacha_h_x2_avx2(reg u64 output len nonce key)
 {
   reg u256[4] st k1 k2;
   reg u256 r16 r8;
-  reg bool b;
 
   r16 = CHACHA_R16_AVX2;
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, key);
 
-
-  while {b = len >= 256;} (b)
+  while(len >= 256)
   {
-    ms = #set_msf(b, ms);
     k1, k2 = __copy_state_h_x2_avx2(st);
-    k1, k2, ms = __rounds_h_x2_avx2(k1, k2, r16, r8, ms);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
     output, len = __store_h_x2_avx2(output, len, k1, k2);
     st = __increment_counter0404_h_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 128;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k1, k2 = __copy_state_h_x2_avx2(st);
-    k1, k2, ms = __rounds_h_x2_avx2(k1, k2, r16, r8, ms);
+  if(len > 128)
+  { k1, k2 = __copy_state_h_x2_avx2(st);
+    k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
     output, len = __store_h_avx2(output, len, k1);
-    ms = __store_last_h_avx2(output, len, k2, ms);
+    __store_last_h_avx2(output, len, k2);
   }
   else
-  {
-    ms = #set_msf(!b, ms);
-    k1 = __copy_state_h_avx2(st);
-    k1, ms = __rounds_h_avx2(k1, r16, r8, ms);
+  { k1 = __copy_state_h_avx2(st);
+    k1 = __rounds_h_avx2(k1, r16, r8);
     k1 = __sum_states_h_avx2(k1, st);
     k1 = __perm_h_avx2(k1);
-    ms = __store_last_h_avx2(output, len, k1, ms);
+    __store_last_h_avx2(output, len, k1);
   }
 }
+
+

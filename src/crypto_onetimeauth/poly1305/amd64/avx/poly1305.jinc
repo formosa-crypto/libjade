@@ -223,7 +223,7 @@ inline fn __pack_avx(reg u128[5] h) -> reg u64[3]
   cf, r[1] += 0 + cf;
    _, r[2] += 0 + cf;
 
-  return r;
+  return r; 
 }
 
 
@@ -416,7 +416,7 @@ inline fn __mainloop_avx_v1(
   t[3] +2u64= u[1];
   t[4] +2u64= u[2];
 
-  u[0] = #VPMULU(h[2], r3x5);
+  u[0] = #VPMULU(h[2], r3x5); 
   u[1] = #VPMULU(h[3], r3x5); m[1] = m[0]; // h2 dead
   h[2] = #VPMULU(h[4], r3x5); m[1] >>2u64= 26;
                               m[1] &= s_mask26;
@@ -435,7 +435,7 @@ inline fn __mainloop_avx_v1(
 
   u[0] = #VPMULU(h[3], r2x5); m[2] = m[0]; s_h[3] = t[3];
   h[1] = #VPMULU(h[4], r2x5); m[2] >>2u64= 52;
-
+                                  
   t[0] +2u64= u[0];
   h[1] +2u64= t[1];
 
@@ -519,13 +519,13 @@ inline fn __mainloop_avx_v1(
 
   h[0] &= mask26;  h[0] +2u64= m[0];
   h[2] &= mask26;  h[2] +2u64= m[2];
-  h[3] >>2u64= 14;
+  h[3] >>2u64= 14; 
   h[3] &= mask26;  h[3] +2u64= m[3];
   in += 64;
 
   h[1] +2u64= m[1];
   h[4] +2u64= m[4];
-
+  
   h = __carry_reduce_avx(h, mask26);
 
   return h,  in;
@@ -552,89 +552,77 @@ inline fn __final_avx_v0(
 
 inline fn __poly1305_avx_update(
   reg u64 in inlen,
-  stack u128[5] r44,
+  stack u128[5] r44,  
   stack u128[4] r44x5,
-  stack u128[5] r22,
+  stack u128[5] r22,  
   stack u128[4] r22x5,
   stack u128[5] r12,
-  stack u128[4] r12x5,
-  #msf reg u64 ms)
+  stack u128[4] r12x5)
   ->
   reg u64,
   reg u64,
-  reg u64[3],
-  #msf reg u64
+  reg u64[3]
 {
   inline int i;
   stack u128 s_mask26 s_bit25;
   reg u128[5] h m;
   reg u128 mask26 t;
   reg u64[3] h64;
-  reg bool b;
 
   for i=0 to 5
   { h[i] = #set0_128(); }
   t = #VPBROADCAST_2u64(mask26_u64); s_mask26 = t; mask26 = t;
   t = #VPBROADCAST_2u64(bit25_u64); s_bit25 = t;
 
-
-  while {b = inlen >= 64;}(b)
-  {
-    ms = #set_msf(b, ms);
+  while(inlen >= 64)
+  { 
     h, in = __mainloop_avx_v1(h, in, r44, r44x5, r22, r22x5, s_mask26, s_bit25);
     inlen -= 64;
   }
-  ms = #set_msf(!b, ms);
 
   h = __final_avx_v0(h, r12, r12x5, s_mask26, s_bit25);
   h64 = __pack_avx(h);
 
-  return in, inlen, h64, ms;
+  return in, inlen, h64;
 }
 
 
-inline fn __poly1305_r_avx(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
+inline fn __poly1305_r_avx(reg u64 in inlen k) -> reg u64[2]
 {
-  stack u64 s_k;
   reg u64[2] h2;
   reg u64[3] h r;
   stack u128[5] r44   r22   r12;
   stack u128[4] r44x5 r22x5 r12x5;
-  reg bool b;
 
-  b = inlen >= 1024;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    h, r, k = __poly1305_setup_ref(k);
-    s_k = k;
+  if(inlen >= 1024)
+  { h, r, k = __poly1305_setup_ref(k);
     r44, r44x5, r22, r22x5, r12, r12x5 = __poly1305_avx_setup(r);
-    in, inlen, h, ms = __poly1305_avx_update(in, inlen, r44, r44x5, r22, r22x5, r12, r12x5, ms);
-    in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-    h2, ms = __poly1305_last_ref(in, inlen, s_k, h, r, ms);
+    in, inlen, h = __poly1305_avx_update(in, inlen, r44, r44x5, r22, r22x5, r12, r12x5);
+    in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
+    h2 = __poly1305_last_ref(in, inlen, k, h, r);
   }
   else
-  { ms = #set_msf(!b, ms); h2, ms = __poly1305_r_ref(in, inlen, k, ms); }
+  { h2 = __poly1305_r_ref(in, inlen, k); }
 
-  return h2, ms;
+  return h2;
 }
 
 
-inline fn __poly1305_avx(reg u64 out in inlen k, #msf reg u64 ms) -> #msf reg u64
+inline fn __poly1305_avx(reg u64 out in inlen k)
 {
   reg u64[2] h2;
-  h2, ms =  __poly1305_r_avx(in, inlen, k, ms);
+  h2 =  __poly1305_r_avx(in, inlen, k);
   __store2(out, h2);
-  return ms;
 }
 
 
-inline fn __poly1305_verify_avx(reg u64 h in inlen k, #msf reg u64 ms) -> reg u64
+inline fn __poly1305_verify_avx(reg u64 h in inlen k) -> reg u64
 {
   reg u64[2] hc;
   reg u64 r;
 
-  hc, ms = __poly1305_r_avx(in, inlen, k, ms);
+  hc = __poly1305_r_avx(in, inlen, k);
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
   return r;
 }
+

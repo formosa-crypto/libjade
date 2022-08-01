@@ -2,8 +2,7 @@
 // nonce : 8 bytes
 // key : 32 bytes
 // counter : 8 bytes (starts at 0)
-
-#nomodmsf inline fn __init_ref(reg u64 nonce key) -> stack u32[16]
+inline fn __init_ref(reg u64 nonce key) -> stack u32[16]
 {
   inline int i;
   stack u32[16] st;
@@ -31,7 +30,7 @@
 }
 
 // increments 64-bit counter
-#nomodmsf inline fn __increment_counter_ref(stack u32[16] st) -> stack u32[16]
+inline fn __increment_counter_ref(stack u32[16] st) -> stack u32[16]
 {
   reg u64 t;
 

@@ -78,11 +78,10 @@ inline fn __double_round_v_avx2(reg u256[16] k, stack u256 k2 k3) -> reg u256[16
 }
 
 
-inline fn __rounds_v_avx2(reg u256[16] k, #msf reg u64 ms) -> reg u256[16], #msf reg u64
+inline fn __rounds_v_avx2(reg u256[16] k) -> reg u256[16]
 {
   reg u32 c;
   stack u256 k2 k3;
-  reg bool b;
 
   k2 = k[2]; k3 = k[3];
   c = (SALSA20_ROUNDS/2);
@@ -90,12 +89,10 @@ inline fn __rounds_v_avx2(reg u256[16] k, #msf reg u64 ms) -> reg u256[16], #msf
   {
     k, k2, k3 = __double_round_v_avx2(k, k2, k3);
     (_,_,_,_,c) = #DEC_32(c);
-    b = c > 0;
-  } (b) {ms = #set_msf(b, ms);}
-  ms = #set_msf(!b, ms);
+  } (c > 0)
 
   k[2] = k2; k[3] = k3;
-  return k, ms;
+  return k;
 }
 
 
@@ -111,145 +108,101 @@ inline fn __sum_states_v_avx2(reg u256[16] k, stack u256[16] st) -> reg u256[16]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __salsa20_xor_v_avx2(reg u64 output plain len nonce key, #msf reg u64 ms) -> #msf reg u64
+inline fn __salsa20_xor_v_avx2(reg u64 output plain len nonce key)
 {
   stack u256[16] st;
   reg u256[16] k;
-  reg bool b;
 
   st = __init_v_avx2(nonce, key);
 
-
-  while {b = len >= 512;} (b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
     output, plain, len = __store_xor_v_avx2(output, plain, len, k);
     st = __increment_counter_v_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
-    ms = __store_xor_last_v_avx2(output, plain, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_xor_last_v_avx2(output, plain, len, k);
   }
-  return ms;
 }
 
 
-inline fn __salsa20_xor_v_1_avx2(reg u64 output plain len nonce, reg u32[8] key, #msf reg u64 ms) -> #msf reg u64
+inline fn __salsa20_xor_v_1_avx2(reg u64 output plain len nonce, reg u32[8] key)
 {
   stack u256[16] st;
   reg u256[16] k;
-  reg bool b;
 
   st = __init_v_1_avx2(nonce, key);
 
-
-  while {b = len >= 512;}(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
     output, plain, len = __store_xor_v_avx2(output, plain, len, k);
     st = __increment_counter_v_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
-    ms = __store_xor_last_v_avx2(output, plain, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_xor_last_v_avx2(output, plain, len, k);
   }
-
-  return ms;
 }
 
 
 //
 
 
-inline fn __salsa20_v_avx2(reg u64 output len nonce key, #msf reg u64 ms) -> #msf reg u64
+inline fn __salsa20_v_avx2(reg u64 output len nonce key)
 {
   stack u256[16] st;
   reg u256[16] k;
-  reg bool b;
 
   st = __init_v_avx2(nonce, key);
 
-  while { b = len >= 512; }(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
     output, len = __store_v_avx2(output, len, k);
     st = __increment_counter_v_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
-    ms = __store_last_v_avx2(output, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_last_v_avx2(output, len, k);
   }
-  return ms;
 }
 
 
-inline fn __salsa20_v_1_avx2(reg u64 output len nonce, reg u32[8] key, #msf reg u64 ms) -> #msf reg u64
+inline fn __salsa20_v_1_avx2(reg u64 output len nonce, reg u32[8] key)
 {
   stack u256[16] st;
   reg u256[16] k;
-  reg bool b;
 
   st = __init_v_1_avx2(nonce, key);
 
-
-  while { b = len >= 512; } (b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
     output, len = __store_v_avx2(output, len, k);
     st = __increment_counter_v_avx2(st);
   }
-  ms = #set_msf(!b, ms);
 
-  b = len > 0;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    k = __copy_state_v_avx2(st);
-    k, ms = __rounds_v_avx2(k, ms);
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k);
     k = __sum_states_v_avx2(k, st);
-    ms = __store_last_v_avx2(output, len, k, ms);
-  } else {
-    ms = #set_msf(!b, ms);
+    __store_last_v_avx2(output, len, k);
   }
-
-  return ms;
 }
+

@@ -234,14 +234,14 @@ inline fn __pack_avx2(reg u256[5] h) -> reg u64[3]
 
   // t0 = { e(0+1+2+3), cd(0+2+1+3), yyy+yyy, ab(0+2+1+3) }
   t[0] = u[0] +4u64 u[1];
-
+  
   // extract t0 values into reg u64
   t0 = #VEXTRACTI128(t[0], 1);
   d[0] = #VPEXTR_64(t[0], 0); // ~55 bits
   d[1] = #VPEXTR_64(t0,   0); // ~55 bits
   d[2] = #VPEXTR_64(t0,   1); // ~29 bits
 
-  // at this point we have that
+  // at this point we have that 
   //   R = r0*2^0 + r1^2^52 + r2*2^104
   // and we want it to be
   //   R = r0*2^0 + r1*2^64 + r2*2^128
@@ -267,13 +267,13 @@ inline fn __pack_avx2(reg u256[5] h) -> reg u64[3]
   r[2] &= 3; // clear the remaining bits
   c >>= 2;   // (r[2]>>2)
   cx4 &= -4; // clear first 2 bits: (r[2]>>2)<<2
-  c += cx4;
+  c += cx4; 
 
   cf, r[0] += c;
   cf, r[1] += 0 + cf;
    _, r[2] += 0 + cf;
 
-  return r;
+  return r; 
 }
 
 
@@ -336,7 +336,7 @@ inline fn __carry_reduce_avx2(
 //
 // h * r can be expanded into:
 //
-//  (h0*r0) * 2^0 +
+//  (h0*r0) * 2^0 + 
 //  (h0*r1 + h1*r0) * 2^26 +
 //  (h0*r2 + h1*r1 + h2*r0) * 2^52 +
 //  (h0*r3 + h1*r2 + h2*r1 + h3*r0) * 2^78 +
@@ -348,7 +348,7 @@ inline fn __carry_reduce_avx2(
 //
 // if we multiply by 5 "anything above" 2^130 (p = 2^130 - 5)
 //
-//  (h0*r0 + h1*r4*5 + h2*r3*5 + h3*r2*5 + h4*r1*5) * 2^0 +
+//  (h0*r0 + h1*r4*5 + h2*r3*5 + h3*r2*5 + h4*r1*5) * 2^0 + 
 //  (h0*r1 + h1*r0   + h2*r4*5 + h3*r3*5 + h4*r2*5) * 2^26 +
 //  (h0*r2 + h1*r1   + h2*r0   + h3*r4*5 + h4*r3*5) * 2^52 +
 //  (h0*r3 + h1*r2   + h2*r1   + h3*r0   + h4r4*5 ) * 2^78 +
@@ -356,7 +356,7 @@ inline fn __carry_reduce_avx2(
 //
 // r and r*5 usage is the following:
 //
-//  5 times : r0
+//  5 times : r0 
 //  4 times : r1 and r4*5
 //  3 times : r2 and r3*5
 //  2 times : r3 and r2*5
@@ -364,7 +364,7 @@ inline fn __carry_reduce_avx2(
 //
 // the previous expression can be rearranged acordingly:
 //
-//  (h0*r0 +         h1*r4*5 +           h2*r3*5 +         h3*r2*5 + h4*r1*5) * 2^0 +
+//  (h0*r0 +         h1*r4*5 +           h2*r3*5 +         h3*r2*5 + h4*r1*5) * 2^0 + 
 //  (h1*r0 + h0*r1 + h2*r4*5 +           h3*r3*5 +         h4*r2*5          ) * 2^26 +
 //  (h2*r0 + h1*r1 + h3*r4*5 + h0*r2   + h4*r3*5                            ) * 2^52 +
 //  (h3*r0 + h2*r1 + h4*r4*5 + h1*r2   +         + h0*r3                    ) * 2^78 +
@@ -513,7 +513,7 @@ inline fn __mainloop_avx2_v1(
   // T[1..4] += H[0..3] * r1
                                   h[0] +4u64= m[0];
                                   h[1] +4u64= m[1];
-  t[0] = #VPMULU_256(h[0], r0);   h[2] +4u64= m[2];
+  t[0] = #VPMULU_256(h[0], r0);   h[2] +4u64= m[2]; 
   u[0] = #VPMULU_256(h[0], r1);   h[3] +4u64= m[3];
   t[1] = #VPMULU_256(h[1], r0);   h[4] +4u64= m[4];
   u[1] = #VPMULU_256(h[1], r1);
@@ -524,7 +524,7 @@ inline fn __mainloop_avx2_v1(
   t[4] = #VPMULU_256(h[4], r0);   t[3] +4u64= u[2];
                                   t[4] +4u64= u[3];
 
-  // T[0..3] += H[1..4] * r4*5
+  // T[0..3] += H[1..4] * r4*5                                      
   u[0] = #VPMULU_256(h[1], r4x5); m0 = (u256)[in + 0];
   u[1] = #VPMULU_256(h[2], r4x5); r2 = s_r[2];
   u[2] = #VPMULU_256(h[3], r4x5);
@@ -566,7 +566,7 @@ inline fn __mainloop_avx2_v1(
 
   mask26 = s_mask26;
 
-
+  
   // H[4] * r1*5 and H[0] * r4 (8th col.)
   u[0] = #VPMULU_256(h[4], s_rx5[1-1]); // h4 dead
   u[1] = #VPMULU_256(h[0], s_r[4]); // h0 dead
@@ -643,23 +643,20 @@ inline fn __final_avx2_v0(
 
 inline fn __poly1305_avx2_update(
   reg u64 in inlen,
-  stack u256[5] r4444,
+  stack u256[5] r4444,  
   stack u256[4] r4444x5,
   stack u256[5] r1234,
-  stack u256[4] r1234x5,
-  #msf reg u64 ms)
+  stack u256[4] r1234x5)
   ->
   reg u64,
   reg u64,
-  reg u64[3],
-  #msf reg u64
+  reg u64[3]
 {
   inline int i;
   stack u256 s_mask26 s_bit25;
   reg u256[5] h m;
   reg u256 mask26 t;
   reg u64[3] h64;
-  reg bool b;
 
   for i=0 to 5
   { h[i] = #set0_256(); }
@@ -671,65 +668,56 @@ inline fn __poly1305_avx2_update(
   // load 64 bytes from input
   m, in = __load_avx2(in, mask26, s_bit25);
 
-  while{ b= inlen >= 128; } (b)
-  {
-    ms = #set_msf(b, ms);
-    h, m, in = __mainloop_avx2_v1(h, m, in, r4444, r4444x5, s_mask26, s_bit25);
+  while(inlen >= 128)
+  { h, m, in = __mainloop_avx2_v1(h, m, in, r4444, r4444x5, s_mask26, s_bit25);
     inlen -= 64;
   }
-  ms = #set_msf(!b, ms);
   inlen -= 64;
 
   h = __final_avx2_v0(h, m, r1234, r1234x5, s_mask26, s_bit25);
   h64 = __pack_avx2(h);
 
-  return in, inlen, h64, ms;
+  return in, inlen, h64;
 }
 
 
 // TODO: remove inline when ra
-inline fn __poly1305_r_avx2(reg u64 in inlen k, #msf reg u64 ms) -> reg u64[2], #msf reg u64
+inline fn __poly1305_r_avx2(reg u64 in inlen k) -> reg u64[2]
 {
-  stack u64 s_k;
   reg u64[2] h2;
   reg u64[3] h r;
   stack u256[5] r4444   r1234;
   stack u256[4] r4444x5 r1234x5;
-  reg bool b;
 
-  b = inlen >= 256;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    h, r, k = __poly1305_setup_ref(k);
-    s_k = k;
+  if(inlen >= 256)
+  { h, r, k = __poly1305_setup_ref(k);
     r4444, r4444x5, r1234, r1234x5 = __poly1305_avx2_setup(r);
-    in, inlen, h, ms = __poly1305_avx2_update(in, inlen, r4444, r4444x5, r1234, r1234x5, ms);
-    in, inlen, h, ms = __poly1305_update_ref(in, inlen, h, r, ms);
-    h2, ms = __poly1305_last_ref(in, inlen, s_k, h, r, ms);
+    in, inlen, h = __poly1305_avx2_update(in, inlen, r4444, r4444x5, r1234, r1234x5);
+    in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
+    h2 = __poly1305_last_ref(in, inlen, k, h, r);
   }
   else
-  { ms = #set_msf(!b, ms); h2, ms = __poly1305_r_ref(in, inlen, k, ms); }
+  { h2 = __poly1305_r_ref(in, inlen, k); }
 
-  return h2, ms;
+  return h2;
 }
 
 
-inline fn __poly1305_avx2(reg u64 out in inlen k, #msf reg u64 ms) -> #msf reg u64
+inline fn __poly1305_avx2(reg u64 out in inlen k)
 {
   reg u64[2] h2;
-  h2, ms =  __poly1305_r_avx2(in, inlen, k, ms);
+  h2 =  __poly1305_r_avx2(in, inlen, k);
   __store2(out, h2);
-  return ms;
 }
 
 
-inline fn __poly1305_verify_avx2(reg u64 h in inlen k, #msf reg u64 ms) -> reg u64, #msf reg u64
+inline fn __poly1305_verify_avx2(reg u64 h in inlen k) -> reg u64
 {
   reg u64[2] hc;
   reg u64 r;
 
-  hc, ms = __poly1305_r_avx2(in, inlen, k, ms);
+  hc = __poly1305_r_avx2(in, inlen, k);
   r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
-  return r, ms;
+  return r;
 }
+

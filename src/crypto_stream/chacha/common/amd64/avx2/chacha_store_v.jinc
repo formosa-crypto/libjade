@@ -138,13 +138,12 @@ inline fn __store_xor_v_avx2(reg u64 output plain len, reg u256[16] k) -> reg u6
 
 
 // <= 512 bytes
-inline fn __store_xor_last_v_avx2(reg u64 output plain len, reg u256[16] k, #msf reg u64 ms) -> #msf reg u64
+inline fn __store_xor_last_v_avx2(reg u64 output plain len, reg u256[16] k)
 {
   inline int i;
   stack u256[8] s_k0_7 s_k8_15;
   reg u256[8] k0_7 k8_15;
   reg u256[4] k0_3 k4_7;
-  reg bool b;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
   s_k0_7 = #copy_256(k0_7);
@@ -152,18 +151,12 @@ inline fn __store_xor_last_v_avx2(reg u64 output plain len, reg u256[16] k, #msf
   k8_15 = __rotate_second_half_v_avx2(s_k8_15);
   k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 0);
 
-  b = len >= 256;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    output, plain, len = __store_xor_h_x2_avx2(output, plain, len, k0_3, k4_7);
+  if(len >= 256)
+  { output, plain, len = __store_xor_h_x2_avx2(output, plain, len, k0_3, k4_7);
     k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 4);
-  } else {
-    ms = #set_msf(!b, ms);
   }
 
-  ms = __store_xor_last_h_x2_avx2(output, plain, len, k0_3, k4_7, ms);
-  return ms;
+  __store_xor_last_h_x2_avx2(output, plain, len, k0_3, k4_7);
 }
 
 
@@ -199,13 +192,12 @@ inline fn __store_v_avx2(reg u64 output len, reg u256[16] k) -> reg u64, reg u64
 
 
 // <= 512 bytes
-inline fn __store_last_v_avx2(reg u64 output len, reg u256[16] k, #msf reg u64 ms) -> #msf reg u64
+inline fn __store_last_v_avx2(reg u64 output len, reg u256[16] k)
 {
   inline int i;
   stack u256[8] s_k0_7 s_k8_15;
   reg u256[8] k0_7 k8_15;
   reg u256[4] k0_3 k4_7;
-  reg bool b;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx2(k);
   s_k0_7 = #copy_256(k0_7);
@@ -213,16 +205,12 @@ inline fn __store_last_v_avx2(reg u64 output len, reg u256[16] k, #msf reg u64 m
   k8_15 = __rotate_second_half_v_avx2(s_k8_15);
   k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 0);
 
-  b = len >= 256;
-  if(b)
-  {
-    ms = #set_msf(b, ms);
-    output, len = __store_h_x2_avx2(output, len, k0_3, k4_7);
+  if(len >= 256)
+  { output, len = __store_h_x2_avx2(output, len, k0_3, k4_7);
     k0_3, k4_7 = __interleave_avx2(s_k0_7, k8_15, 4);
-  } else {
-    ms = #set_msf(!b, ms);
   }
 
-  ms = __store_last_h_x2_avx2(output, len, k0_3, k4_7, ms);
-  return ms;
+  __store_last_h_x2_avx2(output, len, k0_3, k4_7);
 }
+
+

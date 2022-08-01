@@ -1,28 +1,25 @@
 require "poly1305.jinc"
 
-export fn jade_onetimeauth_poly1305_amd64_avx2(#transient reg u64 out in _inlen _key) -> reg u64
+export fn jade_onetimeauth_poly1305_amd64_avx2(reg u64 out in _inlen _key) -> reg u64
 {
   reg u64 r inlen key;
-  #msf reg u64 ms;
 
-  ms = #init_msf();
+  _ = #init_msf();
   inlen = _inlen;
   key = _key;
-  ms = __poly1305_avx2(out, in, inlen, key, ms);
+  __poly1305_avx2(out, in, inlen, key);
   _,_,_,_,_,r = #set0();
-  ms = #init_msf();
   return r;
 }
 
-export fn jade_onetimeauth_poly1305_amd64_avx2_verify(#transient reg u64 h in _inlen _key) -> reg u64
+export fn jade_onetimeauth_poly1305_amd64_avx2_verify(reg u64 h in _inlen _key) -> reg u64
 {
   reg u64 r inlen key;
-  #msf reg u64 ms;
 
   inlen = _inlen;
   key = _key;
-  ms = #init_msf();
-  r, ms = __poly1305_verify_avx2(h, in, inlen, key, ms);
-  ms = #init_msf();
+  _ = #init_msf();
+  r = __poly1305_verify_avx2(h, in, inlen, key);
   return r;           //  we are returning a secret
 }
+

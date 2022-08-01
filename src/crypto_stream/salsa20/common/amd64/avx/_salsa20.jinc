@@ -1,23 +1,24 @@
-inline fn __salsa20_xor_avx(reg u64 output plain len nonce key, #msf reg u64 ms)
+inline fn __salsa20_xor_avx(reg u64 output plain len nonce key)
 {
-  ms = __salsa20_xor_v_avx(output, plain, len, nonce, key, ms);
+  __salsa20_xor_v_avx(output, plain, len, nonce, key);
 }
 
 
-inline fn __salsa20_xor_1_avx(reg u64 output plain len nonce, reg u32[8] key, #msf reg u64 ms) -> #msf reg u64
+inline fn __salsa20_xor_1_avx(reg u64 output plain len nonce, reg u32[8] key)
 {
-  ms = __salsa20_xor_v_1_avx(output, plain, len, nonce, key, ms);
-  return ms;
+  __salsa20_xor_v_1_avx(output, plain, len, nonce, key);
 }
 
 
-inline fn __salsa20_avx(reg u64 output len nonce key, #msf reg u64 ms)
+inline fn __salsa20_avx(reg u64 output len nonce key)
 {
-  __salsa20_v_avx(output, len, nonce, key, ms);
+  __salsa20_v_avx(output, len, nonce, key);
 }
 
 
-inline fn __salsa20_1_avx(reg u64 output len nonce, reg u32[8] key, #msf reg u64 ms)
+inline fn __salsa20_1_avx(reg u64 output len nonce, reg u32[8] key)
 {
-  __salsa20_v_1_avx(output, len, nonce, key, ms);
+  __salsa20_v_1_avx(output, len, nonce, key);
 }
+
+
