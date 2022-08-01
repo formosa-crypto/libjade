@@ -4,12 +4,10 @@ from Jade require "crypto_kem/kyber/common/amd64/kem.jinc"
 export fn jade_kem_kyber_kyber512_amd64_avx2_keypair(#transient reg u64 pkp skp) -> reg u64
 {
   reg u64 r;
-  #msf reg u64 ms;
 
-  ms = #init_msf();
-  ms = __crypto_kem_keypair_jazz(pkp, skp);
+  _ = #init_msf();
+  _ = __crypto_kem_keypair_jazz(pkp, skp);
   _, _, _, _, _, r = #set0();
-  ms = #init_msf();
 
   return r;
 }
@@ -17,12 +15,10 @@ export fn jade_kem_kyber_kyber512_amd64_avx2_keypair(#transient reg u64 pkp skp)
 export fn jade_kem_kyber_kyber512_amd64_avx2_enc(#transient reg u64 ctp shkp pkp) -> reg u64
 {
   reg u64 r;
-  #msf reg u64 ms;
 
-  ms = #init_msf();
-  ms = __crypto_kem_enc_jazz(ctp, shkp, pkp);
+  _ = #init_msf();
+  _ = __crypto_kem_enc_jazz(ctp, shkp, pkp);
   _, _, _, _, _, r = #set0();
-  ms = #init_msf();
 
   return r;
 }
@@ -33,9 +29,8 @@ export fn jade_kem_kyber_kyber512_amd64_avx2_dec(#transient reg u64 shkp ctp skp
   #msf reg u64 ms;
 
   ms = #init_msf();
-  ms = __crypto_kem_dec_jazz(shkp, ctp, skp, ms);
+  _ = __crypto_kem_dec_jazz(shkp, ctp, skp, ms);
   _, _, _, _, _, r = #set0();
-  ms = #init_msf();
 
   return r;
 }

@@ -3,12 +3,10 @@ require "shake128.jinc"
 export fn jade_xof_shake128_amd64_mmx(#transient reg u64 out outlen in inlen) -> reg u64
 {
   reg u64 r;
-  #msf reg u64 ms;
 
-  ms = #init_msf();
+  _ = #init_msf();
   __shake128_mmx(out, outlen, in, inlen);
   _,_,_,_,_,r = #set0();
-  ms = #init_msf();
 
   return r;
 }

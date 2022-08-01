@@ -8,7 +8,6 @@ export fn jade_xof_shake256_amd64_ref(#transient reg u64 out outlen in inlen) ->
   ms = #init_msf();
   ms = __shake256_ref(out, outlen, in, inlen, ms);
   _,_,_,_,_,r = #set0();
-  ms = #init_msf();
 
   return r;
 }

@@ -8,6 +8,5 @@ export fn jade_hash_sha3_256_amd64_ref(#transient reg u64 out in inlen) -> reg u
   ms = #init_msf();
   ms = __sha3_256_ref(out, in, inlen, ms);
   _,_,_,_,_,r = #set0();
-  ms = #init_msf();
   return r;
 }
