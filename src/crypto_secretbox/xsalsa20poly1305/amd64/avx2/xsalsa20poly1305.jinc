@@ -24,9 +24,13 @@ inline fn __xsalsa20poly1305_avx2(reg u64 c m mlen nonce key) -> reg u64
     mlen = #LEA(mlen - 32);
     skey = c;
 
+    _ = #init_msf();
+
     __poly1305_avx2(tag, ct, mlen, skey);
 
     c = c_s;
+    _ = #init_msf();
+
     t = #set0_128();
     (u128)[c + 0] = t;
     r = 0;
@@ -62,7 +66,12 @@ inline fn __xsalsa20poly1305_avx2_open(reg u64 m c clen nonce key) -> reg u64
     ct   = #LEA(c + 32);
     clen = #LEA(clen - 32);
 
+    _ = #init_msf();
+
+    #declassify
     r = __poly1305_verify_avx2_k(tag, ct, clen, subkey_p);
+
+    _ = #init_msf();
 
     if(r == 0)
     { m = m_s;
@@ -72,6 +81,8 @@ inline fn __xsalsa20poly1305_avx2_open(reg u64 m c clen nonce key) -> reg u64
       key = key_s;
 
       __xsalsa20_xor_avx2(m, c, clen, nonce, key);
+
+      _ = #init_msf();
 
       m = m_s;
       t = #set0_256();

@@ -170,9 +170,10 @@ inline fn __salsa20_ref_32(
   reg u32[16] k;
   stack u32 k2 k3 k15;
 
+  st = __init_ref_32(nonce, key);
+
   s_out = out;
 
-  st = __init_ref_32(nonce, key);
   k, k2, k3 = __copy_state_ref_32(st);
   k, k15 = __rounds_ref_32(k, k2, k3);
   k, k15 = __sum_states_ref_32(k, k15, st);

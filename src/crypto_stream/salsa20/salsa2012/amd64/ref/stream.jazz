@@ -5,6 +5,7 @@ from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
 export fn jade_stream_salsa20_salsa2012_amd64_ref_xor(reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
+  _ = #init_msf();
   __salsa20_xor_ref(output, plain, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
@@ -13,6 +14,7 @@ export fn jade_stream_salsa20_salsa2012_amd64_ref_xor(reg u64 output plain len n
 export fn jade_stream_salsa20_salsa2012_amd64_ref(reg u64 output len nonce key) -> reg u64
 {
   reg u64 r;
+  _ = #init_msf();
   __salsa20_ref(output, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
