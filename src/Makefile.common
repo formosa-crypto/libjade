@@ -63,7 +63,7 @@ check-sct: $(SRCS) | $(CIDIR)
 
 # usage: """make check-scton F=[funtion_name]"""
 check-scton: $(SRCS) | $(CIDIR)
-	($(JASMINC) -checkSCTon $(F) $<) $(CIT)
+	($(JASMINC) -checkSCTon $(F) $(CHECKSCTAFTER) $<) $(CIT)
 
 ###
 
