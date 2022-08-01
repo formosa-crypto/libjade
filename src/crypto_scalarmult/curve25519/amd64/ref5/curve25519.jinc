@@ -86,20 +86,17 @@ inline fn __montgomery_ladder_step5(
 
 inline fn __montgomery_ladder5(
   reg u64[5] u,
-  stack u8[32] k,
-  #msf reg u64 ms)
+  stack u8[32] k)
   ->
   stack u64[5],
-  reg u64[5],
-  #msf reg u64
+  reg u64[5]
 {
   stack u64[5] us x2 x3 z3;
   reg u64[5] z2r;
   stack u64 ctrs swapped;
   reg u64 ctr;
-  reg bool b;
 
-  (x2,z2r,x3,z3) = __init_points5(u);
+  (x2,z2r,x3,z3) = __init_points5(u); 
   us = #copy(u);
 
   ctr = 255;
@@ -110,33 +107,30 @@ inline fn __montgomery_ladder5(
     ctr -= 1;
     ctrs = ctr;
 
-    (x2, z2r, x3, z3, swapped) =
+    (x2, z2r, x3, z3, swapped) = 
       __montgomery_ladder_step5(k, us, x2, z2r, x3, z3, swapped, ctr);
 
     ctr = ctrs;
-    ctr = #protect(ctr, ms);
-    b = ctr > 0;
-  } (b) {ms = #set_msf(b, ms); }
-  ms = #set_msf(!b, ms);
+  } (ctr > 0)
 
-  return x2, z2r, ms;
+  return x2, z2r;
 }
 
-inline fn __encode_point5(stack u64[5] x2, reg u64[5] z2r, #msf reg u64 ms) -> reg u64[4], #msf reg u64
+inline fn __encode_point5(stack u64[5] x2, reg u64[5] z2r) -> reg u64[4]
 {
   stack u64[5] z2;
   reg u64[5] r1;
   reg u64[4] r2;
 
   z2 = #copy(z2r);
-  z2, ms = __invert5(z2, ms);
+  z2 = __invert5(z2);
   r1 = __mul5_rss(x2, z2);
-  r2, ms = __tobytes5(r1, ms);
+  r2 = __tobytes5(r1);
 
-  return r2, ms;
+  return r2;
 }
 
-inline fn __curve25519_ref5(reg u64 rp kp up, #msf reg u64 ms) -> #msf reg u64
+inline fn __curve25519_ref5(reg u64 rp kp up)
 {
   inline int i;
   stack u8[32] k;
@@ -148,12 +142,11 @@ inline fn __curve25519_ref5(reg u64 rp kp up, #msf reg u64 ms) -> #msf reg u64
   rps = rp;
   k = __decode_scalar(kp);
   u = __decode_u_coordinate5(up);
-  (x2,z2r, ms) = __montgomery_ladder5(u, k, ms);
-  r, ms = __encode_point5(x2,z2r, ms);
+  (x2,z2r) = __montgomery_ladder5(u, k);
+  r = __encode_point5(x2,z2r);
 
   rp = rps;
-  rp = #protect(rp, ms);
   for i=0 to 4
   { [rp + 8*i] = r[i]; }
-  return ms;
 }
+

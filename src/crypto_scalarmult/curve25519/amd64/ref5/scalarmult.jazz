@@ -5,8 +5,8 @@ export fn jade_scalarmult_curve25519_amd64_ref5(#transient reg u64 rp kp up) -> 
   reg u64 r;
   #msf reg u64 ms;
   ms = #init_msf();
-  ms = __curve25519_ref5(rp, kp, up, ms);
-  ms = #init_msf();
+  __curve25519_ref5(rp, kp, up);
   ?{}, r = #set0();
   return r;
 }
+

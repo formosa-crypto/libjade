@@ -278,7 +278,7 @@ inline fn _sqr5_ss_(stack u64[5] xa) -> stack u64[5]
   return ra;
 }
 
-inline fn _sqr5_s_(stack u64[5] x, #msf reg u64 ms) -> stack u64[5], #msf reg u64
+inline fn _sqr5_s_(stack u64[5] x) -> stack u64[5]
 {
   reg ptr u64[5] xp;
 
@@ -286,39 +286,36 @@ inline fn _sqr5_s_(stack u64[5] x, #msf reg u64 ms) -> stack u64[5], #msf reg u6
   xp = _sqr5_p(xp);
   x = xp;
 
-  return x, ms;
+  return x;
 }
 
 // ////////////////////////////////////////////////////////////////////////////
 
 #[returnaddress="stack"]
-fn _it_sqr5_p(reg ptr u64[5] x, reg u32 i, #msf reg u64 ms) -> reg ptr u64[5], #msf reg u64
+fn _it_sqr5_p(reg ptr u64[5] x, reg u32 i) -> reg ptr u64[5]
 {
   reg bool zf;
 
   while {
     x = _sqr5_p(x);
-    i = #protect_32(i, ms);
     _,_,_,zf,i = #DEC_32(i);
-  }(!zf) {ms = #set_msf(!zf, ms);}
-  ms = #set_msf(!(!zf), ms);
+  }(!zf)
 
-
-  return x, ms;
+  return x;
 }
 
-inline fn _it_sqr5_s_(stack u64[5] x, reg u32 i, #msf reg u64 ms) -> stack u64[5], #msf reg u64
+inline fn _it_sqr5_s_(stack u64[5] x, reg u32 i) -> stack u64[5]
 {
   reg ptr u64[5] xp;
 
   xp = x;
-  xp, ms = _it_sqr5_p(xp, i, ms);
+  xp = _it_sqr5_p(xp, i);
   x = xp;
 
-  return x, ms;
+  return x;
 }
 
-inline fn _it_sqr5_ss_(stack u64[5] r x, reg u32 i, #msf reg u64 ms) -> stack u64[5], #msf reg u64
+inline fn _it_sqr5_ss_(stack u64[5] r x, reg u32 i) -> stack u64[5]
 {
   inline int j;
   reg ptr u64[5] rp;
@@ -328,8 +325,9 @@ inline fn _it_sqr5_ss_(stack u64[5] r x, reg u32 i, #msf reg u64 ms) -> stack u6
   { t = x[j]; r[j] = t; }
 
   rp = r;
-  rp, ms = _it_sqr5_p(rp, i, ms);
+  rp = _it_sqr5_p(rp, i);
   r = rp;
 
-  return r, ms;
+  return r;
 }
+

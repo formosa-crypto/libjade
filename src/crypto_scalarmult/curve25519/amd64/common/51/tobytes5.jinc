@@ -1,20 +1,16 @@
-inline fn __tobytes5(reg u64[5] f, #msf reg u64 ms) -> reg u64[4], #msf reg u64
+inline fn __tobytes5(reg u64[5] f) -> reg u64[4]
 {
   reg bool eq;
   reg u64 loop;
   reg u64[4] h;
   reg u64 t two51minus1 two51minus19;
-  reg bool b;
 
   two51minus1 = 0x0007FFFFFFFFFFFF;
   two51minus19 = two51minus1;
   two51minus19 -= 18;
   loop = 3;
 
-  while{b = loop > 0; }
-  (b)
-  {
-    ms = #set_msf(b, ms);
+  while(loop > 0){
     t = f[0];
     t >>= 51;
     f[0] &= two51minus1;
@@ -38,10 +34,9 @@ inline fn __tobytes5(reg u64[5] f, #msf reg u64 ms) -> reg u64[4], #msf reg u64
     f[0] += t;
     loop = loop - 1;
   }
-  ms = #set_msf(!b, ms);
   t = 1;
 
-	//signed<? f[0] - two51minus19
+	//signed<? f[0] - two51minus19 
 	t = loop if (f[0] <s two51minus19); /*t = loop if signed<*/
 	eq = (f[1] == two51minus1);
 	t = loop if !eq;
@@ -67,24 +62,25 @@ inline fn __tobytes5(reg u64[5] f, #msf reg u64 ms) -> reg u64[4], #msf reg u64
   h[0] = f[1];
   h[0] <<= 51;
   h[0] |= f[0];
-
+  
   //h[1] = (f[2] << 38) || (f[1] >> 13); // 26 spent; 25 left
   h[1] = f[2];
   h[1] <<= 38;
   f[1] >>= 13;
   h[1] |= f[1];
-
+  
   // h[2] = (f[3] << 25) || (f[2] >> 26); // 39 spent; 12 left
   h[2] = f[3];
   h[2] <<= 25;
   f[2] >>= 26;
   h[2] |= f[2];
-
+  
   // h[3] = f[4] << 12 || (f[3] >> 39); // 51 spent; 0 left
   h[3] = f[4];
   h[3] <<= 12;
   f[3] >>= 39;
   h[3] |= f[3];
 
-	return h, ms;
+	return h;
 }
+
