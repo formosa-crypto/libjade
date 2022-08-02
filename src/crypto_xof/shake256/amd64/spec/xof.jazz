@@ -3,10 +3,9 @@ require "shake256.jinc"
 export fn jade_xof_shake256_amd64_spec(#transient reg u64 out outlen in inlen) -> reg u64
 {
   reg u64 r;
-  #msf reg u64 ms;
 
-  ms = #init_msf();
-  ms = __shake256_spec(out, outlen, in, inlen, ms);
+  _ = #init_msf();
+  __shake256_spec(out, outlen, in, inlen);
   _,_,_,_,_,r = #set0();
 
   return r;
