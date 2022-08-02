@@ -176,7 +176,7 @@ inline fn __xtr_bytes_ref1(
 
 inline fn __squeeze_ref1(
   reg mut ptr u64[25] state,
-  stack   u64 s_out,
+  regx   u64 s_out,
   reg     u64 outlen,
   reg     u64 rate
 )
@@ -215,7 +215,7 @@ inline fn __keccak1600_ref1(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
-  stack u64 s_out s_outlen;
+  regx u64 s_out s_outlen;
   stack u8 s_trail_byte;
 
   s_out = out;
