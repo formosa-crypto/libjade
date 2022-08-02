@@ -256,7 +256,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     h += H[7];
 
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
-    Hp = H;
+    //Hp = H;
 
     in = in_s;
     in += 64;
@@ -344,7 +344,6 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     h += H[7];
 
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
-    Hp = H;
 
     sblocks = s_sblocks;
     oblocks = s_oblocks;
@@ -370,12 +369,12 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
     i += 1;
   }
 
-  // set first byte after input to 0x80
+  // set first byte after input to 0x80 
   sblocks[u8 (int)i] = 0x80;
   i += 1;
 
   // check if one or two blocks are needed
-  if(inlen < 56)
+  if(inlen < 56) 
   { j = (64-8); nblocks = 1; }
   else
   { j = (128-8); nblocks = 2; }
@@ -393,7 +392,7 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
     bits >>= 8;
     i -= 1;
   }
-  i += 9;
+  i += 9; 
 
   // set remaining bytes to zero (can be optimized)
   while(i < 128)
