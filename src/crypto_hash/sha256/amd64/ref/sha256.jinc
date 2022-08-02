@@ -1,7 +1,7 @@
 
 require "sha256_globals.jinc"
 
-inline fn __initH_mmx() -> stack u32[8]
+inline fn __initH_ref() -> stack u32[8]
 {
   stack u32[8] H;
 
@@ -17,7 +17,7 @@ inline fn __initH_mmx() -> stack u32[8]
   return H;
 }
 
-inline fn __load_H_mmx(reg ptr u32[8] H) -> reg u32, reg u32, reg u32, reg u32,
+inline fn __load_H_ref(reg ptr u32[8] H) -> reg u32, reg u32, reg u32, reg u32,
                                             reg u32, reg u32, reg u32, reg u32,
                                             reg ptr u32[8]
 {
@@ -35,7 +35,7 @@ inline fn __load_H_mmx(reg ptr u32[8] H) -> reg u32, reg u32, reg u32, reg u32,
   return a, b, c, d, e, f, g, h, H;
 }
 
-inline fn __store_H_mmx(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u32[8]
+inline fn __store_H_ref(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u32[8]
 {
   H[0] = a;
   H[1] = b;
@@ -49,7 +49,7 @@ inline fn __store_H_mmx(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u3
   return H;
 }
 
-inline fn __store_mmx(reg u64 out, stack u32[8] H)
+inline fn __store_ref(reg u64 out, stack u32[8] H)
 {
   inline int i;
   reg u32 v;
@@ -61,7 +61,7 @@ inline fn __store_mmx(reg u64 out, stack u32[8] H)
   }
 }
 
-inline fn __SHR_mmx(reg u32 x, inline int c) -> reg u32
+inline fn __SHR_ref(reg u32 x, inline int c) -> reg u32
 {
   reg u32 r;
   r   = x;
@@ -69,7 +69,7 @@ inline fn __SHR_mmx(reg u32 x, inline int c) -> reg u32
   return r;
 }
 
-inline fn __ROTR_mmx(reg u32 x, inline int c) -> reg u32
+inline fn __ROTR_ref(reg u32 x, inline int c) -> reg u32
 {
   reg u32 r;
   r = x;
@@ -78,7 +78,7 @@ inline fn __ROTR_mmx(reg u32 x, inline int c) -> reg u32
 }
 
 //(x & y) ^ (!x & z)
-inline fn __CH_mmx(reg u32 x y z) -> reg u32
+inline fn __CH_ref(reg u32 x y z) -> reg u32
 {
   reg u32 r s;
 
@@ -93,7 +93,7 @@ inline fn __CH_mmx(reg u32 x y z) -> reg u32
 }
 
 //(x & y) ^ (x & z) ^ (y & z)
-inline fn __MAJ_mmx(reg u32 x y z) -> reg u32
+inline fn __MAJ_ref(reg u32 x y z) -> reg u32
 {
   reg u32 r s;
 
@@ -110,71 +110,71 @@ inline fn __MAJ_mmx(reg u32 x y z) -> reg u32
 }
 
 // (x >>> 2) ^ (x >>> 13) ^ (x >>> 22)
-inline fn __BSIG0_mmx(reg u32 x) -> reg u32
+inline fn __BSIG0_ref(reg u32 x) -> reg u32
 {
   reg u32 r s;
 
-  r  = __ROTR_mmx(x, 2);
-  s  = __ROTR_mmx(x,13);
+  r  = __ROTR_ref(x, 2);
+  s  = __ROTR_ref(x,13);
   r ^= s;
-  s  = __ROTR_mmx(x,22);
+  s  = __ROTR_ref(x,22);
   r ^= s;
 
   return r;
 }
 
 // (x >>> 6) ^ (x >>> 11) ^ (x >>> 25)
-inline fn __BSIG1_mmx(reg u32 x) -> reg u32
+inline fn __BSIG1_ref(reg u32 x) -> reg u32
 {
   reg u32 r s;
 
-  r  = __ROTR_mmx(x, 6);
-  s  = __ROTR_mmx(x,11);
+  r  = __ROTR_ref(x, 6);
+  s  = __ROTR_ref(x,11);
   r ^= s;
-  s  = __ROTR_mmx(x,25);
+  s  = __ROTR_ref(x,25);
   r ^= s;
 
   return r;
 }
 
 // (x >>> 7) ^ (x >>> 18) ^ (x >> 3)
-inline fn __SSIG0_mmx(reg u32 x) -> reg u32
+inline fn __SSIG0_ref(reg u32 x) -> reg u32
 {
   reg u32 r s;
 
-  r  = __ROTR_mmx(x, 7);
-  s  = __ROTR_mmx(x,18);
+  r  = __ROTR_ref(x, 7);
+  s  = __ROTR_ref(x,18);
   r ^= s;
-  s  = __SHR_mmx(x,3);
+  s  = __SHR_ref(x,3);
   r ^= s;
 
   return r;
 }
 
 // (x >>> 17) ^ (x >>> 19) ^ (x >> 10)
-inline fn __SSIG1_mmx(reg u32 x) -> reg u32
+inline fn __SSIG1_ref(reg u32 x) -> reg u32
 {
   reg u32 r s;
 
-  r  = __ROTR_mmx(x,17);
-  s  = __ROTR_mmx(x,19);
+  r  = __ROTR_ref(x,17);
+  s  = __ROTR_ref(x,19);
   r ^= s;
-  s  = __SHR_mmx(x,10);
+  s  = __SHR_ref(x,10);
   r ^= s;
 
   return r;
 }
 
 // Wt = SSIG1(W(t-2)) + W(t-7) + SSIG0(t-15) + W(t-16)
-inline fn __Wt_mmx(stack u32[64] W, inline int t) -> stack u32[64]
+inline fn __Wt_ref(stack u32[64] W, inline int t) -> stack u32[64]
 {
   reg u32 wt wt2 wt15;
 
   wt2  = W[t-2];
-  wt   = __SSIG1_mmx(wt2);
+  wt   = __SSIG1_ref(wt2);
   wt  += W[t-7];
   wt15 = W[t-15];
-  wt15 = __SSIG0_mmx(wt15);
+  wt15 = __SSIG0_ref(wt15);
   wt  += wt15;
   wt  += W[t-16];
 
@@ -183,7 +183,7 @@ inline fn __Wt_mmx(stack u32[64] W, inline int t) -> stack u32[64]
   return W;
 }
 
-fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64, reg u64
+fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64, reg u64
 {
   inline int t;
   reg u32 T1 T2 a b c d e f g h r v;
@@ -209,9 +209,9 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     in_s = in;
 
     for t=16 to 64
-    { W = __Wt_mmx(W, t); }
+    { W = __Wt_ref(W, t); }
 
-    a, b, c, d, e, f, g, h, H = __load_H_mmx(H);
+    a, b, c, d, e, f, g, h, H = __load_H_ref(H);
     Hp = H;
 
     tr = 0;
@@ -219,16 +219,16 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     {
       //T1 = h + BSIG1(e) + CH(e,f,g) + Kt + Wt
       T1  = h;
-      r   = __BSIG1_mmx(e);
+      r   = __BSIG1_ref(e);
       T1 += r;
-      r   = __CH_mmx(e,f,g);
+      r   = __CH_ref(e,f,g);
       T1 += r;
       T1 += Kp[(int)tr];
       T1 += W[(int)tr];
 
       //T2 = BSIG0(a) + MAJ(a,b,c)
-      T2  = __BSIG0_mmx(a);
-      r   = __MAJ_mmx(a,b,c);
+      T2  = __BSIG0_ref(a);
+      r   = __MAJ_ref(a,b,c);
       T2 += r;
 
       h  = g;
@@ -255,7 +255,7 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
     g += H[6];
     h += H[7];
 
-    H = __store_H_mmx(H,a,b,c,d,e,f,g,h);
+    H = __store_H_ref(H,a,b,c,d,e,f,g,h);
     Hp = H;
 
     in = in_s;
@@ -267,7 +267,7 @@ fn _blocks_0_mmx(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
   return _H, in, inlen;
 }
 
-fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) -> reg ptr u32[8], reg ptr u32[32]
+fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) -> reg ptr u32[8], reg ptr u32[32]
 {
   inline int t;
   reg u32 T1 T2 a b c d e f g h r v;
@@ -297,9 +297,9 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     s_sblocks = sblocks;
 
     for t=16 to 64
-    { W = __Wt_mmx(W, t); }
+    { W = __Wt_ref(W, t); }
 
-    a, b, c, d, e, f, g, h, H = __load_H_mmx(H);
+    a, b, c, d, e, f, g, h, H = __load_H_ref(H);
     Hp = H;
 
     tr = 0;
@@ -307,16 +307,16 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     {
       //T1 = h + BSIG1(e) + CH(e,f,g) + Kt + Wt
       T1  = h;
-      r   = __BSIG1_mmx(e);
+      r   = __BSIG1_ref(e);
       T1 += r;
-      r   = __CH_mmx(e,f,g);
+      r   = __CH_ref(e,f,g);
       T1 += r;
       T1 += Kp[(int)tr];
       T1 += W[(int)tr];
 
       //T2 = BSIG0(a) + MAJ(a,b,c)
-      T2  = __BSIG0_mmx(a);
-      r   = __MAJ_mmx(a,b,c);
+      T2  = __BSIG0_ref(a);
+      r   = __MAJ_ref(a,b,c);
       T2 += r;
 
       h  = g;
@@ -343,7 +343,7 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     g += H[6];
     h += H[7];
 
-    H = __store_H_mmx(H,a,b,c,d,e,f,g,h);
+    H = __store_H_ref(H,a,b,c,d,e,f,g,h);
     Hp = H;
 
     sblocks = s_sblocks;
@@ -356,7 +356,7 @@ fn _blocks_1_mmx(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
 }
 
 
-inline fn __lastblocks_mmx(reg u64 in inlen bits) -> stack u32[32], reg u64
+inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
 {
   stack u32[32] sblocks;
   reg u64 i j nblocks;
@@ -420,16 +420,16 @@ inline fn __sha256(reg u64 out in inlen)
   bits <<= 3;
   s_bits = bits;
 
-  H = __initH_mmx();
+  H = __initH_ref();
   Hp = H;
-  Hp, in, inlen = _blocks_0_mmx(Hp, in, inlen);
+  Hp, in, inlen = _blocks_0_ref(Hp, in, inlen);
 
   bits = s_bits;
-  sblocks, nblocks = __lastblocks_mmx(in, inlen, bits);
+  sblocks, nblocks = __lastblocks_ref(in, inlen, bits);
   sblocksp = sblocks;
-  Hp, _ = _blocks_1_mmx(Hp, sblocksp, nblocks);
+  Hp, _ = _blocks_1_ref(Hp, sblocksp, nblocks);
 
   out = s_out;
   H = Hp;
-  __store_mmx(out, H);
+  __store_ref(out, H);
 }
