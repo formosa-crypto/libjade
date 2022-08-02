@@ -296,3 +296,4 @@ inline fn _it_sqr4_ss_(stack u64[4] r x, reg u32 i) -> stack u64[4]
 
   return r;
 }
+

@@ -85,3 +85,4 @@ inline fn __invert4(stack u64[4] fs) -> stack u64[4]
 
   return t1s;
 }
+

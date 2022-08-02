@@ -54,3 +54,4 @@ inline fn __reduce4(reg u64[8] z) -> reg u64[4]
 
   return r;
 }
+

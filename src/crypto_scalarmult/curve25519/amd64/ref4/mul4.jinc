@@ -188,3 +188,4 @@ inline fn __mul4_a24_ss(stack u64[4] xa, inline u64 a24) -> stack u64[4]
 
   return rs;
 }
+
