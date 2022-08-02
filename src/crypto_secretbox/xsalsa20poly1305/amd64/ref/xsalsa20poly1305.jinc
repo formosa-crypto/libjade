@@ -8,7 +8,7 @@ require "poly1305_kD.jinc"
 inline fn __xsalsa20poly1305_ref(reg u64 c m mlen nonce key) -> reg u64
 {
   reg u64 r tag ct skey;
-  stack u64 c_s mlen_s;
+  regx u64 c_s mlen_s;
 
   if(mlen >= 32)
   { c_s = c;
@@ -23,12 +23,9 @@ inline fn __xsalsa20poly1305_ref(reg u64 c m mlen nonce key) -> reg u64
     mlen = #LEA(mlen - 32);
     skey = c;
 
-    _  = #init_msf();
-
     __poly1305_ref(tag, ct, mlen, skey);
 
     c = c_s;
-    _  = #init_msf();
 
     (u64)[c + 0] = 0;
     (u64)[c + 8] = 0;
@@ -46,7 +43,8 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
   reg u64 r tag ct;
   stack u8[32] subkey;
   reg ptr u8[32] subkey_p;
-  stack u64 m_s c_s clen_s nonce_s key_s;
+  stack u64 nonce_s key_s;
+  regx u64 c_s clen_s m_s;
 
   if(clen >= 32)
   { m_s = m;
@@ -64,11 +62,11 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
     ct   = #LEA(c + 32);
     clen = #LEA(clen - 32);
 
-    _  = #init_msf();
+
 
     #declassify
     r = __poly1305_verify_ref_k(tag, ct, clen, subkey_p);
-
+    // 
     _  = #init_msf();
 
     if(r == 0)
@@ -81,8 +79,6 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
       __xsalsa20_xor_ref(m, c, clen, nonce, key);
 
       m = m_s;
-
-      _  = #init_msf();
 
       (u64)[m + 0]  = 0;
       (u64)[m + 8]  = 0;

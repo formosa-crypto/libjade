@@ -8,7 +8,7 @@ require "poly1305_kD.jinc"
 inline fn __xsalsa20poly1305_avx(reg u64 c m mlen nonce key) -> reg u64
 {
   reg u64 r tag ct skey;
-  stack u64 c_s mlen_s;
+  regx u64 c_s mlen_s;
   reg u128 t;
 
   if(mlen >= 32)
@@ -24,11 +24,7 @@ inline fn __xsalsa20poly1305_avx(reg u64 c m mlen nonce key) -> reg u64
     mlen = #LEA(mlen - 32);
     skey = c;
 
-    _ = #init_msf();
-
     __poly1305_avx(tag, ct, mlen, skey);
-
-    _ = #init_msf();
 
     c = c_s;
      t = #set0_128();
@@ -47,7 +43,8 @@ inline fn __xsalsa20poly1305_avx_open(reg u64 m c clen nonce key) -> reg u64
   reg u64 r tag ct;
   stack u8[32] subkey;
   reg ptr u8[32] subkey_p;
-  stack u64 m_s c_s clen_s nonce_s key_s;
+  stack u64 nonce_s key_s;
+  regx u64 m_s c_s clen_s;
   reg u128 t;
 
   if(clen >= 32)
@@ -66,8 +63,6 @@ inline fn __xsalsa20poly1305_avx_open(reg u64 m c clen nonce key) -> reg u64
     ct   = #LEA(c + 32);
     clen = #LEA(clen - 32);
 
-    _ = #init_msf();
-
     #declassify
     r = __poly1305_verify_avx_k(tag, ct, clen, subkey_p);
 
@@ -81,8 +76,6 @@ inline fn __xsalsa20poly1305_avx_open(reg u64 m c clen nonce key) -> reg u64
       key = key_s;
 
       __xsalsa20_xor_avx(m, c, clen, nonce, key);
-
-      _ = #init_msf();
 
       m = m_s;
       t = #set0_128();
