@@ -119,7 +119,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp, #msf reg u64 ms
   s_shkp = shkp;
   s_ctp = ctp;
 
-  buf[0:KYBER_INDCPA_MSGBYTES], ms = __indcpa_dec(buf[0:KYBER_INDCPA_MSGBYTES], ctp, skp, ms);
+  buf[0:KYBER_INDCPA_MSGBYTES] = __indcpa_dec(buf[0:KYBER_INDCPA_MSGBYTES], ctp, skp);
 
   hp = skp + 32;
   hp += 24 * KYBER_K * KYBER_N>>3;

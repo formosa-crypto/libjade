@@ -53,7 +53,7 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp) -> #msf reg u64
 
   for i=0 to KYBER_K
   {
-    pkpv[i*KYBER_N:KYBER_N], ms = __polyvec_pointwise_acc(pkpv[i*KYBER_N:KYBER_N], aa[i*KYBER_VECN:KYBER_VECN], skpv, ms);
+    pkpv[i*KYBER_N:KYBER_N] = __polyvec_pointwise_acc(pkpv[i*KYBER_N:KYBER_N], aa[i*KYBER_VECN:KYBER_VECN], skpv);
     pkpv[i*KYBER_N:KYBER_N] = _poly_frommont(pkpv[i*KYBER_N:KYBER_N]);
   }
 
@@ -126,10 +126,10 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
 
   for w=0 to KYBER_K
   {
-    bp[w*KYBER_N:KYBER_N], ms = __polyvec_pointwise_acc(bp[w*KYBER_N:KYBER_N], aat[w*KYBER_VECN:KYBER_VECN], sp, ms);
+    bp[w*KYBER_N:KYBER_N] = __polyvec_pointwise_acc(bp[w*KYBER_N:KYBER_N], aat[w*KYBER_VECN:KYBER_VECN], sp);
   }
 
-  v, ms = __polyvec_pointwise_acc(v, pkpv, sp, ms);
+  v = __polyvec_pointwise_acc(v, pkpv, sp);
 
   bp = __polyvec_invntt(bp);
   v = _poly_invntt(v);
@@ -198,10 +198,10 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
 
   for w=0 to KYBER_K
   {
-    bp[w*KYBER_N:KYBER_N], ms = __polyvec_pointwise_acc(bp[w*KYBER_N:KYBER_N], aat[w*KYBER_VECN:KYBER_VECN], sp, ms);
+    bp[w*KYBER_N:KYBER_N] = __polyvec_pointwise_acc(bp[w*KYBER_N:KYBER_N], aat[w*KYBER_VECN:KYBER_VECN], sp);
   }
 
-  v, ms = __polyvec_pointwise_acc(v, pkpv, sp, ms);
+  v = __polyvec_pointwise_acc(v, pkpv, sp);
 
   bp = __polyvec_invntt(bp);
   v = _poly_invntt(v);
@@ -222,7 +222,7 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
 
 
 inline
-fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp, #msf reg u64 ms) -> reg ptr u8[KYBER_INDCPA_MSGBYTES], #msf reg u64
+fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp) -> reg ptr u8[KYBER_INDCPA_MSGBYTES]
 {
   stack u16[KYBER_N] t v mp;
   stack u16[KYBER_VECN] bp skpv;
@@ -234,7 +234,7 @@ fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp
   skpv = __polyvec_frombytes(skp);
 
   bp = __polyvec_ntt(bp);
-  t, ms = __polyvec_pointwise_acc(t, skpv, bp, ms);
+  t = __polyvec_pointwise_acc(t, skpv, bp);
   t = _poly_invntt(t);
 
   mp = _poly_sub(mp, v, t);
@@ -242,5 +242,5 @@ fn __indcpa_dec(reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 ctp, reg u64 skp
 
   msgp, mp = _poly_tomsg_1(msgp, mp);
 
-  return msgp, ms;
+  return msgp;
 }
