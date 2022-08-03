@@ -2,7 +2,7 @@ param int SALSA20_ROUNDS=12;
 
 from Jade require "crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
 
-export fn jade_stream_salsa20_salsa2012_amd64_avx2_xor(#transient reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_salsa20_salsa2012_amd64_avx2_xor(reg u64 output plain len nonce key) -> reg u64
 {
   reg u64 r;
 
@@ -12,7 +12,7 @@ export fn jade_stream_salsa20_salsa2012_amd64_avx2_xor(#transient reg u64 output
   return r;
 }
 
-export fn jade_stream_salsa20_salsa2012_amd64_avx2(#transient reg u64 output len nonce key) -> reg u64
+export fn jade_stream_salsa20_salsa2012_amd64_avx2(reg u64 output len nonce key) -> reg u64
 {
   reg u64 r;
 
