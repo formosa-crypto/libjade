@@ -26,7 +26,7 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
   reg u256 r qx16;
   inline int i;
-
+  
   qx16 = jqx16[u256 0];
 
   for i=0 to 16 {
@@ -39,13 +39,12 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 }
 
 
-inline
+inline 
 fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int sign) -> reg u256, reg u256, reg u256, reg u256
 {
   reg u256 a b c d x0 x1 y0 y1;
   reg u256 bdlo bdhi bclo bchi adlo adhi aclo achi bd;
   reg u256 rbdlo rbdhi bc0 bc1 ad0 ad1 ac0 ac1 rbd0 rbd1;
-  reg bool cond;
 
   b = ap.[u256 32*1];
   d = bp.[u256 32*1];
@@ -93,7 +92,7 @@ fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int si
   return x0, x1, y0, y1;
 }
 
-inline
+inline 
 fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
 {
   reg u256 zero x y z;
@@ -145,19 +144,19 @@ fn __basemul32x(reg ptr u16[64] rp ap bp, reg u256 zeta qx16 qinvx16) -> reg ptr
 fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
 {
   reg u256 zeta qx16 qinvx16;
-
+  
   qx16    = jqx16.[u256 0];
   qinvx16 = jqinvx16.[u256 0];
-
+  
   zeta = jzetas_exp.[u256 304];
-  rp[0:64]  = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16);
+  rp[0:64]   = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16);
   zeta = jzetas_exp.[u256 368];
   rp[64:64]  = __basemul32x(rp[64:64],  ap[64:64],  bp[64:64], zeta, qx16, qinvx16);
   zeta = jzetas_exp.[u256 696];
   rp[128:64] = __basemul32x(rp[128:64], ap[128:64], bp[128:64], zeta, qx16, qinvx16);
   zeta = jzetas_exp.[u256 760];
   rp[192:64] = __basemul32x(rp[192:64], ap[192:64], bp[192:64], zeta, qx16, qinvx16);
-
+  
   return rp;
 }
 
@@ -399,7 +398,7 @@ fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     rp[u256 i] = t;
   }
 
-  return rp;
+  return rp; 
 }
 
 u32[4] pfm_shift_s = {3, 2, 1, 0};
@@ -635,8 +634,6 @@ fn __cbd2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf) -> reg 
 inline
 fn __poly_cbd_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8] buf, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
-  reg bool b;
-
   #inline if(KYBER_ETA1 == 2) { // resolved at compile-time
     rp = __cbd2(rp, buf[0:KYBER_ETA2*KYBER_N/4]);
   } else {
@@ -815,7 +812,7 @@ fn _poly_getnoise_eta1122_4x(reg ptr u16[KYBER_N] r0 r1 r2 r3, reg ptr u8[KYBER_
 
 
 inline
-fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16)
+fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
     -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
 {
   reg u256 t0 t1 t2 t3 t4 t5 t6 t7;
@@ -835,7 +832,7 @@ fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 
   rl3 = #VPADD_16u16(rh3, rl3);
   rh2 = #VPMULL_16u16(zl1, t2);
   rh3 = #VPMULL_16u16(zl1, t3);
-
+  
   t0  = #VPMULH_16u16(zh0, t0);
   t1  = #VPMULH_16u16(zh0, t1);
 
@@ -847,7 +844,7 @@ fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 
   rh1  = #VPMULH_16u16(qx16, rh1);
   rh2  = #VPMULH_16u16(qx16, rh2);
   rh3  = #VPMULH_16u16(qx16, rh3);
-
+  
   rh0  = #VPSUB_16u16(t0, rh0);
   rh1  = #VPSUB_16u16(t1, rh1);
   rh2  = #VPSUB_16u16(t2, rh2);
@@ -868,7 +865,7 @@ inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   zetasp = jzetas_inv_exp;
   qx16 = jqx16[u256 0];
 
-  for i=0 to 2
+  for i=0 to 2 
   {
     // level 0:
     zeta0 = zetasp.[u256 0+392*i];
@@ -894,7 +891,7 @@ inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     zeta1 = zetasp.[u256 160+392*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
-
+    
     r0, r1 = __shuffle1(r0, r1);
     r2, r3 = __shuffle1(r2, r3);
     r4, r5 = __shuffle1(r4, r5);
@@ -1024,7 +1021,7 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
 
 inline
-fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16)
+fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
     -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
 {
   reg u256 t0 t1 t2 t3 t4 t5 t6 t7;
@@ -1252,11 +1249,11 @@ fn __poly_reduce(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
   inline int i;
   reg u256 r qx16 vx16;
-
+  
   qx16 = jqx16[u256 0];
   vx16 = jvx16[u256 0];
 
-  for i=0 to 16
+  for i=0 to 16 
   {
     r = rp.[u256 32*i];
     r = __red16x(r, qx16, vx16);
