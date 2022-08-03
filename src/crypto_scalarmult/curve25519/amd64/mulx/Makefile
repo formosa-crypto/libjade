@@ -1,3 +1,3 @@
 SRCS := scalarmult.jazz
-JFLAGS := -checkSCTafter unroll
+CHECKSCTAFTER := -checkSCTafter unroll
 include ../../../../Makefile.common
