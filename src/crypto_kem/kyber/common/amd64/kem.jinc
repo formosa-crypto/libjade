@@ -78,7 +78,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp /*, #msf reg u64
     t64 = rb[u64 i];
     kr[u64 i] = t64;
   }
-
+  
   buf[0:32], ms = _isha3_256_32(buf[0:32], kr[0:KYBER_SYMBYTES], ms);
 
   pkp = s_pkp;

@@ -241,7 +241,7 @@ fn __polyvec_pointwise_acc(stack u16[KYBER_N] r, stack u16[KYBER_VECN] a b) -> s
   }
 
   r = __poly_reduce(r);
-
+  
   return r;
 }
 
