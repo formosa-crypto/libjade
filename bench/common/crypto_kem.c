@@ -22,11 +22,11 @@
 //
 
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 5
 #endif
 
 #ifndef TIMINGS
-#define TIMINGS 2048
+#define TIMINGS 8192
 #endif
 
 #define OP 3
@@ -43,28 +43,34 @@
 
 int main(int argc, char**argv)
 {
-  int loop, i;
+  int loop;
+  size_t i;
   char *op_str[] = {xstr(crypto_kem_keypair,.csv), xstr(crypto_kem_enc,.csv), xstr(crypto_kem_dec,.csv)};
   uint8_t ss0[CRYPTO_BYTES];
   uint8_t ss1[CRYPTO_BYTES];
-  uint8_t pk[CRYPTO_PUBLICKEYBYTES];
+  uint8_t *pk, *pkt;
   uint8_t sk[CRYPTO_SECRETKEYBYTES];
   uint8_t ct[CRYPTO_CIPHERTEXTBYTES];
   uint64_t cycles[TIMINGS];
   uint64_t results[OP][LOOPS];
 
+  // for Kyber768 (pk 1184, sk 2400) and 16K timings, ~18MB and ~37MB; atm pk;
+  pk = (uint8_t*) malloc(TIMINGS*CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
+
   for(loop = 0; loop < LOOPS; loop++)
   {
-    // keypair 
-    for (i = 0; i < TIMINGS; i++)
+    // keypair
+    pkt = pk;
+    for (i = 0; i < TIMINGS; i++, pkt += CRYPTO_PUBLICKEYBYTES)
     { cycles[i] = cpucycles();
-      crypto_kem_keypair(pk, sk); }
+      crypto_kem_keypair(pkt, sk); }
     results[0][loop] = cpucycles_median(cycles, TIMINGS);
 
     // enc
-    for (i = 0; i < TIMINGS; i++)
+    pkt = pk;
+    for (i = 0; i < TIMINGS; i++, pkt += CRYPTO_PUBLICKEYBYTES)
     { cycles[i] = cpucycles();
-      crypto_kem_enc(ct, ss0, pk); }
+      crypto_kem_enc(ct, ss0, pkt); }
     results[1][loop] = cpucycles_median(cycles, TIMINGS);
 
     // dec
@@ -75,6 +81,8 @@ int main(int argc, char**argv)
   }
 
   cpucycles_fprintf_1(argc, results, op_str);
+
+  free(pk);
 
   return 0;
 }

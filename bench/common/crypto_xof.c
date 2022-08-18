@@ -16,7 +16,7 @@
 //
 
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 5
 #endif
 
 #ifndef MININBYTES
@@ -32,11 +32,11 @@
 #endif
 
 #ifndef MAXOUTBYTES
-#define MAXOUTBYTES 256
+#define MAXOUTBYTES 128
 #endif
 
 #ifndef TIMINGS
-#define TIMINGS 32
+#define TIMINGS 1024
 #endif
 
 #define OP 1

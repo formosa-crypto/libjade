@@ -19,7 +19,7 @@
 //
 
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 5
 #endif
 
 #ifndef MININBYTES
@@ -31,7 +31,7 @@
 #endif
 
 #ifndef TIMINGS
-#define TIMINGS 256
+#define TIMINGS 1024
 #endif
 
 #define OP 2
