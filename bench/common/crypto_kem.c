@@ -22,11 +22,11 @@
 //
 
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 5
 #endif
 
 #ifndef TIMINGS
-#define TIMINGS 2048
+#define TIMINGS 8192
 #endif
 
 #define OP 3
