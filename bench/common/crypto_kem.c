@@ -26,7 +26,7 @@
 #endif
 
 #ifndef TIMINGS
-#define TIMINGS 8192
+#define TIMINGS 10000
 #endif
 
 #define OP 3
