@@ -1,1 +1,1 @@
-JFLAGS := ${JFLAGS} -lazy-regalloc
+override JFLAGS += -lazy-regalloc
