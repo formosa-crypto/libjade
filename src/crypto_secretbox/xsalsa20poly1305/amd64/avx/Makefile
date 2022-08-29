@@ -1,3 +1,3 @@
-JFLAGS := ${JFLAGS} -lazy-regalloc
+override JFLAGS += -lazy-regalloc
 SRCS := secretbox.jazz
 include ../../../../Makefile.common
