@@ -40,26 +40,30 @@
 
 #include "cpucycles.c"
 #include "increment.c"
-
 #define inc_in inc_32
-
-#define PRINTBENCH_2 1
-#include "printbench.c"
-#undef PRINTBENCH_2
+#include "printbench2.c"
+#include "alignedcalloc.c"
 
 //
 
 int main(int argc, char**argv)
 {
   int loop, r, i;
-  char *op_str[] = {xstr(crypto_onetimeauth,.csv), xstr(crypto_onetimeauth_verify,.csv)};
-  uint8_t out[CRYPTO_BYTES], in[MAXINBYTES],
-          key[CRYPTO_KEYBYTES];
-  size_t len;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
+  char *op_str[] = {xstr(crypto_onetimeauth,.csv),
+                    xstr(crypto_onetimeauth_verify,.csv)};
 
-  alloc_2(results, size_inc_32(MININBYTES,MAXINBYTES));
+  uint8_t *_out, *out; // CRYPTO_BYTES
+  uint8_t *_in, *in; // MAXINBYTES
+  uint8_t *_key, *key; // CRYPTO_KEYBYTES
+  size_t len;
+
+  pb_alloc_2(results, size_inc_32(MININBYTES,MAXINBYTES));
+
+  out = alignedcalloc(&_out, CRYPTO_BYTES);
+  in = alignedcalloc(&_in, MAXINBYTES);
+  key = alignedcalloc(&_key, MAXINBYTES);
 
   for(loop = 0; loop < LOOPS; loop++)
   { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len += inc_in(len), r += 1)
@@ -75,8 +79,12 @@ int main(int argc, char**argv)
     }
   }
 
-  cpucycles_fprintf_2(argc, results, op_str);
-  free_2(results);
+  pb_print_2(argc, results, op_str);
+  pb_free_2(results);
+
+  free(_in);
+  free(_out);
+  free(_key);
 
   return 0;
 }

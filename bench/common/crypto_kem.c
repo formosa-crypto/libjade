@@ -34,55 +34,67 @@
 //
 
 #include "cpucycles.c"
-
-#define PRINTBENCH_1 1
-#include "printbench.c"
-#undef PRINTBENCH_1
+#include "printbench1.c"
+#include "alignedcalloc.c"
 
 //
 
 int main(int argc, char**argv)
 {
-  int loop;
-  size_t i;
-  char *op_str[] = {xstr(crypto_kem_keypair,.csv), xstr(crypto_kem_enc,.csv), xstr(crypto_kem_dec,.csv)};
-  uint8_t ss0[CRYPTO_BYTES];
-  uint8_t ss1[CRYPTO_BYTES];
-  uint8_t *pk, *pkt;
-  uint8_t sk[CRYPTO_SECRETKEYBYTES];
-  uint8_t ct[CRYPTO_CIPHERTEXTBYTES];
+  int loop, i;
   uint64_t cycles[TIMINGS];
   uint64_t results[OP][LOOPS];
+  char *op_str[] = {xstr(crypto_kem_keypair,.csv),
+                    xstr(crypto_kem_enc,.csv),
+                    xstr(crypto_kem_dec,.csv)};
 
-  // for Kyber768 (pk 1184, sk 2400) and 16K timings, ~18MB and ~37MB; atm pk;
-  pk = (uint8_t*) malloc(TIMINGS*CRYPTO_PUBLICKEYBYTES*sizeof(uint8_t));
+  uint8_t *_ps, *ps, *p; // CRYPTO_PUBLICKEYBYTES
+  uint8_t *_ss, *ss, *s; // CRYPTO_SECRETKEYBYTES
+  uint8_t *_k, *k; // CRYPTO_BYTES
+  uint8_t *_c, *c; // CRYPTO_CIPHERTEXTBYTES
+  uint8_t *_t, *t; // CRYPTO_BYTES
+  size_t plen, slen;
+
+  plen = alignedcalloc_step(CRYPTO_PUBLICKEYBYTES);
+  slen = alignedcalloc_step(CRYPTO_SECRETKEYBYTES);
+
+  ps = alignedcalloc(&_ps, plen * TIMINGS);
+  ss = alignedcalloc(&_ss, slen * TIMINGS);
+  k = alignedcalloc(&_k, CRYPTO_BYTES);
+  c = alignedcalloc(&_c, CRYPTO_CIPHERTEXTBYTES);
+  t = alignedcalloc(&_t, CRYPTO_BYTES);
 
   for(loop = 0; loop < LOOPS; loop++)
   {
     // keypair
-    pkt = pk;
-    for (i = 0; i < TIMINGS; i++, pkt += CRYPTO_PUBLICKEYBYTES)
+    p = ps; s = ss;
+    for (i = 0; i < TIMINGS; i++, p += plen, s += slen)
     { cycles[i] = cpucycles();
-      crypto_kem_keypair(pkt, sk); }
+      crypto_kem_keypair(p, s); }
     results[0][loop] = cpucycles_median(cycles, TIMINGS);
 
     // enc
-    pkt = pk;
-    for (i = 0; i < TIMINGS; i++, pkt += CRYPTO_PUBLICKEYBYTES)
+    p = ps;
+    for (i = 0; i < TIMINGS; i++, p += plen)
     { cycles[i] = cpucycles();
-      crypto_kem_enc(ct, ss0, pkt); }
+      crypto_kem_enc(c, k, p); }
     results[1][loop] = cpucycles_median(cycles, TIMINGS);
 
     // dec
-    for (i = 0; i < TIMINGS; i++)
+    s = ss;
+    for (i = 0; i < TIMINGS; i++, s += slen)
     { cycles[i] = cpucycles();
-      crypto_kem_dec(ss1, ct, sk); }
+      crypto_kem_dec(t, c, s); }
     results[2][loop] = cpucycles_median(cycles, TIMINGS);
   }
 
-  cpucycles_fprintf_1(argc, results, op_str);
+  pb_print_1(argc, results, op_str);
 
-  free(pk);
+  free(_ps);
+  free(_ss);
+  free(_k);
+  free(_c);
+  free(_t);
 
   return 0;
 }

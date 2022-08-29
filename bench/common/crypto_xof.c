@@ -45,27 +45,29 @@
 
 #include "cpucycles.c"
 #include "increment.c"
-
 #define inc_in  inc_32
 #define inc_out inc_4
-
-#define PRINTBENCH_3 1
-#include "printbench.c"
-#undef PRINTBENCH_3
+#include "printbench3.c"
+#include "alignedcalloc.c"
 
 //
 
 int main(int argc, char**argv)
 {
   int loop, r0, r1, i;
-  char *op_str[] = {xstr(crypto_xof,.csv)};
-  uint8_t out[MAXOUTBYTES], in[MAXINBYTES];
-  size_t outsize, outlen, inlen;
   uint64_t cycles[TIMINGS];
   uint64_t** results[OP][LOOPS];
+  char *op_str[] = {xstr(crypto_xof,.csv)};
+
+  uint8_t *_out, *out; // MAXOUTBYTES
+  uint8_t *_in, *in; // MAXINBYTES
+  size_t outsize, outlen, inlen;
 
   outsize = size_inc_4(MINOUTBYTES,MAXOUTBYTES);
-  alloc_3(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
+  pb_alloc_3(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
+
+  out = alignedcalloc(&_out, MAXOUTBYTES);
+  in = alignedcalloc(&_in, MAXINBYTES);
 
   for(loop = 0; loop < LOOPS; loop++)
   { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
@@ -78,8 +80,11 @@ int main(int argc, char**argv)
     }
   }
 
-  cpucycles_fprintf_3(argc, results, op_str);
-  free_3(results, outsize);
+  pb_print_3(argc, results, op_str);
+  pb_free_3(results, outsize);
+
+  free(_out);
+  free(_in);
 
   return 0;
 }
