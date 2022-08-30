@@ -1,8 +1,11 @@
 #ifndef INCREMENT_C
 #define INCREMENT_C
 
-#include <stdlib.h>
+// this file expect INC_INBYTES and INC_OUTBYTES to be defined (config.h)
+
 #include "namespace.h"
+#include <stdlib.h>
+
 
 
 
@@ -63,19 +66,10 @@ static size_t size_inc_3(size_t start, size_t end)
 
 
 
+#define inc_in EVALUATOR(inc,INC_INBYTES)
+#define size_inc_in EVALUATOR(size_inc,INC_INBYTES)
 
-#ifndef INC_IN
-#define INC_IN 2
-#endif
-
-#ifndef INC_OUT
-#define INC_OUT 2
-#endif
-
-#define inc_in EVALUATOR(inc,INC_IN)
-#define size_inc_in EVALUATOR(size_inc,INC_IN)
-
-#define inc_out EVALUATOR(inc,INC_OUT)
-#define size_inc_out EVALUATOR(size_inc,INC_OUT)
+#define inc_out EVALUATOR(inc,INC_OUTBYTES)
+#define size_inc_out EVALUATOR(size_inc,INC_OUTBYTES)
 
 #endif

@@ -12,28 +12,11 @@
 #define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 #define crypto_hash JADE_NAMESPACE_LC
 
-//
-
-#ifndef LOOPS
-#define LOOPS 5
-#endif
-
-#ifndef MININBYTES
-#define MININBYTES 32
-#endif
-
-#ifndef MAXINBYTES
-#define MAXINBYTES 16384
-#endif
-
-#ifndef TIMINGS
-#define TIMINGS 10000
-#endif
-
 #define OP 1
 
 //
 
+#include "config.h"
 #include "cpucycles.c"
 #include "increment.c"
 #include "printbench2.c"

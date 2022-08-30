@@ -14,20 +14,11 @@
 #define crypto_scalarmult      JADE_NAMESPACE_LC
 #define crypto_scalarmult_base NAMESPACE_LC(base)
 
-//
-
-#ifndef LOOPS
-#define LOOPS 5
-#endif
-
-#ifndef TIMINGS
-#define TIMINGS 10000
-#endif
-
 #define OP 2
 
 //
 
+#include "config.h"
 #include "cpucycles.c"
 #include "printbench1.c"
 #include "alignedcalloc.c"

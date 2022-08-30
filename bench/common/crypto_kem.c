@@ -18,20 +18,11 @@
 #define crypto_kem_enc NAMESPACE_LC(enc)
 #define crypto_kem_dec NAMESPACE_LC(dec)
 
-//
-
-#ifndef LOOPS
-#define LOOPS 5
-#endif
-
-#ifndef TIMINGS
-#define TIMINGS 10000
-#endif
-
 #define OP 3
 
 //
 
+#include "config.h"
 #include "cpucycles.c"
 #include "printbench1.c"
 #include "alignedcalloc.c"
