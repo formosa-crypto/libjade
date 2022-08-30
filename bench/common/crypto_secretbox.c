@@ -1,5 +1,4 @@
 #include "api.h"
-#include "randombytes.h"
 #include "namespace.h"
 
 #include <stdint.h>
@@ -45,6 +44,7 @@
 #define inc_in inc_32
 #include "printbench2.c"
 #include "alignedcalloc.c"
+#include "benchrandombytes.c"
 
 //
 
@@ -72,11 +72,15 @@ int main(int argc, char**argv)
 
   for(loop = 0; loop < LOOPS; loop++)
   { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len += inc_in(len), r += 1)
-    { 
+    {
+      benchrandombytes(plaintext + CRYPTO_ZEROBYTES, len);
+      benchrandombytes(nonce, CRYPTO_NONCEBYTES);
+      benchrandombytes(key, CRYPTO_KEYBYTES);
+
       // secretbox
       for (i = 0; i < TIMINGS; i++)
       { cycles[i] = cpucycles();
-        crypto_secretbox(ciphertext, plaintext , len + CRYPTO_ZEROBYTES, nonce, key); }
+        crypto_secretbox(ciphertext, plaintext, len + CRYPTO_ZEROBYTES, nonce, key); }
       results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
       // secretbox_open

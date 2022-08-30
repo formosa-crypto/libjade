@@ -1,5 +1,5 @@
-#ifndef PRINTBENCH2_H
-#define PRINTBENCH2_H
+#ifndef PRINTBENCH2_C
+#define PRINTBENCH2_C
 
 #include <inttypes.h>
 #include <stdlib.h>

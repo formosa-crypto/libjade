@@ -14,6 +14,7 @@ BIN      ?= bin
 COMMON   := common
 EXT      := ../ext
 RANDLIB  ?= $(EXT)/randombytes/librandombytes.a
+RANDINC  ?= $(EXT)/randombytes/
 SSBD_DIR := $(EXT)/ssbd-tools
 
 JAZZ    ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
@@ -32,7 +33,7 @@ ASM         = $(IDIR)/$(OPERATION).s
 MAIN        = $(COMMON)/crypto_$(OPERATION).c
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
-INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(EXT)/randombytes/
+INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(RANDINC)
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB)
 
 # --------------------------------------------------------------------

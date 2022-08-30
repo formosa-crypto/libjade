@@ -1,5 +1,5 @@
-#ifndef INCREMENT_H
-#define INCREMENT_H
+#ifndef INCREMENT_C
+#define INCREMENT_C
 
 // +1 @ {1..63} ; +2 @ {64..127}; +4 @ {128..256} 
 static uint64_t _inc_32_1(uint64_t len)

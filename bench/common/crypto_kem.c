@@ -1,5 +1,4 @@
 #include "api.h"
-#include "randombytes.h"
 #include "namespace.h"
 
 #include <stdint.h>
@@ -36,6 +35,7 @@
 #include "cpucycles.c"
 #include "printbench1.c"
 #include "alignedcalloc.c"
+#include "benchrandombytes.c"
 
 //
 

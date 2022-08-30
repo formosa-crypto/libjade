@@ -1,5 +1,4 @@
 #include "api.h"
-#include "randombytes.h"
 #include "namespace.h"
 
 #include <stdint.h>
@@ -32,6 +31,7 @@
 #include "cpucycles.c"
 #include "printbench1.c"
 #include "alignedcalloc.c"
+#include "benchrandombytes.c"
 
 //
 
@@ -40,8 +40,8 @@ int main(int argc, char**argv)
   int loop, i;
   uint64_t cycles[TIMINGS];
   uint64_t results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_scalarmult,.csv),
-                    xstr(crypto_scalarmult_base,.csv)};
+  char *op_str[] = {xstr(crypto_scalarmult_base,.csv),
+                    xstr(crypto_scalarmult,.csv)};
 
   uint8_t *_m, *m; // CRYPTO_SCALARBYTES
   uint8_t *_n, *n; // CRYPTO_SCALARBYTES
@@ -55,17 +55,21 @@ int main(int argc, char**argv)
 
   for(loop = 0; loop < LOOPS; loop++)
   {
-    // scalarmult 
-    for (i = 0; i < TIMINGS; i++)
-    { cycles[i] = cpucycles();
-      crypto_scalarmult(q,n,p); }
-    results[0][loop] = cpucycles_median(cycles, TIMINGS);
+    benchrandombytes(m, CRYPTO_SCALARBYTES);
+    benchrandombytes(n, CRYPTO_SCALARBYTES);
 
     // scalarmult_base
     for (i = 0; i < TIMINGS; i++)
     { cycles[i] = cpucycles();
       crypto_scalarmult_base(p,m); }
     results[1][loop] = cpucycles_median(cycles, TIMINGS);
+
+    // scalarmult
+    for (i = 0; i < TIMINGS; i++)
+    { cycles[i] = cpucycles();
+      crypto_scalarmult(q,n,p); }
+    results[0][loop] = cpucycles_median(cycles, TIMINGS);
+
   }
 
   pb_print_1(argc, results, op_str);

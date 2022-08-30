@@ -1,5 +1,5 @@
-#ifndef ALIGNEDCALLOC_H
-#define ALIGNEDCALLOC_H
+#ifndef ALIGNEDCALLOC_C
+#define ALIGNEDCALLOC_C
 
 #include <stdint.h>
 #include <stdlib.h>
