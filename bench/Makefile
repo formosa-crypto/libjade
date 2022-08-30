@@ -45,6 +45,7 @@ default: benchs
 
 benchs: $(BENCHS)
 
+$(BENCHS):
 %/bench: $(RANDLIB) __phony | %/
 	$(MAKE) -C $(IDIR) || true
 	$(COMPILE) || true
