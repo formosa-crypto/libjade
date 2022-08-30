@@ -44,8 +44,6 @@
 
 #include "cpucycles.c"
 #include "increment.c"
-#define inc_in  inc_32
-#define inc_out inc_4
 #include "printbench3.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
@@ -63,15 +61,15 @@ int main(int argc, char**argv)
   uint8_t *_in, *in; // MAXINBYTES
   size_t outsize, outlen, inlen;
 
-  outsize = size_inc_4(MINOUTBYTES,MAXOUTBYTES);
-  pb_alloc_3(results, outsize, size_inc_32(MININBYTES,MAXINBYTES));
+  outsize = size_inc_out(MINOUTBYTES,MAXOUTBYTES);
+  pb_alloc_3(results, outsize, size_inc_in(MININBYTES,MAXINBYTES));
 
   out = alignedcalloc(&_out, MAXOUTBYTES);
   in = alignedcalloc(&_in, MAXINBYTES);
 
   for(loop = 0; loop < LOOPS; loop++)
-  { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+  { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
+    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
       {
         benchrandombytes(in, inlen);
 

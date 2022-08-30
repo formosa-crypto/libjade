@@ -41,7 +41,6 @@
 
 #include "cpucycles.c"
 #include "increment.c"
-#define inc_in inc_32
 #include "printbench2.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
@@ -63,7 +62,7 @@ int main(int argc, char**argv)
   uint8_t *_key, *key; // CRYPTO_KEYBYTES
   size_t len;
 
-  pb_alloc_2(results, size_inc_32(MININBYTES,MAXINBYTES));
+  pb_alloc_2(results, size_inc_in(MININBYTES,MAXINBYTES));
 
   ciphertext = alignedcalloc(&_ciphertext, MAXINBYTES + CRYPTO_ZEROBYTES);
   plaintext = alignedcalloc(&_plaintext, MAXINBYTES + CRYPTO_ZEROBYTES);
@@ -71,7 +70,7 @@ int main(int argc, char**argv)
   key = alignedcalloc(&_key, CRYPTO_KEYBYTES);
 
   for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len += inc_in(len), r += 1)
+  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
     {
       benchrandombytes(plaintext + CRYPTO_ZEROBYTES, len);
       benchrandombytes(nonce, CRYPTO_NONCEBYTES);

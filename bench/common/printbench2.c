@@ -31,7 +31,7 @@ static void pb_print_2(int argc, uint64_t* results[OP][LOOPS], char *op_str[])
   FILE *f;
 
   // get min median of LOOP runs
-  for (len = MININBYTES, r=0; len <= MAXINBYTES; len += inc_in(len), r +=1)
+  for (len = MININBYTES, r=0; len <= MAXINBYTES; len = inc_in(len), r +=1)
   { for (op = 0; op < OP; op++)
     { min = results[op][0][r];
       for (loop = 1; loop < LOOPS; loop++)
@@ -46,7 +46,7 @@ static void pb_print_2(int argc, uint64_t* results[OP][LOOPS], char *op_str[])
   for (op = 0; op < OP; op++)
   { if(argc == 1) { f = fopen(op_str[op], "w"); }
     loop = 0;
-    for (len = MININBYTES, r=0; len <= MAXINBYTES; len += inc_in(len), r +=1)
+    for (len = MININBYTES, r=0; len <= MAXINBYTES; len = inc_in(len), r +=1)
     { if(len == 0)
       { fprintf(f, "%" PRIu64 ", %" PRIu64 ", undef\n", len, results[op][loop][r]); }
       else

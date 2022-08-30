@@ -37,8 +37,8 @@ static void pb_print_3(int argc, uint64_t** results[OP][LOOPS], char *op_str[])
   FILE *f;
 
   // get min median of LOOP runs
-  for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-  { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+  for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
+  { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
     { for (op = 0; op < OP; op++)
       { min = results[op][0][r0][r1];
         for (loop = 1; loop < LOOPS; loop++)
@@ -54,8 +54,8 @@ static void pb_print_3(int argc, uint64_t** results[OP][LOOPS], char *op_str[])
   for (op = 0; op < OP; op++)
   { if(argc == 1) { f = fopen(op_str[op], "w"); }
     loop = 0;
-    for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen += inc_out(outlen), r0 += 1)
-    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen += inc_in(inlen), r1 += 1)
+    for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
+    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
       { if(inlen == 0)
         { fprintf(f, "%" PRIu64 ", %" PRIu64 ", %" PRIu64 ", undef\n", outlen, inlen, results[op][loop][r0][r1]); }
         else
