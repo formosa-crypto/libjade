@@ -1,49 +1,78 @@
 # -*- Makefile -*-
 
 # --------------------------------------------------------------------
-TOP:=$(shell git rev-parse --show-toplevel)
-SRC=$(TOP)/src
-EXT=$(TOP)/ext
+AS      ?= as
+CC      ?= gcc
+CFLAGS  ?= -Wall -Ofast
+CI      ?= 0
+export CI
+EXCLUDE ?=
 
 # --------------------------------------------------------------------
-# NOTE: atm. all implementations are considered; in the future they will be filtered by architecture, ..., depending on the target/requirements;
-# Hence, the following variables' initialization will change;
+SRC    := .
+BUILD  := .build
 
-JAZZ   := $(shell find $(SRC)/crypto_* -name '*.jazz' -exec dirname {} \; | sort --unique)
-API    := $(shell find $(SRC)/crypto_* -name 'api.h')
-ASM    := $(shell find $(SRC)/crypto_* -name '*.s')
-EXT    := $(shell find $(EXT)/crypto_* -name '*.c')
-
-OBJ    := $(ASM:%.s=_build/%.o)
-AS     := as
-CC     := gcc
-CFLAGS := -Wall -Ofast
+ECMK   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(dir $(shell find $(SRC) -name 'Ec.mk'))) # just for cleaning .deps and .ci
+JAZZ   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+API    := $(shell find $(SRC) -name 'api.h')
+ASM    := $(shell find $(SRC) -name '*.s')
+OBJ    := $(ASM:%.s=$(BUILD)/%.o)
 
 # --------------------------------------------------------------------
-.PHONY: default clean __real_libjade __force
+.PHONY: default __libjade.a source $(JAZZ) clean-ci clean distclean check.tar.gz report err
 
 default: libjade.a libjade.h
 
-jasmin:
-	@for i in $(JAZZ); do $(MAKE) -C $$i; done
+libjade.a: source
+	$(MAKE) __$@
 
-libjade.a: jasmin __force
-	$(MAKE) __real_libjade
+__libjade.a: $(OBJ)
+	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
+ifeq ($(CI),1)
+	$(MAKE) check.tar.gz
+	$(MAKE) report
+	$(MAKE) err
+endif
 
 libjade.h: $(API)
 	cat $(API) > $@
 
-__real_libjade: $(OBJ)
-	ar -rc libjade.a $(OBJ) && ranlib libjade.a
+source: $(JAZZ)
+$(JAZZ):
+	$(MAKE) -C $@ || true
 
-_build/%.c: %.c
-	@mkdir -p _build/`dirname $<`; cp $< _build/`dirname $<`
-	@echo '$< --> _build/'
+$(BUILD)/%.s: %.s
+	mkdir -p $(dir $@); cp $< $(dir $@)
 
-_build/%.s: %.s
-	@mkdir -p _build/`dirname $<`; cp $< _build/`dirname $<`
-	@echo '$< --> _build/'
+# --------------------------------------------------------------------
+
+clean-ci:
+	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
+	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
 
 clean:
 	for i in $(JAZZ); do $(MAKE) -C $$i clean; done
-	rm -fr _build libjade.a
+	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
+
+distclean: clean
+	rm -fr libjade.a libjade.h $(BUILD) check.tar.gz
+
+# --------------------------------------------------------------------
+ifeq ($(CI),1)
+
+ERR := $(shell find $(SRC) -name '*.s.error')
+CIL := $(shell find $(SRC) -name '.ci')
+
+check.tar.gz:
+	@tar -zcvf $@ $(CIL)
+
+report:
+	./../scripts/ci/jsrc
+
+err:
+ifneq ($(words $(ERR)),0)
+	$(error $(ERR))
+endif
+
+endif
+

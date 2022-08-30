@@ -1,0 +1,23 @@
+#!/bin/sh
+
+#set -x #verbose
+
+top=$(cd "$(dirname "$0")/../../" ; pwd -P)
+src=$top/src
+bench=$top/bench/bin
+op=$1
+tag1=$2
+
+if [ "$op" = "store" ]
+then
+  csv=$(find $bench -type f -name "*.csv")
+  for f in $csv; do
+    fd=$(dirname $f)
+    fn=$(basename $f .csv)
+    mv $f $fd/$fn.$tag1.csv
+  done
+  exit 0;
+fi
+
+
+

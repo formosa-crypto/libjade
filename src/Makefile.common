@@ -1,12 +1,24 @@
 ###
 
-TOP = $(shell git rev-parse --show-toplevel)
+TOP = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
 SRC = $(TOP)/src/
-CDIR = $(realpath $(dir $(realpath $(firstword $(MAKEFILE_LIST)))))
+CDIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 RDIR = $(subst $(SRC),,$(CDIR))
 PDIR = $(TOP)/proof/$(RDIR)
 OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
+
+#
+CIDIR =
+CIT =
+ifeq ($(CI),1)
+CIDIR := .ci
+CIT = 2> $(CIDIR)/$(@F).log && rm -f $(CIDIR)/$(@F).error || \
+     (echo $$? > $(CIDIR)/$(@F).error && \
+      cat $(CIDIR)/$(@F).log >> $(CIDIR)/$(@F).error && \
+      rm $(CIDIR)/$(@F).log && \
+      exit 127)
+endif
 
 #
 JEXT ?= jazz
@@ -14,49 +26,78 @@ JFLAGS := $(JFLAGS) -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
 JASMIN ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
-COMPILE = $(JASMINC) -o $@ $<
+COMPILE = ($(JASMINC) -o $@ $<) $(CIT)
 
 #
 ECDIR := $(PDIR)
 include $(SRC)/$(OPERATION)/EcFlags.mk
 ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT = cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<
+EXTRACT_S = (cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
+EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
 #
 DEPSDIR := .deps
-DEPS = (bash -c 'echo -n "$@: "'; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d
+DEPS = ((printf "$@: "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
 
 ###
 
 compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
 
-extract: $(SRCS:%.$(JEXT)=$(ECDIR)/%.ec)
+###
+
+extract: extract_s extract_ct
+	@true
+
+extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
+	@true
+
+extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
 ###
 
 %.s : %.$(JEXT)
-%.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR)
+%.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
 	@$(DEPS)
 	@$(COMPILE)
 
-$(ECDIR)/%.ec : %.$(JEXT)
-$(ECDIR)/%.ec : %.$(JEXT) $(DEPSDIR)/%.ec.d | $(DEPSDIR) $(ECDIR)
+###
+
+$(ECDIR)/%_s.ec : %.$(JEXT)
+$(ECDIR)/%_s.ec : %.$(JEXT) $(DEPSDIR)/%_s.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
 	@$(DEPS)
-	@$(EXTRACT)
+	@$(EXTRACT_S)
+
+$(ECDIR)/%_ct.ec : %.$(JEXT)
+$(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
+	@$(DEPS)
+	@$(EXTRACT_CT)
 
 ###
 
 $(DEPSDIR): ; @mkdir -p $@
 $(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
+ifeq ($(CI),1)
+$(CIDIR): ; @mkdir -p $@
+endif
 
-DEPFILES := $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.ec.d)
+
+DEPFILES := \
+ $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) \
+ $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_s.ec.d) \
+ $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_ct.ec.d)
+
 $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
 
 ###
+.PHONY: clean-ci clean
 
-clean:
+clean-ci:
+	@rm -fr $(CIDIR)
+
+clean: clean-ci
 	@rm -fr $(DEPSDIR) *.s *.o *.a
+

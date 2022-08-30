@@ -1,0 +1,73 @@
+#!/bin/sh
+
+# how to use jdiff:
+# $ ...                         # set your JASMIN variable or install corresponding 'jasminc' compiler version (first run)
+# $ make -j4 -C src/ CI=1       # compiles code to *.s and creates .ci directories
+# $ ./jdiff store tag1          # copies *.s into .ci with the name *.s.tag1; tag1 can be a commit hash of jasminc for instance
+# $ make -C src/ distclean CI=0 # run without CI=1, to remove *.s (and not .ci directories)
+# $ ...                         # set your JASMIN variable or install corresponding 'jasminc' compiler version (second run)
+# $ make -j4 -C src/ CI=1       # compiles code to *.s with the 'new' version of JASMIN
+# $ ./jdiff store tag2          # see previous comment for jdiff
+# $ ./jdiff diff tag1 tag2      # compares the stored files; for each *.s stored under the name *.s.tag1, checks:
+                                # - if file *.s.tag2 exists: if not red message is printed, return will not be 0;
+                                # - counts the number of lines that 'diff *.s.tag1 *.s.tag2' produces
+                                # --- if different than 0, red message is printed, return will not be 0;
+                                # --- otherwise, green message is printed, return status is not changed
+# additional note:
+# './jdiff diff tag1 tag2' can produce a different output of './jdiff diff tag2 tag1':
+# - if the first used version of the Jasmin compiler is not able to compile
+#   a given implementation but the second version of the Jasmin compiler is,
+#   then a line starting by "E, -1," will be printed for that given
+#   implementation and the return will not be 0
+
+#set -x #verbose
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BOLD='\033[1m'
+NORMAL='\033[0m'
+
+top=$(cd "$(dirname "$0")/../../" ; pwd -P)
+src=$top/src
+op=$1
+tag1=$2
+
+if [ "$op" = "store" ]
+then
+  asm=$(find $src -type f -name "*.s")
+  for f in $asm; do
+    fd=$(dirname $f)
+    fn=$(basename $f)
+    cp $f $fd/.ci/$fn.$tag1
+  done
+  exit 0;
+fi
+
+if [ "$op" = "diff" ]
+then
+  ok=0
+  tag2=$3
+  asm=$(find $src -type f -name "*.s.$tag1" | sort)
+  for f1 in $asm; do
+    fd=$(dirname $f1)
+    fn=$(basename $f1 .$tag1)
+    f2=$fd/$fn.$tag2
+    fd=$(dirname $fd)
+    wf1=$(cat $f1 | wc -l | sed -e 's/^[[:blank:]]*//g');
+
+    if [ -f $f2 ]
+    then
+      wf2=$(cat $f2 | wc -l | sed -e 's/^[[:blank:]]*//g');
+      dl=$(diff $f1 $f2 | wc -l | sed -e 's/^[[:blank:]]*//g')
+      if [ "$dl" = "0" ]
+      then echo "${GREEN}${BOLD}OK, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"
+      else echo "${RED}${BOLD}E, ${dl}, ${fd}, ${tag1}, (${wf1}), ${tag2}, (${wf2}) ${NORMAL}"; ok=1
+      fi
+    else
+      echo "${RED}${BOLD}E, -1, ${fd}, ${tag1} (${wf1}), ${tag2}(-1), ${NORMAL}"; ok=1
+    fi
+  done
+  exit $ok
+fi
+

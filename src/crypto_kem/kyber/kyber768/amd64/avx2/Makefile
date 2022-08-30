@@ -1,4 +1,4 @@
 SRCS := kem.jazz
-JFLAGS := -lea
+override JFLAGS += -lea
 include ../../../../../Makefile.common
 

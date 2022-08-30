@@ -42,6 +42,8 @@ class Scheme:
         schemes.extend(Scheme.all_schemes_of_type('hash'))
         schemes.extend(Scheme.all_schemes_of_type('xof'))
         schemes.extend(Scheme.all_schemes_of_type('sign'))
+        schemes.extend(Scheme.all_schemes_of_type('scalarmult'))
+        schemes.extend(Scheme.all_schemes_of_type('secretbox'))
         return schemes
 
     @staticmethod
@@ -81,6 +83,10 @@ class Scheme:
                         schemes.append(Xof(d))
                     elif type == 'sign':
                         schemes.append(Signature(d))
+                    elif type == 'scalarmult':
+                        schemes.append(Scalarmult(d))
+                    elif type == 'secretbox':
+                        schemes.append(Secretbox(d))
                     else:
                         assert('Unknown type')
         return schemes
@@ -195,6 +201,8 @@ class Implementation:
                 if (platform_['architecture'] == 'x86_64' and
                         platform.architecture()[0] == '32bit'):
                     continue
+                if not 'required_flags' in platform_:
+                   return True
                 if all([flag in cpuinfo['flags']
                         for flag in platform_['required_flags']]):
                     return True
@@ -273,3 +281,27 @@ class Signature(Scheme):
     @staticmethod
     def all_sigs():
         return Scheme.all_schemes_of_type('sign')
+
+class Scalarmult(Scheme):
+
+    def __init__(self, name: str):
+        self.type = 'scalarmult'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_scalarmult():
+        return Scheme.all_schemes_of_type('scalarmult')
+
+class Secretbox(Scheme):
+
+    def __init__(self, name: str):
+        self.type = 'secretbox'
+        self.name = name
+        self.name_ = name.replace(os.sep, '_')
+        self.implementations = Implementation.all_implementations(self)
+
+    @staticmethod
+    def all_secretbox():
+        return Scheme.all_schemes_of_type('secretbox')

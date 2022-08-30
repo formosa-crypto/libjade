@@ -1,10 +1,13 @@
 CC     := gcc
-CFLAGS := -Wall -Ofast -c
+CFLAGS := -Wall -Ofast
 
-default: randombytes.o
+default: librandombytes.a
 
-%.o: %.c
-	$(CC) $(CFLAGS) -o $@ $<
+librandombytes.a: randombytes.o
+	ar -rc $@ $< && ranlib $@
+
+randombytes.o: randombytes.c randombytes.h
+	$(CC) $(CFLAGS) -o $@ -c randombytes.c
 
 clean:
-	@rm -fr *.o
+	@rm -fr *.a *.o

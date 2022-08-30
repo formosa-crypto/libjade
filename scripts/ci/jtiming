@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# how to use jtiming:
+# $ scripts/ci/jtiming
+#
+# $ or...
+#
+# $ cd src; (export JASMIN=__PATH_TO_THE_JASMIN_COMPILER__ && ./../scripts/ci/jtiming)
+
+top=$(cd "$(dirname "$0")/../../" ; pwd -P)
+tmp=$(mktemp)
+TIME="${TIME:-"/usr/bin/time"}"
+
+find $top/src -name "*.jazz" -printf "%h\n" | sort -u | \
+while read dir;
+do
+  echo -n "$dir,";
+  cd $dir;
+  make clean CI=1;
+  ($TIME --quiet -f'%U' sh -c "make CI=1 2> /dev/null" 2> $tmp) || (echo "NaN" > $tmp);
+  cat $tmp;
+done
+

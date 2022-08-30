@@ -258,40 +258,35 @@ inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
 }
 
 
-//
-
-
-inline fn __poly1305_ref(reg u64 out in _inlen _k)
+// TODO: remove inline when ra
+inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
 {
   reg u64[3] h r;
   reg u64[2] h2;
-  reg u64 inlen k;
-
-  inlen = _inlen;
-  k = _k;
 
   h, r, k = __poly1305_setup_ref(k);
   in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
   h2 = __poly1305_last_ref(in, inlen, k, h, r);
+  
+  return h2;
+}
+
+
+inline fn __poly1305_ref(reg u64 out in inlen k)
+{
+  reg u64[2] h2;
+  h2 = __poly1305_r_ref(in, inlen, k);
   __store2(out, h2);
 }
 
 
-inline fn __poly1305_verify_ref(reg u64 _h in _inlen _k) -> reg u64
+inline fn __poly1305_verify_ref(reg u64 h in inlen k) -> reg u64
 {
-  reg u64[3] h r;
-  reg u64[2] h2;
-  reg u64 ret inlen k;
+  reg u64[2] hc;
+  reg u64 r;
 
-  inlen = _inlen;
-  k = _k;
-
-  h, r, k = __poly1305_setup_ref(k);
-  in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
-  h2 = __poly1305_last_ref(in, inlen, k, h, r);
-  ret = __crypto_verify_p_u8x16_r_u64x2(_h, h2);
-  return ret;
+  hc = __poly1305_r_ref(in, inlen, k);
+  r = __crypto_verify_p_u8x16_r_u64x2(h, hc);
+  return r;
 }
-
-
 

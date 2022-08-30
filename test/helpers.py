@@ -93,7 +93,7 @@ def isolate_test_files(impl_path, test_prefix,
                     os.path.join(test_dir, 'test', 'Makefile'))
 
         # Copy directories with support files
-        for d in ['crypto_kem', 'crypto_stream', 'crypto_onetimeauth', 'crypto_hash', 'crypto_xof']: # TODO refactor/extend for more crypto_*
+        for d in ['crypto_kem', 'crypto_stream', 'crypto_onetimeauth', 'crypto_hash', 'crypto_xof', 'crypto_scalarmult', 'crypto_secretbox']: # TODO refactor/extend for more crypto_*
             shutil.copytree(
                 os.path.join('..', 'test', d),
                 os.path.join(test_dir, 'test', d)

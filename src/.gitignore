@@ -7,3 +7,6 @@ libjade.h
 .deps
 .ec
 .log
+.ci
+.error
+check.tar.gz

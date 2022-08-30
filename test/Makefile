@@ -8,8 +8,8 @@ test_checksums: clean
 # to be refactored
 
 # override as desired
-TYPE=kem
-SCHEME=kyber/kyber768
+TYPE=secretbox
+SCHEME=xsalsa20poly1305
 IMPLEMENTATION=amd64/avx2
 
 #

@@ -1,0 +1,10 @@
+require "curve25519.jinc"
+
+export fn jade_scalarmult_curve25519_amd64_ref5(reg u64 rp kp up) -> reg u64
+{
+  reg u64 r;
+  __curve25519_ref5(rp, kp, up);
+  ?{}, r = #set0();
+  return r;
+}
+
