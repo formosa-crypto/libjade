@@ -1,0 +1,259 @@
+require "params.jinc"
+require "montgomery.jinc"
+require "packing.jinc"
+require "fips202.jinc"
+require "rounding.jinc"
+
+fn poly_add(reg ptr u32[Li2_polydeg] f g sum)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 result v32;
+
+	reg u64 i;
+	i = 0;
+	while(i < Li2_polydeg) {
+		result = f[(int) i];
+		v32 = g[(int) i];
+		result += v32;
+		sum[(int) i] = result;
+		i += 1;
+	}
+	return sum;
+}
+
+fn poly_subtract(reg ptr u32[Li2_polydeg] f g difference)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 result v32;
+
+	reg u64 i;
+	i = 0;
+	while(i < Li2_polydeg) {
+		result = f[(int) i];
+		v32 = g[(int) i];
+		result -= v32;
+		difference[(int) i] = result;
+		i += 1;
+	}
+	return difference;
+}
+
+fn poly_accumulate(reg ptr u32[Li2_polydeg] f sum)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 temp;
+	stack u32 x1 x2 y;
+
+	reg u32 v32 result;
+
+	reg u64 i;
+	i = 0;
+	while(i < Li2_polydeg) {
+		v32 = f[(int) i];
+		result = sum[(int) i];
+		result += v32;
+		sum[(int) i] = result;
+		i += 1;
+	}
+	return sum;
+}
+
+fn poly_mult(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 x1 x2;
+	reg u64 prod x2_64;
+	reg u32 prod_redc;
+
+	i = 0;
+	while(i < Li2_polydeg) {
+		x1 = fft_f[(int) i];
+		prod = (64s) x1;
+		x2 = fft_g[(int) i];
+		x2_64 = (64s) x2;
+		prod *= x2_64;
+		
+		prod_redc = montgomery_REDC(prod);
+		fft_prod[(int) i] = prod_redc;
+		i += 1;
+	}
+	return fft_prod;
+}
+
+fn zero_poly(reg ptr u32[Li2_polydeg] f)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	i = 0;
+	while(i < Li2_polydeg) {
+		// Montgomery of 0 is 0
+		f[(int) i] = 0;
+		i += 1;
+	}
+	return f;
+}
+
+inline
+fn expandMaskComponent(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_prime, stack u16 kappa)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u8 c;
+	reg u16 v;
+	stack u64[25] state;
+	stack u8[(Li2_pack_zlen / SHAKE256_RATE) * SHAKE256_RATE + SHAKE256_RATE] y_packed;
+	stack u64 y_loc;
+	stack u64 output_squeeze_counter;
+	reg u64 addr;
+
+	//there's an argument to call shake256_absorb66
+	//that however introduces an extra copy
+
+	state = st0(state);
+	i = 0;
+	while(i < 64) {
+		c = rho_prime[(int) i];
+		state[u8 (int) i] = c;
+		i += 1;
+	}
+
+	v = kappa;
+	v &= 255;
+	c = (8u) v;
+	state[u8 64] = c;
+
+	v = kappa;
+	v >>= 8;
+	c = (8u) v;
+	state[u8 65] = c;
+	state[u8 66] ^= 0x1f;
+	state[u8 SHAKE256_RATE - 1] ^= 0x80;
+
+	y_loc = 0;
+
+	output_squeeze_counter = 0;
+	while(output_squeeze_counter < (Li2_pack_zlen / SHAKE256_RATE + 1)) {
+		state = __keccakf1600_ref(state);
+
+		i = 0;
+		while(i < SHAKE256_RATE) {
+			addr = i;
+			c = state[u8 (int) addr];
+			addr = y_loc;
+			y_packed[(int) addr] = c;
+			y_loc += 1;
+			i += 1;
+		}
+
+		output_squeeze_counter += 1;
+	}
+
+	f = polyz_unpack(f, y_packed[0 : Li2_pack_zlen]);
+
+	return f;
+}
+
+fn poly_caddq(reg ptr u32[Li2_polydeg] f)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 val;
+	i = 0;
+	while(i < Li2_polydeg) {
+		val = f[(int) i];
+		val = caddq(val);
+		f[(int) i] = val;
+		i += 1;
+	}
+	return f;
+}
+
+inline
+fn poly_make_hint(reg ptr u32[Li2_polydeg] f0 f1 hints)
+	-> stack u32, reg ptr u32[Li2_polydeg]
+{
+	stack u32 weight;
+	reg u64 i;
+	reg u32 a0 a1;
+	reg u32 h;
+
+	i = 0;
+	while(i < Li2_polydeg) {
+		hints[(int) i] = 0;
+		i += 1;
+	}
+
+	weight = 0;
+	i = 0;
+	while(i < Li2_polydeg) {
+		a0 = f0[(int) i];
+		a1 = f1[(int) i];
+		h = make_hint(a0, a1);
+		hints[(int) i] = h;
+		weight += h;
+		i += 1;
+	}
+
+	return weight, hints;
+}
+
+fn poly_use_hint(reg ptr u32[Li2_polydeg] w1 hints)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 a h;
+
+	i = 0;
+	while (i < Li2_polydeg) {
+		h = hints[(int) i];
+		a = w1[(int) i];
+		a = use_hint(a, h);
+		w1[(int) i] = a;
+		i += 1;
+	}
+	return w1;
+}
+
+inline
+fn poly_checknorm(reg ptr u32[Li2_polydeg] f, inline int threshold)
+	-> stack u8
+{
+	stack u8 r;
+	reg u8 result;
+	stack u8 result_s;
+	reg u8 c;
+	reg u64 i;
+	reg u32 val;
+
+	result = 0;
+
+	i = 0;
+	while(i < Li2_polydeg) {
+		val = f[(int) i];
+		r = checknorm(val, threshold);
+		c = r;
+		result |= c;
+		i += 1;
+	}
+
+	result_s = result;
+	return result_s;
+}
+
+fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 val res;
+
+	i = 0;
+	while(i < Li2_polydeg) {
+		val = poly[(int) i];
+		res = reduce32(val);
+		poly[(int) i] = res;
+		i += 1;
+	}
+
+	return poly;
+}
