@@ -1,0 +1,105 @@
+require "fips202.jinc"
+require "params.jinc"
+
+//reminder to self
+//param int SHAKE256_RATE = 136;
+
+inline
+fn expandS_entry(stack u8[64] rho_prime, inline int i, reg ptr u32[Li2_polydeg] buf)
+	-> reg ptr u32[Li2_polydeg]
+{
+	// Poly
+	stack u32 term;
+
+	// For keccak
+	stack u64[25] state;
+	reg u64 offset;
+
+	// temps
+	reg u64 j;
+	reg u8 c1 c2;
+	reg u32 u32_c1;
+	reg u32 v;
+	reg u64 addr;
+	
+	reg u8 c;
+	reg u32 c32;
+
+	stack u8[66] seed;
+
+	j = 0;
+	while(j < 64) {
+		c1 = rho_prime[(int) j];
+		seed[(int) j] = c1;
+		j += 1;
+	}
+	
+	seed[64] = i & 255;
+	//seed[65] = i >> 8;
+	seed[65] = 0; //maybe this is ok?
+
+	state = shake256_absorb66(seed);
+	state = __keccakf1600_ref(state);
+	offset = 0;
+
+	term = 0;
+	while(term < 256) {
+		if(offset >= SHAKE256_RATE) {
+			state = __keccakf1600_ref(state);
+			offset = 0;
+		}
+
+		c = state[u8 (int) offset];
+		offset += 1;
+
+		c32 = (32u) c;
+		c32 &= 15;
+		if(c32 <= 2 * Li2_eta) {
+			//v = eta_minus_x(c32);
+			v = c32;
+			addr = (64u) term;
+			buf[(int) addr] = v;
+			term += 1;
+		}
+
+		if(term < 256) {
+			c32 = (32u) c;
+			c32 >>= 4;
+			if(c32 <= 2 * Li2_eta) {
+				//v = eta_minus_x(c32);
+				v = c32;
+				addr = (64u) term;
+				buf[(int) addr] = v;
+				term += 1;
+			}
+		}
+	}
+
+	return buf;
+}
+
+
+inline
+fn expandS(stack u8[64] rho_prime)
+	-> stack u32[Li2_l * Li2_polydeg], stack u32[Li2_k * Li2_polydeg]
+{
+	reg ptr u32[Li2_polydeg] entry;
+	stack u32[Li2_l * Li2_polydeg] s1;
+	stack u32[Li2_k * Li2_polydeg] s2;
+
+	inline int i;
+
+	for i = 0 to Li2_l {
+		entry = s1[Li2_polydeg * i : Li2_polydeg];
+		entry = expandS_entry(rho_prime, i, entry);
+		s1[Li2_polydeg * i : Li2_polydeg] = entry;
+	}
+
+	for i = 0 to Li2_k {
+		entry = s2[Li2_polydeg * i : Li2_polydeg];
+		entry = expandS_entry(rho_prime, Li2_l + i, entry);
+		s2[Li2_polydeg * i : Li2_polydeg] = entry;
+	}
+
+	return s1, s2;
+}

@@ -1,0 +1,110 @@
+require "params.jinc"
+
+fn power2round(reg u32 r)
+	-> reg u32, reg u32
+{
+	/*
+	int32_t a1; //high bits
+
+	a1 = (a + (1 << (D-1)) - 1) >> D;
+	*a0 = a - (a1 << D);
+	*/
+	
+	reg u32 highbits, lowbits;
+	reg u32 v32;
+
+	highbits = r;
+	highbits += (1 << (Li2_d - 1)) - 1;
+	highbits >>= Li2_d;
+
+	v32 = highbits;
+	v32 <<= Li2_d;
+
+	lowbits = r;
+	lowbits -= v32;
+
+	return highbits, lowbits;
+}
+
+// high bits = a0, low bits = a1
+fn decompose(reg u32 a) -> reg u32, reg u32 {
+	reg u64 a0;
+	reg u32 a0_32;
+	reg u32 a1;
+	reg u32 v;
+	reg u64 v64;
+
+	// a1  = (a + 127) >> 7;
+	a1 = a;
+	a1 += 127;
+	a1 >>= 7;
+
+	// a1  = (a1*1025 + (1 << 21)) >> 22;
+	a1 *= 1025;
+	a1 += (int) (1 << 21);
+	a1 >>= 22;
+
+	// a1 &= 15;
+	a1 &= 15;
+
+	// *a0  = a - a1*2*GAMMA2;
+	v64 = (64u) a1;
+	v64 *= 2 * Li2_gamma2;
+	a0 = (64u) a;
+	a0 -= v64;
+
+	// *a0 -= (((Q-1)/2 - *a0) >> 31) & Q;
+	v64 = (Li2_q - 1) / 2;
+	v64 -= a0;
+	v64 >>= 31;
+	v64 &= Li2_q;
+	a0 -= v64;
+
+	a0_32 = (32u) a0;
+
+	return a0_32, a1;
+}
+
+fn make_hint(reg u32 a0, reg u32 a1) -> reg u32 {
+	reg u32 result;
+
+	result = 0;
+	
+	if(a0 >s Li2_gamma2) {
+		result = 1;
+	}
+
+	if(a0 <s -Li2_gamma2) {
+		result = 1;
+	}
+
+	if(a0 == -Li2_gamma2) {
+		if(a1 != 0) {
+			result = 1;
+		}
+	}
+
+	return result;
+}
+
+// use_hint for level-3 parameters
+// TODO: Add other parameter sets
+inline
+fn use_hint(reg u32 a hint)
+	-> reg u32
+{
+	reg u32 a0;
+	reg u32 a1;
+	a0, a1 = decompose(a);
+	if (hint == 0) {}
+	else {
+		if (a0 >s 0) {
+			a1 += 1;
+			a1 &= 15;
+		} else {
+			a1 -= 1;
+			a1 &= 15;
+		}
+	}
+	return a1;
+}

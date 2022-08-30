@@ -1,0 +1,263 @@
+/* -- Stolen and modified from the Kyber repo -- */
+
+param int SHAKE128_RATE = 168;
+param int SHAKE256_RATE = 136;
+
+inline
+fn index(inline int x, inline int y) -> inline int {
+  inline int r;
+  r = (x % 5) + 5 * (y % 5);
+  return r;
+}
+
+inline
+fn theta(reg ptr u64[25] a) -> reg ptr u64[25] {
+  inline int x, y;
+  reg u64[5] c, d;
+
+  for x = 0 to 5 {
+    c[x] = 0;
+    for y = 0 to 5 {
+      c[x] ^= a[x + 5 * y];
+    }
+  }
+
+  for x = 0 to 5 {
+    /* d[x] = ROL64(c[(x + 1) % 5], 1); */
+    /* extraction fails */
+
+    /*    _, _, d[x] = #ROL_64(c[(x + 1) % 5], 1);*/
+    /*    d[x] ^= c[(x + 4) % 5];*/
+    /* does not compile */
+
+    d[x] = c[(x + 1) % 5];
+    _, _, d[x] = #ROL_64(d[x], 1);
+    d[x] ^= c[(x + 4) % 5];
+  }
+
+  for x = 0 to 5 {
+    for y = 0 to 5 {
+      a[x + 5 * y] ^= d[x];
+    }
+  }
+
+  return a;
+}
+
+
+inline
+fn keccakRhoOffsets(inline int i) -> inline int {
+  inline int r, x, y, z, t;
+
+  r = 0;
+  x = 1;
+  y = 0;
+  for t = 0 to 24 {
+    if (i == x + 5 * y) {
+      r = ((t + 1) * (t + 2) / 2) % 64;
+    }
+    z = (2 * x + 3 * y) % 5;
+    x = y;
+    y = z;
+  }
+
+  return r;
+}
+
+
+inline
+fn rho(reg ptr u64[25] a) -> reg ptr u64[25] {
+  inline int x, y, i, z;
+
+  for x = 0 to 5 {
+    for y = 0 to 5 {
+      i = index(x, y);
+      z = keccakRhoOffsets(i);
+      _, _, a[i] = #ROL_64(a[i], z);
+    }
+  }
+
+  return a;
+}
+
+
+inline
+fn pi(reg ptr u64[25] a) -> reg ptr u64[25] {
+  stack u64[25] b;
+  reg u64 t;
+  inline int x, y, i;
+  for i = 0 to 25 { t = a[i]; b[i] = t; }
+
+  for x = 0 to 5 {
+    for y = 0 to 5 {
+      t = b[x + 5 * y];
+      i = index(y, 2 * x + 3 * y);
+      a[i] = t;
+    }
+  }
+  return a;
+}
+
+inline
+fn chi(reg ptr u64[25] a) -> reg ptr u64[25] {
+  inline int x, y, i;
+  reg u64[5] c;
+  for y = 0 to 5 {
+    for x = 0 to 5 {
+      i = index(x + 1, y);
+      c[x] = a[i];
+      c[x] = !c[x];
+      i = index(x + 2, y);
+      c[x] &= a[i];
+      i = index(x, y);
+      c[x] ^= a[i];
+    }
+    for x = 0 to 5 {
+      a[x + 5 * y] = c[x];
+    }
+  }
+  return a;
+}
+
+inline
+fn iota(reg ptr u64[25] a, reg u64 c) -> reg ptr u64[25] {
+  a[0] ^= c;
+  return a;
+}
+
+u64[24] roundconstants = {0x0000000000000001, 0x0000000000008082, 0x800000000000808a, 0x8000000080008000, 
+                          0x000000000000808b, 0x0000000080000001, 0x8000000080008081, 0x8000000000008009, 
+                          0x000000000000008a, 0x0000000000000088, 0x0000000080008009, 0x000000008000000a, 
+                          0x000000008000808b, 0x800000000000008b, 0x8000000000008089, 0x8000000000008003, 
+                          0x8000000000008002, 0x8000000000000080, 0x000000000000800a, 0x800000008000000a, 
+                          0x8000000080008081, 0x8000000000008080, 0x0000000080000001, 0x8000000080008008};
+
+fn __keccakf1600_ref(reg ptr u64[25] state) -> reg ptr u64[25] {
+  inline int round;
+  reg ptr u64[24] constptr;
+
+  reg u64 rctr;
+  reg u64 c;
+  
+  //want to use this one instead of the one inside the loop...
+  //but I get one-varmap error if I do that.
+  //constptr = roundconstants;
+  rctr = 0;
+
+  while (rctr < 192) {
+    state = theta(state);
+    state = rho(state);
+    state = pi(state);
+    state = chi(state);
+    constptr = roundconstants;
+	c = constptr.[(int)rctr];
+    state = iota(state, c);
+    rctr += 8;
+  }
+
+  return state;
+}
+
+
+inline
+fn st0(reg ptr u64[25] state) -> reg ptr u64[25]
+{
+  inline int i;
+
+  for i = 0 to 25 {
+    state[i] = 0;
+  }
+
+  return state;
+}
+
+fn shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr u64[25]
+{
+  reg u8 c;
+  inline int i;
+
+  state = st0(state);
+
+  for i = 0 to 34 {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+  state[u8 34] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  return state;
+}
+
+/* -- end content from Kyber repo -- */
+
+/* -- Below are added for Dilithium -- */
+
+// Dilithium keygen inputs 32 bytes to SHAKE256
+inline
+fn shake256_absorb32(stack u8[32] in) -> stack u64[25]
+{
+  //param int SHAKE256_RATE = 136;
+  reg u8 c;
+  inline int i;
+  stack u64[25] state;
+
+  state = st0(state);
+
+  // Inefficient to load one byte at a time...
+  // TODO optimize me...
+  // assuming little endian though?
+
+  for i = 0 to 32 {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+
+  // I don't understand the following 2 lines
+  // What are trail bytes?
+  state[u8 32] ^= 0x1f;
+  // Is this the marker for SHAKE256?
+  state[u8 SHAKE256_RATE - 1] ^= 0x80;
+
+  return state;
+}
+
+// And sometimes 66...
+inline
+fn shake256_absorb66(stack u8[66] in) -> stack u64[25]
+{
+  //param int SHAKE256_RATE = 136;
+  reg u8 c;
+  inline int i;
+  stack u64[25] state;
+
+  state = st0(state);
+  for i = 0 to 66 {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+  state[u8 66] ^= 0x1f;
+  state[u8 SHAKE256_RATE - 1] ^= 0x80;
+
+  return state;
+}
+
+//Maybe should allow squeezing partial blocks
+//for performance?
+inline
+fn shake256_squeezeblock(stack u64[25] state, stack u8[SHAKE256_RATE] out)
+	-> stack u64[25], stack u8[SHAKE256_RATE]
+{
+  reg u8 c;
+  reg u64 i;
+
+  state = __keccakf1600_ref(state);
+
+	i = 0;
+	while(i < SHAKE256_RATE) {
+		c = state[u8 (int) i];
+		out[(int) i] = c;
+		i += 1;
+	}
+
+  return state, out;
+}
