@@ -19,7 +19,7 @@
 #include "config.h"
 #include "cpucycles.c"
 #include "increment.c"
-#include "printbench2.c"
+#include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
 

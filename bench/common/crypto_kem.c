@@ -24,7 +24,8 @@
 
 #include "config.h"
 #include "cpucycles.c"
-#include "printbench1.c"
+#include "increment.c"
+#include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
 
