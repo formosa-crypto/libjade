@@ -6,12 +6,14 @@ CC      ?= gcc
 CFLAGS  ?= -Wall -Wno-unused-function -Ofast
 CI      ?= 0
 export CI
-EXCLUDE ?=
+
+EXCLUDE ?= crypto_xof/shake256/amd64/spec/
 
 # --------------------------------------------------------------------
 SRC      := ../src
 BIN      ?= bin
 COMMON   := common
+
 EXT      := ../ext
 RANDLIB  ?= $(EXT)/randombytes/librandombytes.a
 RANDINC  ?= $(EXT)/randombytes/
