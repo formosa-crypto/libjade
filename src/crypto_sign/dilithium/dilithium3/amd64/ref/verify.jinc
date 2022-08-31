@@ -233,62 +233,6 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
 }
 
 //
-/*
-inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
-{
-  stack u64 s_m s_sm s_smlen;
-
-  stack u8[Li2_PK_LEN] public_key;
-  stack u8[Li2_SIGN_LEN] signature;
-  reg u8 c;
-  reg u32 r32;
-  reg u64 i r;
-
-  //
-  smlen -= Li2_SIGN_LEN;
-  (u64)[mlen_p + 0] = smlen; // mlen_p dead
-  s_m = m;
-  s_smlen = smlen;
-
-  // 'load' public key
-  ?{}, i = #set0();
-	while(i < Li2_PK_LEN)
-  { c = (u8)[pk + i];
-		public_key[(int) i] = c;
-		i += 1;
-	}
-
-  // 'load' signature
-  ?{}, i = #set0();
-  while(i < Li2_SIGN_LEN)
-  { c = (u8)[sm + i];
-	  signature[(int) i] = c;
-		i += 1;
-	}
-
-  sm += Li2_SIGN_LEN; // there were some ra issues (ra / d#2) when copy 'm' happens ~here // double checkme 
-  s_sm = sm;
-
-  r32 = verify(signature, sm, smlen, public_key);
-  r = (64u) r32; // CHECKME
-
-  sm = s_sm;
-  smlen = s_smlen;
-  m = s_m;
-
-  // copy m
-  ?{}, i = #set0();
-  while(i < smlen)
-  { c = (u8)[sm + i];
-	  (u8)[m + i] = c;
-		i += 1;
-	}
-
-  return r;
-}
-*/
-
-//
 inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
 {
   stack u8[Li2_PK_LEN] public_key;
