@@ -51,7 +51,7 @@ int main(int argc, char**argv)
   uint8_t  *_sks,    *sks,    *sk;    // CRYPTO_SECRETKEYBYTES
   uint8_t  *_ms,     *ms,     *m;     // MAXINBYTES
   uint8_t  *_sms,    *sms,    *sm;    // CRYPTO_BYTES + MAXINBYTES
-  uint64_t *_smlens, *smlens, *smlen; // sizeof(uint64_t)
+  uint64_t           *smlens, *smlen; // sizeof(uint64_t)
   uint8_t  *_ts,     *ts,     *t;     // MAXINBYTES
 
   // a_mlen and a_tlen are equal; nonetheless, it improves code readability;
@@ -73,7 +73,7 @@ int main(int argc, char**argv)
   ms     = alignedcalloc(&_ms,  a_mlen  * TIMINGS);
   sms    = alignedcalloc(&_sms, a_smlen * TIMINGS);
   ts     = alignedcalloc(&_ts,  a_tlen  * TIMINGS);
-  smlens = (uint64_t*) alignedcalloc((uint8_t**) &_smlens, sizeof(uint64_t) * TIMINGS);
+  smlens = calloc(sizeof(uint64_t), TIMINGS);
 
 
   for(loop = 0; loop < LOOPS; loop++)
@@ -94,16 +94,16 @@ int main(int argc, char**argv)
 
       // sign
       sm = sms; smlen = smlens; m = ms; sk = sks;
-      for (i = 0; i < TIMINGS; i++, sm += a_smlen, smlen += sizeof(uint64_t), m += a_mlen, sk += a_sklen)
+      for (i = 0; i < TIMINGS; i++, sm += a_smlen, smlen++, m += a_mlen, sk += a_sklen)
       { cycles[i] = cpucycles();
         crypto_sign(sm, smlen, m, mlen, sk); }
       results_sign_open[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
       // open
       t = ts; sm = sms; smlen = smlens; pk = pks;
-      for (i = 0; i < TIMINGS; i++, t += a_tlen, sm += a_smlen, smlen += sizeof(uint64_t), pk += a_pklen)
+      for (i = 0; i < TIMINGS; i++, t += a_tlen, sm += a_smlen, smlen++, pk += a_pklen)
       { cycles[i] = cpucycles();
-        crypto_sign_open(t, &tlen, sm, smlen[0], pk); }
+        crypto_sign_open(t, &tlen, sm, *smlen, pk); }
       results_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
     }
   }
@@ -117,7 +117,7 @@ int main(int argc, char**argv)
   free(_sks);
   free(_ms);
   free(_sms);
-  free(_smlens);
+  free( smlens);
   free(_ts);
 
   return 0;
