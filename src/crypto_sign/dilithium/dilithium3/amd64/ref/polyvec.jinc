@@ -196,11 +196,12 @@ inline
 fn dot_prod_vecs(stack u32[Li2_l * Li2_polydeg] v1 v2, reg ptr u32[Li2_polydeg] dotprod)
 	-> reg ptr u32[Li2_polydeg]
 {	
-	stack u32[Li2_polydeg] term_prod;
-
+	stack u32[Li2_polydeg] term_prod_s;
+  reg ptr u32[Li2_polydeg] term_prod;
 	reg ptr u32[Li2_polydeg] v1_term v2_term;
-
 	inline int i;
+
+  term_prod = term_prod_s;
 	
 	dotprod = zero_poly(dotprod);
 	for i = 0 to Li2_l {
