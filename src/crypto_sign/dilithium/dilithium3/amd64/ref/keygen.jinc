@@ -142,7 +142,7 @@ inline fn __keypair(reg u64 pk sk)
 
   pk = s_pk; sk = s_sk;
 
-  //
+  // write public key
   ?{}, i = #set0();
   while(i < Li2_PK_LEN) {
     c = public_key[(int) i];
@@ -150,7 +150,7 @@ inline fn __keypair(reg u64 pk sk)
     i += 1;
   }
 
-  //
+  // write secret key
   ?{}, i = #set0();
   while(i < Li2_SK_LEN) {
     c = secret_key[(int) i];

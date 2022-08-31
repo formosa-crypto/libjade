@@ -175,54 +175,51 @@ fn sign(reg u64 ptr_m,
 //
 inline fn __sign(reg u64 sm smlen_p m mlen sk)
 {
-	stack u64 s_sm s_smlen_p s_m s_mlen;
+  stack u64 s_sm;
 
-	stack u8[Li2_SK_LEN] secret_key;
-	stack u8[Li2_SIGN_LEN] signature;
-	reg u8 c;
-	reg u64 i r smlen;
+  stack u8[Li2_SK_LEN] secret_key;
+  stack u8[Li2_SIGN_LEN] signature;
+  reg u8 c;
+  reg u64 i r smlen;
 
   //
-	s_sm = sm;
-	s_smlen_p = smlen_p;
-  s_m = m;
-  s_mlen = mlen;
+  s_sm = sm;
 
-  // 'load' secret key
+  // copy secret key
   ?{}, i = #set0();
-	while(i < Li2_SK_LEN) {
-		c = (u8)[sk + i];
-		secret_key[(int) i] = c;
-		i += 1;
-	}
-	
-	signature = sign(m, mlen, secret_key);
+  while(i < Li2_SK_LEN) {
+    c = (u8)[sk + i];
+    secret_key[(int) i] = c;
+    i += 1;
+  } // sk dead.
 
-	sm = s_sm;
-	smlen_p = s_smlen_p;
-  m = s_m;
-  smlen = s_mlen;
+  // write smlen_p
+  smlen = mlen;
   smlen += Li2_SIGN_LEN;
+  (u64)[smlen_p + 0] = smlen; // smlen_p dead.
 
-  (u64)[smlen_p + 0] = smlen;
+  // copy message
+  sm = #LEA(sm + mlen + Li2_SIGN_LEN);
+  m  = #LEA(m + mlen);
 
-  //
   ?{}, i = #set0();
-	while(i < Li2_SIGN_LEN)
+  while(i < mlen)
+  { m -= 1;
+    c = (u8)[m + 0];
+    sm -= 1;
+    (u8) [sm + 0] = c;
+    i += 1;
+  }
+
+  signature = sign(sm, mlen, secret_key);
+
+  // copy signature
+  sm = s_sm;
+  ?{}, i = #set0();
+  while(i < Li2_SIGN_LEN)
   { c = signature[(int) i];
-		(u8)[sm + i] = c;
-		i += 1;
-	}
-
-  sm += Li2_SIGN_LEN;
-
-  //
-  ?{}, i = #set0();
-  mlen = s_mlen;
-	while(i < mlen) {
-		c = (u8)[m + i];
-		(u8) [sm + i] = c;
-		i += 1;
-	}
+    (u8)[sm + i] = c;
+    i += 1;
+  }
 }
 

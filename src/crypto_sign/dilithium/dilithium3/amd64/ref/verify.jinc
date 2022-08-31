@@ -233,6 +233,7 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
 }
 
 //
+/*
 inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
 {
   stack u64 s_m s_sm s_smlen;
@@ -285,4 +286,49 @@ inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
 
   return r;
 }
+*/
+
+//
+inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
+{
+  stack u8[Li2_PK_LEN] public_key;
+  stack u8[Li2_SIGN_LEN] signature;
+  reg u8 c;
+  reg u32 r32;
+  reg u64 i r mlen;
+
+  // copy public key
+  ?{}, i = #set0();
+	while(i < Li2_PK_LEN)
+  { c = (u8)[pk + i];
+		public_key[(int) i] = c;
+		i += 1;
+	} // pk dead.
+
+  // copy signature
+  ?{}, i = #set0();
+  while(i < Li2_SIGN_LEN)
+  { c = (u8)[sm + i];
+	  signature[(int) i] = c;
+		i += 1;
+	}
+  sm = #LEA(sm + Li2_SIGN_LEN);
+
+  // write mlen_p
+  mlen = smlen - Li2_SIGN_LEN; // this is a variable renaming (mlen and smlen are merged)
+  (u64)[mlen_p + 0] = mlen; // mlen_p dead
+
+  // copy message from sm to m
+  ?{}, i = #set0();
+	while(i < mlen) {
+		c = (u8)[sm + i];
+		(u8)[m + i] = c;
+		i += 1;
+	}
+
+  r32 = verify(signature, m, mlen, public_key);
+  r = (64u) r32; // CHECKME
+  return r;
+}
+
 
