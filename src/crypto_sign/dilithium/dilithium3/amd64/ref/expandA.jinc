@@ -69,7 +69,7 @@ fn expandA_entry(reg ptr u8[32] rho, inline int i, inline int j,
 
 
 inline
-fn expandA(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
+fn expandA(reg ptr u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
 {
 	reg ptr u32[Li2_polydeg] entry;
 	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
