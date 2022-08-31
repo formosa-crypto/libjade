@@ -172,3 +172,57 @@ fn sign(reg u64 ptr_m,
 	return signature;
 }
 
+//
+inline fn __sign(reg u64 sm smlen_p m mlen sk)
+{
+	stack u64 s_sm s_smlen_p s_m s_mlen;
+
+	stack u8[Li2_SK_LEN] secret_key;
+	stack u8[Li2_SIGN_LEN] signature;
+	reg u8 c;
+	reg u64 i r smlen;
+
+  //
+	s_sm = sm;
+	s_smlen_p = smlen_p;
+  s_m = m;
+  s_mlen = mlen;
+
+  // 'load' secret key
+  ?{}, i = #set0();
+	while(i < Li2_SK_LEN) {
+		c = (u8)[sk + i];
+		secret_key[(int) i] = c;
+		i += 1;
+	}
+	
+	signature = sign(m, mlen, secret_key);
+
+	sm = s_sm;
+	smlen_p = s_smlen_p;
+  m = s_m;
+  smlen = s_mlen;
+  smlen += Li2_SIGN_LEN;
+
+  (u64)[smlen_p + 0] = smlen;
+
+  //
+  ?{}, i = #set0();
+	while(i < Li2_SIGN_LEN)
+  { c = signature[(int) i];
+		(u8)[sm + i] = c;
+		i += 1;
+	}
+
+  sm += Li2_SIGN_LEN;
+
+  //
+  ?{}, i = #set0();
+  mlen = s_mlen;
+	while(i < mlen) {
+		c = (u8)[m + i];
+		(u8) [sm + i] = c;
+		i += 1;
+	}
+}
+

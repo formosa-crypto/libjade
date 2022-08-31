@@ -2,198 +2,26 @@ require "keygen.jinc"
 require "sign.jinc"
 require "verify.jinc"
 
-
-
-/*
-int jade_sign_dilithium_dilithium3_amd64_ref_keypair(
-  uint8_t *pk,
-  uint8_t *sk
-);
-*/
-export fn jade_sign_dilithium_dilithium3_amd64_ref_keypair(
-  reg u64 pk
-          sk)
-  ->
-  reg u64
+export fn jade_sign_dilithium_dilithium3_amd64_ref_keypair(reg u64 pk sk) -> reg u64
 {
-  stack u64 s_pk s_sk;
-
-	stack u8[Li2_PK_LEN] public_key;
-	stack u8[Li2_SK_LEN] secret_key;
-	reg u8 c;
-	reg u64 i r;
-
-  s_pk = pk;
-  s_sk = sk;
-
-	public_key, secret_key = keygen();
-
-  pk = s_pk;
-  sk = s_sk;
-
-  //
-  i = #set0();
-	while(i < Li2_PK_LEN) {
-		c = public_key[(int) i];
-		(u8)[pk + i] = c;
-		i += 1;
-	}
-
-  //
-  i = #set0();
-	while(i < Li2_SK_LEN) {
-		c = secret_key[(int) i];
-		(u8)[sk + i] = c;
-		i += 1;
-	}
-
-  r = #set0();
+  reg u64 r;
+  __keypair(pk, sk);
+  ?{}, r = #set0();
   return r;
 }
 
-
-
-/*
-int jade_sign_dilithium_dilithium3_amd64_ref(
-  uint8_t *sm,
-  uint64_t *smlen_p,
-  const uint8_t *m,
-  uint64_t mlen,
-  const uint8_t *sk
-);
-*/
-export fn jade_sign_dilithium_dilithium3_amd64_ref(
-  reg u64 sm
-          smlen_p
-          m
-          mlen
-          sk)
-  ->
-  reg u64
+export fn jade_sign_dilithium_dilithium3_amd64_ref(reg u64 sm smlen_p m mlen sk) -> reg u64
 {
-	stack u64 s_sm s_smlen_p s_m s_mlen;
-
-	stack u8[Li2_SK_LEN] secret_key;
-	stack u8[Li2_SIGN_LEN] signature;
-	reg u8 c;
-	reg u64 i r smlen;
-
-  //
-	s_sm = sm;
-	s_smlen_p = smlen_p;
-  s_m = m;
-  s_mlen = mlen;
-
-  // 'load' secret key
-  i = #set0();
-	while(i < Li2_SK_LEN) {
-		c = (u8)[sk + i];
-		secret_key[(int) i] = c;
-		i += 1;
-	}
-	
-	signature = sign(m, mlen, secret_key);
-
-	sm = s_sm;
-	smlen_p = s_smlen_p;
-  m = s_m;
-  smlen = s_mlen;
-
-  smlen += Li2_SIGN_LEN;
-  (u64)[smlen_p + 0] = smlen;
-
-  //
-  i = #set0();
-	while(i < Li2_SIGN_LEN)
-  { c = signature[(int) i];
-		(u8)[sm + i] = c;
-		i += 1;
-	}
-
-  sm += Li2_SIGN_LEN;
-
-  //
-  i = #set0();
-  mlen = s_mlen;
-	while(i < mlen) {
-		c = (u8)[m + i];
-		(u8) [sm + i] = c;
-		i += 1;
-	}
-
-  r = #set0();
+  reg u64 r;
+  __sign(sm, smlen_p, m, mlen, sk);
+  ?{}, r = #set0();
   return r;
 }
 
-
-
-/*
-int jade_sign_dilithium_dilithium3_amd64_ref_open(
-  uint8_t *m,
-  uint64_t *mlen_p,
-  const uint8_t *sm,
-  uint64_t smlen,
-  const uint8_t *pk
-);
-*/
-export fn jade_sign_dilithium_dilithium3_amd64_ref_open(
-  reg u64 m
-          mlen_p
-          sm
-          smlen
-          pk)
-  ->
-  reg u64
+export fn jade_sign_dilithium_dilithium3_amd64_ref_open(reg u64 m mlen_p sm smlen pk) -> reg u64
 {
-  stack u64 s_m s_sm s_smlen;
-
-  stack u8[Li2_PK_LEN] public_key;
-  stack u8[Li2_SIGN_LEN] signature;
-  reg u8 c;
-  reg u32 r32;
-  reg u64 i r;
-
-  //
-  smlen -= Li2_SIGN_LEN;
-  (u64)[mlen_p + 0] = smlen; // mlen_p dead
-  s_m = m;
-  s_smlen = smlen;
-
-  // 'load' public key
-  i = #set0();
-	while(i < Li2_PK_LEN)
-  { c = (u8)[pk + i];
-		public_key[(int) i] = c;
-		i += 1;
-	}
-
-  // 'load' signature
-  i = #set0();
-  while(i < Li2_SIGN_LEN)
-  { c = (u8)[sm + i];
-	  signature[(int) i] = c;
-		i += 1;
-	}
-
-  sm += Li2_SIGN_LEN; // there were some ra issues (ra / d#2) when copy 'm' happens ~here // double checkme 
-  s_sm = sm;
-
-  r32 = verify(signature, sm, smlen, public_key);
-  r = (64u) r32;
-
-  sm = s_sm;
-  smlen = s_smlen;
-  m = s_m;
-
-  // copy m
-  i = #set0();
-  while(i < smlen)
-  { c = (u8)[sm + i];
-	  (u8)[m + i] = c;
-		i += 1;
-	}
-
+  reg u64 r;
+  r = __open(m, mlen_p, sm, smlen, pk);
   return r;
 }
-
 

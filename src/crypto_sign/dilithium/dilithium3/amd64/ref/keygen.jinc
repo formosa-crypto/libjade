@@ -125,3 +125,37 @@ fn keygen()
 	return pk, sk;
 }
 
+//
+
+inline fn __keypair(reg u64 pk sk)
+{
+  stack u64 s_pk s_sk;
+
+  stack u8[Li2_PK_LEN] public_key;
+  stack u8[Li2_SK_LEN] secret_key;
+  reg u8 c;
+  reg u64 i;
+
+  s_pk = pk; s_sk = sk;
+
+  public_key, secret_key = keygen();
+
+  pk = s_pk; sk = s_sk;
+
+  //
+  ?{}, i = #set0();
+  while(i < Li2_PK_LEN) {
+    c = public_key[(int) i];
+    (u8)[pk + i] = c;
+    i += 1;
+  }
+
+  //
+  ?{}, i = #set0();
+  while(i < Li2_SK_LEN) {
+    c = secret_key[(int) i];
+    (u8)[sk + i] = c;
+    i += 1;
+  }
+}
+

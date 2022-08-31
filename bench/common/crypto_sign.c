@@ -47,8 +47,6 @@ int main(int argc, char**argv)
   char *op_str_sign_open[] = { xstr(crypto_sign,.csv),
                                xstr(crypto_sign_open,.csv) };
 
-  // TODO smlen needs to be an array
-
   uint8_t  *_pks,    *pks,    *pk;    // CRYPTO_PUBLICKEYBYTES
   uint8_t  *_sks,    *sks,    *sk;    // CRYPTO_SECRETKEYBYTES
   uint8_t  *_ms,     *ms,     *m;     // MAXINBYTES
