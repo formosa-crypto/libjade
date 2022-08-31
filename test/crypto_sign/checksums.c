@@ -45,6 +45,7 @@ void test(unsigned char*,state *);
 #define CRYPTO_PUBLICKEYBYTES NAMESPACE(PUBLICKEYBYTES)
 #define CRYPTO_SECRETKEYBYTES NAMESPACE(SECRETKEYBYTES)
 #define CRYPTO_BYTES NAMESPACE(BYTES)
+#define CRYPTO_DETERMINISTIC NAMESPACE(DETERMINISTIC)
 #define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
 #define crypto_sign_keypair NAMESPACE_LC(keypair)
@@ -166,9 +167,6 @@ void test(unsigned char *checksum_state, state *_s)
     input_compare(s.m2, s.m, s.mlen, "crypto_sign");
     input_compare(s.s2, s.s, s.slen, "crypto_sign");
 
-#ifdef CRYPTO_DETERMINISTIC
-#error "CRYPTO_DETERMINISTIC"
-//TODO
 #if CRYPTO_DETERMINISTIC == 1
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.m2, s.m, s.mlen);
@@ -191,8 +189,6 @@ void test(unsigned char *checksum_state, state *_s)
     if (memcmp(s.s2, s.c, s.clen) != 0) fail("crypto_sign does not handle s=c overlap");
     memcpy(s.s2, s.s, s.slen);
 #endif
-#endif
-
     
     s.tlen = s.clen;
     output_prepare(s.t2, s.t, s.tlen);
