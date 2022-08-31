@@ -214,7 +214,7 @@ fn hash_mu_w1(reg ptr u8[64] mu, reg ptr u8[Li2_pack_w1len] w1_packed)
 			offset += 1;
 		}
 		state = __keccakf1600_ref(state);
-		offset = #set0_64();
+		?{}, offset = #set0_64();
 	}
 
 	//last block

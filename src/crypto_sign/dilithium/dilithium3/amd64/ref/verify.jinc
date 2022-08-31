@@ -11,7 +11,7 @@ fn poly_shiftl(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg] {
     reg u64 i;
     reg u32 coeff;
 
-    i = #set0();
+    ?{}, i = #set0();
     while (i < Li2_polydeg) {
         coeff = f[(int) i];
         coeff <<= Li2_d;
@@ -38,9 +38,9 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
     reg u64 hints_cumpop; // cumulative popcount of hints
 
     // Unpack h
-    fail = #set0_8();
-    k = #set0_64();
-    i = #set0_64();
+    ?{}, fail = #set0_8();
+    ?{}, k = #set0_64();
+    ?{}, i = #set0_64();
     while {
         tmp = i >= Li2_k;
         done = #SETcc(tmp);
@@ -48,8 +48,8 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
     } (done == 0) {
         hints_elem_offset = i;
         hints_elem_offset <<= Li2_log2polydeg;
-        j = #set0_64();
-        zero = #set0_32();
+        ?{}, j = #set0_64();
+        ?{}, zero = #set0_32();
         while (j < Li2_polydeg) {
             idx = #LEA_64(hints_elem_offset + j);
             hints[(int) idx] = zero;
@@ -108,8 +108,8 @@ fn cmp_ctilde(stack u8[32] c_tilde1 c_tilde2) -> reg u8 {
     reg u64 i;
     reg u8 b1 b2 result;
 
-    result = #set0_8();
-    i = #set0_64();
+    ?{}, result = #set0_8();
+    ?{}, i = #set0_64();
     while (i < 32) {
         b1 = c_tilde1[(int) i];
         b2 = c_tilde2[(int) i];
@@ -193,7 +193,7 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
 
             // Sample challenge
             rSig = sSig;
-            i = #set0();
+            ?{}, i = #set0();
             while (i < 32) {
                 byte = rSig[(int) i];
                 c_tilde[(int) i] = byte;
