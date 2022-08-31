@@ -7,7 +7,7 @@ require "hashing.jinc"
 require "params.jinc"
 
 inline
-fn keygen(reg ptr u8[32] random_zeta)
+fn keygen()
 	-> stack u8[Li2_PK_LEN], stack u8[Li2_SK_LEN]
 {
 	// keys
@@ -33,13 +33,18 @@ fn keygen(reg ptr u8[32] random_zeta)
 	reg ptr u8[Li2_pack_t1len] t1ptr_in_pk;
 	reg ptr u32[Li2_polydeg] t1_to_pack;
 
+  stack u8[32] random_zeta;
+  reg ptr u8[32] random_zeta_p;
+  random_zeta_p = random_zeta;
+  random_zeta_p = #randombytes(random_zeta_p);
+
 	//temp variables
 	reg u64 i;
 	inline int j;
 	reg u32 v32;
 	reg u8 c;
 
-	state = shake256_absorb32(random_zeta);
+	state = shake256_absorb32(random_zeta_p);
 	state, s256_out = shake256_squeezeblock(state, s256_out);
 
 	//TODO Maybe can load 8 bytes at a time using u64?
@@ -120,36 +125,3 @@ fn keygen(reg ptr u8[32] random_zeta)
 	return pk, sk;
 }
 
-//zeta is 32 bytes
-export
-fn jade_sign_dilithium_dilithium3_amd64_ref_keygen(reg u64 pk_ptr, reg u64 sk_ptr, reg u64 randomness)
-{
-	stack u8[Li2_PK_LEN] pk;
-	stack u8[Li2_SK_LEN] sk;
-	stack u8[32] random_zeta;
-	reg u8 c;
-	reg u64 i;
-
-	i = 0;
-	while(i < 32) {
-		c = (u8)[randomness + i];
-		random_zeta[(int) i] = c;
-		i += 1;
-	}
-
-	pk, sk = keygen(random_zeta);
-
-	i = 0;
-	while(i < Li2_PK_LEN) {
-		c = pk[(int) i];
-		(u8)[pk_ptr + i] = c;
-		i += 1;
-	}
-
-	i = 0;
-	while(i < Li2_SK_LEN) {
-		c = sk[(int) i];
-		(u8)[sk_ptr + i] = c;
-		i += 1;
-	}
-}

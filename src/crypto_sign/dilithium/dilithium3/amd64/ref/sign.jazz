@@ -1,205 +1,199 @@
-require "params.jinc"
-require "hashing.jinc"
-require "packing.jinc"
-require "expandA.jinc"
-require "fft.jinc"
-require "polyvec.jinc"
+require "keygen.jinc"
+require "sign.jinc"
+require "verify.jinc"
 
-inline
-fn compute_mu(reg u64 ptr_m, reg u64 m_len, reg ptr u8[Li2_SK_LEN] sk)
-	-> stack u8[64]
-{
-	stack u8[64] mu;
-	mu = hash_tr_m(sk[64:32], m_len, ptr_m);
-	return mu;
-}
 
-inline
-fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
-	-> stack u8[64]
+
+/*
+int jade_sign_dilithium_dilithium3_amd64_ref_keypair(
+  uint8_t *pk,
+  uint8_t *sk
+);
+*/
+export fn jade_sign_dilithium_dilithium3_amd64_ref_keypair(
+  reg u64 pk
+          sk)
+  ->
+  reg u64
 {
-	stack u8[64] rho_prime;
+  stack u64 s_pk s_sk;
+
+	stack u8[Li2_PK_LEN] public_key;
+	stack u8[Li2_SK_LEN] secret_key;
 	reg u8 c;
-	reg u64 i;
-	stack u64[25] state;
-	reg u64 mu_loc;
+	reg u64 i r;
 
-	state = st0(state);
-	i = 0;
-	while(i < 32) {
-		c = k[(int) i];
-		state[u8 (int) i] = c;	
+  s_pk = pk;
+  s_sk = sk;
+
+	public_key, secret_key = keygen();
+
+  pk = s_pk;
+  sk = s_sk;
+
+  //
+  i = #set0();
+	while(i < Li2_PK_LEN) {
+		c = public_key[(int) i];
+		(u8)[pk + i] = c;
 		i += 1;
 	}
-	while(i < 96) {
-		mu_loc = i;
-		mu_loc -= 32;
-		c = mu[(int) mu_loc];
-		state[u8 (int) i] = c;
-		i += 1;
-	}
 
-	state[u8 96] ^= 0x1f;
-	state[u8 SHAKE256_RATE - 1] ^= 0x80;
-
-    state = __keccakf1600_ref(state);
-
-	i = 0;
-	while(i < 64) {
-		c = state[u8 (int) i];
-		rho_prime[(int) i] = c;
-		i += 1;
-	}
-	return rho_prime;
-}
-
-inline
-fn sign(reg u64 ptr_m,
-		reg u64 m_len,
-		reg ptr u8[Li2_SK_LEN] sk)
-		-> stack u8[Li2_SIGN_LEN]
-{
-	stack u8[Li2_SIGN_LEN] signature;
-
-	// parts of sk
-	stack u32[Li2_l * Li2_polydeg] s1;
-	stack u32[Li2_k * Li2_polydeg] s2;
-	stack u32[Li2_k * Li2_polydeg] t0;
-
-	// automatic variables in spec
-	stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
-	stack u8[64] mu;
-	// corresponds to kappa/l in spec
-	stack u16 nonce;
-	reg u16 reg_nonce;
-	stack u8[64] rho_prime;
-	stack u32[Li2_l * Li2_polydeg] z;
-	stack u32[Li2_k * Li2_polydeg] h;
-	// w probably isn't necessary - can use w1 wherever w appears?
-	stack u32[Li2_k * Li2_polydeg] w0 w1;
-	stack u8[Li2_pack_w1len] packed_w1;
-	stack u32[Li2_k * Li2_polydeg] r0;
-
-	// c-tilde unnecessary
-	// can just use signature[0:32]
-	// might need to redo pack_signature though
-	// not sure if pack_sig will go through otherwise
-	// with input and output overlapping
-	stack u8[32] c_tilde;
-
-	//from SampleInBall
-	stack u32[Li2_polydeg] challenge;
-
-	// while loop condition
-	stack u8 done;
-
-	// extra intermediate values
-	// not space-efficient...
-	// but this is reference impl so we're fine?
-	stack u32[Li2_l * Li2_polydeg] y;
-	stack u32[Li2_k * Li2_polydeg] w;
-	stack u32[Li2_l * Li2_polydeg] fft_y;
-	stack u32[Li2_l * Li2_polydeg] cs1;
-	stack u32[Li2_k * Li2_polydeg] cs2;
-	stack u32[Li2_k * Li2_polydeg] ct0;
-	stack u32[Li2_k * Li2_polydeg] r0_plus_ct0;
-
-	stack u32 hints_weight;
-	stack u8 normcheck_result;
-
-	s1, s2, t0 = unpack_sk(sk);
-	mu = compute_mu(ptr_m, m_len, sk);
-	rho_prime = compute_rho_prime(sk[32:32], mu);
-
-	fft_matA = expandA(sk[0:32]);
-
-	s1 = fft_vec(s1);
-	s2 = fft_veck(s2);
-	t0 = fft_veck(t0);
-
-	nonce = 0;
-	done = 0;
-	while(done == 0) {
-		reg_nonce = nonce;
-		y = expandMask(rho_prime, reg_nonce);
-
-		nonce += 1;
-		fft_y = deep_copy_vecl(y);
-		fft_y = fft_vec(fft_y);
-		w = mult_mat_vec(fft_matA, fft_y);
-		w = reduce32_veck(w);
-		w = ifft_to_mont_vec(w);
-
-		w = polyveck_caddq(w);
-		w0, w1 = decompose_vec(w);
-		packed_w1 = pack_w1(w1);
-
-		c_tilde = hash_mu_w1(mu, packed_w1);
-
-		challenge = sampleInBall(challenge, c_tilde);
-		challenge = fft(challenge);
-
-		cs1 = mult_scalar_vec(challenge, s1);
-		cs1 = ifft_to_mont_vecl(cs1);
-		z = sum_vecl(cs1, y);
-		z = reduce32_vecl(z);
-		normcheck_result = checknorm_vecl(z, (int) (Li2_gamma1 - Li2_beta));
-
-		if(normcheck_result == 0) {
-			cs2 = mult_scalar_veck(challenge, s2);
-			cs2 = ifft_to_mont_vec(cs2);
-			r0 = subtract_veck(w0, cs2);
-			w0 = reduce32_veck(w0);
-			normcheck_result = checknorm_veck(r0, (int) (Li2_gamma2 - Li2_beta));
-			if(normcheck_result == 0) {
-				ct0 = mult_scalar_veck(challenge, t0);
-				ct0 = ifft_to_mont_vec(ct0);
-				ct0 = reduce32_veck(ct0);
-				normcheck_result = checknorm_veck(ct0, Li2_gamma2);
-				if(normcheck_result == 0) {
-					r0_plus_ct0 = sum_vecs(r0, ct0);
-
-					hints_weight, h = polyveck_make_hint(r0_plus_ct0, w1);
-					if(hints_weight < Li2_omega) {
-						done = 1;
-					}
-				}
-			}
-		}
-	}
-
-	signature = pack_signature(c_tilde, z, h);
-	return signature;
-}
-
-export
-fn jade_sign_dilithium_dilithium3_amd64_ref_sign(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) {
-	stack u8[Li2_SK_LEN] sk;
-	reg u8 c;
-	reg u64 i;
-	stack u8[Li2_SIGN_LEN] signature;
-
-	stack u64 s_ptr_signature;
-	reg u64 sig_addr;
-
-	// spilling this
-	s_ptr_signature = ptr_signature;
-	
-	i = 0;
+  //
+  i = #set0();
 	while(i < Li2_SK_LEN) {
-		c = (u8)[ptr_sk + i];
-		sk[(int) i] = c;
+		c = secret_key[(int) i];
+		(u8)[sk + i] = c;
 		i += 1;
 	}
-	
-	signature = sign(ptr_m, m_len, sk);
 
-	sig_addr = s_ptr_signature;
-	
-	i = 0;
-	while(i < Li2_SIGN_LEN) {
-		c = signature[(int) i];
-		(u8) [sig_addr + i] = c;
+  r = #set0();
+  return r;
+}
+
+
+
+/*
+int jade_sign_dilithium_dilithium3_amd64_ref(
+  uint8_t *sm,
+  uint64_t *smlen_p,
+  const uint8_t *m,
+  uint64_t mlen,
+  const uint8_t *sk
+);
+*/
+export fn jade_sign_dilithium_dilithium3_amd64_ref(
+  reg u64 sm
+          smlen_p
+          m
+          mlen
+          sk)
+  ->
+  reg u64
+{
+	stack u64 s_sm s_smlen_p s_m s_mlen;
+
+	stack u8[Li2_SK_LEN] secret_key;
+	stack u8[Li2_SIGN_LEN] signature;
+	reg u8 c;
+	reg u64 i r smlen;
+
+  //
+	s_sm = sm;
+	s_smlen_p = smlen_p;
+  s_m = m;
+  s_mlen = mlen;
+
+  // 'load' secret key
+  i = #set0();
+	while(i < Li2_SK_LEN) {
+		c = (u8)[sk + i];
+		secret_key[(int) i] = c;
 		i += 1;
 	}
+	
+	signature = sign(m, mlen, secret_key);
+
+	sm = s_sm;
+	smlen_p = s_smlen_p;
+  m = s_m;
+  smlen = s_mlen;
+
+  smlen += Li2_SIGN_LEN;
+  (u64)[smlen_p + 0] = smlen;
+
+  //
+  i = #set0();
+	while(i < Li2_SIGN_LEN)
+  { c = signature[(int) i];
+		(u8)[sm + i] = c;
+		i += 1;
+	}
+
+  sm += Li2_SIGN_LEN;
+
+  //
+  i = #set0();
+  mlen = s_mlen;
+	while(i < mlen) {
+		c = (u8)[m + i];
+		(u8) [sm + i] = c;
+		i += 1;
+	}
+
+  r = #set0();
+  return r;
 }
+
+
+
+/*
+int jade_sign_dilithium_dilithium3_amd64_ref_open(
+  uint8_t *m,
+  uint64_t *mlen_p,
+  const uint8_t *sm,
+  uint64_t smlen,
+  const uint8_t *pk
+);
+*/
+export fn jade_sign_dilithium_dilithium3_amd64_ref_open(
+  reg u64 m
+          mlen_p
+          sm
+          smlen
+          pk)
+  ->
+  reg u64
+{
+  stack u64 s_m s_sm s_smlen;
+
+  stack u8[Li2_PK_LEN] public_key;
+  stack u8[Li2_SIGN_LEN] signature;
+  reg u8 c;
+  reg u32 r32;
+  reg u64 i r;
+
+  //
+  smlen -= Li2_SIGN_LEN;
+  (u64)[mlen_p + 0] = smlen; // mlen_p dead
+  s_m = m;
+  s_smlen = smlen;
+
+  // 'load' public key
+  i = #set0();
+	while(i < Li2_PK_LEN)
+  { c = (u8)[pk + i];
+		public_key[(int) i] = c;
+		i += 1;
+	}
+
+  // 'load' signature
+  i = #set0();
+  while(i < Li2_SIGN_LEN)
+  { c = (u8)[sm + i];
+	  signature[(int) i] = c;
+		i += 1;
+	}
+
+  sm += Li2_SIGN_LEN; // there were some ra issues (ra / d#2) when copy 'm' happens ~here // double checkme 
+  s_sm = sm;
+
+  r32 = verify(signature, sm, smlen, public_key);
+  r = (64u) r32;
+
+  sm = s_sm;
+  smlen = s_smlen;
+  m = s_m;
+
+  // copy m
+  i = #set0();
+  while(i < smlen)
+  { c = (u8)[sm + i];
+	  (u8)[m + i] = c;
+		i += 1;
+	}
+
+  return r;
+}
+
+

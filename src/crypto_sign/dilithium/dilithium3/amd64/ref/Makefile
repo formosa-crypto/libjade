@@ -1,3 +1,3 @@
-SRCS := keygen.jazz sign.jazz verify.jazz
-override JFLAGS += -lea
+override JFLAGS += -lea -lazy-regalloc
+SRCS := sign.jazz
 include ../../../../../Makefile.common

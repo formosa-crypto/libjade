@@ -232,29 +232,3 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
     return status;
 }
 
-export
-fn jade_sign_dilithium_dilithium3_amd64_ref_verify(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg u32 {
-    stack u8[Li2_PK_LEN] pk;
-    stack u8[Li2_SIGN_LEN] sig;
-
-    reg u8 byte;
-    reg u64 i;
-    reg u32 status;
-
-    i = #set0();
-	while(i < Li2_PK_LEN) {
-		byte = (u8)[ptr_pk + i];
-		pk[(int) i] = byte;
-		i += 1;
-	}
-
-    i = #set0();
-    while(i < Li2_SIGN_LEN) {
-		byte = (u8)[ptr_sig + i];
-		sig[(int) i] = byte;
-		i += 1;
-	}
-
-    status = verify(sig, ptr_m, m_len, pk);
-    return status;
-}
