@@ -131,6 +131,8 @@ clean:
 	$(RM) $(DEST_DIR)/functest_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC)
 	$(RM) $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC)
+	$(RM) $(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC)
+	$(RM) $(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC)
 	$(MAKE) -C $(SRC_DIR) clean
 
 .PHONY: distclean
