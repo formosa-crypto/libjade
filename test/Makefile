@@ -52,7 +52,7 @@ SCHEME_LIBRARY:=$(SCHEME_DIR)/lib$(SCHEME_IMPLEMENTATION_LC).a
 # This -Wall was supported by the European Commission through the ERC Starting Grant 805031 (EPOQUE)
 CFLAGS=-O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	   -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
-	   -fstrict-aliasing -fno-common -pipe \
+	   -fstrict-aliasing -fno-common -pipe -g \
 	   -I$(COMMON_DIR) $(EXTRAFLAGS)
 
 # Number of tests run for functests

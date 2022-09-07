@@ -1,0 +1,33 @@
+require "indcpa.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/ref/kem.jinc"
+
+export fn jade_kem_kyber_kyber512_amd64_ref_keypair(reg u64 pkp, reg u64 skp) -> reg u64
+{
+  reg u64 r;
+
+  __crypto_kem_keypair_jazz(pkp, skp);
+
+  _, _, _, _, _, r = #set0();
+  return r;
+}
+
+
+export fn jade_kem_kyber_kyber512_amd64_ref_enc(reg u64 ctp, reg u64 shkp, reg u64 pkp) -> reg u64
+{
+  reg u64 r;
+
+  __crypto_kem_enc_jazz(ctp, shkp, pkp);
+
+  _, _, _, _, _, r = #set0();
+  return r;
+}
+
+export fn jade_kem_kyber_kyber512_amd64_ref_dec(reg u64 shkp, reg u64 ctp, reg u64 skp) -> reg u64
+{
+  reg u64 r;
+
+  __crypto_kem_dec_jazz(shkp, ctp, skp);
+
+  _, _, _, _, _, r = #set0();
+  return r;
+}

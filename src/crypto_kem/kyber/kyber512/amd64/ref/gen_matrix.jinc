@@ -1,0 +1,135 @@
+from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc"
+
+inline
+fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] buf) ->  reg u64, stack u16[KYBER_N]
+{
+  reg u16 val1 val2;
+  reg u16 t;
+  reg u64 pos ctr;
+  reg u64 cnd0 cnd1 exit;
+
+
+  ctr = offset;
+  pos = 0;
+  exit = 0;
+
+  while(exit == 0)
+  {
+    val1 = (16u)buf[(int)pos];
+    pos += 1;
+    t   = (16u)buf[(int)pos];
+    val2 = t;
+    val2 >>= 4;
+    t &= 0x0F;
+    t <<= 8;
+    val1 |= t;
+    pos += 1;
+
+    t   = (16u)buf[(int)pos];
+    t <<= 4;
+    val2 |= t;
+    pos += 1;
+
+    if(val1 < KYBER_Q)
+    {
+      rp[(int)ctr] = val1;
+      ctr += 1;
+    }
+
+    if(val2 < KYBER_Q)
+    {
+      if(ctr < KYBER_N)
+      {
+        rp[(int)ctr] = val2;
+        ctr += 1;
+      }
+    }
+
+    // Check if we should exit the loop
+    cnd0  = KYBER_N;
+    cnd0 -= ctr;
+    cnd0 -= 1;
+    cnd1  = SHAKE128_RATE;
+    cnd1 -= pos;
+    cnd1 -= 3; //TODO: (potentially) wasting 2 'good' bytes
+    exit  = cnd0 | cnd1;
+    exit >>= 63;
+  }
+
+  return ctr, rp;
+}
+
+inline
+fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[KYBER_K*KYBER_VECN]
+{
+  stack u16[KYBER_K*KYBER_VECN] r;
+  stack u8[SHAKE128_RATE] buf;
+  stack u16[KYBER_N] poly;
+  stack u8[KYBER_SYMBYTES+2] extseed;
+  stack u64[25] state;
+  stack u64 stransposed sctr;
+  reg u64 ctr k l;
+  reg u16 t;
+  reg u8 c;
+  inline int j i w;
+
+  stransposed = transposed;
+
+  for i = 0 to KYBER_K
+  {
+    for j = 0 to KYBER_K
+    {
+      for w = 0 to KYBER_N
+      {
+        r[i*KYBER_VECN+j*KYBER_N+w] = 0;
+      }
+    }
+  }
+  
+  /* for j = 0 to KYBER_SYMBYTES */
+  /* { */
+  /*   c = seed[j]; */
+  /*   extseed[j] = c; */
+  /* } */
+
+  /* for i=0 to KYBER_K */
+  /* { */
+  /*   for j = 0 to KYBER_K */
+  /*   { */
+  /*     transposed = stransposed; */
+  /*     if(transposed == 0) */
+  /*     { */
+  /*       extseed[KYBER_SYMBYTES] = j; */
+  /*       extseed[KYBER_SYMBYTES+1] = i; */
+  /*     } */
+  /*     else */
+  /*     { */
+  /*       extseed[KYBER_SYMBYTES] = i; */
+  /*       extseed[KYBER_SYMBYTES+1] = j; */
+  /*     } */
+
+  /*     state = __shake128_absorb34(state, extseed); */
+
+  /*     ctr = 0; */
+  /*     while (ctr < KYBER_N) */
+  /*     { */
+  /*       sctr = ctr; */
+  /*       state, buf = __shake128_squeezeblock(state, buf); */
+  /*       ctr = sctr; */
+  /*       ctr, poly  = __rej_uniform(poly, ctr, buf); */
+  /*     } */
+
+  /*     k = 0; */
+  /*     l = i * KYBER_VECN + j * KYBER_N; */
+  /*     while (k < KYBER_N) */
+  /*     { */
+  /*       t = poly[(int) k]; */
+  /*       r[(int) l] = t; */
+  /*       k += 1; */
+  /*       l += 1; */
+  /*     } */
+  /*   } */
+  /* } */
+
+  return r;
+}

@@ -35,7 +35,48 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
 }
 
 #[returnaddress="stack"]
-fn _sha3512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[192]
+{
+  stack ptr u8[192] s_out;
+  stack u64[25] state;
+  reg u8 c;
+  inline int i;
+
+  s_out = out;
+
+  state =  __keccak_init_ref1();
+
+  for i = 0 to 33 {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+
+  state[u8 33] ^= 0x1f;
+  state[u8 SHAKE256_RATE-1] ^= 0x80;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+  
+  for i = 0 to SHAKE256_RATE {
+    c = state[u8 i];
+    out[i] = c;
+  }
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+  
+  for i = 0 to (192-SHAKE256_RATE) {
+    c = state[u8 i];
+    out[SHAKE256_RATE + i] = c;
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 {
   stack ptr u8[64] s_out;
   stack u64[25] state;

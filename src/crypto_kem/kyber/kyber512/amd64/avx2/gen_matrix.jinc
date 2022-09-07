@@ -561,9 +561,8 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
   reg u64 ctr0 ctr1 ctr2 ctr3 tmp;
   reg u8 flg0 flg1 bflg;
   reg bool cf zf;
-
   inline int i, j;
-
+  
   f = seed[u256 0];
   buf0[u256 0] = f;
   buf1[u256 0] = f;
@@ -646,7 +645,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
     _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
     _, _, _, _, _, bflg = #OR_8(flg0, bflg);
   }
-
   for i = 0 to KYBER_K
   {
     for j = 0 to KYBER_K
@@ -654,6 +652,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed) -> stack u
       rr[i*KYBER_VECN+j*KYBER_N:KYBER_N] = _nttunpack(rr[i*KYBER_VECN+j*KYBER_N:KYBER_N]);
     }
   }
+
 
   return rr;
 }
