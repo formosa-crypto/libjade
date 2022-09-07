@@ -1,3 +1,3 @@
 SRCS := kem.jazz
-JFLAGS := -lea
+override JFLAGS += -lazy-regalloc -lea
 include ../../../../../Makefile.common
