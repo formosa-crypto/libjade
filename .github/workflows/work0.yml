@@ -18,6 +18,7 @@ jobs:
         run: make -j8 -C src/ CI=1
 
       - name: artifact - src compilation log
+        if: always()
         uses: actions/upload-artifact@v3
         with:
           name: compilation-log
