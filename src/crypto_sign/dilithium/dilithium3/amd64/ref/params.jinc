@@ -1,0 +1,53 @@
+param int Li2_PK_LEN = 1952;
+param int Li2_SK_LEN = 4000;
+param int Li2_SIGN_LEN = 3293;
+// Modulus
+param int Li2_q = 8380417;
+// Dropped bits from t
+param int Li2_d = 13;
+// exp(d)
+param int Li2_expd = 8192;
+// number of plus or minus 1s in c
+param int Li2_tau = 49;
+param int Li2_challenge_entropy = 225;
+// log of y coefficient range
+param int Li2_log_gamma1 = 19;
+param int Li2_gamma1 = (1 << 19);
+// low-order rounding range
+param int Li2_gamma2 = 261888;
+// number of rows in A
+param int Li2_k = 6;
+// number of columns in A
+param int Li2_l = 5;
+// secret key range
+param int Li2_eta = 4;
+// tau * eta
+param int Li2_beta = 196;
+// max number of 1s in the hint h
+param int Li2_omega = 55;
+// poly degrees
+param int Li2_polydeg = 256;
+param int Li2_log2polydeg = 8;
+
+//packing-related
+param int Li2_pack_w1len = Li2_k * Li2_polydeg / 2;
+param int Li2_pack_etalen = Li2_polydeg / 2;
+param int Li2_pack_s1len = Li2_l * Li2_polydeg / 2;
+param int Li2_pack_s2len = Li2_k * Li2_polydeg / 2;
+param int Li2_pack_s2loc = 96 + Li2_pack_s1len;
+
+// length of only one poly
+// naming taken from C ref
+// actual lengths are K times the above...
+
+param int Li2_pack_t1len = 10 * Li2_polydeg / 8;
+param int Li2_pack_t0len = 416;
+
+param int Li2_pack_t0loc = Li2_SK_LEN - Li2_k * Li2_pack_t0len;
+
+// length of only one poly
+// actual length is l time this.
+// naming taken from C ref impl
+param int Li2_pack_zlen = Li2_polydeg * 20 / 8;
+
+param int Li2_pack_hstart = 32 + Li2_l * Li2_pack_zlen;

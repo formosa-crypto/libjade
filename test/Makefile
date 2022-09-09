@@ -8,9 +8,9 @@ test_checksums: clean
 # to be refactored
 
 # override as desired
-TYPE=secretbox
-SCHEME=xsalsa20poly1305
-IMPLEMENTATION=amd64/avx2
+TYPE=sign
+SCHEME=dilithium/dilithium3
+IMPLEMENTATION=amd64/ref
 
 #
 
