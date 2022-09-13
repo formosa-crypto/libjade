@@ -557,7 +557,11 @@ fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed,
 {
   stack ptr u16[KYBER_N] s_rp;
   stack u8[KYBER_SYMBYTES+1] extseed;
-  stack u8[KYBER_ETA1*KYBER_N/4] buf;
+  /* FIXME (DIRTY HACK): currently allocates 64 more bytes (than necessary) for buf in Kyber768
+   *                     to prevent code duplication because _shake256_192_33 expects 192 bytes (instead of 128)
+   *                     even though it is only called in Kyber 512
+   */
+  stack u8[KYBER_ETA1*KYBER_N/4 + (3 - KYBER_ETA1)*64] buf;  
   reg u8 c;
   inline int k;
 
@@ -578,7 +582,7 @@ fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed,
   }
 
   rp = s_rp;
-  rp = __poly_cbd_eta1(rp, buf);
+  rp = __poly_cbd_eta1(rp, buf[0:KYBER_ETA1*KYBER_N/4]);
 
   return rp;
 }
