@@ -74,62 +74,51 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
   inline int j i w;
 
   stransposed = transposed;
+  
+  for j = 0 to KYBER_SYMBYTES
+  {
+    c = seed[j];
+    extseed[j] = c;
+  }
 
-  for i = 0 to KYBER_K
+  for i=0 to KYBER_K
   {
     for j = 0 to KYBER_K
     {
-      for w = 0 to KYBER_N
+      transposed = stransposed;
+      if(transposed == 0)
       {
-        r[i*KYBER_VECN+j*KYBER_N+w] = 0;
+        extseed[KYBER_SYMBYTES] = j;
+        extseed[KYBER_SYMBYTES+1] = i;
+      }
+      else
+      {
+        extseed[KYBER_SYMBYTES] = i;
+        extseed[KYBER_SYMBYTES+1] = j;
+      }
+
+      state = __shake128_absorb34(state, extseed);
+
+      ctr = 0;
+      while (ctr < KYBER_N)
+      {
+        sctr = ctr;
+        state, buf = __shake128_squeezeblock(state, buf);
+        ctr = sctr;
+        ctr, poly  = __rej_uniform(poly, ctr, buf);
+      }
+
+      k = 0;
+      l = i * KYBER_VECN + j * KYBER_N;
+      while (k < KYBER_N)
+      {
+        t = poly[(int) k];
+        r[(int) l] = t;
+        k += 1;
+        l += 1;
       }
     }
   }
-  
-  /* for j = 0 to KYBER_SYMBYTES */
-  /* { */
-  /*   c = seed[j]; */
-  /*   extseed[j] = c; */
-  /* } */
-
-  /* for i=0 to KYBER_K */
-  /* { */
-  /*   for j = 0 to KYBER_K */
-  /*   { */
-  /*     transposed = stransposed; */
-  /*     if(transposed == 0) */
-  /*     { */
-  /*       extseed[KYBER_SYMBYTES] = j; */
-  /*       extseed[KYBER_SYMBYTES+1] = i; */
-  /*     } */
-  /*     else */
-  /*     { */
-  /*       extseed[KYBER_SYMBYTES] = i; */
-  /*       extseed[KYBER_SYMBYTES+1] = j; */
-  /*     } */
-
-  /*     state = __shake128_absorb34(state, extseed); */
-
-  /*     ctr = 0; */
-  /*     while (ctr < KYBER_N) */
-  /*     { */
-  /*       sctr = ctr; */
-  /*       state, buf = __shake128_squeezeblock(state, buf); */
-  /*       ctr = sctr; */
-  /*       ctr, poly  = __rej_uniform(poly, ctr, buf); */
-  /*     } */
-
-  /*     k = 0; */
-  /*     l = i * KYBER_VECN + j * KYBER_N; */
-  /*     while (k < KYBER_N) */
-  /*     { */
-  /*       t = poly[(int) k]; */
-  /*       r[(int) l] = t; */
-  /*       k += 1; */
-  /*       l += 1; */
-  /*     } */
-  /*   } */
-  /* } */
 
   return r;
 }

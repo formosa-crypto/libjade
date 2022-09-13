@@ -28,7 +28,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
   out = s_out;
   
   for i = 0 to 128 {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
   return out;
@@ -50,7 +50,6 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
     c = in[i];
     state[u8 i] ^= c;
   }
-
   state[u8 33] ^= 0x1f;
   state[u8 SHAKE256_RATE-1] ^= 0x80;
 
@@ -62,6 +61,8 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
     c = state[u8 i];
     out[i] = c;
   }
+
+  s_out = out;
 
   state = __keccakf1600_ref1(state);
 
