@@ -1,4 +1,4 @@
-name: 'work0'
+name: 'work-main'
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   compile:
-    runs-on: self-hosted
+    runs-on: [self-hosted, linux, X64, jasmin-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -23,3 +23,34 @@ jobs:
         with:
           name: compilation-log
           path: src/check.tar.gz
+  test:
+    runs-on: [self-hosted, linux, X64, jasmin-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: make -C test/
+
+  proof:
+    runs-on: [self-hosted, linux, X64, jasmin-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: make -j8 -C proof/
+
+      - name: artifact - proof extraction log
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: extraction-log
+          path: proof/check.tar.gz
+
+      - name: artifact - proof easycrypt files
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: ecfiles
+          path: proof/ecfiles.tar.gz
