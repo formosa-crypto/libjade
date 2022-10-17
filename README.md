@@ -67,7 +67,7 @@ With nix installed, you are ready to obtain and build the jasmin compiler:
 git clone https://github.com/jasmin-lang/jasmin.git
 cd jasmin
 git fetch -a
-git checkout glob_array3
+git checkout main
 nix-channel --update
 nix-shell 
 ```
