@@ -1,0 +1,147 @@
+require "params.jazz"
+
+fn power2round(reg u32 r)
+	-> reg u32, reg u32
+{
+	/*
+	int32_t a1; //high bits
+
+	a1 = (a + (1 << (D-1)) - 1) >> D;
+	*a0 = a - (a1 << D);
+	*/
+	
+	reg u32 highbits, lowbits;
+	reg u32 v32;
+
+	highbits = r;
+	highbits += (1 << (Li2_d - 1)) - 1;
+	highbits >>= Li2_d;
+
+	v32 = highbits;
+	v32 <<= Li2_d;
+
+	lowbits = r;
+	lowbits -= v32;
+
+	return highbits, lowbits;
+}
+
+// high bits = a0, low bits = a1
+fn decompose_gamma2_88(reg u32 a) -> reg u32, reg u32 {
+	reg u64 a0 a1;
+	reg u32 a0_32 a1_32;
+	reg u64 v;
+	reg u64 v64;
+
+	// a1  = (a + 127) >> 7;
+	a1 = (64u) a;
+	a1 += 127;
+	a1 >>= 7;
+
+	// a1  = (a1*11275 + (1 << 23)) >> 24;
+	a1 *= 11275;
+	a1 += 1 << 23;
+	a1 >>= 24;
+
+	// a1 ^= ((43 - a1) >> 31) & a1;
+	v = 43;
+	v -= a1;
+	v >>= 31;
+	v &= a1;
+	a1 ^= v;
+
+	// *a0  = a - a1*2*GAMMA2;
+	v64 = (64u) a1;
+	v64 *= 2 * Li2_q / 88;
+	a0 = (64u) a;
+	a0 -= v64;
+
+	// *a0 -= (((Q-1)/2 - *a0) >> 31) & Q;
+	v64 = (Li2_q - 1) / 2;
+	v64 -= a0;
+	v64 >>= 31;
+	v64 &= Li2_q;
+	a0 -= v64;
+
+	a0_32 = (32u) a0;
+	a1_32 = (32u) a1;
+	return a0_32, a1_32;
+}
+
+// high bits = a0, low bits = a1
+fn decompose_gamma2_32(reg u32 a) -> reg u32, reg u32 {
+	reg u64 a0;
+	reg u32 a0_32;
+	reg u32 a1;
+	reg u32 v;
+	reg u64 v64;
+
+	// a1  = (a + 127) >> 7;
+	a1 = a;
+	a1 += 127;
+	a1 >>= 7;
+
+	// a1  = (a1*1025 + (1 << 21)) >> 22;
+	v = a1;
+	a1 <<= 10;
+	a1 += v;
+	a1 += (int) (1 << 21);
+	a1 >>= 22;
+
+	// a1 &= 15;
+	a1 &= 15;
+
+	// *a0  = a - a1*2*GAMMA2;
+	v64 = (64u) a1;
+	v64 *= 2 * Li2_q / 32;
+	a0 = (64u) a;
+	a0 -= v64;
+
+	// *a0 -= (((Q-1)/2 - *a0) >> 31) & Q;
+	v64 = (Li2_q - 1) / 2;
+	v64 -= a0;
+	v64 >>= 31;
+	v64 &= Li2_q;
+	a0 -= v64;
+
+	a0_32 = (32u) a0;
+	return a0_32, a1;
+}
+
+fn use_hint_gamma2_88(reg u32 a hint)
+	-> reg u32
+{
+	reg u32 a0 a1 c32;
+	reg bool zf cf;
+	
+	a0, a1 = decompose_gamma2_88(a);
+	if (hint == 0) {}
+	else if (a0 >s 0) {
+		?{}, c32 = #set0_32();
+		a1 += 1;
+		zf = a1 == 44;
+		a1 = c32 if zf;
+	} else {
+		c32 = 43;
+		_, cf, _, _, _, a1 = #SUB_32(a1, 1);
+		a1 = c32 if cf;
+	}
+	return a1;
+}
+
+fn use_hint_gamma2_32(reg u32 a hint)
+	-> reg u32
+{
+	reg u32 a0;
+	reg u32 a1;
+	a0, a1 = decompose_gamma2_32(a);
+	if (hint == 0) {}
+	else if (a0 >s 0) {
+		a1 += 1;
+		a1 &= 15;
+	} else {
+		a1 -= 1;
+		a1 &= 15;
+	}
+	return a1;
+}

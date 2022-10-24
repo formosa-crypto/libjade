@@ -1,0 +1,86 @@
+require "fips202.jazz"
+
+inline
+fn expandA_poly(reg ptr u8[32] rho, inline int i, inline int j,
+	reg ptr u32[Li2_polydeg] result) -> reg ptr u32[Li2_polydeg]
+{
+	stack u32 term;
+	stack u8[3] vs;
+	reg u32 value v;
+	reg u64 offset;
+	stack u64[25] state;
+	reg ptr u64[25] state_rsp;
+	inline int k;
+	reg u8 c;
+	reg u64 addr;
+
+	stack u8[34] seed;
+	reg ptr u8[34] seed_rsp;
+	for k = 0 to 32 {
+		c = rho[k];
+		seed[k] = c;
+	}
+	seed[32] = j;
+	seed[33] = i;
+
+	state_rsp = state;
+	seed_rsp = seed;
+	state_rsp = shake128_absorb34(state_rsp, seed_rsp);
+	state_rsp = __keccakf1600_ref(state_rsp);
+
+	offset = 0;
+	term = 0;
+	while(term < Li2_polydeg) {
+		for k = 0 to 3 {
+			if(offset >= SHAKE128_RATE) {
+				state_rsp = __keccakf1600_ref(state_rsp);
+				offset = 0;
+			}
+			c = state_rsp[u8 (int) offset];
+			vs[k] = c;
+			offset += 1;
+		}
+
+		//remove highest bit
+		c = vs[2];
+		c &= 127;
+		vs[2] = c;
+
+		//assemble value in little endian
+		value = (32u) vs[2];
+		for k = 1 to 3 {
+			value <<= 8;
+			v = (32u) vs[2 - k];
+			value += v;
+		}
+
+		if(value < Li2_q) {
+			addr = (64u) term;
+			result[(int) addr] = value;
+			term += 1;
+		}
+	}
+
+	return result;
+}
+
+inline
+fn expandA(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
+{
+	reg ptr u8[32] rho_rsp;
+	reg ptr u32[Li2_polydeg] poly;
+	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
+
+	inline int i j;
+
+	for i = 0 to Li2_k {
+		for j = 0 to Li2_l {
+			rho_rsp = rho;
+			poly = matrix[(i * Li2_l + j) * Li2_polydeg : Li2_polydeg];
+			poly = expandA_poly(rho_rsp, i, j, poly);
+			matrix[(i * Li2_l + j) * Li2_polydeg : Li2_polydeg] = poly;
+		}
+	}
+
+	return matrix;
+}

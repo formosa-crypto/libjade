@@ -1,0 +1,104 @@
+require "expandA.jazz"
+
+inline
+fn expandA_aligned(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
+{
+	reg ptr u8[32] rho_rsp;
+	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3;
+	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
+
+	stack u64[4] nonces;
+	stack u64[4] coeffs_left;
+	stack u64[4] xof_bytes_left;
+	
+	inline int row col chunk idx lane;
+
+	for chunk = 0 to Li2_k * Li2_l / 4 {
+		idx = 4 * chunk;
+
+		rho_rsp = rho;
+		poly0 = matrix[(idx + 0) * Li2_polydeg : Li2_polydeg];
+		poly1 = matrix[(idx + 1) * Li2_polydeg : Li2_polydeg];
+		poly2 = matrix[(idx + 2) * Li2_polydeg : Li2_polydeg];
+		poly3 = matrix[(idx + 3) * Li2_polydeg : Li2_polydeg];
+		for lane = 0 to 4 {
+			row = (idx + lane) / Li2_l;
+			col = (idx + lane) % Li2_l;
+			nonces[lane] = (row << 8) | col;
+		}
+
+		poly0, poly1, poly2, poly3 = expandA_chunk(
+			rho_rsp, nonces, poly0, poly1, poly2, poly3);
+
+		matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
+		matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
+		matrix[(idx + 2) * Li2_polydeg : Li2_polydeg] = poly2;
+		matrix[(idx + 3) * Li2_polydeg : Li2_polydeg] = poly3;
+	}
+
+	return matrix;
+}
+
+inline
+fn expandA_unaligned2(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
+{
+	// In the case of Dilithium3, the number of matrix elements is not
+	// divisible by four.  As such, blocks of 4 XOF lanes are not
+	// aligned, but offset with the number of matrix elements by 2.
+	// This function specializes for this case.
+
+	reg ptr u8[32] rho_rsp;
+	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3;
+	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
+	stack u32[Li2_polydeg] scratch0 scratch1;
+
+	stack u64[4] nonces;
+	stack u64[4] coeffs_left;
+	stack u64[4] xof_bytes_left;
+	
+	inline int row col chunk idx lane;
+
+	for chunk = 0 to (Li2_k * Li2_l - 2) / 4 {
+		idx = 4 * chunk;
+
+		rho_rsp = rho;
+		poly0 = matrix[(idx + 0) * Li2_polydeg : Li2_polydeg];
+		poly1 = matrix[(idx + 1) * Li2_polydeg : Li2_polydeg];
+		poly2 = matrix[(idx + 2) * Li2_polydeg : Li2_polydeg];
+		poly3 = matrix[(idx + 3) * Li2_polydeg : Li2_polydeg];
+		for lane = 0 to 4 {
+			row = (idx + lane) / Li2_l;
+			col = (idx + lane) % Li2_l;
+			nonces[lane] = (row << 8) | col;
+		}
+
+		poly0, poly1, poly2, poly3 = expandA_chunk(
+			rho_rsp, nonces, poly0, poly1, poly2, poly3);
+
+		matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
+		matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
+		matrix[(idx + 2) * Li2_polydeg : Li2_polydeg] = poly2;
+		matrix[(idx + 3) * Li2_polydeg : Li2_polydeg] = poly3;
+	}
+
+	// Fill last two elements
+	chunk = (Li2_k * Li2_l - 2) / 4;
+	idx = 4 * chunk;
+
+	rho_rsp = rho;
+	poly0 = matrix[(idx + 0) * Li2_polydeg : Li2_polydeg];
+	poly1 = matrix[(idx + 1) * Li2_polydeg : Li2_polydeg];
+	for lane = 0 to 2 {
+		row = (idx + lane) / Li2_l;
+		col = (idx + lane) % Li2_l;
+		nonces[lane] = (row << 8) | col;
+	}
+
+	poly0, poly1, scratch0, scratch1 = expandA_chunk(
+		rho_rsp, nonces, poly0, poly1, scratch0, scratch1);
+
+	matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
+	matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
+
+	return matrix;
+}

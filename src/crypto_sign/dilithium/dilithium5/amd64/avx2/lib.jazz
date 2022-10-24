@@ -1,0 +1,28 @@
+require "common.jazz"
+require "packing.jazz"
+require "params.jazz"
+
+from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jazz"
+from Jade require "crypto_sign/dilithium/common/amd64/sign_end.jazz"
+from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jazz"
+
+export
+fn dilithium5_avx2_keygen_jazz(reg u64 pk_ptr, reg u64 sk_ptr, reg u64 randomness) {
+	keygen(pk_ptr, sk_ptr, randomness);
+}
+
+export
+fn dilithium5_avx2_sign_jazz(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) -> reg u32 {
+    stack u32 status;
+    reg u32 status_reg;
+	status = sign(ptr_signature, ptr_m, m_len, ptr_sk);
+    status_reg = status;
+    return status_reg;
+}
+
+export
+fn dilithium5_avx2_verify_jazz(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg u32 {
+    reg u32 status;
+    status = verify(ptr_sig, ptr_m, m_len, ptr_pk);
+    return status;
+}

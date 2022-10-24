@@ -1,0 +1,150 @@
+require "params.jazz"
+require "montgomery.jazz"
+
+fn poly_add(reg ptr u32[Li2_polydeg] f g sum)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 result v32;
+
+	reg u64 i;
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		result = f[(int) i];
+		v32 = g[(int) i];
+		result += v32;
+		sum[(int) i] = result;
+		i += 1;
+	}
+	return sum;
+}
+
+fn poly_subtract(reg ptr u32[Li2_polydeg] f g difference)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 result v32;
+
+	reg u64 i;
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		result = f[(int) i];
+		v32 = g[(int) i];
+		result -= v32;
+		difference[(int) i] = result;
+		i += 1;
+	}
+	return difference;
+}
+
+fn poly_accumulate(reg ptr u32[Li2_polydeg] f sum)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u32 temp;
+	stack u32 x1 x2 y;
+
+	reg u32 v32 result;
+
+	reg u64 i;
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		v32 = f[(int) i];
+		result = sum[(int) i];
+		result += v32;
+		sum[(int) i] = result;
+		i += 1;
+	}
+	return sum;
+}
+
+fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 val res;
+
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		val = poly[(int) i];
+		res = reduce32(val);
+		poly[(int) i] = res;
+		i += 1;
+	}
+
+	return poly;
+}
+
+fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 x1 x2;
+	reg u64 prod x2_64;
+	reg u32 prod_redc;
+
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		x1 = fft_f[(int) i];
+		prod = (64s) x1;
+		x2 = fft_g[(int) i];
+		x2_64 = (64s) x2;
+		prod *= x2_64;
+		
+		prod_redc = montgomery_REDC(prod);
+		fft_prod[(int) i] = prod_redc;
+		i += 1;
+	}
+	return fft_prod;
+}
+
+fn zero_poly(reg ptr u32[Li2_polydeg] f)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		// Montgomery of 0 is 0
+		f[(int) i] = 0;
+		i += 1;
+	}
+	return f;
+}
+
+fn poly_caddq(reg ptr u32[Li2_polydeg] f)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u32 val;
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		val = f[(int) i];
+		val = caddq(val);
+		f[(int) i] = val;
+		i += 1;
+	}
+	return f;
+}
+
+inline
+fn poly_checknorm(reg ptr u32[Li2_polydeg] f, inline int threshold)
+	-> stack u8
+{
+	stack u8 r;
+	reg u8 result;
+	stack u8 result_s;
+	reg u8 c;
+	reg u64 i;
+	reg u32 val;
+
+	result = 0;
+
+	?{}, i = #set0_64();
+	while(i < Li2_polydeg) {
+		val = f[(int) i];
+		r = checknorm(val, threshold);
+		c = r;
+		result |= c;
+		i += 1;
+	}
+
+	result_s = result;
+	return result_s;
+}

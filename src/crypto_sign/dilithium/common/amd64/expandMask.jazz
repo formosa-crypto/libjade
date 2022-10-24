@@ -1,0 +1,107 @@
+require "fips202.jazz"
+require "packing.jazz"
+require "params.jazz"
+
+inline
+fn expandMask_poly_shake_init(stack u64[25] state, reg ptr u8[64] rho_prime, stack u16 kappa)
+	-> stack u64[25] {
+	reg u64 i;
+	reg u8 c;
+	reg u16 v;
+
+	state = st0(state);
+	i = 0;
+	while(i < 64) {
+		c = rho_prime[(int) i];
+		state[u8 (int) i] = c;
+		i += 1;
+	}
+
+	v = kappa;
+	v &= 255;
+	c = (8u) v;
+	state[u8 64] = c;
+
+	v = kappa;
+	v >>= 8;
+	c = (8u) v;
+	state[u8 65] = c;
+	state[u8 66] ^= 0x1f;
+	state[u8 SHAKE256_RATE - 1] ^= 0x80;
+
+	return state;
+}
+
+inline
+fn expandMask_poly_gamma1_217(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_prime, stack u16 kappa)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u8 c;
+	stack u64[25] state;
+	stack u8[(Li2_pack_zlen_gamma1_217 / SHAKE256_RATE) * SHAKE256_RATE + SHAKE256_RATE] y_packed;
+	stack u64 y_loc;
+	stack u64 output_squeeze_counter;
+	reg u64 addr;
+
+	state = expandMask_poly_shake_init(state, rho_prime, kappa);
+
+	y_loc = 0;
+	output_squeeze_counter = 0;
+	while(output_squeeze_counter < (Li2_pack_zlen_gamma1_217 / SHAKE256_RATE + 1)) {
+		state = __keccakf1600_ref(state);
+
+		i = 0;
+		while(i < SHAKE256_RATE) {
+			addr = i;
+			c = state[u8 (int) addr];
+			addr = y_loc;
+			y_packed[(int) addr] = c;
+			y_loc += 1;
+			i += 1;
+		}
+
+		output_squeeze_counter += 1;
+	}
+
+	f = polyz_unpack_gamma1_217(f, y_packed[0 : Li2_pack_zlen_gamma1_217]);
+
+	return f;
+}
+
+inline
+fn expandMask_poly_gamma1_219(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_prime, stack u16 kappa)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 i;
+	reg u8 c;
+	stack u64[25] state;
+	stack u8[(Li2_pack_zlen_gamma1_219 / SHAKE256_RATE) * SHAKE256_RATE + SHAKE256_RATE] y_packed;
+	stack u64 y_loc;
+	stack u64 output_squeeze_counter;
+	reg u64 addr;
+
+	state = expandMask_poly_shake_init(state, rho_prime, kappa);
+
+	y_loc = 0;
+	output_squeeze_counter = 0;
+	while(output_squeeze_counter < (Li2_pack_zlen_gamma1_219 / SHAKE256_RATE + 1)) {
+		state = __keccakf1600_ref(state);
+
+		i = 0;
+		while(i < SHAKE256_RATE) {
+			addr = i;
+			c = state[u8 (int) addr];
+			addr = y_loc;
+			y_packed[(int) addr] = c;
+			y_loc += 1;
+			i += 1;
+		}
+
+		output_squeeze_counter += 1;
+	}
+
+	f = polyz_unpack_gamma1_219(f, y_packed[0 : Li2_pack_zlen_gamma1_219]);
+
+	return f;
+}

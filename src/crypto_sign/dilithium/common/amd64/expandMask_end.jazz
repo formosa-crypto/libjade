@@ -1,0 +1,20 @@
+inline
+fn expandMask(reg ptr u8[64] rho_prime, reg u16 nonce)
+	-> stack u32[Li2_l * Li2_polydeg]
+{
+	stack u32[Li2_l * Li2_polydeg] y;
+	inline int i;
+	stack u16 kappa;
+	reg u16 v;
+	reg ptr u32[Li2_polydeg] poly;
+	for i = 0 to Li2_l {
+		v = nonce;
+		v *= Li2_l;
+		v += i;
+		kappa = v;
+		poly = y[Li2_polydeg * i : Li2_polydeg];
+		poly = expandMask_poly(poly, rho_prime, kappa);
+		y[Li2_polydeg * i : Li2_polydeg] = poly;
+	}
+	return y;
+}

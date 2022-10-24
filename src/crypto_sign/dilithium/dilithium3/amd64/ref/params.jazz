@@ -1,0 +1,19 @@
+from Jade require "crypto_sign/dilithium/common/amd64/params.jazz"
+
+param int Li2_k = 6;
+param int Li2_l = 5;
+param int Li2_gamma1 = (1 << 19);
+param int Li2_gamma2 = (Li2_q - 1) / 32;
+param int Li2_tau = 49;
+param int Li2_eta = 4;
+param int Li2_omega = 55;
+param int Li2_max_attempts = 406;
+
+// naming taken from C ref
+// actual lengths are K times the above...
+param int Li2_pack_etalen = Li2_pack_eta_4_len;
+param int Li2_pack_highbitslen = Li2_pack_highbitslen_gamma2_32;
+param int Li2_pack_zlen = Li2_pack_zlen_gamma1_219;
+param int Li2_pack_hstart = Li2_seedbytes + Li2_l * Li2_pack_zlen;
+
+from Jade require "crypto_sign/dilithium/common/amd64/params_end.jazz"
