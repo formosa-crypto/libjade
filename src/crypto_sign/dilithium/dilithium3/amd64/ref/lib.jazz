@@ -1,10 +1,10 @@
-require "common.jazz"
-require "packing.jazz"
-require "params.jazz"
+require "common.jinc"
+require "packing.jinc"
+require "params.jinc"
 
-from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jazz"
-from Jade require "crypto_sign/dilithium/common/amd64/sign_end.jazz"
-from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jazz"
+from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/sign_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jinc"
 
 export
 fn dilithium3_ref_keygen_jazz(reg u64 pk_ptr, reg u64 sk_ptr, reg u64 randomness) {
