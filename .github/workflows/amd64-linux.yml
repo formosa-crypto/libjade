@@ -1,4 +1,4 @@
-name: 'work-main'
+name: 'amd64'
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   compile:
-    runs-on: [self-hosted, linux, X64, jasmin-main]
+    runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -24,7 +24,7 @@ jobs:
           name: compilation-log
           path: src/check.tar.gz
   test:
-    runs-on: [self-hosted, linux, X64, jasmin-main]
+    runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -33,7 +33,7 @@ jobs:
         run: make -C test/
 
   proof:
-    runs-on: [self-hosted, linux, X64, jasmin-main]
+    runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
