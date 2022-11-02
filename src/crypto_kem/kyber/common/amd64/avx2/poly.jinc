@@ -38,60 +38,6 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   return rp;
 }
 
-
-inline 
-fn __schoolbook(reg ptr u16[32] ap bp, reg u256 zeta qx16 qinvx16, inline int sign) -> reg u256, reg u256, reg u256, reg u256
-{
-  reg u256 a b c d x0 x1 y0 y1;
-  reg u256 bdlo bdhi bclo bchi adlo adhi aclo achi bd;
-  reg u256 rbdlo rbdhi bc0 bc1 ad0 ad1 ac0 ac1 rbd0 rbd1;
-
-  b = ap.[u256 32*1];
-  d = bp.[u256 32*1];
-  a = ap.[u256 32*0];
-  c = bp.[u256 32*0];
-
-  bdlo = #VPMULL_16u16(b, d);
-  bdhi = #VPMULH_16u16(b, d);
-  bclo = #VPMULL_16u16(b, c);
-  bchi = #VPMULH_16u16(b, c);
-  adlo = #VPMULL_16u16(a, d);
-  adhi = #VPMULH_16u16(a, d);
-  aclo = #VPMULL_16u16(a, c);
-  achi = #VPMULH_16u16(a, c);
-
-  bdlo = #VPMULL_16u16(bdlo, qinvx16);
-  bdlo = #VPMULH_16u16(bdlo, qx16);
-  bd   = #VPSUB_16u16(bdhi, bdlo);
-
-  rbdlo = #VPMULL_16u16(zeta, bd);
-  rbdhi = #VPMULH_16u16(zeta, bd);
-
-  bc0  = #VPUNPCKL_16u16(bclo,  bchi);
-  bc1  = #VPUNPCKH_16u16(bclo,  bchi);
-  ad0  = #VPUNPCKL_16u16(adlo,  adhi);
-  ad1  = #VPUNPCKH_16u16(adlo,  adhi);
-  ac0  = #VPUNPCKL_16u16(aclo,  achi);
-  ac1  = #VPUNPCKH_16u16(aclo,  achi);
-  rbd0 = #VPUNPCKL_16u16(rbdlo, rbdhi);
-  rbd1 = #VPUNPCKH_16u16(rbdlo, rbdhi);
-
-  if (sign == 0)
-  {
-    x0 = #VPADD_8u32(ac0, rbd0);
-    x1 = #VPADD_8u32(ac1, rbd1);
-  }
-  else
-  {
-    x0 = #VPSUB_8u32(ac0, rbd0);
-    x1 = #VPSUB_8u32(ac1, rbd1);
-  }
-  y0 = #VPADD_8u32(bc0, ad0);
-  y1 = #VPADD_8u32(bc1, ad1);
-
-  return x0, x1, y0, y1;
-}
-
 inline 
 fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
 {
@@ -123,42 +69,126 @@ fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
 }
 
 inline
-fn __basemul32x(reg ptr u16[64] rp ap bp, reg u256 zeta qx16 qinvx16) -> reg ptr u16[64]
-{
-  reg u256 x0 y0 x1 y1;
-
-  x0, x1, y0, y1 = __schoolbook(ap[0:32], bp[0:32], zeta, qx16, qinvx16, 0);
-  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
-  rp.[u256 32*0] = x0;
-  rp.[u256 32*1] = x1;
-
-  x0, x1, y0, y1 = __schoolbook(ap[32:32], bp[32:32], zeta, qx16, qinvx16, 1);
-  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
-  rp.[u256 32*2] = x0;
-  rp.[u256 32*3] = x1;
-
-  return rp;
+fn __wmul_16u16(reg u256 x y) -> reg u256, reg u256 {
+ reg u256 xyL xyH xy0 xy1;
+ xyL = #VPMULL_16u16(x, y);
+ xyH = #VPMULH_16u16(x, y); 
+ xy0  = #VPUNPCKL_16u16(xyL, xyH);
+ xy1  = #VPUNPCKH_16u16(xyL, xyH);
+ return xy0, xy1;
 }
 
+inline 
+fn __schoolbook16x(reg u256 are aim bre bim zeta zetaqinv qx16 qinvx16, inline int sign) -> reg u256, reg u256
+{ reg u256 zaim ac0 ac1 zbd0 zbd1 ad0 ad1 bc0 bc1 x0 x1 y0 y1;
+
+  zaim = __fqmulprecomp16x(aim, zetaqinv, zeta, qx16);
+
+  ac0, ac1 = __wmul_16u16(are, bre);
+  ad0, ad1 = __wmul_16u16(are, bim);
+  bc0, bc1 = __wmul_16u16(aim, bre);
+  zbd0, zbd1 = __wmul_16u16(zaim, bim);
+
+  if (sign == 0) {
+    x0 = #VPADD_8u32(ac0, zbd0);
+    x1 = #VPADD_8u32(ac1, zbd1);
+  } else {
+    x0 = #VPSUB_8u32(ac0, zbd0);
+    x1 = #VPSUB_8u32(ac1, zbd1);
+  }
+  y0 = #VPADD_8u32(bc0, ad0);
+  y1 = #VPADD_8u32(bc1, ad1);
+
+  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
+  return x0, x1;
+}
 
 fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
 {
-  reg u256 zeta qx16 qinvx16;
+  reg u256 zeta zetaqinv qx16 qinvx16 are aim bre bim;
   
   qx16    = jqx16.[u256 0];
   qinvx16 = jqinvx16.[u256 0];
   
+  zetaqinv = jzetas_exp.[u256 272];
   zeta = jzetas_exp.[u256 304];
-  rp[0:64]   = __basemul32x(rp[0:64],   ap[0:64],   bp[0:64], zeta, qx16, qinvx16);
+
+  are = ap.[u256 32*0];
+  aim = ap.[u256 32*1];
+  bre = bp.[u256 32*0];
+  bim = bp.[u256 32*1];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
+  rp.[u256 32*0] = are;
+  rp.[u256 32*1] = aim;
+
+  are = ap.[u256 32*2];
+  aim = ap.[u256 32*3];
+  bre = bp.[u256 32*2];
+  bim = bp.[u256 32*3];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
+  rp.[u256 32*2] = are;
+  rp.[u256 32*3] = aim;
+
+  zetaqinv = jzetas_exp.[u256 336];
   zeta = jzetas_exp.[u256 368];
-  rp[64:64]  = __basemul32x(rp[64:64],  ap[64:64],  bp[64:64], zeta, qx16, qinvx16);
+
+  are = ap.[u256 32*4];
+  aim = ap.[u256 32*5];
+  bre = bp.[u256 32*4];
+  bim = bp.[u256 32*5];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
+  rp.[u256 32*4] = are;
+  rp.[u256 32*5] = aim;
+
+  are = ap.[u256 32*6];
+  aim = ap.[u256 32*7];
+  bre = bp.[u256 32*6];
+  bim = bp.[u256 32*7];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
+  rp.[u256 32*6] = are;
+  rp.[u256 32*7] = aim;
+
+  zetaqinv = jzetas_exp.[u256 664];
   zeta = jzetas_exp.[u256 696];
-  rp[128:64] = __basemul32x(rp[128:64], ap[128:64], bp[128:64], zeta, qx16, qinvx16);
+
+  are = ap.[u256 32*8];
+  aim = ap.[u256 32*9];
+  bre = bp.[u256 32*8];
+  bim = bp.[u256 32*9];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
+  rp.[u256 32*8] = are;
+  rp.[u256 32*9] = aim;
+
+  are = ap.[u256 32*10];
+  aim = ap.[u256 32*11];
+  bre = bp.[u256 32*10];
+  bim = bp.[u256 32*11];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
+  rp.[u256 32*10] = are;
+  rp.[u256 32*11] = aim;
+
+  zetaqinv = jzetas_exp.[u256 728];
   zeta = jzetas_exp.[u256 760];
-  rp[192:64] = __basemul32x(rp[192:64], ap[192:64], bp[192:64], zeta, qx16, qinvx16);
-  
+
+  are = ap.[u256 32*12];
+  aim = ap.[u256 32*13];
+  bre = bp.[u256 32*12];
+  bim = bp.[u256 32*13];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
+  rp.[u256 32*12] = are;
+  rp.[u256 32*13] = aim;
+
+  are = ap.[u256 32*14];
+  aim = ap.[u256 32*15];
+  bre = bp.[u256 32*14];
+  bim = bp.[u256 32*15];
+  are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
+  rp.[u256 32*14] = are;
+  rp.[u256 32*15] = aim;
+
   return rp;
 }
+
 
 u16 pc_shift1_s = 0x200;
 u16 pc_mask_s = 0x0F;
@@ -850,11 +880,9 @@ fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 
   return rl0, rl1, rl2, rl3, rh0, rh1, rh2, rh3;
 }
 
-inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
-  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
-  reg u32 t;
-  reg u16 w;
+  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16 flox16 fhix16;
   reg ptr u16[400] zetasp;
   reg ptr u16[16] qx16p;
   inline int i;
@@ -879,16 +907,18 @@ inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     r6 = rp.[u256 32*6+256*i];
     r7 = rp.[u256 32*7+256*i];
 
-//    r0, r1, r2, r3, r4, r5, r6, r7 = __nttunpack128(r0, r1, r2, r3, r4, r5, r6, r7);
-
     r0, r1, r4, r5, r2, r3, r6, r7 = __invntt___butterfly64x(r0, r1, r4, r5, r2, r3, r6, r7, zeta0, zeta1, zeta2, zeta3, qx16);
 
     // level 1:
+  vx16 = jvx16[u256 0];
     zeta0 = zetasp.[u256 128+392*i];
     zeta1 = zetasp.[u256 160+392*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
     
+    r0 = __red16x(r0, qx16, vx16);
+    r1 = __red16x(r1, qx16, vx16);
+
     r0, r1 = __shuffle1(r0, r1);
     r2, r3 = __shuffle1(r2, r3);
     r4, r5 = __shuffle1(r4, r5);
@@ -898,11 +928,8 @@ inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     zeta0 = zetasp.[u256 192+392*i];
     zeta1 = zetasp.[u256 224+392*i];
 
-    vx16 = jvx16[u256 0];
 
     r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
-
-    r0 = __red16x(r0, qx16, vx16);
 
     r0, r2 = __shuffle2(r0, r2);
     r4, r6 = __shuffle2(r4, r6);
@@ -943,45 +970,38 @@ inline fn __invntt_levels0t5(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
     r0 = __red16x(r0, qx16, vx16);
 
-    rp.[u256 32*0+256*i] = r0;
-    rp.[u256 32*1+256*i] = r2;
-    rp.[u256 32*2+256*i] = r4;
-    rp.[u256 32*3+256*i] = r6;
+    if (i==0) {
+     rp.[u256 32*0+256*i] = r0;
+     rp.[u256 32*1+256*i] = r2;
+     rp.[u256 32*2+256*i] = r4;
+     rp.[u256 32*3+256*i] = r6;
+    }
     rp.[u256 32*4+256*i] = r1;
     rp.[u256 32*5+256*i] = r3;
     rp.[u256 32*6+256*i] = r5;
     rp.[u256 32*7+256*i] = r7;
   }
 
-  return rp;
-}
-
-
-inline fn __invntt_level6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
-{
-  reg u256 zeta0 zeta1 r0 r1 r2 r3 r4 r5 r6 r7 qx16 flox16 fhix16;
-  reg u32 t;
-  reg u16 w;
-  reg ptr u16[400] zetasp;
-  inline int i;
-
-  zetasp = jzetas_inv_exp;
-
-  qx16 = jqx16[u256 0];
-
   zeta0 = #VPBROADCAST_8u32(zetasp.[u32 784]);
   zeta1 = #VPBROADCAST_8u32(zetasp.[u32 788]);
 
   for i=0 to 2
   {
+    if (i == 0) {
+     r7 = r6;
+     r6 = r4;
+     r5 = r2;
+     r4 = r0;
+    } else {
+     r4 = rp.[u256 32*8+128*i];
+     r5 = rp.[u256 32*9+128*i];
+     r6 = rp.[u256 32*10+128*i];
+     r7 = rp.[u256 32*11+128*i];
+    }
     r0 = rp.[u256 32*0+128*i];
     r1 = rp.[u256 32*1+128*i];
     r2 = rp.[u256 32*2+128*i];
     r3 = rp.[u256 32*3+128*i];
-    r4 = rp.[u256 32*8+128*i];
-    r5 = rp.[u256 32*9+128*i];
-    r6 = rp.[u256 32*10+128*i];
-    r7 = rp.[u256 32*11+128*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
@@ -1006,16 +1026,6 @@ inline fn __invntt_level6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
   return rp;
 }
-
-
-fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
-{
-//  rp = _nttunpack(rp);
-  rp = __invntt_levels0t5(rp);
-  rp = __invntt_level6(rp);
-  return rp;
-}
-
 
 inline
 fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
@@ -1066,16 +1076,15 @@ fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16)
   return rl0, rl1, rl2, rl3, rh0, rh1, rh2, rh3;
 }
 
-
-inline fn __ntt_level0(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
+fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
-  reg u256 zeta0 zeta1 r0 r1 r2 r3 r4 r5 r6 r7 qx16;
+  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
   reg u32 t;
   reg u16 w;
   reg ptr u16[400] zetasp;
+  inline int i;
 
   zetasp = jzetas_exp;
-
   qx16 = jqx16[u256 0];
 
   zeta0 = #VPBROADCAST_8u32(zetasp[u32 0]);
@@ -1112,29 +1121,16 @@ inline fn __ntt_level0(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
   r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
-  rp.[u256 32*4] = r0;
-  rp.[u256 32*5] = r1;
-  rp.[u256 32*6] = r2;
-  rp.[u256 32*7] = r3;
+  /*
+   rp.[u256 32*4] = r0;
+   rp.[u256 32*5] = r1;
+   rp.[u256 32*6] = r2;
+   rp.[u256 32*7] = r3;
+  */
   rp.[u256 32*12] = r4;
   rp.[u256 32*13] = r5;
   rp.[u256 32*14] = r6;
   rp.[u256 32*15] = r7;
-
-  return rp;
-}
-
-inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
-{
-  reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
-  reg u32 t;
-  reg u16 w;
-  reg ptr u16[400] zetasp;
-  inline int i;
-
-  zetasp = jzetas_exp;
-
-  qx16 = jqx16[u256 0];
 
   for i=0 to 2 {
 
@@ -1142,14 +1138,21 @@ inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     zeta0 = #VPBROADCAST_8u32(zetasp.[u32 8 + 392*i]);
     zeta1 = #VPBROADCAST_8u32(zetasp.[u32 12 + 392*i]);
 
+    if ( i == 0) {
+     r4 = r0;
+     r5 = r1;
+     r6 = r2;
+     r7 = r3;
+    } else {
+     r4 = rp.[u256 32*4+256*i];
+     r5 = rp.[u256 32*5+256*i];
+     r6 = rp.[u256 32*6+256*i];
+     r7 = rp.[u256 32*7+256*i];
+    }
     r0 = rp.[u256 32*0+256*i];
     r1 = rp.[u256 32*1+256*i];
     r2 = rp.[u256 32*2+256*i];
     r3 = rp.[u256 32*3+256*i];
-    r4 = rp.[u256 32*4+256*i];
-    r5 = rp.[u256 32*5+256*i];
-    r6 = rp.[u256 32*6+256*i];
-    r7 = rp.[u256 32*7+256*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
@@ -1199,8 +1202,8 @@ inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
     // level 6
     zeta0 = zetasp.[u256 272 + 392*i];
-    zeta1 = zetasp.[u256 336 + 392*i];
     zeta2 = zetasp.[u256 304 + 392*i];
+    zeta1 = zetasp.[u256 336 + 392*i];
     zeta3 = zetasp.[u256 368 + 392*i];
 
     r0, r4, r2, r6, r1, r5, r3, r7 = __butterfly64x(r0, r4, r2, r6, r1, r5, r3, r7, zeta0, zeta1, zeta2, zeta3, qx16);
@@ -1216,8 +1219,6 @@ inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     r3 = __red16x(r3, qx16, vx16);
     r7 = __red16x(r7, qx16, vx16);
 
-    // r0, r4, r1, r5, r2, r6, r3, r7 = __nttpack128(r0, r4, r1, r5, r2, r6, r3, r7);
-
     rp.[u256 32*0+256*i] = r0;
     rp.[u256 32*1+256*i] = r4;
     rp.[u256 32*2+256*i] = r1;
@@ -1227,16 +1228,6 @@ inline fn __ntt_level1t6(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     rp.[u256 32*6+256*i] = r3;
     rp.[u256 32*7+256*i] = r7;
   }
-
-  return rp;
-}
-
-fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
-{
-  rp = __ntt_level0(rp);
-  rp = __ntt_level1t6(rp);
-
-//  rp = _nttpack(rp);
 
   return rp;
 }
