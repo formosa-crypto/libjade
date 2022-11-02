@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: build
-        run: make -j8 -C src/ CI=1
+        run: make -j$JOBS -C src/ CI=1
 
       - name: artifact - src compilation log
         if: always()
@@ -39,7 +39,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: build
-        run: make -j8 -C proof/ CI=1 ECJOBS=8
+        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS
 
       - name: artifact - proof extraction log
         if: always()
