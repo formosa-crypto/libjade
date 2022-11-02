@@ -52,7 +52,7 @@ COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES)
 # --------------------------------------------------------------------
 .PHONY: __phony tests reporter_ce reporter_r
 
-default:
+default: tests
 ifeq ($(CI),1)
 	$(MAKE) -f Makefile2 reporter_ce
 	$(MAKE) -f Makefile2 reporter_r
