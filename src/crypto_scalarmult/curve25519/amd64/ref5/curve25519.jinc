@@ -130,23 +130,52 @@ inline fn __encode_point5(stack u64[5] x2, reg u64[5] z2r) -> reg u64[4]
   return r2;
 }
 
+inline fn __curve25519_internal_ref5(stack u8[32] k, reg u64[5] u) -> reg u64[4]
+{
+  stack u64[5] x2;
+  reg u64[5] z2r;
+  reg u64[4] r;
+
+  (x2,z2r) = __montgomery_ladder5(u, k);
+  r = __encode_point5(x2,z2r);
+
+  return r;
+}
+
 inline fn __curve25519_ref5(reg u64 rp kp up)
 {
   inline int i;
   stack u8[32] k;
-  stack u64[5] x2;
-  reg u64[5] u z2r;
+  reg u64[5] u;
   reg u64[4] r;
   stack u64 rps;
 
   rps = rp;
   k = __decode_scalar(kp);
   u = __decode_u_coordinate5(up);
-  (x2,z2r) = __montgomery_ladder5(u, k);
-  r = __encode_point5(x2,z2r);
+  r = __curve25519_internal_ref5(k, u);
 
   rp = rps;
   for i=0 to 4
   { [rp + 8*i] = r[i]; }
 }
+
+inline fn __curve25519_ref5_base(reg u64 rp kp)
+{
+  inline int i;
+  stack u8[32] k;
+  reg u64[5] u;
+  reg u64[4] r;
+  stack u64 rps;
+
+  rps = rp;
+  k = __decode_scalar(kp);
+  u = __decode_u_coordinate_base5();
+  r = __curve25519_internal_ref5(k, u);
+
+  rp = rps;
+  for i=0 to 4
+  { [rp + 8*i] = r[i]; }
+}
+
 

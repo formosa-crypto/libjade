@@ -8,3 +8,11 @@ export fn jade_scalarmult_curve25519_amd64_mulx(reg u64 rp kp up) -> reg u64
   return r;
 }
 
+export fn jade_scalarmult_curve25519_amd64_mulx_base(reg u64 rp kp) -> reg u64
+{
+  reg u64 r;
+  __curve25519_mulx_base(rp, kp);
+  ?{}, r = #set0();
+  return r;
+}
+
