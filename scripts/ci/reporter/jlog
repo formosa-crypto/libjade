@@ -1,20 +1,19 @@
 #!/usr/bin/env bash
 
-label=$1
+message=$1
 top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
 dir=$top/$2
-wcard=$3
+spattern=$3
 
-RED="\e[31m"
-YELLOW='\e[33m'
-GREEN="\e[32m"
-BOLD="\e[1m"
 NORMAL="\e[0m"
+BOLD="\e[1m"
+RED="\e[31m"
+GREEN="\e[32m"
+YELLOW='\e[33m'
 
-warning=$(mktemp)
-error=$(mktemp)
-
-situation_status()
+# given a pattern (for instance, *.TAG.log or *.TAG.error) and an output file
+# - prints to $output the line counts for each *.TAG.log, sorted by the number of lines
+status()
 {
   pattern=$1;
   output=$2;
@@ -22,37 +21,37 @@ situation_status()
   find $dir -name $pattern | \
   while read file; do
    d=$(dirname $file);
-   nd=${d/$dir\//}; #nd=${nd/\/.ci/};
    b=$(basename $file);
-   c=$(cat $file | wc -l);
-   echo "$c, $nd/$b";
+   c=$(wc -l <$file);
+   echo "$c, $d/$b";
   done | \
   sort -t',' -g -k1 | sed -e 's/^[ \t]*//' -e 's/, \.\//, /' > $output
 }
 
-situation_status "${wcard}.log" $warning;
-situation_status "${wcard}.error" $error;
+print()
+{
+  color=$1;
+  filter=$2;
+  file=$3;
 
-# situation status
-echo -e "${BOLD}$label: ${NORMAL}"
+  egrep -E "$filter" $file | \
+  while read line; do
+   echo -e "${color}${BOLD}OK, ${line}${NORMAL}"
+  done 
+}
 
-# print good situations in 'green'
-cat $warning | egrep -E "^0, " | \
-while read line; do
- echo -e "${GREEN}${BOLD}OK, ${line}${NORMAL}"
-done
+warning=$(mktemp)
+error=$(mktemp)
 
-# print non-severe situations in 'yellow'
-cat $warning | egrep -vE "^0, " | \
-while read line; do
- echo -e "${YELLOW}${BOLD}W, ${line}${NORMAL}"
-done
+status "${spattern}.log" $warning;
+status "${spattern}.error" $error;
 
-# print complicated situations in 'red'
-cat $error | \
-while read line; do
- echo -e "${RED}${BOLD}E, ${line}${NORMAL}"
-done
+# print
+echo -e "${BOLD}$message: ${NORMAL}"
+
+print $GREEN "^0" $warning;
+print $YELLOW "^[^0]" $warning;
+print $RED "" $error;
 
 rm $warning $error
 
