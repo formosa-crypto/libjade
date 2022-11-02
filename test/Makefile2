@@ -111,7 +111,7 @@ reporter_e:
 	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e
 
 reporter_r:
-	./test.sh
+	./test
 	./../scripts/ci/reporter/jlog "Results status" test/bin *.r
 
 err:
