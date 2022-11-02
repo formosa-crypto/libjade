@@ -18,15 +18,4 @@ int jade_scalarmult_curve25519_amd64_ref4_base(
  uint8_t *k
 );
 
-// TODO : to be replaced for opt. Jasmin implementation
-int jade_scalarmult_curve25519_amd64_ref4_base(
- uint8_t *r,
- uint8_t *k
-)
-{
-  uint8_t basepoint[32] = {9};
-  int res = jade_scalarmult_curve25519_amd64_ref4(r,k,basepoint);
-  return res;
-}
-
 #endif

@@ -10,6 +10,18 @@ inline fn __decode_u_coordinate4(reg u64 up) -> reg u64[4]
   return u;
 }
 
+inline fn __decode_u_coordinate_base4() -> reg u64[4]
+{
+  reg u64[4] u;
+
+  u[0] = 9;
+  u[1] = 0;
+  u[2] = 0;
+  u[3] = 0;
+
+  return u;
+}
+
 inline fn __init_points4(
   reg u64[4] initr)
   ->

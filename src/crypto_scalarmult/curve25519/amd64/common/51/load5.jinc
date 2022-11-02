@@ -42,6 +42,19 @@ inline fn __decode_u_coordinate5(reg u64 up) -> reg u64[5]
   return u;
 }
 
+inline fn __decode_u_coordinate_base5() -> reg u64[5]
+{
+  reg u64[5] u;
+
+  u[0] = 9;
+  u[1] = 0;
+  u[2] = 0;
+  u[3] = 0;
+  u[4] = 0;
+
+  return u;
+}
+
 inline fn __init_points5(
   reg u64[5] initr)
   ->
