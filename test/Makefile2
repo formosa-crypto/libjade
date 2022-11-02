@@ -1,0 +1,103 @@
+# -*- Makefile -*-
+
+# --------------------------------------------------------------------
+AS      ?= as
+CC      ?= gcc
+CFLAGS  ?= -Wall -Wno-unused-function -O3
+CI      ?= 0
+export CI
+
+# --------------------------------------------------------------------
+CIDIR =
+CIT =
+ifeq ($(CI),1)
+CIDIR = .ci
+CIFDIR = $(@D)/$(CIDIR)
+CIT = 2> $(CIFDIR)/$(@F).ce.log && rm -f $(CIFDIR)/$(@F).ce.error || \
+     (echo $$? > $(CIFDIR)/$(@F).ce.error && \
+      cat $(CIFDIR)/$(@F).ce.log >> $(CIFDIR)/$(@F).ce.error && \
+      rm $(CIFDIR)/$(@F).ce.log && \
+      exit 127)
+endif
+
+# --------------------------------------------------------------------
+SRC      := ../src
+BIN      ?= bin
+COMMON   := common
+
+EXT      := ../ext
+RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/notrandombytes1.c
+
+JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+TEST     := $(subst $(SRC),$(BIN), $(JAZZ))
+TESTS    := $(addsuffix checksumsmall, $(TEST))
+TESTB    := $(addsuffix checksumbig, $(TEST))
+
+# --------------------------------------------------------------------
+
+RDIR        = $(subst $(BIN)/,,$(@D))
+OPERATION   = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
+NAMESPACE   = $(subst crypto_,jade_,$(subst -,_,$(subst /,_,$(RDIR))))
+NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
+IDIR        = $(subst $(BIN),$(SRC),$(@D))
+ASM         = $(IDIR)/$(OPERATION).s
+
+MAIN        = crypto_$(OPERATION)/checksums.c
+DEFINE     ?=
+DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
+INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/
+COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CIT)
+COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CIT)
+
+# --------------------------------------------------------------------
+.PHONY: __phony tests reporter_ce reporter_r
+
+default:
+ifeq ($(CI),1)
+	$(MAKE) -f Makefile2 reporter_ce
+	$(MAKE) -f Makefile2 reporter_r
+	$(MAKE) -f Makefile2 err
+endif
+
+tests: $(TESTS) $(TESTB)
+
+$(TESTS):
+%/checksumsmall: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	(($(COMPILES)) && (./$@ > $@.r $(CIT))) || true
+
+$(TESTB):
+%/checksumbig: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	(($(COMPILEB)) && (./$@ > $@.r $(CIT))) || true
+
+$(TEST): ; @mkdir -p $@
+ifeq ($(CI),1)
+.PRECIOUS: %/$(CIDIR)
+%/$(CIDIR): ; @mkdir -p $@
+endif
+
+# --------------------------------------------------------------------
+ifeq ($(CI),1)
+
+ERR := $(shell find $(BIN) -name '*.error')
+
+reporter_ce:
+	./../scripts/ci/reporter/jlog "Compilation/execution status" test/bin *.ce
+
+reporter_r:
+	./test.sh
+	./../scripts/ci/reporter/jlog "Checksums status" test/bin *.r
+
+err:
+ifneq ($(words $(ERR)),0)
+	$(error $(ERR))
+endif
+
+endif
+
+
+# --------------------------------------------------------------------
+clean:
+	rm -fr $(BIN)
+

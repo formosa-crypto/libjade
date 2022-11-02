@@ -1,0 +1,58 @@
+#!/bin/sh
+
+label=$1
+top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+dir=$top/$2
+wcard=$3
+
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+GREEN='\033[0;32m'
+BOLD='\033[1m'
+NORMAL='\033[0m'
+
+warning=$(mktemp)
+error=$(mktemp)
+
+situation_status()
+{
+  pattern=$1;
+  output=$2;
+
+  find $dir -name $pattern | \
+  while read file; do
+   d=$(dirname $file);
+   b=$(basename $file);
+   c=$(cat $file | wc -l);
+   echo "$c, $d/$b";
+  done | \
+  sort -t',' -g -k1 | sed -e 's/^[ \t]*//' -e 's/, \.\//, /' > $output
+}
+
+situation_status "${wcard}.log" $warning;
+situation_status "${wcard}.error" $error;
+
+# situation status
+echo "${BOLD}$label: ${NORMAL}"
+
+# print good situations in 'green'
+cat $warning | egrep -E "^0, " | \
+while read line; do
+ echo "${GREEN}${BOLD}OK, ${line}${NORMAL}"
+done
+
+# print non-severe situations in 'yellow'
+cat $warning | egrep -vE "^0, " | \
+while read line; do
+ echo "${YELLOW}${BOLD}W, ${line}${NORMAL}"
+done
+
+# print complicated situations in 'red'
+cat $error | \
+while read line; do
+ echo "${RED}${BOLD}E, ${line}${NORMAL}"
+done
+
+rm $warning $error
+

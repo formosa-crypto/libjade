@@ -9,7 +9,7 @@ on:
 
 jobs:
   compile:
-    runs-on: [self-hosted, linux, X64, amd64]
+    runs-on: [self-hosted, linux, X64, fast_test]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -24,16 +24,16 @@ jobs:
           name: compilation-log
           path: src/check.tar.gz
   test:
-    runs-on: [self-hosted, linux, X64, amd64]
+    runs-on: [self-hosted, linux, X64, fast_test]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: build
-        run: make -C test/
+        run: make -j$JOBS -C test/ -f Makefile2 CI=1
 
   proof:
-    runs-on: [self-hosted, linux, X64, amd64]
+    runs-on: [self-hosted, linux, X64, fast_test]
     steps:
       - name: checkout
         uses: actions/checkout@v3
