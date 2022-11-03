@@ -3,11 +3,9 @@
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= gcc
-CFLAGS   = -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
 	         -fstrict-aliasing -fno-common -pipe -g 
-CI      ?= 0
-export CI
 
 # --------------------------------------------------------------------
 # CI (DIR : directory name)
@@ -17,6 +15,10 @@ export CI
 #    (LC  : logger compilation)
 #    (LE  : logger execution)
 #    (CL  : clear empty logs)
+
+CI      ?= 0
+export CI
+
 CIDIR =
 CILS  = true
 CILC  =
