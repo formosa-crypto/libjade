@@ -16,10 +16,12 @@ export CI
 #    (LS  : logger start)
 #    (LC  : logger compilation)
 #    (LE  : logger execution)
+#    (CL  : clear empty logs)
 CIDIR =
-CILS = true
-CILC =
-CILE =
+CILS  = true
+CILC  =
+CILE  =
+CICL ?= "1"
 
 ifeq ($(CI),1)
 CIDIR = .ci
@@ -71,15 +73,6 @@ COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES)
 
 default: tests
 
-reporter:
-ifeq ($(CI),1)
-	$(MAKE) -f Makefile2 reporter_c
-	$(MAKE) -f Makefile2 reporter_e
-	$(MAKE) -f Makefile2 reporter_r
-	$(MAKE) -f Makefile2 test-ci.tar.gz
-	$(MAKE) -f Makefile2 err
-endif
-
 tests: $(TESTS) $(TESTB)
 
 $(TESTS):
@@ -91,7 +84,7 @@ $(TESTS):
 $(TESTB):
 %/checksumbig: __phony | %/ %/$(CIDIR)
 	$(MAKE) -C $(IDIR) || true
-	$(CILS)
+	$(CILS) && rm -f $@.r
 	(($(COMPILEB)) && (./$@ > $@.r $(CILE))) || true
 
 $(TEST): ; @mkdir -p $@
@@ -103,27 +96,34 @@ endif
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
+reporter:
+	$(MAKE) -f Makefile2 reporter_c
+	$(MAKE) -f Makefile2 reporter_e
+	$(MAKE) -f Makefile2 reporter_r
+	$(MAKE) -f Makefile2 test-ci.tar.gz
+
 reporter_c:
-	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c "1"
+	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c $(CICL)
 
 reporter_e:
-	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e "1"
+	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e $(CICL)
 
 reporter_r:
-	./test
-	./../scripts/ci/reporter/jlog "Results status" test/bin *.r "1"
+	./checksumsok
+	./../scripts/ci/reporter/jlog "Results status" test/bin *.r $(CICL)
 
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
 
 test-ci.tar.gz:
+	@jasminc -version > notes
 ifeq ($(words $(CIR)),0)
-	@echo "good job." > notes
+	@echo "good job." >> notes
 	@tar -zcvf $@ notes
-	@rm notes
 else
-	@tar -zcvf $@ $(CIR)
+	@tar -zcvf $@ notes $(CIR)
 endif
+	@rm notes
 
 err:
 ifneq ($(words $(ERR)),0)
