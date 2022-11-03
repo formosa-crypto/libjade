@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+top=$(cd "$(dirname "$0")/../" ; pwd -P)
+src=${top}/src
+test=${top}/test/bin
+
+check_checksums()
+{
+  checksum_expected=$1;
+  checksumtype=$2;
+
+  find $baset -name $checksumtype.r | \
+  while read checksum_f; do
+    checksum_o=$(cat $checksum_f);
+    #echo "$meta / $checksum_o / $checksum_expected";
+
+    error=$(dirname $checksum_f)/.ci/$checksumtype.r.error
+    rm -f $error
+    if [ "$checksum_o" == "$checksum_expected" ]; then
+      echo -n "" > $(dirname $checksum_f)/.ci/$checksumtype.r.log
+    else
+      cp $checksum_f $error
+      printf "\n--\n$checksum_expected\n" >> $error
+    fi
+  done
+
+}
+
+find $src -name META.yml | \
+while read meta;
+do
+  #slower.
+  #checksumsmall=$(yq '.checksumsmall' $meta | tr -d '\n');
+  #checksumbig=$(yq '.checksumbig' $meta | tr -d '\n');
+  checksumsmall_e=$(cat $meta | grep "checksumsmall: " | sed -e 's/checksumsmall: //' | tr -d '\n');
+  checksumbig_e=$(cat $meta | grep "checksumbig: " | sed -e 's/checksumbig: //' | tr -d '\n');
+
+  bases=$(dirname $meta);
+  baset=${bases//$src/$test};
+
+  check_checksums $checksumsmall_e checksumsmall
+  check_checksums $checksumbig_e checksumbig
+done
+
+# 

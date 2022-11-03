@@ -1,0 +1,138 @@
+# -*- Makefile -*-
+
+# --------------------------------------------------------------------
+AS      ?= as
+CC      ?= gcc
+CFLAGS   = -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
+	         -fstrict-aliasing -fno-common -pipe -g 
+CI      ?= 0
+export CI
+
+# --------------------------------------------------------------------
+# CI (DIR : directory name)
+#    (L   : logger)
+#    (FDIR: full path)
+#    (LS  : logger start)
+#    (LC  : logger compilation)
+#    (LE  : logger execution)
+CIDIR =
+CILS = true
+CILC =
+CILE =
+
+ifeq ($(CI),1)
+CIDIR = .ci
+CIFDIR = $(@D)/$(CIDIR)
+CILS = (rm -f $(CIFDIR)/$(@F).*.*)
+CILC = 2> $(CIFDIR)/$(@F).c.log || \
+     (echo $$? > $(CIFDIR)/$(@F).c.error && \
+      cat $(CIFDIR)/$(@F).c.log >> $(CIFDIR)/$(@F).c.error && \
+      rm $(CIFDIR)/$(@F).c.log && \
+      exit 127)
+CILE = 2> $(CIFDIR)/$(@F).e.log || \
+     (echo $$? > $(CIFDIR)/$(@F).e.error && \
+      cat $(CIFDIR)/$(@F).e.log >> $(CIFDIR)/$(@F).e.error && \
+      rm $(CIFDIR)/$(@F).e.log && \
+      exit 127)
+endif
+
+# --------------------------------------------------------------------
+SRC      := ../src
+BIN      ?= bin
+COMMON   := common
+
+EXT      := ../ext
+RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/notrandombytes1.c
+
+JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+TEST     := $(subst $(SRC),$(BIN), $(JAZZ))
+TESTS    := $(addsuffix checksumsmall, $(TEST))
+TESTB    := $(addsuffix checksumbig, $(TEST))
+
+# --------------------------------------------------------------------
+
+RDIR        = $(subst $(BIN)/,,$(@D))
+OPERATION   = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
+NAMESPACE   = $(subst crypto_,jade_,$(subst -,_,$(subst /,_,$(RDIR))))
+NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
+IDIR        = $(subst $(BIN),$(SRC),$(@D))
+ASM         = $(IDIR)/$(OPERATION).s
+
+MAIN        = crypto_$(OPERATION)/checksums.c
+DEFINE     ?=
+DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
+INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/
+COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
+COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
+
+# --------------------------------------------------------------------
+.PHONY: __phony tests reporter test-ci.tar.gz
+
+default: tests
+
+reporter:
+ifeq ($(CI),1)
+	$(MAKE) -f Makefile2 reporter_c
+	$(MAKE) -f Makefile2 reporter_e
+	$(MAKE) -f Makefile2 reporter_r
+	$(MAKE) -f Makefile2 test-ci.tar.gz
+	$(MAKE) -f Makefile2 err
+endif
+
+tests: $(TESTS) $(TESTB)
+
+$(TESTS):
+%/checksumsmall: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	$(CILS) && rm -f $@.r
+	(($(COMPILES)) && (./$@ > $@.r $(CILE))) || true
+
+$(TESTB):
+%/checksumbig: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	$(CILS)
+	(($(COMPILEB)) && (./$@ > $@.r $(CILE))) || true
+
+$(TEST): ; @mkdir -p $@
+ifeq ($(CI),1)
+.PRECIOUS: %/$(CIDIR)
+%/$(CIDIR): ; @mkdir -p $@
+endif
+
+# --------------------------------------------------------------------
+ifeq ($(CI),1)
+
+reporter_c:
+	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c "1"
+
+reporter_e:
+	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e "1"
+
+reporter_r:
+	./test
+	./../scripts/ci/reporter/jlog "Results status" test/bin *.r "1"
+
+ERR := $(shell find $(BIN) -name '*.error')
+CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+
+test-ci.tar.gz:
+ifeq ($(words $(CIR)),0)
+	@echo "good job." > notes
+	@tar -zcvf $@ notes
+	@rm notes
+else
+	@tar -zcvf $@ $(CIR)
+endif
+
+err:
+ifneq ($(words $(ERR)),0)
+	$(error $(ERR))
+endif
+
+endif
+
+# --------------------------------------------------------------------
+clean:
+	rm -fr $(BIN)
+
