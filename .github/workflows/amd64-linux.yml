@@ -9,21 +9,29 @@ on:
 
 jobs:
 
+
+
   compile:
     runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: build
+      - name: compile
         run: make -j$JOBS -C src/ CI=1
+      - name: print logs
+        run: make -j$JOBS -C src/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make -j$JOBS -C src/ CI=1 err
 
-      - name: artifact - src compilation log
+      - name: src-ci.tar.gz - contains non-empty logs and errors
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: compilation-log
-          path: src/check.tar.gz
+          name: src-ci.tar.gz
+          path: src/src-ci.tar.gz
+
+
 
   test:
     runs-on: [self-hosted, linux, X64, amd64]
@@ -44,6 +52,8 @@ jobs:
         with:
           name: test-ci.tar.gz
           path: test/test-ci.tar.gz
+
+
 
   proof:
     runs-on: [self-hosted, linux, X64, amd64]
