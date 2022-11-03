@@ -58,7 +58,7 @@ status "${spattern}.log" $warning;
 status "${spattern}.error" $error;
 
 # print
-echo -e "${BOLD}$message: ${NORMAL}"
+echo -e "${RED}${BOLD}$message: ${NORMAL}"
 
 print $GREEN "^0" $warning;
 print $YELLOW "^[^0]" $warning;
