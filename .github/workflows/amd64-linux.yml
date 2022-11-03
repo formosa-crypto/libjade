@@ -8,6 +8,7 @@ on:
   pull_request:
 
 jobs:
+
   compile:
     runs-on: [self-hosted, linux, X64, fast_test]
     steps:
@@ -23,14 +24,20 @@ jobs:
         with:
           name: compilation-log
           path: src/check.tar.gz
+
   test:
     runs-on: [self-hosted, linux, X64, fast_test]
     steps:
       - name: checkout
         uses: actions/checkout@v3
-
       - name: build
         run: make -j$JOBS -C test/ -f Makefile2 CI=1 && make -j$JOBS -C test/ -f Makefile2 CI=1 reporter
+      - name: test - ci non empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-ci.tar.gz
+          path: test/test-ci.tar.gz
 
   proof:
     runs-on: [self-hosted, linux, X64, fast_test]

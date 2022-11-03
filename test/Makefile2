@@ -67,7 +67,7 @@ COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES)
 COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
 
 # --------------------------------------------------------------------
-.PHONY: __phony tests reporter
+.PHONY: __phony tests reporter test-ci.tar.gz
 
 default: tests
 
@@ -76,6 +76,7 @@ ifeq ($(CI),1)
 	$(MAKE) -f Makefile2 reporter_c
 	$(MAKE) -f Makefile2 reporter_e
 	$(MAKE) -f Makefile2 reporter_r
+	$(MAKE) -f Makefile2 test-ci.tar.gz
 	$(MAKE) -f Makefile2 err
 endif
 
@@ -102,17 +103,27 @@ endif
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-ERR := $(shell find $(BIN) -name '*.error')
-
 reporter_c:
-	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c
+	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c "1"
 
 reporter_e:
-	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e
+	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e "1"
 
 reporter_r:
 	./test
-	./../scripts/ci/reporter/jlog "Results status" test/bin *.r
+	./../scripts/ci/reporter/jlog "Results status" test/bin *.r "1"
+
+ERR := $(shell find $(BIN) -name '*.error')
+CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+
+test-ci.tar.gz:
+ifeq ($(words $(CIR)),0)
+	@echo "good job." > notes
+	@tar -zcvf $@ notes
+	@rm notes
+else
+	@tar -zcvf $@ $(CIR)
+endif
 
 err:
 ifneq ($(words $(ERR)),0)

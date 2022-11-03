@@ -4,6 +4,7 @@ message=$1
 top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
 dir=$top/$2
 spattern=$3
+rempty=$4
 
 NORMAL="\e[0m"
 BOLD="\e[1m"
@@ -37,7 +38,16 @@ print()
   egrep -E "$filter" $file | \
   while read line; do
    echo -e "${color}${BOLD}OK, ${line}${NORMAL}"
-  done 
+  done
+}
+
+clear_empty()
+{
+  file=$1;
+  egrep -E "^0" $file | cut -d',' -f2 | \
+  while read log; do
+    rm -f "$log";
+  done
 }
 
 warning=$(mktemp)
@@ -52,6 +62,10 @@ echo -e "${BOLD}$message: ${NORMAL}"
 print $GREEN "^0" $warning;
 print $YELLOW "^[^0]" $warning;
 print $RED "" $error;
+
+if [ "$rempty" == "1" ]; then
+  clear_empty $warning;
+fi
 
 rm $warning $error
 
