@@ -37,6 +37,7 @@ print()
 
   egrep -E "$filter" $file | \
   while read line; do
+   line=${line/$dir\//};
    echo -e "${color}${BOLD}OK, ${line}${NORMAL}"
   done
 }
