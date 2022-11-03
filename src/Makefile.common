@@ -22,7 +22,7 @@ endif
 
 # --------------------------------------------------------------------
 JEXT    ?= jazz
-JFLAGS  := $(JFLAGS) -noinsertarraycopy
+override JFLAGS += -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
 JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
@@ -85,10 +85,15 @@ $(DEPFILES):
 include $(wildcard $(DEPFILES))
 
 # --------------------------------------------------------------------
+.PHONY: .jflags
+.jflags:
+	@echo -n "$(JFLAGS)" > .jflags
+
+# --------------------------------------------------------------------
 .PHONY: clean
 
 clean:
-	@rm -fr $(DEPSDIR) *.s *.o *.a
+	@rm -fr $(DEPSDIR) *.s *.o *.a .jflags
 ifeq ($(CI),1)
 	@rm -fr $(CIDIR)
 endif

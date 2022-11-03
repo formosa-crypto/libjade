@@ -45,7 +45,7 @@ ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
-	$(MAKE) src-ci.tar.gz
+	$(MAKE) libjade-logs-src.tar.gz
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
@@ -53,7 +53,7 @@ reporter_s:
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
 
-src-ci.tar.gz:
+libjade-logs-src.tar.gz:
 	@jasminc -version > notes
 ifeq ($(words $(CIR)),0)
 	@echo "good job." >> notes
@@ -74,7 +74,7 @@ endif
 clean:
 	rm -fr libjade.a libjade.h
 ifeq ($(CI),1)
-	rm -f src-ci.tar.gz
+	rm -f libjade-logs-src.tar.gz
 endif
 
 distclean: clean

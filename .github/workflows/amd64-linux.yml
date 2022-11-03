@@ -19,17 +19,26 @@ jobs:
 
       - name: compile
         run: make -j$JOBS -C src/ CI=1
+      - name: dist
+        run: ./scripts/ci/releaser/jdist amd64
       - name: print logs
         run: make -j$JOBS -C src/ CI=1 reporter
       - name: return error if there are any errors
         run: make -j$JOBS -C src/ CI=1 err
 
-      - name: src-ci.tar.gz - contains non-empty logs and errors
+      - name: libjade-dist-amd64.tar.gz - contains assembly and Jasmin code
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: src-ci.tar.gz
-          path: src/src-ci.tar.gz
+          name: libjade-dist-amd64.tar.gz
+          path: libjade-dist-amd64.tar.gz
+
+      - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
 
 
 

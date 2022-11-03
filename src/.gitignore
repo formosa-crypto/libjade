@@ -9,3 +9,4 @@ libjade.h
 .log
 .ci
 .error
+.jflags

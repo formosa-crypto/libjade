@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# amd64 armv7m riscv (...)
+arch=$1
+name=libjade-dist-$arch
+
+# future work: calling convention
+#cconv=$2
+
+top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+src=$top/src
+dist=$top/$name;
+jade=$dist/jade
+
+# create distribution directory
+rm -fr $dist
+mkdir -p $jade;
+
+# copy assembly, header, and preprocessed files; 
+find $src -name "*.s" | \
+while read asm;
+do
+  dir=$(dirname $asm);
+
+  # assembly
+  dasm=$(echo $dir | sed  -e 's/\(.*\)\//\1_/' -e 's/\(.*\)\//\1_/').s;
+  dasm=${dasm/$src/$jade};
+
+  # destination directory
+  ddir=$(dirname $dasm);
+  mkdir -p $ddir;
+  cp $asm $dasm;
+
+  # header
+  sapi=$dir/include/api.h;
+  dapi=${dasm%.*}.h;
+  cp $sapi $dapi;
+
+  # preprocessed
+  jazz=${asm%.*}.jazz;
+  djazz=${dasm%.*}.jazz
+  jpp -in $jazz -out $djazz -I Jade:$src
+
+  # makefile for the preprocessed file (we also need to get the flags configuration)
+  makefile=$ddir/Makefile;
+  make -C $dir .jflags 1> /dev/null;
+  jflags=$(cat $dir/.jflags);
+  echo "$(basename $dasm): $(basename $djazz)" >> $makefile
+  echo -e "\tjasminc $jflags $< -o \$@\n" >> $makefile
+
+done
+
+# copy documentation and examples
+cp -r $top/doc/release/README.md $dist/
+cp -r $top/doc/release/examples $dist/
+
+# copy randombytes (make sure it is clean first)
+make -C $top/ext/randombytes/ clean
+mkdir -p $dist/ext/randombytes
+cp -r $top/ext/randombytes $dist/ext/randombytes
+
+# rm hidden files, compress, and delete dist directory
+find $dist -type f -name ".*" -exec rm {} \;
+(cd $top/ && tar -zcvf $name.tar.gz $name/)
+rm -fr $dist
+
