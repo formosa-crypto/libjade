@@ -22,9 +22,9 @@ jobs:
       - name: dist
         run: ./scripts/ci/releaser/jdist-src amd64
       - name: print logs
-        run: make -j$JOBS -C src/ CI=1 reporter
+        run: make         -C src/ CI=1 reporter
       - name: return error if there are any errors
-        run: make -j$JOBS -C src/ CI=1 err
+        run: make         -C src/ CI=1 err
 
       - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
@@ -55,12 +55,12 @@ jobs:
       - name: return error if there are any errors
         run: make         -C test/ -f Makefile2 CI=1 err
 
-      - name: test-ci.tar.gz - contains non-empty logs and errors
+      - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-ci.tar.gz
-          path: test/test-ci.tar.gz
+          name: libjade-logs-test.tar.gz
+          path: test/libjade-logs-test.tar.gz
 
 
 

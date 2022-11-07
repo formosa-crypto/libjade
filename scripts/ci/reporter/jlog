@@ -34,11 +34,12 @@ print()
   color=$1;
   filter=$2;
   file=$3;
+  label=$4;
 
   egrep -E "$filter" $file | \
   while read line; do
    line=${line/$dir\//};
-   echo -e "${color}${BOLD}OK, ${line}${NORMAL}"
+   echo -e "${color}${BOLD}${label}, ${line}${NORMAL}"
   done
 }
 
@@ -60,9 +61,9 @@ status "${spattern}.error" $error;
 # print
 echo -e "${RED}${BOLD}$message: ${NORMAL}"
 
-print $GREEN "^0" $warning;
-print $YELLOW "^[^0]" $warning;
-print $RED "" $error;
+print $GREEN "^0" $warning "OK";
+print $YELLOW "^[^0]" $warning "WARNING";
+print $RED "" $error "ERROR";
 
 if [ "$rempty" == "1" ]; then
   clear_empty $warning;

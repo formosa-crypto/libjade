@@ -21,8 +21,10 @@ ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
 
+LOGS    ?= libjade-logs-src.tar.gz
+
 # --------------------------------------------------------------------
-.PHONY: libjade.a libjade.h $(JAZZ) clean distclean
+.PHONY: libjade.a libjade.h $(JAZZ) clean distclean $(LOGS)
 .INTERMEDIATE: $(OBJ)
 
 default: libjade.a libjade.h
@@ -45,7 +47,7 @@ ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
-	$(MAKE) libjade-logs-src.tar.gz
+	$(MAKE) $(LOGS)
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
@@ -53,7 +55,7 @@ reporter_s:
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
 
-libjade-logs-src.tar.gz:
+$(LOGS):
 	@jasminc -version > notes
 ifeq ($(words $(CIR)),0)
 	@echo "good job." >> notes
@@ -74,7 +76,7 @@ endif
 clean:
 	rm -fr libjade.a libjade.h
 ifeq ($(CI),1)
-	rm -f libjade-logs-src.tar.gz
+	rm -f $(LOGS)
 endif
 
 distclean: clean
