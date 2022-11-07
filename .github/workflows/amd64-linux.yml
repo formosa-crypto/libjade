@@ -26,19 +26,19 @@ jobs:
       - name: return error if there are any errors
         run: make -j$JOBS -C src/ CI=1 err
 
-      - name: libjade-dist-src-amd64.tar.gz - contains assembly and Jasmin code
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-dist-src-amd64.tar.gz
-          path: libjade-dist-src-amd64.tar.gz
-
       - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
         uses: actions/upload-artifact@v3
         with:
           name: libjade-logs-src.tar.gz
           path: src/libjade-logs-src.tar.gz
+
+      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-dist-src-amd64.tar.gz
+          path: libjade-dist-src-amd64.tar.gz
 
 
 
