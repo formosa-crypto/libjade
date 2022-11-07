@@ -32,6 +32,16 @@ SOURCES ?= $(filter-out ../src/, $(sort $(dir $(shell find $(SRC) -name 'Makefil
 LOGS    ?= libjade-logs-proof.tar.gz
 
 # --------------------------------------------------------------------
+ifeq ($(CI),1)
+.PHONY: backward_compatibility
+backward_compatibility:
+	$(MAKE) default
+	$(MAKE) reporter
+	mv $(LOGS) check.tar.gz
+	$(MAKE) err
+endif
+
+# --------------------------------------------------------------------
 .PHONY: check extract $(SOURCES)
 
 default: check
