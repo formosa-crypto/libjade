@@ -30,17 +30,15 @@ LOGS    ?= libjade-logs-src.tar.gz
 default: libjade.a libjade.h
 
 libjade.a: $(JAZZ)
-	$(MAKE) __libjade.a
+	$(MAKE) __libjade
 
-__libjade.a: $(OBJ)
+__libjade: $(OBJ)
 	ar -rc libjade.a $(OBJ)
 	ranlib libjade.a
+	cat $(API) > libjade.h
 
 $(JAZZ):
 	$(MAKE) -C $@ || true
-
-libjade.h:
-	cat $(API) > $@
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
