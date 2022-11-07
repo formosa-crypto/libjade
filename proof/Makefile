@@ -8,9 +8,13 @@ ECJOBS   ?= 1
 ECCONF   := tests.config 
 XUNITOUT ?= xunit.xml
 CHECKS   ?= all
+
+# --------------------------------------------------------------------
 CI       ?= 0
 export CI
+CICL     ?= "1"
 
+# --------------------------------------------------------------------
 ifeq ($(ECCHECK),)
 ifeq ($(ECROOT),)
 ECCHECK := ec-runtest
@@ -21,74 +25,70 @@ endif
 endif
 
 # --------------------------------------------------------------------
-SRC    := ../src
-PROOF  := .
+SRC     := ../src
+PROOF   := .
+SOURCES ?= $(filter-out ../src/, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 
-ECMK   := $(filter-out $(addprefix ../src/,$(EXCLUDE)), $(dir $(shell find $(SRC) -name 'Ec.mk')))
-JAZZ   := $(filter-out $(addprefix ../src/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+LOGS    ?= libjade-logs-proof.tar.gz
 
 # --------------------------------------------------------------------
-.PHONY: default usage check check-xunit extract $(ECMK) $(JAZZ) clean-ci clean distclean check.tar.gz ecfiles.tar.gz report err
+.PHONY: check extract $(SOURCES)
 
 default: check
-ifeq ($(CI),1)
-	$(MAKE) check.tar.gz
-	$(MAKE) ecfiles.tar.gz
-	$(MAKE) report
-	$(MAKE) err
-endif
-
-usage:
-	@echo "Usage: make <target> where <target> in [check|check-xunit]" >&2
 
 check: extract
 	$(ECCHECK) --bin-args="$(ECARGS)" --jobs="$(ECJOBS)" $(ECCONF) $(CHECKS)
 
-extract: $(JAZZ) $(ECMK)
+extract: $(SOURCES)
+	@true
 
-$(JAZZ):
-	$(MAKE) -C $@ extract_s || true
-	$(MAKE) -C $@ extract_ct || true
-
-$(ECMK):
-	$(MAKE) -C $@ -f Ec.mk extract_s || true
-	$(MAKE) -C $@ -f Ec.mk extract_ct || true
-
-# --------------------------------------------------------------------
-
-clean-ci:
-	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
-	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
-
-clean:
-	rm -f $(shell find $(PROOF) -name '*.eco')
-
-distclean: clean clean-ci
-	rm -f $(shell find $(PROOF) -name '*Array*.ec')
-	rm -f $(shell find $(PROOF) -name '*_s.ec')
-	rm -f $(shell find $(PROOF) -name '*_ct.ec')
-	rm -f check.tar.gz ecfiles.tar.gz
+$(SOURCES):
+	$(MAKE) -C $@ extract || true
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-ECFILES := $(sort $(dir $(shell find $(PROOF) -name '*.ec')))
-ERR     := $(shell find $(SRC) -name '*.ec.error')
-CIL     := $(shell find $(SRC) -name '.ci')
+reporter:
+	$(MAKE) reporter_s
+	$(MAKE) reporter_ct
+	$(MAKE) $(LOGS)
 
-check.tar.gz:
-	@tar -zcvf $@ $(CIL)
+reporter_s:
+	./../scripts/ci/reporter/jlog "Extraction - source - status" src/ *_s.ec $(CICL)
 
-ecfiles.tar.gz:
-	@tar -zcvf $@ $(PROOF)/tests.config $(ECFILES)
+reporter_ct:
+	./../scripts/ci/reporter/jlog "Extraction - constant-time - status" src/ *_ct.ec $(CICL)
 
-report:
-	./../scripts/ci/jproof
+ERR := $(shell find $(BIN) -name '*.error')
+CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+
+$(LOGS):
+	@jasminc -version > notes
+ifeq ($(words $(CIR)),0)
+	@echo "good job." >> notes
+	@tar -zcvf $@ notes
+else
+	@tar -zcvf $@ notes $(CIR)
+endif
+	@rm notes
 
 err:
 ifneq ($(words $(ERR)),0)
 	$(error $(ERR))
 endif
 
+endif
+
+
+# --------------------------------------------------------------------
+clean:
+	rm -f $(shell find $(PROOF) -name '*.eco')
+
+distclean: clean
+	rm -f $(shell find $(PROOF) -name '*Array*.ec')
+	rm -f $(shell find $(PROOF) -name '*_s.ec')
+	rm -f $(shell find $(PROOF) -name '*_ct.ec')
+ifeq ($(CI),1)
+	rm -f $(LOGS)
 endif
 
