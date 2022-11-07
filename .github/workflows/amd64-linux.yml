@@ -62,34 +62,3 @@ jobs:
           name: libjade-logs-test.tar.gz
           path: test/libjade-logs-test.tar.gz
 
-
-  proof:
-    runs-on: [self-hosted, linux, X64, amd64]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: check
-        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS default
-      - name: dist
-        run: ./scripts/ci/releaser/jdist-proof
-      - name: print logs
-        run: make         -C proof/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make         -C proof/ CI=1 err
-
-      - name: libjade-logs-proof.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-proof.tar.gz
-          path: proof/libjade-logs-proof.tar.gz
-
-     - name: libjade-dist-proof.tar.gz - contains all Ec files and test.config
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-dist-proof.tar.gz
-          path: libjade-dist-proof.tar.gz
-
-
