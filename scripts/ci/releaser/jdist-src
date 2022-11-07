@@ -2,7 +2,7 @@
 
 # amd64 armv7m riscv (...)
 arch=$1
-name=libjade-dist-$arch
+name=libjade-dist-src-$arch
 
 # future work: calling convention
 #cconv=$2
