@@ -62,6 +62,8 @@ jobs:
           name: libjade-logs-test.tar.gz
           path: test/libjade-logs-test.tar.gz
 
+
+
   proof:
     runs-on: [self-hosted, linux, X64, amd64]
     steps:

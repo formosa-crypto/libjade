@@ -17,7 +17,7 @@ EXCLUDE ?=
 SRC     := .
 BUILD   := .build
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
-MKF     ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
+SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
@@ -89,5 +89,5 @@ ifeq ($(CI),1)
 endif
 
 distclean: clean
-	for i in $(MKF); do $(MAKE) -C $$i clean; done
+	for i in $(SOURCES); do $(MAKE) -C $$i clean; done
 
