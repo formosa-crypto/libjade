@@ -62,3 +62,14 @@ jobs:
           name: libjade-logs-test.tar.gz
           path: test/libjade-logs-test.tar.gz
 
+  proof:
+    runs-on: [self-hosted, linux, X64, amd64]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: extract and check
+        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS default
+
+
+
