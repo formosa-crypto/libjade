@@ -9,21 +9,38 @@ on:
 
 jobs:
 
+
+
   compile:
     runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: build
+      - name: compile
         run: make -j$JOBS -C src/ CI=1
+      - name: dist
+        run: ./scripts/ci/releaser/jdist-src amd64
+      - name: print logs
+        run: make         -C src/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make         -C src/ CI=1 err
 
-      - name: artifact - src compilation log
+      - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: compilation-log
-          path: src/check.tar.gz
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
+
+      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-dist-src-amd64.tar.gz
+          path: libjade-dist-src-amd64.tar.gz
+
+
 
   test:
     runs-on: [self-hosted, linux, X64, amd64]
@@ -38,12 +55,14 @@ jobs:
       - name: return error if there are any errors
         run: make         -C test/ -f Makefile2 CI=1 err
 
-      - name: test-ci.tar.gz - contains non-empty logs and errors
+      - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: test-ci.tar.gz
-          path: test/test-ci.tar.gz
+          name: libjade-logs-test.tar.gz
+          path: test/libjade-logs-test.tar.gz
+
+
 
   proof:
     runs-on: [self-hosted, linux, X64, amd64]

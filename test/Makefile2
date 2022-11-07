@@ -3,11 +3,9 @@
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= gcc
-CFLAGS   = -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
 	         -fstrict-aliasing -fno-common -pipe -g 
-CI      ?= 0
-export CI
 
 # --------------------------------------------------------------------
 # CI (DIR : directory name)
@@ -17,6 +15,10 @@ export CI
 #    (LC  : logger compilation)
 #    (LE  : logger execution)
 #    (CL  : clear empty logs)
+
+CI      ?= 0
+export CI
+
 CIDIR =
 CILS  = true
 CILC  =
@@ -68,8 +70,10 @@ INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/
 COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
 COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
 
+LOGS       ?= libjade-logs-test.tar.gz
+
 # --------------------------------------------------------------------
-.PHONY: __phony tests reporter test-ci.tar.gz
+.PHONY: __phony tests reporter $(LOGS)
 
 default: tests
 
@@ -100,7 +104,7 @@ reporter:
 	$(MAKE) -f Makefile2 reporter_c
 	$(MAKE) -f Makefile2 reporter_e
 	$(MAKE) -f Makefile2 reporter_r
-	$(MAKE) -f Makefile2 test-ci.tar.gz
+	$(MAKE) -f Makefile2 $(LOGS)
 
 reporter_c:
 	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c $(CICL)
@@ -115,7 +119,7 @@ reporter_r:
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
 
-test-ci.tar.gz:
+$(LOGS):
 	@jasminc -version > notes
 ifeq ($(words $(CIR)),0)
 	@echo "good job." >> notes

@@ -1,5 +1,5 @@
-###
 
+# --------------------------------------------------------------------
 TOP = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
 SRC = $(TOP)/src/
 CDIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
@@ -8,7 +8,7 @@ PDIR = $(TOP)/proof/$(RDIR)
 OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
-#
+# --------------------------------------------------------------------
 CIDIR =
 CIT =
 ifeq ($(CI),1)
@@ -20,31 +20,29 @@ CIT = 2> $(CIDIR)/$(@F).log && rm -f $(CIDIR)/$(@F).error || \
       exit 127)
 endif
 
-#
-JEXT ?= jazz
-JFLAGS := $(JFLAGS) -noinsertarraycopy
+# --------------------------------------------------------------------
+JEXT    ?= jazz
+override JFLAGS += -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
-JASMIN ?= jasminc
+JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
-COMPILE = ($(JASMINC) -o $@ $<) $(CIT)
+COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
-#
-ECDIR := $(PDIR)
+# --------------------------------------------------------------------
 include $(SRC)/$(OPERATION)/EcFlags.mk
-ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT_S = (cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
+
+ECDIR     := $(PDIR)
+ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
+EXTRACT_S  = (cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
 EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
-#
+# --------------------------------------------------------------------
 DEPSDIR := .deps
-DEPS = ((printf "$@: "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
+DEPS = ((printf "$@: "; printf "$(basename $(abspath $*)).jazz "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
 
-###
-
+# --------------------------------------------------------------------
 compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
-
-###
 
 extract: extract_s extract_ct
 	@true
@@ -55,14 +53,11 @@ extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
 extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
-###
-
+# --------------------------------------------------------------------
 %.s : %.$(JEXT)
 %.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
 	@$(DEPS)
 	@$(COMPILE)
-
-###
 
 $(ECDIR)/%_s.ec : %.$(JEXT)
 $(ECDIR)/%_s.ec : %.$(JEXT) $(DEPSDIR)/%_s.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
@@ -74,14 +69,11 @@ $(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
 	@$(DEPS)
 	@$(EXTRACT_CT)
 
-###
-
 $(DEPSDIR): ; @mkdir -p $@
 $(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
 ifeq ($(CI),1)
 $(CIDIR): ; @mkdir -p $@
 endif
-
 
 DEPFILES := \
  $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) \
@@ -92,12 +84,17 @@ $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
 
-###
-.PHONY: clean-ci clean
+# --------------------------------------------------------------------
+.PHONY: .jflags
+.jflags:
+	@echo -n "$(JFLAGS)" > .jflags
 
-clean-ci:
+# --------------------------------------------------------------------
+.PHONY: clean
+
+clean:
+	@rm -fr $(DEPSDIR) *.s *.o *.a .jflags
+ifeq ($(CI),1)
 	@rm -fr $(CIDIR)
-
-clean: clean-ci
-	@rm -fr $(DEPSDIR) *.s *.o *.a
+endif
 
