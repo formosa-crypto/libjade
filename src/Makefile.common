@@ -38,7 +38,7 @@ EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
 # --------------------------------------------------------------------
 DEPSDIR := .deps
-DEPS = ((printf "$@: "; printf "$(basename $(abspath $@)).jazz "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
+DEPS = ((printf "$@: "; printf "$(basename $(abspath $*)).jazz "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
 
 # --------------------------------------------------------------------
 compile: $(SRCS:%.$(JEXT)=%.s)
