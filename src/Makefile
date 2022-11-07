@@ -24,6 +24,16 @@ OBJ     := $(ASM:%.s=%.o)
 LOGS    ?= libjade-logs-src.tar.gz
 
 # --------------------------------------------------------------------
+ifeq ($(CI),1)
+.PHONY: backward_compatibility
+backward_compatibility:
+	$(MAKE) default
+	$(MAKE) reporter
+	mv $(LOGS) check.tar.gz
+	$(MAKE) err
+endif
+
+# --------------------------------------------------------------------
 .PHONY: libjade.a libjade.h $(JAZZ) clean distclean $(LOGS)
 .INTERMEDIATE: $(OBJ)
 
