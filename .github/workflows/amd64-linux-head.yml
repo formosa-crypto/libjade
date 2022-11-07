@@ -1,4 +1,4 @@
-name: 'amd64-linux'
+name: 'amd64-linux-head'
 
 on:
   workflow_dispatch:
