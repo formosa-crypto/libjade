@@ -63,9 +63,8 @@ jobs:
           path: test/libjade-logs-test.tar.gz
 
 
-
   proof:
-    runs-on: [self-hosted, linux, X64]
+    runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
