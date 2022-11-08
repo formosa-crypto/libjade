@@ -6,6 +6,7 @@ CC      ?= gcc
 CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
 	         -fstrict-aliasing -fno-common -pipe
+JASMIN  ?= jasminc
 
 # --------------------------------------------------------------------
 CI      ?= 0
@@ -46,7 +47,7 @@ libjade.a: $(JAZZ)
 __libjade: $(OBJ)
 	ar -rc libjade.a $(OBJ)
 	ranlib libjade.a
-	cat $(API) > libjade.h
+	echo "" | cat - $(API) > libjade.h
 
 $(JAZZ):
 	$(MAKE) -C $@ || true
@@ -65,7 +66,7 @@ ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
 
 $(LOGS):
-	@jasminc -version > notes
+	@$(JASMIN) -version > notes
 ifeq ($(words $(CIR)),0)
 	@echo "good job." >> notes
 	@tar -zcvf $@ notes

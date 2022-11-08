@@ -8,6 +8,7 @@ ECJOBS   ?= 1
 ECCONF   := tests.config 
 XUNITOUT ?= xunit.xml
 CHECKS   ?= all
+JASMIN   ?= jasminc
 
 # --------------------------------------------------------------------
 CI       ?= 0
@@ -69,11 +70,11 @@ reporter_s:
 reporter_ct:
 	./../scripts/ci/reporter/jlog "Extraction - constant-time - status" src/ *_ct.ec $(CICL)
 
-ERR := $(shell find $(BIN) -name '*.error')
-CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+ERR := $(shell find $(SRC) -name '*.error')
+CIR := $(shell find $(SRC) -name '*.log') $(ERR)
 
 $(LOGS):
-	@jasminc -version > notes
+	@$(JASMIN) -version > notes
 ifeq ($(words $(CIR)),0)
 	@echo "good job." >> notes
 	@tar -zcvf $@ notes
