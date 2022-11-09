@@ -115,6 +115,3 @@ Explain how to read what has been proven for each scheme
 * Support multiple architectures, most importantly 32-bit and 64-bit Arm and RISCV CPUs.
 * Add interfaces to other languages (e.g., [Rust](https://www.rust-lang.org/) and [Go](https://go.dev/)).
 * Implement a libjade-agent that wraps libjade crypto functionality in a separate process.
-
-## License
-TODO: Agree on license and update information here
