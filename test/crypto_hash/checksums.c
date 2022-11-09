@@ -34,7 +34,6 @@ void test(unsigned char*,state *);
 // ////////////////////////////////////////////////////////////////////////////
 
 #define CRYPTO_BYTES NAMESPACE(BYTES)
-#define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
 #define crypto_hash JADE_NAMESPACE_LC
 

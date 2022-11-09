@@ -44,7 +44,6 @@ void test(unsigned char*,state *);
 
 #define CRYPTO_KEYBYTES NAMESPACE(KEYBYTES)
 #define CRYPTO_NONCEBYTES NAMESPACE(NONCEBYTES)
-#define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
 #define crypto_stream_xor NAMESPACE_LC(xor)
 #define crypto_stream JADE_NAMESPACE_LC

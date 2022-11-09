@@ -54,6 +54,7 @@ JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell f
 TEST     := $(subst $(SRC),$(BIN), $(JAZZ))
 TESTS    := $(addsuffix checksumsmall, $(TEST))
 TESTB    := $(addsuffix checksumbig, $(TEST))
+PARAM    := $(addsuffix printparams, $(TEST))
 
 # --------------------------------------------------------------------
 
@@ -64,21 +65,24 @@ NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
 IDIR        = $(subst $(BIN),$(SRC),$(@D))
 ASM         = $(IDIR)/$(OPERATION).s
 
-MAIN        = crypto_$(OPERATION)/checksums.c
+MCHECK      = crypto_$(OPERATION)/checksums.c
+MPRINT      = crypto_$(OPERATION)/printparams.c
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/
-COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
-COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDSRC) $(CILC)
+COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
+COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
+COMPILEP    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MPRINT) $(ASM) $(RANDSRC) $(CILC)
 
 LOGS       ?= libjade-logs-test.tar.gz
 
 # --------------------------------------------------------------------
-.PHONY: __phony tests reporter $(LOGS)
+.PHONY: __phony tests params reporter $(LOGS)
 
-default: tests
+default: tests params
 
 tests: $(TESTS) $(TESTB)
+params: $(PARAM)
 
 $(TESTS):
 %/checksumsmall: __phony | %/ %/$(CIDIR)
@@ -91,6 +95,13 @@ $(TESTB):
 	$(MAKE) -C $(IDIR) || true
 	$(CILS) && rm -f $@.r
 	(($(COMPILEB)) && (./$@ > $@.r $(CILE))) || true
+
+$(PARAM):
+%/printparams: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	$(CILS) && rm -f $@.p
+	(($(COMPILEP)) && (./$@ > $@.p $(CILE))) || true
+
 
 $(TEST): ; @mkdir -p $@
 ifeq ($(CI),1)
