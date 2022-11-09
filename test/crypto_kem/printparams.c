@@ -1,16 +1,19 @@
 #include <stdio.h>
+
 #include "api.h"
+#include "namespace.h"
 
-#define PASTER(x, y) x##_##y
-#define EVALUATOR(x, y) PASTER(x, y)
-#define NAMESPACE(fun) EVALUATOR(JADE_NAMESPACE, fun)
-#define NAMESPACE_LC(fun) EVALUATOR(JADE_NAMESPACE_LC, fun)
+int main(void)
+{
+  printf("{\n");
+  printf(" \"CRYPTO_SECRETKEYBYTES\": %u,\n", NAMESPACE(SECRETKEYBYTES));
+  printf(" \"CRYPTO_PUBLICKEYBYTES\": %u,\n", NAMESPACE(PUBLICKEYBYTES));
+  printf(" \"CRYPTO_CIPHERTEXTBYTES\": %u,\n", NAMESPACE(CIPHERTEXTBYTES));
+  printf(" \"CRYPTO_BYTES\": %u,\n", NAMESPACE(BYTES));
 
-int main() {
-    printf("{\n");
-    printf("\t\"CRYPTO_SECRETKEYBYTES\": %u,\n",  NAMESPACE(SECRETKEYBYTES));
-    printf("\t\"CRYPTO_PUBLICKEYBYTES\": %u,\n",  NAMESPACE(PUBLICKEYBYTES));
-    printf("\t\"CRYPTO_CIPHERTEXTBYTES\": %u,\n", NAMESPACE(CIPHERTEXTBYTES));
-    printf("\t\"CRYPTO_BYTES\": %u,\n",           NAMESPACE(BYTES));
-    printf("\t\"CRYPTO_ALGNAME\": \"%s\"\n}\n",   NAMESPACE(ALGNAME));
+  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
+  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
+  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+
+  return 0;
 }

@@ -7,7 +7,10 @@
 #define JADE_KEM_KYBER_KYBER512_AMD64_REF_PUBLICKEYBYTES  800
 #define JADE_KEM_KYBER_KYBER512_AMD64_REF_CIPHERTEXTBYTES 768
 #define JADE_KEM_KYBER_KYBER512_AMD64_REF_BYTES           32
+
 #define JADE_KEM_KYBER_KYBER512_AMD64_REF_ALGNAME         "Kyber512"
+#define JADE_KEM_KYBER_KYBER512_AMD64_REF_ARCH            "amd64"
+#define JADE_KEM_KYBER_KYBER512_AMD64_REF_IMPL            "ref"
 
 
 int jade_kem_kyber_kyber512_amd64_ref_keypair(uint8_t *pk, uint8_t *sk);

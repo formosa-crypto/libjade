@@ -38,7 +38,6 @@ void test(unsigned char*,state *);
 
 #define CRYPTO_BYTES NAMESPACE(BYTES)
 #define CRYPTO_KEYBYTES NAMESPACE(KEYBYTES)
-#define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 
 #define crypto_onetimeauth_verify NAMESPACE_LC(verify)
 #define crypto_onetimeauth JADE_NAMESPACE_LC
