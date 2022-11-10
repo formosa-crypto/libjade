@@ -2,7 +2,7 @@ require "montgomery.jinc"
 require "params.jinc"
 require "twiddle_factors.jinc"
 
-fn ntt(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
+fn fft(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 {
 	inline int log_len;
 	inline int len;
