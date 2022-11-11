@@ -1,19 +1,22 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_kem.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_SECRETKEYBYTES\": %u,\n", NAMESPACE(SECRETKEYBYTES));
-  printf(" \"CRYPTO_PUBLICKEYBYTES\": %u,\n", NAMESPACE(PUBLICKEYBYTES));
-  printf(" \"CRYPTO_CIPHERTEXTBYTES\": %u,\n", NAMESPACE(CIPHERTEXTBYTES));
-  printf(" \"CRYPTO_BYTES\": %u,\n", NAMESPACE(BYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_KEM_ALGNAME\": \"%s\",\n", JADE_KEM_ALGNAME);
+  printf(" \"JADE_KEM_ARCH\": \"%s\",\n", JADE_KEM_ARCH);
+  printf(" \"JADE_KEM_IMPL\": \"%s\"", JADE_KEM_IMPL);
+
+  printf(" \"JADE_KEM_SECRETKEYBYTES\": %u,\n", JADE_KEM_SECRETKEYBYTES);
+  printf(" \"JADE_KEM_PUBLICKEYBYTES\": %u,\n", JADE_KEM_PUBLICKEYBYTES);
+  printf(" \"JADE_KEM_CIPHERTEXTBYTES\": %u,\n", JADE_KEM_CIPHERTEXTBYTES);
+  printf(" \"JADE_KEM_BYTES\": %u,\n", JADE_KEM_BYTES);
+
+  printf("\n}\n");
 
   return 0;
 }

@@ -1,17 +1,20 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_scalarmult.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_BYTES\": %u,\n", NAMESPACE(BYTES));
-  printf(" \"CRYPTO_SCALARBYTES\": %u,\n", NAMESPACE(SCALARBYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_SCALARMULT_ALGNAME\": \"%s\",\n", JADE_SCALARMULT_ALGNAME);
+  printf(" \"JADE_SCALARMULT_ARCH\": \"%s\",\n", JADE_SCALARMULT_ARCH);
+  printf(" \"JADE_SCALARMULT_IMPL\": \"%s\"", JADE_SCALARMULT_IMPL);
+
+  printf(" \"JADE_SCALARMULT_BYTES\": %u,\n", JADE_SCALARMULT_BYTES);
+  printf(" \"JADE_SCALARMULT_SCALARBYTES\": %u,\n", JADE_SCALARMULT_SCALARBYTES);
+
+  printf("\n}\n");
 
   return 0;
 }

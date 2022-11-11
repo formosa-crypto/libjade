@@ -1,17 +1,20 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_onetimeauth.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_BYTES\": %u,\n", NAMESPACE(BYTES));
-  printf(" \"CRYPTO_KEYBYTES\": %u,\n", NAMESPACE(KEYBYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_ONETIMEAUTH_ALGNAME\": \"%s\",\n", JADE_ONETIMEAUTH_ALGNAME);
+  printf(" \"JADE_ONETIMEAUTH_ARCH\": \"%s\",\n", JADE_ONETIMEAUTH_ARCH);
+  printf(" \"JADE_ONETIMEAUTH_IMPL\": \"%s\"", JADE_ONETIMEAUTH_IMPL);
+
+  printf(" \"JADE_ONETIMEAUTH_BYTES\": %u,\n", JADE_ONETIMEAUTH_BYTES);
+  printf(" \"JADE_ONETIMEAUTH_KEYBYTES\": %u,\n", JADE_ONETIMEAUTH_KEYBYTES);
+
+  printf("\n}\n");
 
   return 0;
 }

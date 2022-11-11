@@ -10,7 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
-#include "namespace.h"
+#include "jade_sign.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -42,17 +42,6 @@ void test(unsigned char*,state *);
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#define CRYPTO_PUBLICKEYBYTES NAMESPACE(PUBLICKEYBYTES)
-#define CRYPTO_SECRETKEYBYTES NAMESPACE(SECRETKEYBYTES)
-#define CRYPTO_BYTES NAMESPACE(BYTES)
-#define CRYPTO_DETERMINISTIC NAMESPACE(DETERMINISTIC)
-
-#define crypto_sign_keypair NAMESPACE_LC(keypair)
-#define crypto_sign JADE_NAMESPACE_LC
-#define crypto_sign_open NAMESPACE_LC(open)
-
-// ////////////////////////////////////////////////////////////////////////////
-
 #define TUNE_BYTES 1536
 
 #ifdef SMALL
@@ -77,9 +66,9 @@ void allocate(state *s)
 {
   uint64_t alloclen = 0;
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
-  if (alloclen < MAXTEST_BYTES + CRYPTO_BYTES) alloclen = MAXTEST_BYTES + CRYPTO_BYTES;
-  if (alloclen < CRYPTO_PUBLICKEYBYTES) alloclen = CRYPTO_PUBLICKEYBYTES;
-  if (alloclen < CRYPTO_SECRETKEYBYTES) alloclen = CRYPTO_SECRETKEYBYTES;
+  if (alloclen < MAXTEST_BYTES + JADE_SIGN_BYTES) alloclen = MAXTEST_BYTES + JADE_SIGN_BYTES;
+  if (alloclen < JADE_SIGN_PUBLICKEYBYTES) alloclen = JADE_SIGN_PUBLICKEYBYTES;
+  if (alloclen < JADE_SIGN_SECRETKEYBYTES) alloclen = JADE_SIGN_SECRETKEYBYTES;
 
   s->p  = alignedcalloc(&(s->free[0]), alloclen);
   s->s  = alignedcalloc(&(s->free[1]), alloclen);
@@ -91,8 +80,8 @@ void allocate(state *s)
   s->m2 = alignedcalloc(&(s->free[7]), alloclen);
   s->c2 = alignedcalloc(&(s->free[8]), alloclen);
   s->t2 = alignedcalloc(&(s->free[9]), alloclen);
-  s->plen = CRYPTO_PUBLICKEYBYTES;
-  s->slen = CRYPTO_SECRETKEYBYTES;
+  s->plen = JADE_SIGN_PUBLICKEYBYTES;
+  s->slen = JADE_SIGN_SECRETKEYBYTES;
 }
 
 void deallocate(state **_s)
@@ -145,47 +134,47 @@ void test(unsigned char *checksum_state, state *_s)
     
     output_prepare(s.p2, s.p, s.plen);
     output_prepare(s.s2, s.s, s.slen);
-    result = crypto_sign_keypair(s.p, s.s);
-    if (result != 0) fail("crypto_sign_keypair returns nonzero");
+    result = jade_sign_keypair(s.p, s.s);
+    if (result != 0) fail("jade_sign_keypair returns nonzero");
     checksum(checksum_state, s.p, s.plen);
     checksum(checksum_state, s.s, s.slen);
-    output_compare(s.p2, s.p, s.plen, "crypto_sign_keypair");
-    output_compare(s.s2, s.s, s.slen, "crypto_sign_keypair");
+    output_compare(s.p2, s.p, s.plen, "jade_sign_keypair");
+    output_compare(s.s2, s.s, s.slen, "jade_sign_keypair");
     
-    s.clen = s.mlen + CRYPTO_BYTES;
+    s.clen = s.mlen + JADE_SIGN_BYTES;
     output_prepare(s.c2, s.c, s.clen);
     input_prepare(s.m2, s.m, s.mlen);
     memcpy(s.s2, s.s, s.slen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_sign(s.c, &s.clen, s.m, s.mlen, s.s);
-    if (result != 0) fail("crypto_sign returns nonzero");
-    if (s.clen < s.mlen) fail("crypto_sign returns smaller output than input");
-    if (s.clen > s.mlen + CRYPTO_BYTES) fail("crypto_sign returns more than crypto_sign_BYTES extra bytes");
+    result = jade_sign(s.c, &s.clen, s.m, s.mlen, s.s);
+    if (result != 0) fail("jade_sign returns nonzero");
+    if (s.clen < s.mlen) fail("jade_sign returns smaller output than input");
+    if (s.clen > s.mlen + JADE_SIGN_BYTES) fail("jade_sign returns more than jade_sign_BYTES extra bytes");
     checksum(checksum_state, s.c, s.clen);
-    output_compare(s.c2, s.c, s.clen,"crypto_sign");
-    input_compare(s.m2, s.m, s.mlen, "crypto_sign");
-    input_compare(s.s2, s.s, s.slen, "crypto_sign");
+    output_compare(s.c2, s.c, s.clen,"jade_sign");
+    input_compare(s.m2, s.m, s.mlen, "jade_sign");
+    input_compare(s.s2, s.s, s.slen, "jade_sign");
 
-#if CRYPTO_DETERMINISTIC == 1
+#if JADE_SIGN_DETERMINISTIC == 1
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.m2, s.m, s.mlen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_sign(s.c2, &s.clen, s.m2, s.mlen, s.s2);
-    if (result != 0) fail("crypto_sign returns nonzero");
-    if (memcmp(s.c2, s.c, s.clen) != 0) fail("crypto_sign is nondeterministic");
+    result = jade_sign(s.c2, &s.clen, s.m2, s.mlen, s.s2);
+    if (result != 0) fail("jade_sign returns nonzero");
+    if (memcmp(s.c2, s.c, s.clen) != 0) fail("jade_sign is nondeterministic");
 #endif
     
-#if CRYPTO_DETERMINISTIC == 1
+#if JADE_SIGN_DETERMINISTIC == 1
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.m2, s.m, s.mlen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_sign(s.m2, &s.clen, s.m2, s.mlen, s.s);
-    if (result != 0) fail("crypto_sign with m=c overlap returns nonzero");
-    if (memcmp(s.m2, s.c, s.clen) != 0) fail("crypto_sign does not handle m=c overlap");
+    result = jade_sign(s.m2, &s.clen, s.m2, s.mlen, s.s);
+    if (result != 0) fail("jade_sign with m=c overlap returns nonzero");
+    if (memcmp(s.m2, s.c, s.clen) != 0) fail("jade_sign does not handle m=c overlap");
     memcpy(s.m2, s.m, s.mlen);
-    result = crypto_sign(s.s2, &s.clen, s.m, s.mlen, s.s2);
-    if (result != 0) fail("crypto_sign with s=c overlap returns nonzero");
-    if (memcmp(s.s2, s.c, s.clen) != 0) fail("crypto_sign does not handle s=c overlap");
+    result = jade_sign(s.s2, &s.clen, s.m, s.mlen, s.s2);
+    if (result != 0) fail("jade_sign with s=c overlap returns nonzero");
+    if (memcmp(s.s2, s.c, s.clen) != 0) fail("jade_sign does not handle s=c overlap");
     memcpy(s.s2, s.s, s.slen);
 #endif
     
@@ -195,46 +184,46 @@ void test(unsigned char *checksum_state, state *_s)
     double_canary(s.c2, s.c, s.clen);
     memcpy(s.p2, s.p, s.plen);
     double_canary(s.p2, s.p, s.plen);
-    result = crypto_sign_open(s.t, &s.tlen, s.c, s.clen, s.p);
-    if (result != 0) fail("crypto_sign_open returns nonzero - 0");
-    if (s.tlen != s.mlen) fail("crypto_sign_open does not match mlen");
-    if (memcmp(s.t, s.m, s.mlen) != 0) fail("crypto_sign_open does not match m");
+    result = jade_sign_open(s.t, &s.tlen, s.c, s.clen, s.p);
+    if (result != 0) fail("jade_sign_open returns nonzero - 0");
+    if (s.tlen != s.mlen) fail("jade_sign_open does not match mlen");
+    if (memcmp(s.t, s.m, s.mlen) != 0) fail("jade_sign_open does not match m");
     checksum(checksum_state, s.t, s.tlen);
-    output_compare(s.t2, s.t, s.clen,"crypto_sign_open");
-    input_compare(s.c2, s.c, s.clen,"crypto_sign_open");
-    input_compare(s.p2, s.p, s.plen,"crypto_sign_open");
+    output_compare(s.t2, s.t, s.clen,"jade_sign_open");
+    input_compare(s.c2, s.c, s.clen,"jade_sign_open");
+    input_compare(s.p2, s.p, s.plen,"jade_sign_open");
     
     double_canary(s.t2, s.t, s.tlen);
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.p2, s.p, s.plen);
-    result = crypto_sign_open(s.t2, &s.tlen, s.c2, s.clen, s.p2);
-    if (result != 0) fail("crypto_sign_open returns nonzero 1");
-    if (memcmp(s.t2, s.t, s.tlen) != 0) fail("crypto_sign_open is nondeterministic");
+    result = jade_sign_open(s.t2, &s.tlen, s.c2, s.clen, s.p2);
+    if (result != 0) fail("jade_sign_open returns nonzero 1");
+    if (memcmp(s.t2, s.t, s.tlen) != 0) fail("jade_sign_open is nondeterministic");
     
     double_canary(s.t2, s.t, s.tlen);
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.p2, s.p, s.plen);
-    result = crypto_sign_open(s.c2, &s.tlen, s.c2, s.clen, s.p);
-    if (result != 0) fail("crypto_sign_open with c=t overlap returns nonzero");
-    if (memcmp(s.c2, s.t, s.tlen) != 0) fail("crypto_sign_open does not handle c=t overlap");
+    result = jade_sign_open(s.c2, &s.tlen, s.c2, s.clen, s.p);
+    if (result != 0) fail("jade_sign_open with c=t overlap returns nonzero");
+    if (memcmp(s.c2, s.t, s.tlen) != 0) fail("jade_sign_open does not handle c=t overlap");
     memcpy(s.c2, s.c, s.clen);
-    result = crypto_sign_open(s.p2, &s.tlen, s.c, s.clen, s.p2);
-    if (result != 0) fail("crypto_sign_open with p=t overlap returns nonzero");
-    if (memcmp(s.p2, s.t, s.tlen) != 0) fail("crypto_sign_open does not handle p=t overlap");
+    result = jade_sign_open(s.p2, &s.tlen, s.c, s.clen, s.p2);
+    if (result != 0) fail("jade_sign_open with p=t overlap returns nonzero");
+    if (memcmp(s.p2, s.t, s.tlen) != 0) fail("jade_sign_open does not handle p=t overlap");
     memcpy(s.p2, s.p, s.plen);
     
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
+    if (jade_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
       if ((s.tlen != s.mlen) || (memcmp(s.t, s.m, s.mlen) != 0))
-        fail("crypto_sign_open allows trivial forgeries");
+        fail("jade_sign_open allows trivial forgeries");
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
+    if (jade_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
       if ((s.tlen != s.mlen) || (memcmp(s.t, s.m, s.mlen) != 0))
-        fail("crypto_sign_open allows trivial forgeries");
+        fail("jade_sign_open allows trivial forgeries");
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
+    if (jade_sign_open(s.t, &s.tlen, s.c, s.clen, s.p) == 0)
       if ((s.tlen != s.mlen) || (memcmp(s.t, s.m, s.mlen) != 0))
-        fail("crypto_sign_open allows trivial forgeries");
+        fail("jade_sign_open allows trivial forgeries");
   }
 }
 

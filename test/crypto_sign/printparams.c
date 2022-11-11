@@ -1,18 +1,21 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_sign.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_SECRETKEYBYTES\": %u,\n", NAMESPACE(SECRETKEYBYTES));
-  printf(" \"CRYPTO_PUBLICKEYBYTES\": %u,\n", NAMESPACE(PUBLICKEYBYTES));
-  printf(" \"CRYPTO_BYTES\": %u,\n",          NAMESPACE(BYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_SIGN_ALGNAME\": \"%s\",\n", JADE_SIGN_ALGNAME);
+  printf(" \"JADE_SIGN_ARCH\": \"%s\",\n", JADE_SIGN_ARCH);
+  printf(" \"JADE_SIGN_IMPL\": \"%s\"", JADE_SIGN_IMPL);
+
+  printf(" \"JADE_SIGN_SECRETKEYBYTES\": %u,\n", JADE_SIGN_SECRETKEYBYTES);
+  printf(" \"JADE_SIGN_PUBLICKEYBYTES\": %u,\n", JADE_SIGN_PUBLICKEYBYTES);
+  printf(" \"JADE_SIGN_BYTES\": %u,\n", JADE_SIGN_BYTES);
+
+  printf("\n}\n");
 
   return 0;
 }
