@@ -133,13 +133,13 @@ inline fn __interleave_avx(stack u128[8] s, reg u128[8] k, inline int o) -> reg 
 
 
 // 128 bytes (non sequentially)
-inline fn __store_xor_half_interleave_v_avx(reg u64 output plain len, reg u128[8] k, inline int o)
+inline fn __store_xor_half_interleave_v_avx(reg u64 output input len, reg u128[8] k, inline int o)
 {
   inline int i;
 
   for i=0 to 4
-  { k[2*i  ] ^= (u128)[plain + o + 64*i];
-    k[2*i+1] ^= (u128)[plain + o + 64*i + 16]; }
+  { k[2*i  ] ^= (u128)[input + o + 64*i];
+    k[2*i+1] ^= (u128)[input + o + 64*i + 16]; }
 
   for i=0 to 4
   { (u128)[output + o + 64*i     ] = k[2*i  ];
@@ -148,23 +148,23 @@ inline fn __store_xor_half_interleave_v_avx(reg u64 output plain len, reg u128[8
 
 
 // 256 bytes
-inline fn __store_xor_v_avx(reg u64 output plain len, reg u128[16] k) -> reg u64, reg u64, reg u64
+inline fn __store_xor_v_avx(reg u64 output input len, reg u128[16] k) -> reg u64, reg u64, reg u64
 {
   stack u128[8] s_k8_15;
   reg u128[8] k0_7, k8_15;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx(k);
-  __store_xor_half_interleave_v_avx(output, plain, len, k0_7, 0);
+  __store_xor_half_interleave_v_avx(output, input, len, k0_7, 0);
   k8_15 = __rotate_second_half_v_avx(s_k8_15);
-  __store_xor_half_interleave_v_avx(output, plain, len, k8_15, 32);
-  output, plain, len = __update_ptr_xor_ref(output, plain, len, 256);
+  __store_xor_half_interleave_v_avx(output, input, len, k8_15, 32);
+  output, input, len = __update_ptr_xor_ref(output, input, len, 256);
 
-  return output, plain, len;
+  return output, input, len;
 }
 
 
 // <= 256 bytes
-inline fn __store_xor_last_v_avx(reg u64 output plain len, reg u128[16] k)
+inline fn __store_xor_last_v_avx(reg u64 output input len, reg u128[16] k)
 {
   inline int i;
   stack u128[8] s_k0_7 s_k8_15;
@@ -178,11 +178,11 @@ inline fn __store_xor_last_v_avx(reg u64 output plain len, reg u128[16] k)
   k0_3, k4_7 = __interleave_avx(s_k0_7, k8_15, 0);
 
   if(len >= 128)
-  { output, plain, len = __store_xor_h_x2_avx(output, plain, len, k0_3, k4_7);
+  { output, input, len = __store_xor_h_x2_avx(output, input, len, k0_3, k4_7);
     k0_3, k4_7 = __interleave_avx(s_k0_7, k8_15, 4);
   }
 
-  __store_xor_last_h_x2_avx(output, plain, len, k0_3, k4_7);
+  __store_xor_last_h_x2_avx(output, input, len, k0_3, k4_7);
 }
 
 
