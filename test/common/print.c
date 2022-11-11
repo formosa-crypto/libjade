@@ -49,3 +49,15 @@ void print_str_c_u8(const char *str, uint64_t c, const uint8_t *a, size_t l)
   printf("uint8_t %s_%" PRIu64 "[%zu] = ",str, c, l);
   print_u8(a, l);
 }
+
+void print_str_c_c_u8(const char *str, uint64_t c1, uint64_t c2, const uint8_t *a, size_t l)
+{
+  if( l == 0 )
+  { printf("uint8_t *%s_%" PRIu64 "_%" PRIu64 " = NULL;\n", str, c1, c2);
+    return;
+  }
+  
+  printf("uint8_t %s_%" PRIu64 "_%" PRIu64 "[%zu] = ",str, c1, c2, l);
+  print_u8(a, l);
+}
+

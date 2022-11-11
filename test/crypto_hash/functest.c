@@ -8,7 +8,7 @@
 #include "jade_hash.h"
 
 /*
-int jade_hash(uint8_t *out, uint8_t *in, uint64_t length);
+int jade_hash(uint8_t *output, uint8_t *input, uint64_t input_length);
 */
 
 #define MAXBYTES 32
@@ -28,7 +28,7 @@ int main(void)
   #endif
 
   //
-  for(length=0; length<=MAXBYTES; length++)
+  for(length=0; length <= MAXBYTES; length++)
   {
     jade_hash(hash, input, length);
 
