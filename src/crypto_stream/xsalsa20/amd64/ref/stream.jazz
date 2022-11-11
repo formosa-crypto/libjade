@@ -1,9 +1,9 @@
 require "xsalsa20.jinc"
 
-export fn jade_stream_xsalsa20_amd64_ref_xor(reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_xsalsa20_amd64_ref_xor(reg u64 output input len nonce key) -> reg u64
 {
   reg u64 r;
-  __xsalsa20_xor_ref(output, plain, len, nonce, key);
+  __xsalsa20_xor_ref(output, input, len, nonce, key);
   _,_,_,_,_,r = #set0();
   return r;
 }

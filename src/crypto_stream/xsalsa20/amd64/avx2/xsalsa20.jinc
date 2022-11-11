@@ -3,13 +3,13 @@ param int SALSA20_ROUNDS=20;
 from Jade require "crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
 from Jade require "crypto_stream/salsa20/common/amd64/avx2/salsa20.jinc"
 
-inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key)
+inline fn __xsalsa20_xor_avx2(reg u64 output input len nonce key)
 {
-  stack u64 _output _plain _len _nonce _key;
+  stack u64 _output _input _len _nonce _key;
   reg u32[8] subkey;
 
   _output = output;
-  _plain = plain;
+  _input = input;
   _len = len;
   _nonce = nonce;
   _key = key;
@@ -17,12 +17,12 @@ inline fn __xsalsa20_xor_avx2(reg u64 output plain len nonce key)
   subkey = __hsalsa20_ref(nonce, key);
 
   output = _output;
-  plain = _plain;
+  input = _input;
   len = _len;
   nonce = _nonce;
   nonce += 16;
 
-  __salsa20_xor_1_avx2(output, plain, len, nonce, subkey);
+  __salsa20_xor_1_avx2(output, input, len, nonce, subkey);
 }
 
 

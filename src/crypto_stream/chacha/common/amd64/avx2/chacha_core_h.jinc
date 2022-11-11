@@ -275,7 +275,7 @@ inline fn __perm_h_x2_avx2(reg u256[4] k1 k2) -> reg u256[4], reg u256[4]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __chacha_xor_h_avx2(reg u64 output plain len nonce key)
+inline fn __chacha_xor_h_avx2(reg u64 output input len nonce key)
 {
   reg u256[4] st k;
   reg u256 r16 r8;
@@ -290,7 +290,7 @@ inline fn __chacha_xor_h_avx2(reg u64 output plain len nonce key)
     k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
-    output, plain, len = __store_xor_h_avx2(output, plain, len, k);
+    output, input, len = __store_xor_h_avx2(output, input, len, k);
     st = __increment_counter0202_h_avx2(st);
   }
 
@@ -299,12 +299,12 @@ inline fn __chacha_xor_h_avx2(reg u64 output plain len nonce key)
     k = __rounds_h_avx2(k, r16, r8);
     k = __sum_states_h_avx2(k, st);
     k = __perm_h_avx2(k);
-    __store_xor_last_h_avx2(output, plain, len, k);
+    __store_xor_last_h_avx2(output, input, len, k);
   }
 }
 
 
-inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key)
+inline fn __chacha_xor_h_x2_avx2(reg u64 output input len nonce key)
 {
   reg u256[4] st k1 k2;
   reg u256 r16 r8;
@@ -319,7 +319,7 @@ inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key)
     k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
-    output, plain, len = __store_xor_h_x2_avx2(output, plain, len, k1, k2);
+    output, input, len = __store_xor_h_x2_avx2(output, input, len, k1, k2);
     st = __increment_counter0404_h_avx2(st);
   }
 
@@ -328,15 +328,15 @@ inline fn __chacha_xor_h_x2_avx2(reg u64 output plain len nonce key)
     k1, k2 = __rounds_h_x2_avx2(k1, k2, r16, r8);
     k1, k2 = __sum_states_h_x2_avx2(k1, k2, st);
     k1, k2 = __perm_h_x2_avx2(k1, k2);
-    output, plain, len = __store_xor_h_avx2(output, plain, len, k1);
-    __store_xor_last_h_avx2(output, plain, len, k2);
+    output, input, len = __store_xor_h_avx2(output, input, len, k1);
+    __store_xor_last_h_avx2(output, input, len, k2);
   }
   else
   { k1 = __copy_state_h_avx2(st);
     k1 = __rounds_h_avx2(k1, r16, r8);
     k1 = __sum_states_h_avx2(k1, st);
     k1 = __perm_h_avx2(k1);
-    __store_xor_last_h_avx2(output, plain, len, k1);
+    __store_xor_last_h_avx2(output, input, len, k1);
   }
 }
 

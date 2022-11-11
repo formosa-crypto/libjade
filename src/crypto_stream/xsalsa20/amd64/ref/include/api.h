@@ -11,8 +11,8 @@
 #include <stdint.h>
 
 int jade_stream_xsalsa20_amd64_ref_xor(
- uint8_t *ciphertext,
- uint8_t *plaintext,
+ uint8_t *output,
+ uint8_t *input,
  uint64_t length,
  uint8_t *nonce, /*NONCEBYTES*/
  uint8_t *key /*KEYBYTES*/
