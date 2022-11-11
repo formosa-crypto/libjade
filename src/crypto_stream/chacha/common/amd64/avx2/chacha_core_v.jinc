@@ -214,7 +214,7 @@ inline fn __sum_states_v_avx2(reg u256[16] k, stack u256[16] st) -> reg u256[16]
 ///////////////////////////////////////////////////////////////////////////////
 
 
-inline fn __chacha_xor_v_avx2(reg u64 output plain len nonce key)
+inline fn __chacha_xor_v_avx2(reg u64 output input len nonce key)
 {
   stack u256[16] st;
   reg u256[16] k;
@@ -232,7 +232,7 @@ inline fn __chacha_xor_v_avx2(reg u64 output plain len nonce key)
   { k = __copy_state_v_avx2(st);
     k = __rounds_v_avx2(k, r16, r8);
     k = __sum_states_v_avx2(k, st);
-    output, plain, len = __store_xor_v_avx2(output, plain, len, k);
+    output, input, len = __store_xor_v_avx2(output, input, len, k);
     st = __increment_counter_v_avx2(st);
   }
 
@@ -240,7 +240,7 @@ inline fn __chacha_xor_v_avx2(reg u64 output plain len nonce key)
   { k = __copy_state_v_avx2(st);
     k = __rounds_v_avx2(k, r16, r8);
     k = __sum_states_v_avx2(k, st);
-    __store_xor_last_v_avx2(output, plain, len, k);
+    __store_xor_last_v_avx2(output, input, len, k);
   }
 }
 

@@ -126,15 +126,15 @@ inline fn __sum_states_ref(reg u32[16] k, stack u32 k15, stack u32[16] st) -> re
 }
 
 
-inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
+inline fn __salsa20_xor_ref(reg u64 output input len nonce key)
 {
-  stack u64 s_output s_plain s_len;
+  stack u64 s_output s_input s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
 
   s_output = output;
-  s_plain = plain;
+  s_input = input;
   s_len = len;
 
   st = __init_ref(nonce, key);
@@ -142,7 +142,7 @@ inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
   while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
+    s_output, s_input, s_len = __sum_states_store_xor_ref(s_output, s_input, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
@@ -150,19 +150,19 @@ inline fn __salsa20_xor_ref(reg u64 output plain len nonce key)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+    __store_xor_last_ref(s_output, s_input, s_len, k, k15);
   }
 }
 
-inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
+inline fn __salsa20_xor_1_ref(reg u64 output input len nonce, reg u32[8] key)
 {
-  stack u64 s_output s_plain s_len;
+  stack u64 s_output s_input s_len;
   stack u32[16] st;
   reg u32[16] k;
   stack u32 k2 k3 k15;
 
   s_output = output;
-  s_plain = plain;
+  s_input = input;
   s_len = len;
 
   st = __init_1_ref(nonce, key);
@@ -170,7 +170,7 @@ inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
   while {len = s_len;} (len >= 64)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
-    s_output, s_plain, s_len = __sum_states_store_xor_ref(s_output, s_plain, s_len, k, k15, st);
+    s_output, s_input, s_len = __sum_states_store_xor_ref(s_output, s_input, s_len, k, k15, st);
     st = __increment_counter_ref(st);
   }
 
@@ -178,7 +178,7 @@ inline fn __salsa20_xor_1_ref(reg u64 output plain len nonce, reg u32[8] key)
   { k, k2, k3 = __copy_state_ref(st);
     k, k15 = __rounds_ref(k, k2, k3);
     k, k15 = __sum_states_ref(k, k15, st);
-    __store_xor_last_ref(s_output, s_plain, s_len, k, k15);
+    __store_xor_last_ref(s_output, s_input, s_len, k, k15);
   }
 }
 
