@@ -9,7 +9,7 @@
 #include <stdint.h>
 
 int jade_hash_sha3_224_amd64_ref(
- uint8_t *output,
+ uint8_t *hash,
  const uint8_t *input,
  uint64_t input_length
 );
