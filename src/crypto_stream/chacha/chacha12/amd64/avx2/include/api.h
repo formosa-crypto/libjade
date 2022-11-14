@@ -12,17 +12,17 @@
 
 int jade_stream_chacha_chacha12_amd64_avx2_xor(
  uint8_t *output,
- uint8_t *input,
- uint64_t length,
- uint8_t *nonce, /*NONCEBYTES*/
- uint8_t *key /*KEYBYTES*/
+ const uint8_t *input,
+ uint64_t input_length,
+ const uint8_t *nonce,
+ const uint8_t *key
 );
 
 int jade_stream_chacha_chacha12_amd64_avx2(
  uint8_t *stream,
- uint64_t length,
- uint8_t *nonce, /*NONCEBYTES*/
- uint8_t *key /*KEYBYTES*/
+ uint64_t stream_length,
+ const uint8_t *nonce,
+ const uint8_t *key
 );
 
 #endif
