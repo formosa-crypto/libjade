@@ -37,10 +37,10 @@ int main(void)
   uint8_t shared_secret_2[JADE_KEM_BYTES];
 
   //
-  memset(public_key, 0, JADE_KEM_PUBLICKEYBYTES);
-  memset(secret_key, 0, JADE_KEM_SECRETKEYBYTES);
+  memset(public_key,      0, JADE_KEM_PUBLICKEYBYTES);
+  memset(secret_key,      0, JADE_KEM_SECRETKEYBYTES);
   memset(shared_secret_1, 0, JADE_KEM_BYTES);
-  memset(ciphertext, 0, JADE_KEM_CIPHERTEXTBYTES);
+  memset(ciphertext,      0, JADE_KEM_CIPHERTEXTBYTES);
   memset(shared_secret_2, 0, JADE_KEM_BYTES);
 
   //

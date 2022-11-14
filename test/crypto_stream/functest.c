@@ -46,11 +46,11 @@ int main(void)
 
   memset(ciphertext_1, 0, MAXBYTES);
   memset(ciphertext_2, 0, MAXBYTES);
-  memset(stream_1, 0, MAXBYTES);
-  memset(plaintext_1, 0, MAXBYTES);
-  memset(plaintext_2, 0, MAXBYTES);
-  memset(nonce, 0, JADE_STREAM_NONCEBYTES);
-  memset(key, 0, JADE_STREAM_KEYBYTES);
+  memset(stream_1,     0, MAXBYTES);
+  memset(plaintext_1,  0, MAXBYTES);
+  memset(plaintext_2,  0, MAXBYTES);
+  memset(nonce,        0, JADE_STREAM_NONCEBYTES);
+  memset(key,          0, JADE_STREAM_KEYBYTES);
 
   #ifndef NOPRINT
   print_info(JADE_STREAM_ALGNAME, JADE_STREAM_ARCH, JADE_STREAM_IMPL);
