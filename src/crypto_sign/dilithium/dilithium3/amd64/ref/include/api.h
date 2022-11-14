@@ -13,24 +13,24 @@
 #include <stdint.h>
 
 int jade_sign_dilithium_dilithium3_amd64_ref_keypair(
-  uint8_t *pk,
-  uint8_t *sk
+  uint8_t *public_key,
+  uint8_t *secret_key
 );
 
 int jade_sign_dilithium_dilithium3_amd64_ref(
-  uint8_t *sm,
-  uint64_t *smlen_p,
-  const uint8_t *m,
-  uint64_t mlen,
-  const uint8_t *sk
+  uint8_t *signed_message,
+  uint64_t *signed_message_length,
+  const uint8_t *message,
+  uint64_t message_length,
+  const uint8_t *secret_key
 );
 
 int jade_sign_dilithium_dilithium3_amd64_ref_open(
-  uint8_t *m,
-  uint64_t *mlen_p,
-  const uint8_t *sm,
-  uint64_t smlen,
-  const uint8_t *pk
+  uint8_t *message,
+  uint64_t *message_length,
+  const uint8_t *signed_message,
+  uint64_t signed_message_length,
+  const uint8_t *public_key
 );
 
 #endif

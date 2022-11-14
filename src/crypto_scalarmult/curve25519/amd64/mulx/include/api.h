@@ -11,14 +11,14 @@
 #include <stdint.h>
 
 int jade_scalarmult_curve25519_amd64_mulx(
- uint8_t *r,
- uint8_t *k,
- uint8_t *u
+ uint8_t *q,
+ const uint8_t *n,
+ const uint8_t *p
 );
 
 int jade_scalarmult_curve25519_amd64_mulx_base(
- uint8_t *r,
- uint8_t *k
+ uint8_t *q,
+ const uint8_t *n
 );
 
 #endif
