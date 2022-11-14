@@ -25,9 +25,7 @@ int main(void)
 
   //
   r = jade_hash(hash, input, sizeof(input));
-
-  //
-  assert(r == 0);
+    assert(r == 0);
 
   #ifndef NOPRINT
   print_info(JADE_HASH_ALGNAME, JADE_HASH_ARCH, JADE_HASH_IMPL);

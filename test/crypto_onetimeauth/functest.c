@@ -37,15 +37,15 @@ int main(void)
   __jasmin_syscall_randombytes__(key, JADE_ONETIMEAUTH_KEYBYTES);
 
   r = jade_onetimeauth(mac, input, sizeof(input), key);
-  assert(r == 0);
+    assert(r == 0);
 
   r = jade_onetimeauth_verify(mac, input, sizeof(input), key);
-  assert(r == 0);
+    assert(r == 0);
 
   //flip one bit of input so the verification fails
   input[0] ^= 0x1;
   r = jade_onetimeauth_verify(mac, input, sizeof(input), key);
-  assert(r == -1);
+    assert(r == -1);
 
   #ifndef NOPRINT
   print_info(JADE_ONETIMEAUTH_ALGNAME, JADE_ONETIMEAUTH_ARCH, JADE_ONETIMEAUTH_IMPL);

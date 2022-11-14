@@ -39,16 +39,17 @@ int main(void)
   __jasmin_syscall_randombytes__(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
 
   //
-  r  = jade_scalarmult_base(public_key_a, secret_key_a);
-  r |= jade_scalarmult_base(public_key_b, secret_key_b);
+  r = jade_scalarmult_base(public_key_a, secret_key_a);
+    assert(r == 0);
+  r = jade_scalarmult_base(public_key_b, secret_key_b);
+    assert(r == 0);
 
   //
-  r |= jade_scalarmult(secret_a, secret_key_a, public_key_b);
-  r |= jade_scalarmult(secret_b, secret_key_b, public_key_a);
-
-  //
-  assert(r == 0);
-  assert(memcmp(secret_a, secret_b, JADE_SCALARMULT_BYTES) == 0);
+  r = jade_scalarmult(secret_a, secret_key_a, public_key_b);
+    assert(r == 0);
+  r = jade_scalarmult(secret_b, secret_key_b, public_key_a);
+    assert(r == 0);
+    assert(memcmp(secret_a, secret_b, JADE_SCALARMULT_BYTES) == 0);
 
   #ifndef NOPRINT
   print_info(JADE_SCALARMULT_ALGNAME, JADE_SCALARMULT_ARCH, JADE_SCALARMULT_IMPL);

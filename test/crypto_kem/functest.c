@@ -38,17 +38,17 @@ int main(void)
   uint8_t shared_secret_b[JADE_KEM_BYTES];
 
   //
-  r  = jade_kem_keypair(public_key, secret_key);
+  r = jade_kem_keypair(public_key, secret_key);
+    assert(r == 0);
 
   //
-  r |= jade_kem_enc(ciphertext, shared_secret_a, public_key);
+  r = jade_kem_enc(ciphertext, shared_secret_a, public_key);
+    assert(r == 0);
 
   //
-  r |= jade_kem_dec(shared_secret_b, ciphertext, secret_key);
-
-  //
-  assert(r == 0);
-  assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
+  r = jade_kem_dec(shared_secret_b, ciphertext, secret_key);
+    assert(r == 0);
+    assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
 
   #ifndef NOPRINT
   print_info(JADE_KEM_ALGNAME, JADE_KEM_ARCH, JADE_KEM_IMPL);

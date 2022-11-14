@@ -52,18 +52,18 @@ int main(void)
   //
   r = jade_secretbox(ciphertext, plaintext_1, length, nonce, key);
 
-  assert(r == 0);
-  for(int i=0; i<JADE_SECRETBOX_BOXZEROBYTES; i++)
-  { assert(ciphertext[i] == 0); }
+    assert(r == 0);
+    for(int i=0; i<JADE_SECRETBOX_BOXZEROBYTES; i++)
+    { assert(ciphertext[i] == 0); }
 
   //
   r = jade_secretbox_open(plaintext_2, ciphertext, length, nonce, key);
 
-  assert(r == 0);
-  for(int i=0; i<JADE_SECRETBOX_ZEROBYTES; i++)
-  { assert(plaintext_2[i] == 0); }
-  for(int i=0; i<PLAINTEXT_LENGTH; i++)
-  { assert(plaintext[i] == plaintext_2[JADE_SECRETBOX_ZEROBYTES + i]); }
+    assert(r == 0);
+    for(int i=0; i<JADE_SECRETBOX_ZEROBYTES; i++)
+    { assert(plaintext_2[i] == 0); }
+    for(int i=0; i<PLAINTEXT_LENGTH; i++)
+    { assert(plaintext[i] == plaintext_2[JADE_SECRETBOX_ZEROBYTES + i]); }
 
   #ifndef NOPRINT
   print_info(JADE_SECRETBOX_ALGNAME, JADE_SECRETBOX_ARCH, JADE_SECRETBOX_IMPL);
@@ -78,8 +78,7 @@ int main(void)
   //flip one bit of ciphertext so the verification fails
   ciphertext[JADE_SECRETBOX_ZEROBYTES] ^= 1;
   r = jade_secretbox_open(plaintext_2, ciphertext, length, nonce, key);
-
-  assert(r == -1);
+    assert(r == -1);
 
   return 0;
 }
