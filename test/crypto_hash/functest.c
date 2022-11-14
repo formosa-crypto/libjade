@@ -29,7 +29,8 @@ int main(void)
 
   #ifndef NOPRINT
   print_info(JADE_HASH_ALGNAME, JADE_HASH_ARCH, JADE_HASH_IMPL);
-  print_u8s(hash, JADE_HASH_BYTES);
+  print_str_u8("input", input, sizeof(input));
+  print_str_u8("hash", hash, JADE_HASH_BYTES);
   #endif
 
   return 0;

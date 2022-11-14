@@ -9,45 +9,34 @@
 
 /*
 
-int jade_xof(
-  uint8_t *output,
-  uint64_t output_length,
-  uint8_t *input,
-  uint64_t input_length
+int jade_xof_shake256_amd64_ref(
+ uint8_t *output,
+ uint64_t output_length,
+ const uint8_t *input,
+ uint64_t input_length
 );
 
 */
 
-#define MAXOUTBYTES 64
-#define MAXINBYTES 32
 
 int main(void)
 {
-  uint8_t hash[MAXOUTBYTES];
-  uint64_t hash_length = 0;
-  uint8_t input[MAXINBYTES];
-  uint64_t input_length = 0;
+  int r;
+
+  #define INPUT_LENGTH 3
+  #define OUTPUT_LENGTH 12
+  uint8_t input[INPUT_LENGTH] = {0x61, 0x62, 0x63};
+  uint8_t output[OUTPUT_LENGTH];
 
   //
-  memset(hash, 0, MAXOUTBYTES);
-  memset(input, 0, MAXINBYTES);
+  r = jade_xof(output, OUTPUT_LENGTH, input, INPUT_LENGTH);
+    assert(r == 0);
 
   #ifndef NOPRINT
   print_info(JADE_XOF_ALGNAME, JADE_XOF_ARCH, JADE_XOF_IMPL);
+  print_str_u8("input", input, INPUT_LENGTH);
+  print_str_u8("output", output, OUTPUT_LENGTH);
   #endif
-
-  //
-  for(hash_length=16; hash_length <= MAXOUTBYTES; hash_length *= 2)
-  { for(input_length=0; input_length <= MAXINBYTES; input_length++)
-    {
-      jade_xof(hash, hash_length, input, input_length);
-
-      #ifndef NOPRINT
-      print_str_c_c_u8("input", hash_length, input_length, input, input_length);
-      print_str_c_c_u8("hash", hash_length, input_length, hash, hash_length);
-      #endif
-    }
-  }
 
   return 0;
 }
