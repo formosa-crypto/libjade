@@ -18,7 +18,6 @@ int jade_xof_shake256_amd64_ref(
 
 */
 
-
 int main(void)
 {
   int r;
