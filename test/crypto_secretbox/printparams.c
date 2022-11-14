@@ -1,19 +1,22 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_secretbox.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_NONCEBYTES\": %u,\n",    NAMESPACE(NONCEBYTES));
-  printf(" \"CRYPTO_KEYBYTES\": %u,\n",      NAMESPACE(KEYBYTES));
-  printf(" \"CRYPTO_ZEROBYTES\": %u,\n",     NAMESPACE(ZEROBYTES));
-  printf(" \"CRYPTO_BOXZEROBYTES\": %u,\n",  NAMESPACE(BOXZEROBYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_SECRETBOX_ALGNAME\": \"%s\",\n", JADE_SECRETBOX_ALGNAME);
+  printf(" \"JADE_SECRETBOX_ARCH\": \"%s\",\n", JADE_SECRETBOX_ARCH);
+  printf(" \"JADE_SECRETBOX_IMPL\": \"%s\"", JADE_SECRETBOX_IMPL);
+
+  printf(" \"JADE_SECRETBOX_NONCEBYTES\": %u,\n", JADE_SECRETBOX_NONCEBYTES);
+  printf(" \"JADE_SECRETBOX_KEYBYTES\": %u,\n", JADE_SECRETBOX_KEYBYTES);
+  printf(" \"JADE_SECRETBOX_ZEROBYTES\": %u,\n", JADE_SECRETBOX_ZEROBYTES);
+  printf(" \"JADE_SECRETBOX_BOXZEROBYTES\": %u,\n", JADE_SECRETBOX_BOXZEROBYTES);
+
+  printf("\n}\n");
 
   return 0;
 }

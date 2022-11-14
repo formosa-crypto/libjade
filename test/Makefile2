@@ -55,6 +55,7 @@ TEST     := $(subst $(SRC),$(BIN), $(JAZZ))
 TESTS    := $(addsuffix checksumsmall, $(TEST))
 TESTB    := $(addsuffix checksumbig, $(TEST))
 PARAM    := $(addsuffix printparams, $(TEST))
+FUNCT    := $(addsuffix functest, $(TEST))
 
 # --------------------------------------------------------------------
 
@@ -66,23 +67,27 @@ IDIR        = $(subst $(BIN),$(SRC),$(@D))
 ASM         = $(IDIR)/$(OPERATION).s
 
 MCHECK      = crypto_$(OPERATION)/checksums.c
-MPRINT      = crypto_$(OPERATION)/printparams.c
+MPARAM      = crypto_$(OPERATION)/printparams.c
+MFUNCT      = crypto_$(OPERATION)/functest.c common/print.c
+
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
-INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/
+INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
 COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
 COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
-COMPILEP    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MPRINT) $(ASM) $(RANDSRC) $(CILC)
+COMPILEP    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MPARAM) $(ASM) $(RANDSRC) $(CILC)
+COMPILEF    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MFUNCT) $(ASM) $(RANDSRC) $(CILC)
 
 LOGS       ?= libjade-logs-test.tar.gz
 
 # --------------------------------------------------------------------
-.PHONY: __phony tests params reporter $(LOGS)
+.PHONY: __phony tests params funcs reporter $(LOGS)
 
-default: tests params
+default: tests params funcs
 
 tests: $(TESTS) $(TESTB)
 params: $(PARAM)
+funcs: $(FUNCT)
 
 $(TESTS):
 %/checksumsmall: __phony | %/ %/$(CIDIR)
@@ -102,6 +107,11 @@ $(PARAM):
 	$(CILS) && rm -f $@.p
 	(($(COMPILEP)) && (./$@ > $@.p $(CILE))) || true
 
+$(FUNCT):
+%/functest: __phony | %/ %/$(CIDIR)
+	$(MAKE) -C $(IDIR) || true
+	$(CILS) && rm -f $@.f
+	(($(COMPILEF)) && (./$@ > $@.f $(CILE))) || true
 
 $(TEST): ; @mkdir -p $@
 ifeq ($(CI),1)

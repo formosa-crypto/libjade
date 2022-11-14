@@ -159,7 +159,7 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
 
     reg u32 xorhash; // XXX
 
-    status = 0xFF;
+    status = -1;
     sSig = sig;
     sPk = pk;
 
@@ -271,7 +271,7 @@ inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
 	}
 
   r32 = verify(signature, m, mlen, public_key);
-  r = (64u) r32; // CHECKME
+  r = (64s) r32;
   return r;
 }
 

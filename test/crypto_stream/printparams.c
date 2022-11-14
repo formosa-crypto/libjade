@@ -1,17 +1,20 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_stream.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_NONCEBYTES\": %u,\n", NAMESPACE(NONCEBYTES));
-  printf(" \"CRYPTO_KEYBYTES\": %u,\n", NAMESPACE(KEYBYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_STREAM_ALGNAME\": \"%s\",\n", JADE_STREAM_ALGNAME);
+  printf(" \"JADE_STREAM_ARCH\": \"%s\",\n", JADE_STREAM_ARCH);
+  printf(" \"JADE_STREAM_IMPL\": \"%s\"", JADE_STREAM_IMPL);
+
+  printf(" \"JADE_STREAM_NONCEBYTES\": %u,\n", JADE_STREAM_NONCEBYTES);
+  printf(" \"JADE_STREAM_KEYBYTES\": %u,\n", JADE_STREAM_KEYBYTES);
+
+  printf("\n}\n");
 
   return 0;
 }

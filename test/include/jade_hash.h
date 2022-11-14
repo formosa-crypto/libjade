@@ -1,0 +1,14 @@
+#ifndef JADE_HASH_API_H
+#define JADE_HASH_API_H
+
+#include "namespace.h"
+
+#define JADE_HASH_BYTES NAMESPACE(BYTES)
+
+#define jade_hash JADE_NAMESPACE_LC
+
+#define JADE_HASH_ALGNAME NAMESPACE(ALGNAME)
+#define JADE_HASH_ARCH NAMESPACE(ARCH)
+#define JADE_HASH_IMPL NAMESPACE(IMPL)
+
+#endif

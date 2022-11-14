@@ -10,7 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
-#include "namespace.h"
+#include "jade_kem.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -42,18 +42,6 @@ void test(unsigned char*,state *);
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#define CRYPTO_SECRETKEYBYTES NAMESPACE(SECRETKEYBYTES)
-#define CRYPTO_PUBLICKEYBYTES NAMESPACE(PUBLICKEYBYTES)
-#define CRYPTO_CIPHERTEXTBYTES NAMESPACE(CIPHERTEXTBYTES) 
-#define CRYPTO_BYTES NAMESPACE(BYTES)
-
-#define crypto_kem_keypair NAMESPACE_LC(keypair)
-#define crypto_kem_enc NAMESPACE_LC(enc)
-#define crypto_kem_dec NAMESPACE_LC(dec)
-
-
-// ////////////////////////////////////////////////////////////////////////////
-
 #define TUNE_BYTES 1536
 
 #ifdef SMALL
@@ -79,10 +67,10 @@ void allocate(state *s)
   unsigned long long alloclen = 0;
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
   if (alloclen < MAXTEST_BYTES) alloclen = MAXTEST_BYTES;
-  if (alloclen < CRYPTO_PUBLICKEYBYTES) alloclen = CRYPTO_PUBLICKEYBYTES;
-  if (alloclen < CRYPTO_SECRETKEYBYTES) alloclen = CRYPTO_SECRETKEYBYTES;
-  if (alloclen < CRYPTO_BYTES) alloclen = CRYPTO_BYTES;
-  if (alloclen < CRYPTO_CIPHERTEXTBYTES) alloclen = CRYPTO_CIPHERTEXTBYTES;
+  if (alloclen < JADE_KEM_PUBLICKEYBYTES) alloclen = JADE_KEM_PUBLICKEYBYTES;
+  if (alloclen < JADE_KEM_SECRETKEYBYTES) alloclen = JADE_KEM_SECRETKEYBYTES;
+  if (alloclen < JADE_KEM_BYTES) alloclen = JADE_KEM_BYTES;
+  if (alloclen < JADE_KEM_CIPHERTEXTBYTES) alloclen = JADE_KEM_CIPHERTEXTBYTES;
   s->p  = alignedcalloc(&(s->free[0]), alloclen);
   s->s  = alignedcalloc(&(s->free[1]), alloclen);
   s->k  = alignedcalloc(&(s->free[2]), alloclen);
@@ -93,11 +81,11 @@ void allocate(state *s)
   s->k2 = alignedcalloc(&(s->free[7]), alloclen);
   s->c2 = alignedcalloc(&(s->free[8]), alloclen);
   s->t2 = alignedcalloc(&(s->free[9]), alloclen);
-  s->plen = CRYPTO_PUBLICKEYBYTES;
-  s->slen = CRYPTO_SECRETKEYBYTES;
-  s->klen = CRYPTO_BYTES;
-  s->clen = CRYPTO_CIPHERTEXTBYTES;
-  s->tlen = CRYPTO_BYTES;
+  s->plen = JADE_KEM_PUBLICKEYBYTES;
+  s->slen = JADE_KEM_SECRETKEYBYTES;
+  s->klen = JADE_KEM_BYTES;
+  s->clen = JADE_KEM_CIPHERTEXTBYTES;
+  s->tlen = JADE_KEM_BYTES;
 }
 
 void deallocate(state **_s)
@@ -149,69 +137,69 @@ void test(unsigned char *checksum_state, state *_s)
 
     output_prepare(s.p2, s.p, s.plen);
     output_prepare(s.s2, s.s, s.slen);
-    result = crypto_kem_keypair(s.p, s.s);
-    if (result != 0) fail("crypto_kem_keypair returns nonzero");
+    result = jade_kem_keypair(s.p, s.s);
+    if (result != 0) fail("jade_kem_keypair returns nonzero");
     checksum(checksum_state, s.p, s.plen);
     checksum(checksum_state, s.s, s.slen);
-    output_compare(s.p2, s.p, s.plen, "crypto_kem_keypair");
-    output_compare(s.s2, s.s, s.slen, "crypto_kem_keypair");
+    output_compare(s.p2, s.p, s.plen, "jade_kem_keypair");
+    output_compare(s.s2, s.s, s.slen, "jade_kem_keypair");
     
     output_prepare(s.c2, s.c, s.clen);
     output_prepare(s.k2, s.k, s.klen);
     memcpy(s.p2, s.p, s.plen);
     double_canary(s.p2, s.p, s.plen);
-    result = crypto_kem_enc(s.c, s.k, s.p);
-    if (result != 0) fail("crypto_kem_enc returns nonzero");
+    result = jade_kem_enc(s.c, s.k, s.p);
+    if (result != 0) fail("jade_kem_enc returns nonzero");
     checksum(checksum_state, s.c, s.clen);
     checksum(checksum_state, s.k, s.klen);
-    output_compare(s.c2, s.c, s.clen, "crypto_kem_enc");
-    output_compare(s.k2, s.k, s.klen, "crypto_kem_enc");
-    input_compare(s.p2, s.p, s.plen, "crypto_kem_enc");
+    output_compare(s.c2, s.c, s.clen, "jade_kem_enc");
+    output_compare(s.k2, s.k, s.klen, "jade_kem_enc");
+    input_compare(s.p2, s.p, s.plen, "jade_kem_enc");
     
     output_prepare(s.t2, s.t, s.tlen);
     memcpy(s.c2, s.c, s.clen);
     double_canary(s.c2, s.c, s.clen);
     memcpy(s.s2, s.s, s.slen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_kem_dec(s.t, s.c, s.s);
-    if (result != 0) fail("crypto_kem_dec returns nonzero");
-    if (memcmp(s.t, s.k, s.klen) != 0) fail("crypto_kem_dec does not match k");
+    result = jade_kem_dec(s.t, s.c, s.s);
+    if (result != 0) fail("jade_kem_dec returns nonzero");
+    if (memcmp(s.t, s.k, s.klen) != 0) fail("jade_kem_dec does not match k");
     checksum(checksum_state, s.t, s.tlen);
-    output_compare(s.t2, s.t, s.tlen, "crypto_kem_dec");
-    input_compare(s.c2, s.c, s.clen, "crypto_kem_dec");
-    input_compare(s.s2, s.s, s.slen, "crypto_kem_dec");
+    output_compare(s.t2, s.t, s.tlen, "jade_kem_dec");
+    input_compare(s.c2, s.c, s.clen, "jade_kem_dec");
+    input_compare(s.s2, s.s, s.slen, "jade_kem_dec");
     
     double_canary(s.t2, s.t, s.tlen);
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_kem_dec(s.t2, s.c2, s.s2);
-    if (result != 0) fail("crypto_kem_dec returns nonzero");
-    if (memcmp(s.t2, s.t, s.tlen) != 0) fail("crypto_kem_dec is nondeterministic");
+    result = jade_kem_dec(s.t2, s.c2, s.s2);
+    if (result != 0) fail("jade_kem_dec returns nonzero");
+    if (memcmp(s.t2, s.t, s.tlen) != 0) fail("jade_kem_dec is nondeterministic");
     
     double_canary(s.t2, s.t, s.tlen);
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.s2, s.s, s.slen);
-    result = crypto_kem_dec(s.c2, s.c2, s.s);
-    if (result != 0) fail("crypto_kem_dec with c=t overlap returns nonzero");
-    if (memcmp(s.c2, s.t, s.tlen) != 0) fail("crypto_kem_dec does not handle c=t overlap");
+    result = jade_kem_dec(s.c2, s.c2, s.s);
+    if (result != 0) fail("jade_kem_dec with c=t overlap returns nonzero");
+    if (memcmp(s.c2, s.t, s.tlen) != 0) fail("jade_kem_dec does not handle c=t overlap");
     memcpy(s.c2, s.c, s.clen);
-    result = crypto_kem_dec(s.s2, s.c, s.s2);
-    if (result != 0) fail("crypto_kem_dec with s=t overlap returns nonzero");
-    if (memcmp(s.s2, s.t, s.tlen) != 0) fail("crypto_kem_dec does not handle s=t overlap");
+    result = jade_kem_dec(s.s2, s.c, s.s2);
+    if (result != 0) fail("jade_kem_dec with s=t overlap returns nonzero");
+    if (memcmp(s.s2, s.t, s.tlen) != 0) fail("jade_kem_dec does not handle s=t overlap");
     memcpy(s.s2, s.s, s.slen);
     
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_kem_dec(s.t, s.c, s.s) == 0)
+    if (jade_kem_dec(s.t, s.c, s.s) == 0)
       checksum(checksum_state, s.t, s.tlen);
     else
       checksum(checksum_state, s.c, s.clen);
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_kem_dec(s.t, s.c, s.s) == 0)
+    if (jade_kem_dec(s.t, s.c, s.s) == 0)
       checksum(checksum_state, s.t, s.tlen);
     else
       checksum(checksum_state, s.c, s.clen);
     s.c[myrandom() % s.clen] += 1 + (myrandom() % 255);
-    if (crypto_kem_dec(s.t, s.c, s.s) == 0)
+    if (jade_kem_dec(s.t, s.c, s.s) == 0)
       checksum(checksum_state, s.t, s.tlen);
     else
       checksum(checksum_state, s.c, s.clen);

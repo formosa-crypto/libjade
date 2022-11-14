@@ -10,7 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
-#include "namespace.h"
+#include "jade_stream.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -42,15 +42,6 @@ void test(unsigned char*,state *);
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#define CRYPTO_KEYBYTES NAMESPACE(KEYBYTES)
-#define CRYPTO_NONCEBYTES NAMESPACE(NONCEBYTES)
-
-#define crypto_stream_xor NAMESPACE_LC(xor)
-#define crypto_stream JADE_NAMESPACE_LC
-
-
-// ////////////////////////////////////////////////////////////////////////////
-
 #define TUNE_BYTES 1536
 
 #ifdef SMALL
@@ -76,8 +67,8 @@ void allocate(state *s)
  uint64_t alloclen = 0;
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
   if (alloclen < MAXTEST_BYTES) alloclen = MAXTEST_BYTES;
-  if (alloclen < CRYPTO_KEYBYTES) alloclen = CRYPTO_KEYBYTES;
-  if (alloclen < CRYPTO_NONCEBYTES) alloclen = CRYPTO_NONCEBYTES;
+  if (alloclen < JADE_STREAM_KEYBYTES) alloclen = JADE_STREAM_KEYBYTES;
+  if (alloclen < JADE_STREAM_NONCEBYTES) alloclen = JADE_STREAM_NONCEBYTES;
 
   s->k  = alignedcalloc(&(s->free[0]), alloclen);
   s->n  = alignedcalloc(&(s->free[1]), alloclen);
@@ -89,8 +80,8 @@ void allocate(state *s)
   s->m2 = alignedcalloc(&(s->free[7]), alloclen);
   s->c2 = alignedcalloc(&(s->free[8]), alloclen);
   s->s2 = alignedcalloc(&(s->free[9]), alloclen);
-  s->klen = CRYPTO_KEYBYTES;
-  s->nlen = CRYPTO_NONCEBYTES;
+  s->klen = JADE_STREAM_KEYBYTES;
+  s->nlen = JADE_STREAM_NONCEBYTES;
 }
 
 void deallocate(state **_s)
@@ -150,20 +141,20 @@ void test(unsigned char *checksum_state, state *_s)
     input_prepare(s.n2, s.n, s.nlen);
     input_prepare(s.k2, s.k, s.klen);
 
-    result = crypto_stream(s.s, s.slen, s.n, s.k); 
-    if (result != 0) fail("crypto_stream returns nonzero");
+    result = jade_stream(s.s, s.slen, s.n, s.k); 
+    if (result != 0) fail("jade_stream returns nonzero");
     checksum(checksum_state, s.s, s.slen);
-    output_compare(s.s2, s.s, s.slen, "crypto_stream");
-    input_compare(s.n2, s.n, s.nlen, "crypto_stream");
-    input_compare(s.k2, s.k, s.klen, "crypto_stream");
+    output_compare(s.s2, s.s, s.slen, "jade_stream");
+    input_compare(s.n2, s.n, s.nlen, "jade_stream");
+    input_compare(s.k2, s.k, s.klen, "jade_stream");
     
     double_canary(s.s2, s.s, s.slen);
     double_canary(s.n2, s.n, s.nlen);
     double_canary(s.k2, s.k, s.klen);
 
-    result = crypto_stream(s.s2, s.slen, s.n2, s.k2);
-    if (result != 0) fail("crypto_stream returns nonzero");
-    if (memcmp(s.s2, s.s, s.slen) != 0) fail("crypto_stream is nondeterministic");
+    result = jade_stream(s.s2, s.slen, s.n2, s.k2);
+    if (result != 0) fail("jade_stream returns nonzero");
+    if (memcmp(s.s2, s.s, s.slen) != 0) fail("jade_stream is nondeterministic");
     
     output_prepare(s.c2, s.c, s.clen);
     input_prepare(s.m2, s.m, s.mlen);
@@ -171,40 +162,40 @@ void test(unsigned char *checksum_state, state *_s)
     double_canary(s.n2, s.n, s.nlen);
     memcpy(s.k2, s.k, s.klen);
     double_canary(s.k2, s.k, s.klen);
-    result = crypto_stream_xor(s.c, s.m, s.mlen, s.n, s.k);
-    if (result != 0) fail("crypto_stream_xor returns nonzero");
+    result = jade_stream_xor(s.c, s.m, s.mlen, s.n, s.k);
+    if (result != 0) fail("jade_stream_xor returns nonzero");
     
     for (j = 0;j < s.mlen;++j)
-      if ((s.s[j] ^ s.m[j]) != s.c[j]) fail("crypto_stream_xor does not match crypto_stream");
+      if ((s.s[j] ^ s.m[j]) != s.c[j]) fail("jade_stream_xor does not match jade_stream");
     checksum(checksum_state, s.c, s.clen);
-    output_compare(s.c2, s.c, s.clen, "crypto_stream_xor");
-    input_compare(s.m2, s.m, s.mlen, "crypto_stream_xor");
-    input_compare(s.n2, s.n, s.nlen, "crypto_stream_xor");
-    input_compare(s.k2, s.k, s.klen, "crypto_stream_xor");
+    output_compare(s.c2, s.c, s.clen, "jade_stream_xor");
+    input_compare(s.m2, s.m, s.mlen, "jade_stream_xor");
+    input_compare(s.n2, s.n, s.nlen, "jade_stream_xor");
+    input_compare(s.k2, s.k, s.klen, "jade_stream_xor");
     
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.m2, s.m, s.mlen);
     double_canary(s.n2, s.n, s.nlen);
     double_canary(s.k2, s.k, s.klen);
-    result = crypto_stream_xor(s.c2, s.m2, s.mlen, s.n2, s.k2);
-    if (result != 0) fail("crypto_stream_xor returns nonzero");
-    if (memcmp(s.c2, s.c, s.clen) != 0) fail("crypto_stream_xor is nondeterministic");
+    result = jade_stream_xor(s.c2, s.m2, s.mlen, s.n2, s.k2);
+    if (result != 0) fail("jade_stream_xor returns nonzero");
+    if (memcmp(s.c2, s.c, s.clen) != 0) fail("jade_stream_xor is nondeterministic");
     
     double_canary(s.c2, s.c, s.clen);
     double_canary(s.m2, s.m, s.mlen);
     double_canary(s.n2, s.n, s.nlen);
     double_canary(s.k2, s.k, s.klen);
-    result = crypto_stream_xor(s.m2, s.m2, s.mlen, s.n, s.k);
-    if (result != 0) fail("crypto_stream_xor with m=c overlap returns nonzero");
-    if (memcmp(s.m2, s.c, s.clen) != 0) fail("crypto_stream_xor does not handle m=c overlap");
+    result = jade_stream_xor(s.m2, s.m2, s.mlen, s.n, s.k);
+    if (result != 0) fail("jade_stream_xor with m=c overlap returns nonzero");
+    if (memcmp(s.m2, s.c, s.clen) != 0) fail("jade_stream_xor does not handle m=c overlap");
     memcpy(s.m2, s.m, s.mlen);
-    result = crypto_stream_xor(s.n2, s.m, s.mlen, s.n2, s.k);
-    if (result != 0) fail("crypto_stream_xor with n=c overlap returns nonzero");
-    if (memcmp(s.n2, s.c, s.clen) != 0) fail("crypto_stream_xor does not handle n=c overlap");
+    result = jade_stream_xor(s.n2, s.m, s.mlen, s.n2, s.k);
+    if (result != 0) fail("jade_stream_xor with n=c overlap returns nonzero");
+    if (memcmp(s.n2, s.c, s.clen) != 0) fail("jade_stream_xor does not handle n=c overlap");
     memcpy(s.n2, s.n, s.nlen);
-    result = crypto_stream_xor(s.k2, s.m, s.mlen, s.n, s.k2);
-    if (result != 0) fail("crypto_stream_xor with k=c overlap returns nonzero");
-    if (memcmp(s.k2, s.c, s.clen) != 0) fail("crypto_stream_xor does not handle k=c overlap");
+    result = jade_stream_xor(s.k2, s.m, s.mlen, s.n, s.k2);
+    if (result != 0) fail("jade_stream_xor with k=c overlap returns nonzero");
+    if (memcmp(s.k2, s.c, s.clen) != 0) fail("jade_stream_xor does not handle k=c overlap");
     memcpy(s.k2, s.k, s.klen);
   }
 }

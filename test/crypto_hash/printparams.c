@@ -1,16 +1,19 @@
 #include <stdio.h>
 
 #include "api.h"
-#include "namespace.h"
+#include "jade_hash.h"
 
 int main(void)
 {
   printf("{\n");
-  printf(" \"CRYPTO_BYTES\": %u,\n", NAMESPACE(BYTES));
 
-  printf(" \"CRYPTO_ALGNAME\": \"%s\",\n", NAMESPACE(ALGNAME));
-  printf(" \"CRYPTO_ARCH\": \"%s\",\n", NAMESPACE(ARCH));
-  printf(" \"CRYPTO_IMPL\": \"%s\"\n}\n", NAMESPACE(IMPL));
+  printf(" \"JADE_HASH_ALGNAME\": \"%s\",\n", JADE_HASH_ALGNAME);
+  printf(" \"JADE_HASH_ARCH\": \"%s\",\n", JADE_HASH_ARCH);
+  printf(" \"JADE_HASH_IMPL\": \"%s\"", JADE_HASH_IMPL);
+
+  printf(" \"JADE_HASH_BYTES\": %u,\n", JADE_HASH_BYTES);
+
+  printf("\n}\n");
 
   return 0;
 }
