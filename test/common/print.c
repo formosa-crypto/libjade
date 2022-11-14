@@ -28,6 +28,21 @@ void print_u8(const uint8_t *a, size_t l)
   return;
 }
 
+void print_u8s(const uint8_t *a, size_t l)
+{
+  size_t i;
+
+  if(l == 0)
+  { return; }
+
+  for(i=0; i<l; i++)
+  { printf("%02" PRIx8 "", a[i]); }
+  printf("\n");
+
+  return;
+}
+
+
 void print_str_u8(const char *str, const uint8_t *a, size_t l)
 {
   if( l == 0 )
