@@ -19,11 +19,15 @@ int jade_hash(
 
 int main(void)
 {
+  int r;
   uint8_t hash[JADE_HASH_BYTES];
   uint8_t input[] = {0x61, 0x62, 0x63};
 
   //
-  jade_hash(hash, input, sizeof(input));
+  r = jade_hash(hash, input, sizeof(input));
+
+  //
+  assert(r == 0);
 
   #ifndef NOPRINT
   print_info(JADE_HASH_ALGNAME, JADE_HASH_ARCH, JADE_HASH_IMPL);
