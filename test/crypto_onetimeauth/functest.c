@@ -42,7 +42,7 @@ int main(void)
   r = jade_onetimeauth_verify(mac, input, sizeof(input), key);
   assert(r == 0);
 
-  //flip one bit of input
+  //flip one bit of input so the verification fails
   input[0] ^= 0x1;
   r = jade_onetimeauth_verify(mac, input, sizeof(input), key);
   assert(r == -1);

@@ -1,5 +1,65 @@
+#include <stdint.h>
+#include <string.h>
+#include <assert.h>
+
+#include "print.h"
+
+#include "api.h"
+#include "jade_scalarmult.h"
+
+extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+
+/*
+
+int jade_scalarmult(
+ uint8_t *q,
+ const uint8_t *n,
+ const uint8_t *p
+);
+
+int jade_scalarmult_base(
+ uint8_t *q,
+ const uint8_t *n
+);
+
+*/
+
 int main(void)
 {
-  //TODO : implement me
-  return -1;
+  int r;
+  uint8_t public_key_a[JADE_SCALARMULT_BYTES];
+  uint8_t public_key_b[JADE_SCALARMULT_BYTES];
+  uint8_t secret_key_a[JADE_SCALARMULT_SCALARBYTES];
+  uint8_t secret_key_b[JADE_SCALARMULT_SCALARBYTES];
+  uint8_t secret_a[JADE_SCALARMULT_BYTES];
+  uint8_t secret_b[JADE_SCALARMULT_BYTES];
+
+  //
+  __jasmin_syscall_randombytes__(secret_key_a, JADE_SCALARMULT_SCALARBYTES);
+  __jasmin_syscall_randombytes__(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
+
+  //
+  r  = jade_scalarmult_base(public_key_a, secret_key_a);
+  r |= jade_scalarmult_base(public_key_b, secret_key_b);
+
+  //
+  r |= jade_scalarmult(secret_a, secret_key_a, public_key_b);
+  r |= jade_scalarmult(secret_b, secret_key_b, public_key_a);
+
+  //
+  assert(r == 0);
+  assert(memcmp(secret_a, secret_b, JADE_SCALARMULT_BYTES) == 0);
+
+  #ifndef NOPRINT
+  print_info(JADE_SCALARMULT_ALGNAME, JADE_SCALARMULT_ARCH, JADE_SCALARMULT_IMPL);
+  print_str_u8("secret_key_a", secret_key_a, JADE_SCALARMULT_SCALARBYTES);
+  print_str_u8("public_key_a", public_key_a, JADE_SCALARMULT_BYTES);
+  print_str_u8("secret_a",     secret_a,     JADE_SCALARMULT_BYTES);
+  print_str_u8("secret_key_b", secret_key_b, JADE_SCALARMULT_SCALARBYTES);
+  print_str_u8("public_key_b", public_key_b, JADE_SCALARMULT_BYTES);
+  print_str_u8("secret_b",     secret_b,     JADE_SCALARMULT_BYTES);
+  #endif
+
+  return 0;
 }
+
