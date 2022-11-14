@@ -7,81 +7,68 @@
 #include "api.h"
 #include "jade_stream.h"
 
+extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+
 /*
 
 int jade_stream_xor(
  uint8_t *output,
- uint8_t *input,
- uint64_t length,
- uint8_t *nonce,
- uint8_t *key
+ const uint8_t *input,
+ uint64_t input_length,
+ const uint8_t *nonce,
+ const uint8_t *key
 );
 
 int jade_stream(
  uint8_t *stream,
- uint64_t length,
- uint8_t *nonce,
- uint8_t *key
+ uint64_t stream_length,
+ const uint8_t *nonce,
+ const uint8_t *key
 );
 
 */
 
-#define MAXBYTES 32
-
 int main(void)
 {
-  uint8_t ciphertext_1[MAXBYTES];
-  uint8_t ciphertext_2[MAXBYTES];
-  uint8_t stream_1[MAXBYTES];
-  uint8_t plaintext_1[MAXBYTES];
-  uint8_t plaintext_2[MAXBYTES];
-  uint64_t length = 0;
+  int r;
+
+  #define PLAINTEXT_LENGTH 3
+  uint8_t plaintext_1[PLAINTEXT_LENGTH] = {0x61, 0x62, 0x63};
+  uint8_t plaintext_2[PLAINTEXT_LENGTH];
+  uint8_t ciphertext[PLAINTEXT_LENGTH];
+  uint8_t stream[PLAINTEXT_LENGTH];
+  uint64_t length = PLAINTEXT_LENGTH;
   uint8_t nonce[JADE_STREAM_NONCEBYTES];
   uint8_t key[JADE_STREAM_KEYBYTES];
-  uint64_t i;
 
-  // Replace the initialization of the following arrays to
-  // produce different results. The main purpose of this file
-  // is to show how the exported Jasmin functions can be used.
+  //
+  __jasmin_syscall_randombytes__(nonce, JADE_STREAM_NONCEBYTES);
+  __jasmin_syscall_randombytes__(key, JADE_STREAM_KEYBYTES);
 
-  memset(ciphertext_1, 0, MAXBYTES);
-  memset(ciphertext_2, 0, MAXBYTES);
-  memset(stream_1,     0, MAXBYTES);
-  memset(plaintext_1,  0, MAXBYTES);
-  memset(plaintext_2,  0, MAXBYTES);
-  memset(nonce,        0, JADE_STREAM_NONCEBYTES);
-  memset(key,          0, JADE_STREAM_KEYBYTES);
+  //
+  r = jade_stream(stream, length, nonce, key);
+    assert(r == 0);
+
+  //
+  r = jade_stream_xor(ciphertext, plaintext_1, length, nonce, key);
+    assert(r == 0);
+
+  //
+  r = jade_stream_xor(plaintext_2, ciphertext, length, nonce, key);
+    assert(r == 0);
+    for(int i=0; i<PLAINTEXT_LENGTH; i++)
+    { assert(plaintext_1[i] == plaintext_2[i]);
+      assert(ciphertext[i] == (plaintext_1[i] ^ stream[i]));
+    }
 
   #ifndef NOPRINT
   print_info(JADE_STREAM_ALGNAME, JADE_STREAM_ARCH, JADE_STREAM_IMPL);
+  print_str_u8("plaintext", plaintext_1, length);
   print_str_u8("nonce", nonce, JADE_STREAM_NONCEBYTES);
   print_str_u8("key", key, JADE_STREAM_KEYBYTES);
+  print_str_u8("stream", stream, length);
+  print_str_u8("ciphertext", ciphertext, length);
   #endif
-
-  //
-  for(length=0; length <= MAXBYTES; length++)
-  {
-    //
-    jade_stream(stream_1, length, nonce, key);
-
-    // encrypt
-    jade_stream_xor(ciphertext_1, plaintext_1, length, nonce, key);
-
-    // decrypt
-    jade_stream_xor(plaintext_2, ciphertext_1, length, nonce, key);
-
-    #ifndef NOPRINT
-    print_str_c_u8("plaintext", length, plaintext_1, length);
-    print_str_c_u8("ciphertext", length, ciphertext_1, length);
-    #endif
-
-    // some checks
-    for(i=0; i < length; i++)
-    { ciphertext_2[i] = stream_1[i] ^ plaintext_1[i]; }
-
-    assert(memcmp(plaintext_1, plaintext_2, length) == 0);
-    assert(memcmp(ciphertext_1, ciphertext_2, length) == 0);
-  }
 
   return 0;
 }
