@@ -10,21 +10,23 @@ check_checksums()
   checksum_expected=$1;
   checksumtype=$2;
 
-  find $baset -name $checksumtype.out | \
-  while read checksum_f; do
-    checksum_o=$(cat $checksum_f);
-    #echo "$meta / $checksum_o / $checksum_expected";
+  if [ -d $baset ];
+  then
+    find $baset -name $checksumtype.out | \
+    while read checksum_f; do
+      checksum_o=$(cat $checksum_f);
+      #echo "$meta / $checksum_o / $checksum_expected";
 
-    error=$(dirname $checksum_f)/.ci/$checksumtype.$suffix.error
-    rm -f $error
-    if [ "$checksum_o" == "$checksum_expected" ]; then
-      echo -n "" > $(dirname $checksum_f)/.ci/$checksumtype.$suffix.log
-    else
-      cp $checksum_f $error
-      printf "\n--\n$checksum_expected\n" >> $error
-    fi
-  done
-
+      error=$(dirname $checksum_f)/.ci/$checksumtype.$suffix.error
+      rm -f $error
+      if [ "$checksum_o" == "$checksum_expected" ]; then
+        echo -n "" > $(dirname $checksum_f)/.ci/$checksumtype.$suffix.log
+      else
+        cp $checksum_f $error
+        printf "\n--\n$checksum_expected\n" >> $error
+      fi
+    done
+  fi
 }
 
 find $src -name META.yml | \

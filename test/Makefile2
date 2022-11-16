@@ -21,8 +21,6 @@ export CI
 CID  =
 CIC  = true 
 CIL  =
-
-# RENAME THIS GUY
 CICL ?= "1"
 
 ifeq ($(CI),1)
@@ -80,25 +78,29 @@ default: $(OUT)
 
 $(EXEC):
 %/checksumsmall: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
 
 %/checksumbig: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
 
 %/printparams: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
 
 %/functest: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
 
 $(OUT):
 %.out: %
 	$(CIC)
-	./$* > $@ $(CIL)
+	./$* > $@ $(CIL) || true
 
 # --------------------------------------------------------------------
 
