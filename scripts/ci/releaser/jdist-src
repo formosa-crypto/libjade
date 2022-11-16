@@ -9,13 +9,17 @@ name=libjade-dist-src-$arch
 
 top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
 src=$top/src
+test=$top/test
 dist=$top/$name;
-jade=$dist/jade
+jade=$dist/libjade
+examples=$dist/examples
 
+# ---------------------------------------------------------
 # create distribution directory
 rm -fr $dist
 mkdir -p $jade;
 
+# ---------------------------------------------------------
 # copy assembly, header, and preprocessed files; 
 find $src -name "*.s" | \
 while read asm;
@@ -36,27 +40,109 @@ do
   dapi=${dasm%.*}.h;
   cp $sapi $dapi;
 
-  # preprocessed
-  jazz=${asm%.*}.jazz;
-  djazz=${dasm%.*}.jazz
-  jpp -in $jazz -out $djazz -I Jade:$src
+  # if jpp is available
+  if [ -x "$(command -v jpp)" ]
+  then
+    # preprocessed
+    jazz=${asm%.*}.jazz;
+    djazz=${dasm%.*}.jazz
+    jpp -in $jazz -out $djazz -I Jade:$src
 
-  # makefile for the preprocessed file (we also need to get the flags configuration)
-  makefile=$ddir/Makefile;
-  make -C $dir .jflags 1> /dev/null;
-  jflags=$(cat $dir/.jflags);
-  echo "$(basename $dasm): $(basename $djazz)" >> $makefile
-  echo -e "\tjasminc $jflags $< -o \$@\n" >> $makefile
-
+    # makefile for the preprocessed file (we also need to get the flags configuration)
+    makefile=$ddir/Makefile;
+    make -C $dir .jflags 1> /dev/null;
+    jflags=$(cat $dir/.jflags);
+    echo "$(basename $dasm): $(basename $djazz)" >> $makefile
+    echo -e "\tjasminc $jflags $< -o \$@\n" >> $makefile
+  fi
 done
 
-# copy documentation and examples
+# ---------------------------------------------------------
+# copy README.md
 cp -r $top/doc/release/README.md $dist/
-cp -r $top/doc/release/examples $dist/
 
+# ---------------------------------------------------------
+# copy example code:
+# - first, copy functest.c files : test/crypto_hash/functest.c -> examples/crypto_hash.c
+mkdir -p $examples
+find $test/crypto_* -name "functest.c" | \
+while read sfile;
+do
+  dfile=$(dirname $sfile);
+  dfile=${dfile/$test/$examples}.c;
+  cp $sfile $dfile;
+done
+
+# - second, copy test/include/{jade_*, namespace}.h and test/common/print.h -> examples/include/*
+mkdir -p $examples/include
+cp $test/include/jade_*.h $examples/include/
+cp $test/include/namespace.h $examples/include/
+cp $test/common/print.h $examples/include/
+
+# - third, copy test/common/print.c -> examples/common/print.c
+mkdir -p $examples/common
+cp $test/common/print.c $examples/common/
+
+# - fourth, copy the Makefile
+makefile=$examples/Makefile
+cp $top/doc/release/examples/Makefile $makefile
+
+exec 10>&1 >>$makefile;
+
+# - fifth, create rule to build randombytes.o
+echo "../ext/randombytes/randombytes.o: ../ext/randombytes/randombytes.c" #>> $makefile;
+echo -e "\tmake -C ../ext/randombytes/\n" #>> $makefile;
+
+# - sixth, create rules for the available .s files
+# -- for each crypto op
+target_list="";
+while read opdir; do
+  op=$(basename $opdir);
+
+  # -- and for each file available under that op
+  while read sfile; do
+    sfile=${sfile/$dist\//};
+    file=${sfile%.*};
+    target=${file//\//_};
+    target=${target/libjade_crypto_/jade_};
+    target_list="$target_list $target";
+    namespace_lc=$(echo $target | tr '-' '_');
+    namespace=$(echo $namespace_lc | tr 'a-z' 'A-Z');
+
+tee -a << END
+$target: $op.c ../$sfile common/print.c ../ext/randombytes/randombytes.o
+	@echo "#include \"../$file.h\"" > api.h
+	\$(CC) \$(CFLAGS) -Iinclude/ -DJADE_NAMESPACE=$namespace -DJADE_NAMESPACE_LC=$namespace_lc -o \$@ \$^
+	@rm api.h
+
+END
+
+  done < <(find $opdir -name "*.s")
+done < <(find $jade -maxdepth 1 -name "crypto_*")
+
+# - seventh, all, run, and clean
+tee -a << END
+ALL := $target_list
+
+.NOTPARALLEL:
+all: \$(ALL)
+
+run: all
+	for exec in \$(ALL); do ./\$\$exec > \$\$exec.out; done
+
+.PHONY: clean
+
+clean:
+	rm -f \$(ALL)
+	rm -f *.out
+END
+
+exec 1>&10 10>&-
+
+# ---------------------------------------------------------
 # copy randombytes (make sure it is clean first)
-make -C $top/ext/randombytes/ clean
-mkdir -p $dist/ext/randombytes
+make -C $top/ext/randombytes/ clean 1> /dev/null;
+mkdir -p $dist/ext/
 cp -r $top/ext/randombytes $dist/ext/randombytes
 
 # rm hidden files, compress, and delete dist directory

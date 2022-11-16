@@ -1,29 +1,32 @@
 #!/usr/bin/env bash
 
-top=$(cd "$(dirname "$0")/../" ; pwd -P)
+top=$(cd "$(dirname "$0")/../../" ; pwd -P)
 src=${top}/src
 test=${top}/test/bin
+suffix=ok
 
 check_checksums()
 {
   checksum_expected=$1;
   checksumtype=$2;
 
-  find $baset -name $checksumtype.r | \
-  while read checksum_f; do
-    checksum_o=$(cat $checksum_f);
-    #echo "$meta / $checksum_o / $checksum_expected";
+  if [ -d $baset ];
+  then
+    find $baset -name $checksumtype.out | \
+    while read checksum_f; do
+      checksum_o=$(cat $checksum_f);
+      #echo "$meta / $checksum_o / $checksum_expected";
 
-    error=$(dirname $checksum_f)/.ci/$checksumtype.r.error
-    rm -f $error
-    if [ "$checksum_o" == "$checksum_expected" ]; then
-      echo -n "" > $(dirname $checksum_f)/.ci/$checksumtype.r.log
-    else
-      cp $checksum_f $error
-      printf "\n--\n$checksum_expected\n" >> $error
-    fi
-  done
-
+      error=$(dirname $checksum_f)/.ci/$checksumtype.$suffix.error
+      rm -f $error
+      if [ "$checksum_o" == "$checksum_expected" ]; then
+        echo -n "" > $(dirname $checksum_f)/.ci/$checksumtype.$suffix.log
+      else
+        cp $checksum_f $error
+        printf "\n--\n$checksum_expected\n" >> $error
+      fi
+    done
+  fi
 }
 
 find $src -name META.yml | \

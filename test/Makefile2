@@ -9,37 +9,30 @@ CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 JASMIN  ?= jasminc
 
 # --------------------------------------------------------------------
-# CI (DIR : directory name)
-#    (L   : logger)
-#    (FDIR: full path)
-#    (LS  : logger start)
-#    (LC  : logger compilation)
-#    (LE  : logger execution)
-#    (CL  : clear empty logs)
+# CI  - 0 or 1 depending if in CI or not : example : $ make ... CI=1 ...
+# CID - CI DIRNAME
+# CIC - CI CLEAR LOGS and ERRORS
+# CIL - CI LOG stderr
 
 CI      ?= 0
 export CI
 
-CIDIR =
-CILS  = true
-CILC  =
-CILE  =
+
+CID  =
+CIC  = true 
+CIL  =
 CICL ?= "1"
 
 ifeq ($(CI),1)
-CIDIR = .ci
-CIFDIR = $(@D)/$(CIDIR)
-CILS = (rm -f $(CIFDIR)/$(@F).*.*)
-CILC = 2> $(CIFDIR)/$(@F).c.log || \
-     (echo $$? > $(CIFDIR)/$(@F).c.error && \
-      cat $(CIFDIR)/$(@F).c.log >> $(CIFDIR)/$(@F).c.error && \
-      rm $(CIFDIR)/$(@F).c.log && \
-      exit 127)
-CILE = 2> $(CIFDIR)/$(@F).e.log || \
-     (echo $$? > $(CIFDIR)/$(@F).e.error && \
-      cat $(CIFDIR)/$(@F).e.log >> $(CIFDIR)/$(@F).e.error && \
-      rm $(CIFDIR)/$(@F).e.log && \
-      exit 127)
+
+CID = $(@D)/.ci
+
+CIC = (rm -f $(CID)/$(@F).*)
+
+CIL = 2> $(CID)/$(@F).log || \
+      (echo $$? | cat - $(CID)/$(@F).log > $(CID)/$(@F).error && \
+       rm -f $(CID)/$(@F).log && \
+       exit 127)
 endif
 
 # --------------------------------------------------------------------
@@ -51,11 +44,15 @@ EXT      := ../ext
 RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/notrandombytes1.c
 
 JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
-TEST     := $(subst $(SRC),$(BIN), $(JAZZ))
-TESTS    := $(addsuffix checksumsmall, $(TEST))
-TESTB    := $(addsuffix checksumbig, $(TEST))
-PARAM    := $(addsuffix printparams, $(TEST))
-FUNCT    := $(addsuffix functest, $(TEST))
+TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
+
+CHECKSUMSMALL := $(addsuffix checksumsmall, $(TESTDIR))
+CHECKSUMBIG   := $(addsuffix checksumbig, $(TESTDIR))
+PRINTPARAMS   := $(addsuffix printparams, $(TESTDIR))
+FUNCTEST      := $(addsuffix functest, $(TESTDIR))
+
+EXEC          := $(CHECKSUMSMALL) $(CHECKSUMBIG) $(PRINTPARAMS) $(FUNCTEST)
+OUT           := $(addsuffix .out, $(EXEC))
 
 # --------------------------------------------------------------------
 
@@ -66,77 +63,77 @@ NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
 IDIR        = $(subst $(BIN),$(SRC),$(@D))
 ASM         = $(IDIR)/$(OPERATION).s
 
-MCHECK      = crypto_$(OPERATION)/checksums.c
-MPARAM      = crypto_$(OPERATION)/printparams.c
-MFUNCT      = crypto_$(OPERATION)/functest.c common/print.c
-
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
-COMPILES    = $(CC) $(CFLAGS) -o $@ -DSMALL $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
-COMPILEB    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MCHECK) $(ASM) $(RANDSRC) $(CILC)
-COMPILEP    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MPARAM) $(ASM) $(RANDSRC) $(CILC)
-COMPILEF    = $(CC) $(CFLAGS) -o $@         $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MFUNCT) $(ASM) $(RANDSRC) $(CILC)
+PRINT       = common/print.c
+COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
 
 LOGS       ?= libjade-logs-test.tar.gz
 
 # --------------------------------------------------------------------
-.PHONY: __phony tests params funcs reporter $(LOGS)
+.PHONY: __phony default
 
-default: tests params funcs
+default: $(OUT)
 
-tests: $(TESTS) $(TESTB)
-params: $(PARAM)
-funcs: $(FUNCT)
-
-$(TESTS):
-%/checksumsmall: __phony | %/ %/$(CIDIR)
+$(EXEC):
+%/checksumsmall: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
-	$(CILS) && rm -f $@.r
-	(($(COMPILES)) && (./$@ > $@.r $(CILE))) || true
+	$(CIC)
+	$(COMPILE) || true
 
-$(TESTB):
-%/checksumbig: __phony | %/ %/$(CIDIR)
+%/checksumbig: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
-	$(CILS) && rm -f $@.r
-	(($(COMPILEB)) && (./$@ > $@.r $(CILE))) || true
+	$(CIC)
+	$(COMPILE) || true
 
-$(PARAM):
-%/printparams: __phony | %/ %/$(CIDIR)
+%/printparams: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
-	$(CILS) && rm -f $@.p
-	(($(COMPILEP)) && (./$@ > $@.p $(CILE))) || true
+	$(CIC)
+	$(COMPILE) || true
 
-$(FUNCT):
-%/functest: __phony | %/ %/$(CIDIR)
+%/functest: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
-	$(CILS) && rm -f $@.f
-	(($(COMPILEF)) && (./$@ > $@.f $(CILE))) || true
+	$(CIC)
+	$(COMPILE) || true
 
-$(TEST): ; @mkdir -p $@
+$(OUT):
+%.out: %
+	$(CIC)
+	./$* > $@ $(CIL) || true
+
+# --------------------------------------------------------------------
+
+$(TESTDIR): ; @mkdir -p $@
 ifeq ($(CI),1)
-.PRECIOUS: %/$(CIDIR)
-%/$(CIDIR): ; @mkdir -p $@
+.PRECIOUS: %/$(CID)
+%/$(CID): ; @mkdir -p $@
 endif
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
+.PHONY: reporter $(LOGS)
+
 reporter:
-	$(MAKE) -f Makefile2 reporter_c
-	$(MAKE) -f Makefile2 reporter_e
-	$(MAKE) -f Makefile2 reporter_r
+	$(MAKE) -f Makefile2 reporter_compilation
+	$(MAKE) -f Makefile2 reporter_execution
+	$(MAKE) -f Makefile2 reporter_checksums
 	$(MAKE) -f Makefile2 $(LOGS)
 
-reporter_c:
-	./../scripts/ci/reporter/jlog "Compilation status" test/bin *.c $(CICL)
+reporter_compilation:
+	@for type in checksumsmall checksumbig printparams functest; do \
+	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/bin $$type $(CICL); \
+	done
 
-reporter_e:
-	./../scripts/ci/reporter/jlog "Execution status" test/bin *.e $(CICL)
+reporter_execution:
+	@for type in checksumsmall checksumbig printparams functest; do \
+	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/bin $$type.out $(CICL); \
+	done
 
-reporter_r:
-	./checksumsok
-	./../scripts/ci/reporter/jlog "Results status" test/bin *.r $(CICL)
+reporter_checksums:
+	./scripts/checksumsok
+	./../scripts/ci/reporter/jlog "Checksums status" test/bin checksum*.ok $(CICL);
 
 ERR := $(shell test -d $(BIN) && find $(BIN) -name '*.error')
 CIR := $(shell test -d $(BIN) && find $(BIN) -name '*.log') $(ERR)
