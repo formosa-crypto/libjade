@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+# amd64 armv7m riscv (...)
+arch=$1
+name=libjade-dist-src-$arch
+
+# future work: calling convention
+#cconv=$2
+
+top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+dist=$top/$name
+jade=$dist/libjade
+examples=$dist/examples
+
+checker()
+{
+  message=$1;
+  return_s=$2;
+  return_c=$3;
+
+  if [ $return_c -ne 0 ];
+  then
+    echo -e "$message,\n---\n$return_s\n---\n$return_c\n---"
+    exit $return_c
+  fi
+}
+
+tar -xf $dist.tar.gz -C $top
+
+#---------------------------------------------------------
+# 1. check that the compilation of all *.jazz files produces the assembly code as provided
+while read asm
+do
+  echo "#diff, $asm"
+  asm0=${asm/.s/.0}
+  mv $asm $asm0
+
+  return_s=$(make -C $(dirname $asm) $(basename $asm) 2>&1)
+  return_c=$?
+  checker "#make error" "$return_s" $return_c
+
+  return_s=$(diff -q $asm $asm0)
+  return_c=$?
+  checker "#diff error" "$return_s" $return_c
+
+done < <(find $jade -name "*.s")
+
+#---------------------------------------------------------
+# 2. check that all examples compile and run without errors
+while read edir
+do
+  echo "#make, $edir"
+  return_s=$(make -C $edir clean 2>&1)
+  return_c=$?
+  checker "#make clean" "$return_s" $return_c
+
+  return_s=$(make -C $edir all 2>&1)
+  return_c=$?
+  checker "#make all" "$return_s" $return_c
+
+  return_s=$(make -C $edir run 2>&1)
+  return_c=$?
+  checker "#make run" "$return_s" $return_c
+
+done < <(find $examples -name Makefile -printf "%h\n")
+
