@@ -10,125 +10,168 @@ name=libjade-dist-src-$arch
 top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
 src=$top/src
 test=$top/test
-dist=$top/$name;
+dist=$top/$name
 jade=$dist/libjade
 examples=$dist/examples
 
 # ---------------------------------------------------------
 # create distribution directory
 rm -fr $dist
-mkdir -p $jade;
+mkdir -p $jade
 
 # ---------------------------------------------------------
-# copy assembly, header, and preprocessed files; 
+# copy license
+cp $top/LICENSE $dist/LICENSE
+
+# ---------------------------------------------------------
+# copy assembly, header, and preprocessed files;
 find $src -name "*.s" | \
-while read asm;
+while read asm
 do
-  dir=$(dirname $asm);
+  dir=$(dirname $asm)
 
   # assembly
-  dasm=$(echo $dir | sed  -e 's/\(.*\)\//\1_/' -e 's/\(.*\)\//\1_/').s;
-  dasm=${dasm/$src/$jade};
+  dasm=$(echo $dir | sed  -e 's/\(.*\)\//\1_/' -e 's/\(.*\)\//\1_/').s
+  dasm=${dasm/$src/$jade}
 
   # destination directory
-  ddir=$(dirname $dasm);
-  mkdir -p $ddir;
-  cp $asm $dasm;
+  ddir=$(dirname $dasm)
+  mkdir -p $ddir
+  cp $asm $dasm
 
   # header
-  sapi=$dir/include/api.h;
-  dapi=${dasm%.*}.h;
-  cp $sapi $dapi;
+  sapi=$dir/include/api.h
+  dapi=${dasm%.*}.h
+  cp $sapi $dapi
 
   # if jpp is available
   if [ -x "$(command -v jpp)" ]
   then
     # preprocessed
-    jazz=${asm%.*}.jazz;
+    jazz=${asm%.*}.jazz
     djazz=${dasm%.*}.jazz
     jpp -in $jazz -out $djazz -I Jade:$src
 
     # makefile for the preprocessed file (we also need to get the flags configuration)
-    makefile=$ddir/Makefile;
-    make -C $dir .jflags 1> /dev/null;
-    jflags=$(cat $dir/.jflags);
+    make -C $dir .jflags 1> /dev/null
+
+    jflags=$(cat $dir/.jflags)
+    makefile=$ddir/Makefile
+
+    if ! [ -f $makefile ]; then
+      echo    "JASMIN ?= jasminc" > $makefile
+      echo -e "JFLAGS ?=\n" >> $makefile
+    fi
+
     echo "$(basename $dasm): $(basename $djazz)" >> $makefile
-    echo -e "\tjasminc $jflags $< -o \$@\n" >> $makefile
+    echo -e "\t\$(JASMIN) $jflags \$(JFLAGS) $< -o \$@\n" >> $makefile
   fi
 done
+
+# add a clean rule to all libjade/*/Makefile
+while read makefile
+do
+  echo -e ".PHONY: clean\nclean:\n\trm -f *.s\n" >> $makefile
+done < <(find $jade -name "Makefile")
 
 # ---------------------------------------------------------
 # copy README.md
 cp -r $top/doc/release/README.md $dist/
 
-# ---------------------------------------------------------
+
+# -------------------------------------------------------------------
 # copy example code:
-# - first, copy functest.c files : test/crypto_hash/functest.c -> examples/crypto_hash.c
-mkdir -p $examples
+# - first, copy functest.c files : test/crypto_hash/functest.c -> examples/common/jade_hash.c
+# -        and remove the #include "api.h"
+mkdir -p $examples/common
 find $test/crypto_* -name "functest.c" | \
-while read sfile;
+while read sfile
 do
-  dfile=$(dirname $sfile);
-  dfile=${dfile/$test/$examples}.c;
-  cp $sfile $dfile;
+  dfile=$(dirname $sfile)
+  dfile=${dfile/$test/$examples\/common}.c
+  bdfile=$(basename $dfile)
+  dfile=$(dirname $dfile)/${bdfile/crypto_/jade_}
+  cp $sfile $dfile
+  sed -i 's/#include "api.h"//' $dfile
 done
 
+# -------------------------------------------------------------------
 # - second, copy test/include/{jade_*, namespace}.h and test/common/print.h -> examples/include/*
 mkdir -p $examples/include
 cp $test/include/jade_*.h $examples/include/
 cp $test/include/namespace.h $examples/include/
 cp $test/common/print.h $examples/include/
 
+
 # - third, copy test/common/print.c -> examples/common/print.c
-mkdir -p $examples/common
 cp $test/common/print.c $examples/common/
 
-# - fourth, copy the Makefile
-makefile=$examples/Makefile
+# -------------------------------------------------------------------
+# - fourth, setup examples and Makefile rules
+
+while read cop
+do
+  jop=${cop/$jade\//}
+  jop=${jop/crypto_/jade_}
+
+  while read sdir
+  do
+    target_list=""
+
+    ddir=${sdir/$jade/$examples}
+    mkdir -p $ddir
+
+    relative=$(realpath --relative-to=$ddir $dist)
+    makefile=$ddir/Makefile
+
+    while read asm
+    do
+      base=${asm/$jade\//}
+      base=${base%.*}
+
+      cfile=$examples/$base.c
+      echo "#include \"$base.h\"" > $cfile
+      echo "#include \"$jop.c\"" >> $cfile
+
+      if ! [ -f $makefile ]
+then
 cp $top/doc/release/examples/Makefile $makefile
+cat <<END >> $makefile
 
-exec 10>&1 >>$makefile;
+INCLUDE := -I$relative/examples/include -I$relative/examples/common -I$relative/libjade/
+DEPENDENCIES := $relative/ext/randombytes/randombytes.o $relative/examples/common/print.c
 
-# - fifth, create rule to build randombytes.o
-echo "../ext/randombytes/randombytes.o: ../ext/randombytes/randombytes.c" #>> $makefile;
-echo -e "\tmake -C ../ext/randombytes/\n" #>> $makefile;
+$relative/ext/randombytes/randombytes.o: $relative/ext/randombytes/randombytes.c
+	make -C $relative/ext/randombytes/
 
-# - sixth, create rules for the available .s files
-# -- for each crypto op
-target_list="";
-while read opdir; do
-  op=$(basename $opdir);
+# --------------------------------------------------------------------
 
-  # -- and for each file available under that op
-  while read sfile; do
-    sfile=${sfile/$dist\//};
-    file=${sfile%.*};
-    target=${file//\//_};
-    target=${target/libjade_crypto_/jade_};
-    target_list="$target_list $target";
-    namespace_lc=$(echo $target | tr '-' '_');
-    namespace=$(echo $namespace_lc | tr 'a-z' 'A-Z');
+END
+fi
 
-tee -a << END
-$target: $op.c ../$sfile common/print.c ../ext/randombytes/randombytes.o
-	@echo "#include \"../$file.h\"" > api.h
-	\$(CC) \$(CFLAGS) -Iinclude/ -DJADE_NAMESPACE=$namespace -DJADE_NAMESPACE_LC=$namespace_lc -o \$@ \$^
-	@rm api.h
+      target=${base//\//_}
+      target=${target/crypto_/jade_}
+      target_list="$target_list $target"
+      namespace_lc=$(tr '-' '_' <<< $target)
+      namespace=$(tr 'a-z' 'A-Z' <<< $namespace_lc)
+
+cat <<END >> $makefile
+$target: $(basename $cfile) $relative/libjade/$base.s \$(DEPENDENCIES)
+	\$(CC) \$(CFLAGS) \$(INCLUDE) -DJADE_NAMESPACE=$namespace -DJADE_NAMESPACE_LC=$namespace_lc -o \$@ \$^
 
 END
 
-  done < <(find $opdir -name "*.s")
-done < <(find $jade -maxdepth 1 -name "crypto_*")
+    done < <(find $sdir -maxdepth 1 -name "*.s")
 
-# - seventh, all, run, and clean
-tee -a << END
+cat <<END >> $makefile
 ALL := $target_list
 
-.NOTPARALLEL:
+.PHONY: \$(ALL)
+
 all: \$(ALL)
 
 run: all
-	for exec in \$(ALL); do ./\$\$exec > \$\$exec.out; done
+	for example in \$(ALL); do ./\$\$example > \$\$example.out || exit \$\$?; done
 
 .PHONY: clean
 
@@ -137,11 +180,12 @@ clean:
 	rm -f *.out
 END
 
-exec 1>&10 10>&-
+  done < <(find $cop -name "*.s" -printf "%h\n" | sort -u)
+done < <(find $jade -maxdepth 1 -name "crypto_*")
 
 # ---------------------------------------------------------
 # copy randombytes (make sure it is clean first)
-make -C $top/ext/randombytes/ clean 1> /dev/null;
+make -C $top/ext/randombytes/ clean 1> /dev/null
 mkdir -p $dist/ext/
 cp -r $top/ext/randombytes $dist/ext/randombytes
 
