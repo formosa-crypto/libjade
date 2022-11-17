@@ -24,7 +24,7 @@ mkdir -p $jade
 cp $top/LICENSE $dist/LICENSE
 
 # ---------------------------------------------------------
-# copy assembly, header, and preprocessed files; 
+# copy assembly, header, and preprocessed files;
 find $src -name "*.s" | \
 while read asm
 do
@@ -53,14 +53,26 @@ do
     jpp -in $jazz -out $djazz -I Jade:$src
 
     # makefile for the preprocessed file (we also need to get the flags configuration)
-    makefile=$ddir/Makefile
     make -C $dir .jflags 1> /dev/null
+
     jflags=$(cat $dir/.jflags)
+    makefile=$ddir/Makefile
+
+    if ! [ -f $makefile ]; then
+      echo    "JASMIN ?= jasminc" > $makefile
+      echo -e "JFLAGS ?=\n" >> $makefile
+    fi
+
     echo "$(basename $dasm): $(basename $djazz)" >> $makefile
-    echo -e "\tjasminc $jflags $< -o \$@\n" >> $makefile
+    echo -e "\t\$(JASMIN) $jflags \$(JFLAGS) $< -o \$@\n" >> $makefile
   fi
 done
 
+# add a clean rule to all libjade/*/Makefile
+while read makefile
+do
+  echo -e ".PHONY: clean\nclean:\n\trm -f *.s\n" >> $makefile
+done < <(find $jade -name "Makefile")
 
 # ---------------------------------------------------------
 # copy README.md
@@ -136,7 +148,7 @@ $relative/ext/randombytes/randombytes.o: $relative/ext/randombytes/randombytes.c
 
 END
 fi
-   
+
       target=${base//\//_}
       target=${target/crypto_/jade_}
       target_list="$target_list $target"
@@ -148,7 +160,7 @@ $target: $(basename $cfile) $relative/libjade/$base.s \$(DEPENDENCIES)
 	\$(CC) \$(CFLAGS) \$(INCLUDE) -DJADE_NAMESPACE=$namespace -DJADE_NAMESPACE_LC=$namespace_lc -o \$@ \$^
 
 END
- 
+
     done < <(find $sdir -maxdepth 1 -name "*.s")
 
 cat <<END >> $makefile

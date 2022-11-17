@@ -1,22 +1,22 @@
 # Libjade
 
-<!-- If you want to read me online use the following link: https://github.com/formosa-crypto/libjade/blob/main/doc/release/README.md -->
+<!-- If you want to read me online, use the following link: https://github.com/formosa-crypto/libjade/blob/main/doc/release/README.md -->
 
 ## Quick Overview
 
-In folder `libjade`, you can find the compiled (AT&T assembly syntax) Jasmin implementations of [libjade](https://github.com/formosa-crypto/libjade) for the amd64 architecture and System V ABI (Linux, macOS, or Unix in general).
+In folder `libjade` you can find the compiled (AT&T assembly syntax) Jasmin implementations of [libjade](https://github.com/formosa-crypto/libjade) for the amd64 architecture and System V ABI (Linux, macOS, or Unix in general).
 
 We also provide quick-to-use examples that should be easy to compile, inspect, and change to explore the API if you want to. Next, we briefly overview the contents of this distribution package. Later we detail the API of the available Jasmin cryptographic operations in libjade.
 
-Implementations are organized by cryptographic operations. For instance, on folder `libjade/crypto_kem/`, you can find Kyber implementations and on `libjade/crypto_sign` Dilithium implementations.
+Implementations are organized by cryptographic operations. For instance, in folder `libjade/crypto_kem/` you can find Kyber implementations and in `libjade/crypto_sign` Dilithium implementations.
 
-On some folders under `libjade` you can find:
+In some folders under `libjade` there are:
 * `*.jazz` : Jasmin files
 * `*.s` : assembly files
 * `*.h` : header files
 * `Makefile`
 
-As an example, on `libjade/crypto_kem/kyber` you can find the following 3 files:
+As an example, in `libjade/crypto_kem/kyber` you can find the following 3 files:
 
 * `kyber768_amd64_avx2.jazz`
 * `kyber768_amd64_avx2.s`
@@ -69,9 +69,9 @@ $ make jade_kem_kyber_kyber768_amd64_avx2
 $ ./jade_kem_kyber_kyber768_amd64_avx2
 ```
 
-This program prints to the terminal the generated key pair, the shared secret, and the ciphertext after calling all 3 functions. You can find the C code that performs these calls under `examples/common/jade_kem.c`. File `examples/crypto_kem/kyber/kyber768_amd64_avx2.c` just includes the corresponding header, in this case `kyber768_amd64_avx2.h` and includes the *generic* code from `common`, `jade_kem.c`. The same happens for all implementations.
+This program prints to the terminal the generated key pair, the shared secret, and the ciphertext after calling all 3 functions. The C code performs these calls under `examples/common/jade_kem.c`. File `examples/crypto_kem/kyber/kyber768_amd64_avx2.c` includes the corresponding header, in this case, `kyber768_amd64_avx2.h`, and the *generic* code from `common`, `jade_kem.c`. The same happens for all implementations.
 
-As another simple-to-run example, you can try:
+As another simple-to-run example, you can try the following:
 ```
 $ cd examples/crypto_hash/
 $ make jade_hash_sha256_amd64_ref
@@ -83,15 +83,15 @@ Feel free to perform your own experiments and provide feedback.
 
 ## Compiling Jasmin code yourself.
 
-We release single-file-Jasmin-implementations for users who wish to (quickly) recompile the assembly files and/or get acquainted with Jasmin programming language and try to do some experiments. If you visit the [libjade](https://github.com/formosa-crypto/libjade/) GitHub repository, you may find that the source code is organized differently, mainly to promote code reusability. In this context, we are interested in easy reproducibility.
+We release single-file-Jasmin-implementations for users who wish to (quickly) recompile the assembly files and/or get acquainted with Jasmin programming language and/or want to do some experiments. If you visit the [libjade](https://github.com/formosa-crypto/libjade/) GitHub repository, you may find that the source code is organized differently, mainly to promote code reusability. In this context, we are interested in easy reproducibility.
 
-To compile the available Jasmin files (`.jazz`), you need to get the Jasmin compiler (jasminc should be available in your PATH).
+To compile the available Jasmin files (`.jazz`), you need to get the Jasmin compiler (jasminc should be available in your PATH, or you can set a variable named JASMIN with the path to your compiler).
 
-For this, you can follow the instructions from one of the following two links:
+To get Jasmin, you can check the following instructions:
 * https://github.com/jasmin-lang/jasmin/wiki/Installation-instructions
 * https://github.com/formosa-crypto/libjade/blob/main/README.md#obtaining-and-building-the-jasmin-compiler
 
-For the above example of Kyber768 AVX2 implementation, you can run the following commands to recompile the assembly file:
+To recompile Kyber768 AVX2 implementation, run the following:
 ```
 $ cd libjade/crypto_kem/kyber
 $ touch kyber768_amd64_avx2.jazz
@@ -99,10 +99,4 @@ $ make kyber768_amd64_avx2.s
 ```
 
 The `touch` might be needed to avoid `make: 'kyber768_amd64_avx2.s' is up to date.`.
-
-
-
-
-
-
 
