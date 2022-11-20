@@ -3,7 +3,6 @@ from Jade require "crypto_sign/dilithium/common/amd64/packing.jinc"
 
 require "params.jinc"
 
-inline
 fn pack_s1(reg ptr u32[Li2_l * Li2_polydeg] s1, reg ptr u8[Li2_pack_s1len] dest)
 	-> reg ptr u8[Li2_pack_s1len]
 {
@@ -14,12 +13,11 @@ fn pack_s1(reg ptr u32[Li2_l * Li2_polydeg] s1, reg ptr u8[Li2_pack_s1len] dest)
 	for ii = 0 to Li2_l {
 		buf = dest[Li2_pack_etalen * ii : Li2_pack_etalen];
 		poly = s1[Li2_polydeg * ii : Li2_polydeg];
-		dest[Li2_pack_etalen * ii : Li2_pack_etalen] = polyeta_4_pack(poly, buf);
+		dest[Li2_pack_etalen * ii : Li2_pack_etalen] = polyeta_2_pack(poly, buf);
 	}
 	return dest;
 }
 
-inline
 fn pack_s2(reg ptr u32[Li2_k * Li2_polydeg] s1, reg ptr u8[Li2_pack_s2len] dest)
 	-> reg ptr u8[Li2_pack_s2len]
 {
@@ -30,16 +28,15 @@ fn pack_s2(reg ptr u32[Li2_k * Li2_polydeg] s1, reg ptr u8[Li2_pack_s2len] dest)
 	for ii = 0 to Li2_k {
 		buf = dest[Li2_pack_etalen * ii : Li2_pack_etalen];
 		poly = s1[Li2_polydeg * ii : Li2_polydeg];
-		dest[Li2_pack_etalen * ii : Li2_pack_etalen] = polyeta_4_pack(poly, buf);
+		dest[Li2_pack_etalen * ii : Li2_pack_etalen] = polyeta_2_pack(poly, buf);
 	}
 	return dest;
 }
 
-inline
 fn polyeta_unpack(reg ptr u32[Li2_polydeg] r, reg ptr u8[Li2_pack_etalen] a)
 	-> reg ptr u32[Li2_polydeg]
 {
-	r = polyeta_4_unpack(r, a);
+	r = polyeta_2_unpack(r, a);
 	return r;
 }
 
@@ -56,11 +53,13 @@ fn polyz_unpack(reg ptr u32[Li2_polydeg] r, reg ptr u8[Li2_pack_zlen] a)
 	-> reg ptr u32[Li2_polydeg]
 {
 	r = polyz_unpack_gamma1_219(r, a);
-	return r;
+    return r;
 }
 
 inline
-fn polyw1_pack(reg ptr u32[Li2_polydeg] w1, reg ptr u8[Li2_pack_highbitslen] w1_buf) -> reg ptr u8[Li2_pack_highbitslen] {
+fn polyw1_pack(reg ptr u32[Li2_polydeg] w1, reg ptr u8[Li2_pack_highbitslen] w1_buf)
+	-> reg ptr u8[Li2_pack_highbitslen]
+{
 	w1_buf = polyw1_pack_gamma2_32(w1, w1_buf);
 	return w1_buf;
 }

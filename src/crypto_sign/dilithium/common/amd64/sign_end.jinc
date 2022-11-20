@@ -1,9 +1,3 @@
-require "params.jinc"
-require "hashing.jinc"
-require "packing.jinc"
-require "expandA.jinc"
-require "fft.jinc"
-require "polyvec.jinc"
 
 inline
 fn compute_mu(reg u64 ptr_m, reg u64 m_len, reg ptr u8[Li2_SK_LEN] sk)
@@ -25,7 +19,7 @@ fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
 	reg u64 mu_loc;
 
 	state = st0(state);
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < 32) {
 		c = k[(int) i];
 		state[u8 (int) i] = c;	
@@ -44,7 +38,7 @@ fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
 
     state = __keccakf1600_ref(state);
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < 64) {
 		c = state[u8 (int) i];
 		rho_prime[(int) i] = c;
@@ -54,10 +48,10 @@ fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
 }
 
 inline
-fn sign(reg u64 ptr_m,
+fn sign_inner(reg u64 ptr_m,
 		reg u64 m_len,
 		reg ptr u8[Li2_SK_LEN] sk)
-		-> stack u8[Li2_SIGN_LEN]
+		-> stack u8[Li2_SIGN_LEN], stack u32
 {
 	stack u8[Li2_SIGN_LEN] signature;
 
@@ -92,6 +86,14 @@ fn sign(reg u64 ptr_m,
 
 	// while loop condition
 	stack u8 done;
+	// attempt: abort with error if we have tried too many times
+	stack u16 attempt;
+	// return status: ok == 0, err == -1
+	stack u32 status;
+	// temporary bools used for while loop condition
+	reg bool tmpbool;
+	reg bool zf;
+	reg u8 tmpboolu8;
 
 	// extra intermediate values
 	// not space-efficient...
@@ -119,7 +121,31 @@ fn sign(reg u64 ptr_m,
 
 	nonce = 0;
 	done = 0;
-	while(done == 0) {
+	attempt = 1;
+	status = -1;
+	while {
+		// The probability of a single attempt failing is, according to
+		// Equation (5) from the spec approximate to
+		//
+		//   Pr[reject] = 1 - exp[ -256*beta * (l/gamma1 + k/gamma2) ]
+		//
+		// We can rewrite this equation in order to find the number of attempts
+		// for which the probability becomes so small that we should not
+		// expect that it ever happens:
+		//
+		//                       128
+		//   #attempts = - ---------------
+		//                 log2 Pr[reject]
+		//
+		// The resulting value for the maximum number of attempts is set in
+		// the Li2_max_attempts param.
+		tmpbool = attempt > Li2_max_attempts;
+		tmpboolu8 = #SETcc(tmpbool);
+		tmpboolu8 |= done;
+		_, _, _, _, zf = #TEST_8(tmpboolu8, tmpboolu8);
+	} (zf) {
+		attempt += 1;
+
 		reg_nonce = nonce;
 		y = expandMask(rho_prime, reg_nonce);
 
@@ -162,6 +188,7 @@ fn sign(reg u64 ptr_m,
 					hints_weight, h = polyveck_make_hint(r0_plus_ct0, w1);
 					if(hints_weight < Li2_omega) {
 						done = 1;
+						status = 0;
 					}
 				}
 			}
@@ -169,57 +196,40 @@ fn sign(reg u64 ptr_m,
 	}
 
 	signature = pack_signature(c_tilde, z, h);
-	return signature;
+	return signature, status;
 }
 
-//
-inline fn __sign(reg u64 sm smlen_p m mlen sk)
-{
-  stack u64 s_sm;
+inline
+fn sign(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) -> stack u32 {
+	stack u8[Li2_SK_LEN] sk;
+	reg u8 c;
+	stack u32 status;
+	reg u64 i;
+	stack u8[Li2_SIGN_LEN] signature;
 
-  stack u8[Li2_SK_LEN] secret_key;
-  stack u8[Li2_SIGN_LEN] signature;
-  reg u8 c;
-  reg u64 i r smlen;
+	stack u64 s_ptr_signature;
+	reg u64 sig_addr;
 
-  //
-  s_sm = sm;
+	// spilling this
+	s_ptr_signature = ptr_signature;
+	
+	?{}, i = #set0_64();
+	while(i < Li2_SK_LEN) {
+		c = (u8)[ptr_sk + i];
+		sk[(int) i] = c;
+		i += 1;
+	}
+	
+	signature, status = sign_inner(ptr_m, m_len, sk);
 
-  // copy secret key
-  ?{}, i = #set0();
-  while(i < Li2_SK_LEN) {
-    c = (u8)[sk + i];
-    secret_key[(int) i] = c;
-    i += 1;
-  } // sk dead.
+	sig_addr = s_ptr_signature;
+	
+	?{}, i = #set0_64();
+	while(i < Li2_SIGN_LEN) {
+		c = signature[(int) i];
+		(u8) [sig_addr + i] = c;
+		i += 1;
+	}
 
-  // write smlen_p
-  smlen = mlen;
-  smlen += Li2_SIGN_LEN;
-  (u64)[smlen_p + 0] = smlen; // smlen_p dead.
-
-  // copy message
-  sm = #LEA(sm + mlen + Li2_SIGN_LEN);
-  m  = #LEA(m + mlen);
-
-  ?{}, i = #set0();
-  while(i < mlen)
-  { m -= 1;
-    c = (u8)[m + 0];
-    sm -= 1;
-    (u8) [sm + 0] = c;
-    i += 1;
-  }
-
-  signature = sign(sm, mlen, secret_key);
-
-  // copy signature
-  sm = s_sm;
-  ?{}, i = #set0();
-  while(i < Li2_SIGN_LEN)
-  { c = signature[(int) i];
-    (u8)[sm + i] = c;
-    i += 1;
-  }
+	return status;
 }
-

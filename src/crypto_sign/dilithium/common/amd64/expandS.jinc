@@ -1,0 +1,147 @@
+require "params.jinc"
+
+inline
+fn expandSEta2_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 coeffs_generated;
+
+	// SHA3 state
+	stack u64[25] state;
+	reg u64 offset;
+
+	// temps
+	reg u64 i;
+	reg u64 addr;
+	
+	reg u8 c;
+	reg u32 c32 t0 t1;
+
+	state = st0(state);
+
+	i = 0;
+	while(i < 64) {
+		c = rho_prime[(int) i];
+		state[u8 (int) i] = c;
+		i += 1;
+	}
+	c = (8u) elem_idx;
+	state[u8 64] = c;
+	state[u8 65] = 0;
+	state[u8 66] = 0x1F;
+	state[u8 SHAKE256_RATE - 1] = 0x80;
+
+	state = __keccakf1600_ref(state);
+	coeffs_generated = 0;
+	?{}, offset = #set0_64();
+	while (coeffs_generated < Li2_polydeg) {
+		if (offset >= SHAKE256_RATE) {
+			state = __keccakf1600_ref(state);
+			?{}, offset = #set0_64();
+		}
+
+		t0 = (32u)state[u8 (int) offset];
+		t1 = t0;
+		offset += 1;
+
+		// t0 = buf[pos] & 0x0F;
+		t0 &= 0x0F;
+		if t0 < 15 {
+			// t0 = t0 - (205*t0 >> 10)*5;
+			// a[ctr++] = 2 - t0;
+			c32 = t0;
+			c32 *= 205;
+			c32 >>= 10;
+			c32 = #LEA_32(4 * c32 + c32);
+			t0 -= 2;
+			c32 -= t0;
+			poly[(int) coeffs_generated] = c32;
+			coeffs_generated += 1;
+		}
+		if coeffs_generated < Li2_polydeg {
+			t0 = t1 >> 4;
+			if t0 < 15 {
+				// t0 = t0 - (205*t0 >> 10)*5;
+				// a[ctr++] = 2 - t0;
+				c32 = t0;
+				c32 *= 205;
+				c32 >>= 10;
+				c32 = #LEA_32(4 * c32 + c32);
+				t0 -= 2;
+				c32 -= t0;
+				poly[(int) coeffs_generated] = c32;
+				coeffs_generated += 1;
+			}
+		}
+	}
+	return poly;
+}
+
+inline
+fn expandSEta4_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u64 coeffs_generated;
+
+	// SHA3 state
+	stack u64[25] state;
+	reg u64 offset;
+
+	// temps
+	reg u64 i;
+	reg u8 c1 c2;
+	reg u32 u32_c1;
+	reg u32 v;
+	reg u64 addr;
+	
+	reg u8 c;
+	reg u32 c32;
+
+	state = st0(state);
+
+	?{}, i = #set0_64();
+	while(i < 64) {
+		c1 = rho_prime[(int) i];
+		state[u8 (int) i] = c1;
+		i += 1;
+	}
+	c = (8u) elem_idx;
+	state[u8 64] = c;
+	state[u8 65] = 0;
+	state[u8 66] = 0x1F;
+	state[u8 SHAKE256_RATE - 1] = 0x80;
+
+	state = __keccakf1600_ref(state);
+	?{}, coeffs_generated = #set0_64();
+	?{}, offset = #set0_64();
+	while (coeffs_generated < Li2_polydeg) {
+		if(offset >= SHAKE256_RATE) {
+			state = __keccakf1600_ref(state);
+			?{}, offset = #set0_64();
+		}
+
+		c = state[u8 (int) offset];
+		offset += 1;
+
+		c32 = (32u) c;
+		c32 &= 0x0F;
+		if (c32 < 9) {
+			v = 4;
+			v -= c32;
+			poly[(int) coeffs_generated] = v;
+			coeffs_generated += 1;
+		}
+
+		if (coeffs_generated < Li2_polydeg) {
+			c32 = (32u) c;
+			c32 >>= 4;
+			if(c32 < 9) {
+				v = 4;
+				v -= c32;
+				poly[(int) coeffs_generated] = v;
+				coeffs_generated += 1;
+			}
+		}
+	}
+	return poly;
+}

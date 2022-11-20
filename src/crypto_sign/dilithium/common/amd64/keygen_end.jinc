@@ -1,0 +1,143 @@
+require "fips202.jinc"
+
+inline
+fn keygen_inner(reg ptr u8[32] random_zeta)
+	-> stack u8[Li2_PK_LEN], stack u8[Li2_SK_LEN]
+{
+	// keys
+	stack u8[Li2_PK_LEN] pk;
+	stack u8[Li2_SK_LEN] sk;
+	// PRF
+	stack u64[25] state;
+	stack u8[SHAKE256_RATE] s256_out;
+	// PRF outputs
+	stack u8[32] rho;
+	reg ptr u8[32] rho_rsp;
+	stack u8[64] rho_prime;
+	reg ptr u8[64] rho_prime_rsp;
+	stack u8[32] k;
+	// FFTs
+	stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
+	stack u32[Li2_l * Li2_polydeg] s1;
+	reg ptr u32[Li2_l * Li2_polydeg] s1_rsp;
+	stack u32[Li2_k * Li2_polydeg] s2;
+	
+	stack u8[SHAKE256_RATE] s256_out;
+
+	stack u32[Li2_k * Li2_polydeg] s2;
+	stack u32[Li2_k * Li2_polydeg] t t1 t0;
+
+	reg ptr u8[Li2_pack_s1len] s1_in_sk;
+	reg ptr u8[Li2_pack_s2len] s2_in_sk;
+	reg ptr u8[Li2_pack_t0len] t0_in_sk;
+	reg ptr u8[Li2_pack_t1len] t1_in_pk;
+	reg ptr u32[Li2_polydeg] t0_to_pack t1_to_pack;
+
+	//temp variables
+	reg u64 i;
+	inline int j;
+	reg u32 v32;
+	reg u8 c;
+
+	state = shake256_absorb32(random_zeta);
+	state, s256_out = shake256_squeezeblock(state, s256_out);
+
+	//TODO Maybe can load 8 bytes at a time using u64?
+	i = 0;
+	while(i < 32) {
+		c = s256_out[(int) i];
+		rho[(int) i] = c;
+		i += 1;
+	}
+	while(i < 96) {
+		c = s256_out[(int) i];
+		rho_prime[(int) (i - 32)] = c;
+		i += 1;
+	}
+	while(i < 128) {
+		c = s256_out[(int) i];
+		k[(int) (i - 96)] = c;
+		i += 1;
+	}
+
+	rho_rsp = rho;
+	sk[0:32] = rho_pack(rho_rsp, sk[0:32]);
+	sk[32:32] = rho_pack(k, sk[32:32]); 
+
+	s1, s2 = expandS(rho_prime);
+
+	// save secret key
+	s1_rsp = s1;
+	s1_in_sk = sk[96 : Li2_pack_s1len];
+	sk[96 : Li2_pack_s1len] = pack_s1(s1_rsp, s1_in_sk);
+	s2_in_sk = sk[Li2_pack_s2loc : Li2_pack_s2len];
+	sk[Li2_pack_s2loc : Li2_pack_s2len] = pack_s2(s2, s2_in_sk);
+
+	s1 = fft_vec(s1_rsp);
+
+	rho_rsp = rho;
+	fft_matA = expandA(rho_rsp);
+	s1_rsp = s1;
+	t = mult_mat_vec(fft_matA, s1_rsp);
+	t = reduce32_veck(t);
+	t = ifft_to_mont_vec(t);
+
+	t = sum_vecs(t, s2);
+
+	t = polyveck_caddq(t);
+	t1, t0 = power2round_vec(t);
+
+	rho_rsp = rho;
+	pk[0:32] = rho_pack(rho_rsp, pk[0:32]);
+
+	for j = 0 to Li2_k {
+		t1_to_pack = t1[Li2_polydeg * j : Li2_polydeg];
+		t1_in_pk = pk[32 + j * Li2_pack_t1len : Li2_pack_t1len];
+		t1_in_pk = polyt1_pack(t1_to_pack , t1_in_pk);
+		pk[32 + j * Li2_pack_t1len : Li2_pack_t1len] = t1_in_pk;
+	}
+
+	sk[64:32] = shake256_of_pk(pk, sk[64:32]);
+
+	for j = 0 to Li2_k {
+		t0_to_pack = t0[Li2_polydeg * j : Li2_polydeg];
+		t0_in_sk = sk[Li2_pack_t0loc + j * Li2_pack_t0len : Li2_pack_t0len];
+		sk[Li2_pack_t0loc + j * Li2_pack_t0len : Li2_pack_t0len] = polyt0_pack(t0_to_pack, t0_in_sk);
+	}
+
+	return pk, sk;
+}
+
+//zeta is 32 bytes
+inline
+fn keygen(reg u64 pk_ptr, reg u64 sk_ptr, reg u64 randomness)
+{
+	stack u8[Li2_PK_LEN] pk;
+	stack u8[Li2_SK_LEN] sk;
+	stack u8[32] random_zeta;
+	reg u8 c;
+	reg u64 i;
+
+	i = 0;
+	while(i < 32) {
+		c = (u8)[randomness + i];
+		random_zeta[(int) i] = c;
+		i += 1;
+	}
+
+	pk, sk = keygen_inner(random_zeta);
+
+	i = 0;
+	while(i < Li2_PK_LEN) {
+		c = pk[(int) i];
+		(u8)[pk_ptr + i] = c;
+		i += 1;
+	}
+
+	i = 0;
+	while(i < Li2_SK_LEN) {
+		c = sk[(int) i];
+		(u8)[sk_ptr + i] = c;
+		i += 1;
+	}
+}
