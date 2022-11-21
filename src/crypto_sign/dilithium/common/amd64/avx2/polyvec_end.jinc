@@ -190,7 +190,6 @@ fn subtract_veck(stack u32[Li2_k * Li2_polydeg] v1 v2)
 }
 
 
-
 inline
 fn dot_prod_vecs(stack u32[Li2_l * Li2_polydeg] v1 v2, reg ptr u32[Li2_polydeg] dotprod)
 	-> reg ptr u32[Li2_polydeg]

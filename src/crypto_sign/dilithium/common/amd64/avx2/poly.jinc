@@ -1,5 +1,14 @@
 require "../params.jinc"
-require "../montgomery.jinc" // TODO: Erase this dependency
+
+u256[1] poly_reduce32_2_22 = {
+	(8u32) [0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000]
+};
+u256[1] poly_pointwise_qinv = {
+	(8u32) [58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449]
+};
+u256[1] poly_pointwise_q = {
+	(8u32) [8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417]
+};
 
 fn poly_add(reg ptr u32[Li2_polydeg] f g result)
 	-> reg ptr u32[Li2_polydeg]
@@ -21,8 +30,6 @@ fn poly_add(reg ptr u32[Li2_polydeg] f g result)
 fn poly_subtract(reg ptr u32[Li2_polydeg] f g result)
 	-> reg ptr u32[Li2_polydeg]
 {
-	// TODO: [electricdusk] refactor: Rename to poly_sub
-
 	reg u256 v256;
 	reg u64 offset;
 
@@ -58,28 +65,29 @@ fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
 	-> reg ptr u32[Li2_polydeg]
 {
 	// TODO [electricdusk] Vectorize this function
-	
-	reg u64 i;
-	reg u32 val res;
+	reg u256 a t const_2_22 q;
 
-	?{}, i = #set0_64();
-	while(i < Li2_polydeg) {
-		val = poly[(int) i];
-		res = reduce32(val);
-		poly[(int) i] = res;
-		i += 1;
+	reg u64 offset;
+	
+	const_2_22 = #VMOVDQA_256(poly_reduce32_2_22[0]);
+	q = #VMOVDQA_256(poly_pointwise_q[0]);
+
+	?{}, offset = #set0_64();
+	while(offset < 4 * Li2_polydeg) {
+		// t = (a + (1 << 22)) >> 23
+		a = #VMOVDQA_256(poly.[u256 (int) offset]);
+		t = #VPADD_8u32(a, const_2_22);
+		t = #VPSRA_8u32(t, 23);
+		// t = a - t*Q
+		t = #VPMULL_8u32(t, q);
+		a = #VPSUB_8u32(a, t);
+		#VMOVDQA_256(poly.[u256 (int) offset]) = a;
+
+		offset += 32;
 	}
 
 	return poly;
 }
-
-
-u256[1] poly_pointwise_qinv = {
-	(8u32) [58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449]
-};
-u256[1] poly_pointwise_q = {
-	(8u32) [8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417]
-};
 
 fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 	-> reg ptr u32[Li2_polydeg]
@@ -136,52 +144,69 @@ fn zero_poly(reg ptr u32[Li2_polydeg] f)
 	?{}, zero = #set0_256();
 	?{}, offset = #set0_64();
 
-	while(offset < 4 * Li2_polydeg) {
+	while (offset < 4 * Li2_polydeg) {
 		#VMOVDQA_256(f.[u256 (int) offset]) = zero;
 		offset += 32;
 	}
 	return f;
 }
 
-fn poly_caddq(reg ptr u32[Li2_polydeg] f)
+fn poly_caddq(reg ptr u32[Li2_polydeg] poly)
 	-> reg ptr u32[Li2_polydeg]
 {
-	// TODO [electricdusk] Vectorize this function
+	reg u256 zero v256 mask q add;
+	reg u64 offset;
+
+	?{}, zero = #set0_256();
+	q = #VMOVDQA_256(poly_pointwise_q[0]);
 	
-	reg u64 i;
-	reg u32 val;
-	?{}, i = #set0_64();
-	while(i < Li2_polydeg) {
-		val = f[(int) i];
-		val = caddq(val);
-		f[(int) i] = val;
-		i += 1;
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQA_256(poly.[u256 (int) offset]);
+		mask = #VPCMPGT_8u32(zero, v256);
+		add = #VPAND_256(q, mask);
+		v256 = #VPADD_8u32(v256, add);
+		#VMOVDQA_256(poly.[u256 (int) offset]) = v256;
+
+		offset += 32;
 	}
-	return f;
+	return poly;
 }
 
 inline
-fn poly_checknorm(reg ptr u32[Li2_polydeg] f, inline int threshold)
-	-> stack u8
+fn poly_checknorm(reg ptr u32[Li2_polydeg] poly, inline int threshold)
+	-> reg u8
 {
-	stack u8 r;
-	reg u8 result;
-	stack u8 result_s;
-	reg u8 c;
-	reg u64 i;
-	reg u32 val;
+	reg u256 v256 v256_zero v256_threshold;
+	reg u256 exceeds_pos exceeds_neg exceeds_any;
+	reg u64 v64;
+	reg u64 movmskb;
+	reg u8 v8 ret;
+	reg bool zf;
 
-	result = 0;
+	reg u64 offset;
 
-	?{}, i = #set0_64();
-	while(i < Li2_polydeg) {
-		val = f[(int) i];
-		r = checknorm(val, threshold);
-		c = r;
-		result |= c;
-		i += 1;
+	?{}, ret = #set0_8();
+
+	v64 = threshold - 1;
+	v256_threshold = (256u) #VMOV(v64);
+	v256_threshold = #VPBROADCAST_8u32(v256_threshold);
+	?{}, v256_zero = #set0_256();
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQA_256(poly.[u256 (int) offset]);
+		exceeds_pos = #VPCMPGT_8u32(v256, v256_threshold);
+		v256 = #VPSUB_8u32(v256_zero, v256);
+		exceeds_neg = #VPCMPGT_8u32(v256, v256_threshold);
+		exceeds_any = #VPOR_256(exceeds_pos, exceeds_neg);
+		movmskb = #VPMOVMSKB_u256u64(exceeds_any);
+		_,_,_,_,zf = #TEST_64(movmskb, movmskb);
+		v8 = #SETcc(!zf);
+		ret |= v8;
+
+		offset += 32;
 	}
 
-	result_s = result;
-	return result_s;
+	return ret;
 }
