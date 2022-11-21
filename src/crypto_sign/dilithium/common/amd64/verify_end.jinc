@@ -116,6 +116,7 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
     // TODO: Go through the code and check for all operators
     // whether they should be signed or unsigned.
 
+    reg u32 r_status;
     stack u32 status;
     stack u8 z_normcheck_fail c_tilde_result;
     reg u64 i j;
@@ -147,7 +148,9 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
        
     inline int ii;
 
-    status = 0xFF;
+    //status = 0xFF;
+    r_status = -1;
+    status = r_status;
 
     // Sample A
     fft_matA = expandA(pk[0:32]);

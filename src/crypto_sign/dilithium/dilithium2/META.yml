@@ -1,0 +1,13 @@
+name: Dilithium2
+type: sign
+checksumsmall: 4797f974ea6e9e7fd018abbaf70efe2f1d10f6c2e6b172c55f371f0793ec3929
+checksumbig: 640685e7cb128c2c14057138cf0217ade007b19a99c037634b8a8fdfa55eb74c
+claimed-nist-level: 3
+implementations:
+    - name: amd64/ref
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
