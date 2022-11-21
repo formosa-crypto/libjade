@@ -1,6 +1,6 @@
+require "fft.jinc"
 require "poly.jinc"
 require "rounding.jinc"
-require "fft.jinc"
 
 fn reduce32_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 	-> reg ptr u32[Li2_l * Li2_polydeg]
@@ -8,7 +8,7 @@ fn reduce32_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 	reg u64 i;
 	reg u32 val res;
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_l * Li2_polydeg) {
 		val = vec[(int) i];
 		res = reduce32(val);
@@ -25,7 +25,7 @@ fn reduce32_veck(reg ptr u32[Li2_k * Li2_polydeg] vec)
 	reg u64 i;
 	reg u32 val res;
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
 		val = vec[(int) i];
 		res = reduce32(val);
@@ -106,7 +106,7 @@ fn power2round_vec(reg ptr u32[Li2_k * Li2_polydeg] v)
 	reg u64 i;
 	reg u32 x y1 y2;
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
 		x = v[(int) i];
 		y1, y2 = power2round(x);
@@ -196,19 +196,21 @@ inline
 fn dot_prod_vecs(stack u32[Li2_l * Li2_polydeg] v1 v2, reg ptr u32[Li2_polydeg] dotprod)
 	-> reg ptr u32[Li2_polydeg]
 {	
-	stack u32[Li2_polydeg] term_prod_s;
-  reg ptr u32[Li2_polydeg] term_prod;
-	reg ptr u32[Li2_polydeg] v1_term v2_term;
-	inline int i;
+	stack u32[Li2_polydeg] term_prod;
+	reg ptr u32[Li2_polydeg] term_prod_rsp;
 
-  term_prod = term_prod_s;
+	reg ptr u32[Li2_polydeg] v1_term v2_term;
+
+	inline int i;
 	
 	dotprod = zero_poly(dotprod);
 	for i = 0 to Li2_l {
 		v1_term = v1[Li2_polydeg * i : Li2_polydeg];
 		v2_term = v2[Li2_polydeg * i : Li2_polydeg];
-		term_prod = poly_mult(v1_term, v2_term, term_prod);
-		dotprod = poly_accumulate(term_prod, dotprod);
+		term_prod_rsp = term_prod;
+		term_prod_rsp = poly_pointwise_montgomery(v1_term, v2_term, term_prod_rsp);
+		dotprod = poly_accumulate(term_prod_rsp, dotprod);
+		term_prod = term_prod_rsp;
 	}
 
 	return dotprod;
@@ -220,39 +222,18 @@ fn mult_mat_vec(reg ptr u32[Li2_k * Li2_l * Li2_polydeg] mat,
 	-> stack u32[Li2_k * Li2_polydeg]
 {
 	stack u32[Li2_k * Li2_polydeg] out;
-	reg ptr u32[Li2_polydeg] prod;
+	reg ptr u32[Li2_polydeg] out_rsp;
+	
 	inline int i;
-
 	for i = 0 to Li2_k {
-		prod = out[Li2_polydeg * i : Li2_polydeg];
-		prod = dot_prod_vecs(
-			mat[Li2_l * Li2_polydeg * i : Li2_l * Li2_polydeg], 
-			vec, prod);
-		out[Li2_polydeg * i : Li2_polydeg] = prod;
+		out_rsp = out[Li2_polydeg * i : Li2_polydeg];
+		out_rsp = dot_prod_vecs(
+			mat[Li2_l * Li2_polydeg * i : Li2_l * Li2_polydeg],
+			vec, out_rsp);
+		out[Li2_polydeg * i : Li2_polydeg] = out_rsp;
 	}
 
 	return out;
-}
-
-inline
-fn expandMask(reg ptr u8[64] rho_prime, reg u16 nonce)
-	-> stack u32[Li2_l * Li2_polydeg]
-{
-	stack u32[Li2_l * Li2_polydeg] y;
-	inline int i;
-	stack u16 kappa;
-	reg u16 v;
-	reg ptr u32[Li2_polydeg] component;
-	for i = 0 to Li2_l {
-		v = nonce;
-		v *= Li2_l;
-		v += i;
-		kappa = v;
-		component = y[Li2_polydeg * i : Li2_polydeg];
-		component = expandMaskComponent(component, rho_prime, kappa);
-		y[Li2_polydeg * i : Li2_polydeg] = component;
-	}
-	return y;
 }
 
 inline
@@ -263,7 +244,7 @@ fn pointwise_mont_mult(reg ptr u32[Li2_polydeg] f g fg)
 	reg u32 v32;
 	reg u64 result gv_64;
 	reg u32 prod_redc;
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
 		v32 = f[(int) i];
 		result = (64s) v32;
@@ -286,7 +267,7 @@ fn deep_copy_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 	reg u64 i;
 	reg u32 entry;
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_l * Li2_polydeg) {
 		entry = vec[(int) i];
 		dest[(int) i] = entry;
@@ -300,11 +281,11 @@ fn decompose_vec(reg ptr u32[Li2_k * Li2_polydeg] vec)
 	-> stack u32[Li2_k * Li2_polydeg], stack u32[Li2_k * Li2_polydeg]
 {
 	stack u32[Li2_k * Li2_polydeg] vec0 vec1;
-	stack u64 i;
+	reg u64 i;
 	reg u64 addr;
 	reg u32 a a0 a1;
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
 		addr = i;
 		a = vec[(int) addr];
@@ -346,15 +327,19 @@ inline
 fn checknorm_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec, inline int threshold)
 	-> stack u8
 {
+	reg ptr u32[Li2_polydeg] vec_elem;
+	stack u8 result_s;
 	reg u8 result;
+
 	stack u8 r;
 	reg u8 c;
+
 	inline int ii;
-	stack u8 result_s;
 
 	result = 0;
 	for ii = 0 to Li2_l {
-		r = poly_checknorm(vec[ii * Li2_polydeg : Li2_polydeg], threshold);
+		vec_elem = vec[ii * Li2_polydeg : Li2_polydeg];
+		r = poly_checknorm(vec_elem, threshold);
 		c = r;
 		result |= c;
 	}
@@ -376,7 +361,7 @@ fn mult_scalar_vec(reg ptr u32[Li2_polydeg] f,
 	for ii = 0 to Li2_l {
 		fg = fvec[ii * Li2_polydeg : Li2_polydeg];
 		g = vec[ii * Li2_polydeg : Li2_polydeg];
-		fg = poly_mult(f, g, fg);
+		fg = poly_pointwise_montgomery(f, g, fg);
 		fvec[ii * Li2_polydeg : Li2_polydeg] = fg;
 	}
 
@@ -396,7 +381,7 @@ fn mult_scalar_veck(reg ptr u32[Li2_polydeg] f,
 	for ii = 0 to Li2_k {
 		fg = fvec[ii * Li2_polydeg : Li2_polydeg];
 		g = vec[ii * Li2_polydeg : Li2_polydeg];
-		fg = poly_mult(f, g, fg);
+		fg = poly_pointwise_montgomery(f, g, fg);
 		fvec[ii * Li2_polydeg : Li2_polydeg] = fg;
 	}
 

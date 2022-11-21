@@ -23,15 +23,8 @@ fn theta(reg ptr u64[25] a) -> reg ptr u64[25] {
   }
 
   for x = 0 to 5 {
-    /* d[x] = ROL64(c[(x + 1) % 5], 1); */
-    /* extraction fails */
-
-    /*    _, _, d[x] = #ROL_64(c[(x + 1) % 5], 1);*/
-    /*    d[x] ^= c[(x + 4) % 5];*/
-    /* does not compile */
-
     d[x] = c[(x + 1) % 5];
-    _, _, d[x] = #ROL_64(d[x], 1);
+    ?{}, d[x] = #ROL_64(d[x], 1);
     d[x] ^= c[(x + 4) % 5];
   }
 
@@ -132,7 +125,6 @@ u64[24] roundconstants = {0x0000000000000001, 0x0000000000008082, 0x800000000000
                           0x8000000000008002, 0x8000000000000080, 0x000000000000800a, 0x800000008000000a, 
                           0x8000000080008081, 0x8000000000008080, 0x0000000080000001, 0x8000000080008008};
 
-#[returnaddress="stack"]
 fn __keccakf1600_ref(reg ptr u64[25] state) -> reg ptr u64[25] {
   inline int round;
   reg ptr u64[24] constptr;
@@ -140,18 +132,17 @@ fn __keccakf1600_ref(reg ptr u64[25] state) -> reg ptr u64[25] {
   reg u64 rctr;
   reg u64 c;
   
-  //want to use this one instead of the one inside the loop...
-  //but I get one-varmap error if I do that.
-  //constptr = roundconstants;
-  rctr = 0;
-
+  // TODO: want to use this one instead of the one inside the loop...
+  // but I get one-varmap error if I do that.
+  // constptr = roundconstants;
+  ?{}, rctr = #set0_64();
   while (rctr < 192) {
     state = theta(state);
     state = rho(state);
     state = pi(state);
     state = chi(state);
     constptr = roundconstants;
-	c = constptr.[(int)rctr];
+	  c = constptr.[(int) rctr];
     state = iota(state, c);
     rctr += 8;
   }
@@ -178,13 +169,13 @@ fn shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr 
   inline int i;
 
   state = st0(state);
-
+  // TODO: Inefficient to load one byte at a time. Optimize this.
   for i = 0 to 34 {
     c = in[i];
     state[u8 i] ^= c;
   }
   state[u8 34] ^= 0x1f;
-  state[u8 SHAKE128_RATE-1] ^= 0x80;
+  state[u8 SHAKE128_RATE - 1] ^= 0x80;
 
   return state;
 }
@@ -197,48 +188,23 @@ fn shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr 
 inline
 fn shake256_absorb32(stack u8[32] in) -> stack u64[25]
 {
-  //param int SHAKE256_RATE = 136;
   reg u8 c;
   inline int i;
   stack u64[25] state;
+  reg ptr u64[25] state_rsp;
 
-  state = st0(state);
-
-  // Inefficient to load one byte at a time...
-  // TODO optimize me...
-  // assuming little endian though?
-
+  state_rsp = state;
+  state_rsp = st0(state_rsp);
+  // TODO: Inefficient to load one byte at a time. Optimize this.
   for i = 0 to 32 {
     c = in[i];
-    state[u8 i] ^= c;
+    state_rsp[u8 i] ^= c;
   }
 
-  // I don't understand the following 2 lines
-  // What are trail bytes?
-  state[u8 32] ^= 0x1f;
-  // Is this the marker for SHAKE256?
-  state[u8 SHAKE256_RATE - 1] ^= 0x80;
+  state_rsp[u8 32] ^= 0x1f;
+  state_rsp[u8 SHAKE256_RATE - 1] ^= 0x80;
 
-  return state;
-}
-
-// And sometimes 66...
-inline
-fn shake256_absorb66(stack u8[66] in) -> stack u64[25]
-{
-  //param int SHAKE256_RATE = 136;
-  reg u8 c;
-  inline int i;
-  stack u64[25] state;
-
-  state = st0(state);
-  for i = 0 to 66 {
-    c = in[i];
-    state[u8 i] ^= c;
-  }
-  state[u8 66] ^= 0x1f;
-  state[u8 SHAKE256_RATE - 1] ^= 0x80;
-
+  state = state_rsp;
   return state;
 }
 
@@ -253,7 +219,7 @@ fn shake256_squeezeblock(stack u64[25] state, stack u8[SHAKE256_RATE] out)
 
   state = __keccakf1600_ref(state);
 
-	i = 0;
+	?{}, i = #set0_64();
 	while(i < SHAKE256_RATE) {
 		c = state[u8 (int) i];
 		out[(int) i] = c;

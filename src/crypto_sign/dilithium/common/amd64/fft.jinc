@@ -34,12 +34,12 @@ fn fft(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 		start = 0;
 		while(start < Li2_polydeg) {
 
-			//zeta = zetas[++k];
-			k += 1;
+			//zeta = zetas[k++];
 			tfs = twiddle_factors;
 			addr = (64u) k;
 			v32 = tfs[(int) addr];
 			zeta = v32;
+			k += 1;
 
 			//for(j = start; j < start + len; ++j) {
 			j = start;
@@ -110,7 +110,7 @@ fn ifft_to_mont(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 
 	stack u32 left right;
 
-	k = 256;
+	k = 255;
 	for log_len = 0 to 8 {
 		len = 1 << log_len;
 		start = 0;

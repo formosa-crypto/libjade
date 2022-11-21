@@ -1,17 +1,9 @@
-require "expandA.jinc"
-require "fft.jinc"
-require "hashing.jinc"
-require "packing.jinc"
-require "params.jinc"
-require "poly.jinc"
-require "polyvec.jinc"
-
 inline
 fn poly_shiftl(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg] {
     reg u64 i;
     reg u32 coeff;
 
-    ?{}, i = #set0();
+    ?{}, i = #set0_64();
     while (i < Li2_polydeg) {
         coeff = f[(int) i];
         coeff <<= Li2_d;
@@ -27,8 +19,6 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
     // This function is not inline, because I have had experiences with the
     // register allocation failing (when it should be able to succeed) when
     // this function was inlined.
-
-    // TODO: This function seems to be very complex.  Write a test for it.
 
     reg u64 i j;
     reg u8 done fail status;
@@ -122,10 +112,11 @@ fn cmp_ctilde(stack u8[32] c_tilde1 c_tilde2) -> reg u8 {
 }
 
 inline
-fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2_PK_LEN] pk) -> reg u32 {
-    // TODO: [electricdusk] Go through the code and check for all
-    // operators whether they should be signed or unsigned.
+fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack ptr u8[Li2_PK_LEN] pk) -> reg u32 {
+    // TODO: Go through the code and check for all operators
+    // whether they should be signed or unsigned.
 
+    reg u32 r_status;
     stack u32 status;
     stack u8 z_normcheck_fail c_tilde_result;
     reg u64 i j;
@@ -133,13 +124,13 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
     reg u8 k l hints_popcount hints_popcount_fail done;
     reg u64 hint_index;
 
-    reg ptr u8[Li2_SIGN_LEN] rSig;
-    stack u8[Li2_SIGN_LEN] sSig; 
-    reg ptr u8[Li2_PK_LEN] rPk;
-    stack u8[Li2_PK_LEN] sPk; 
+    reg ptr u8[Li2_SIGN_LEN] sig_rsp;
+    reg ptr u8[Li2_PK_LEN] pk_rsp;
 
     stack u64[25] keccak_state;
+    reg ptr u64[25] keccak_state_rsp;
     stack u8[32] tr c_tilde c_tilde2;
+    reg ptr u8[32] tr_rsp c_tilde_rsp c_tilde2_rsp;
     stack u8[64] mu;
 
     stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
@@ -157,24 +148,27 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
        
     inline int ii;
 
-    reg u32 xorhash; // XXX
-
-    status = -1;
-    sSig = sig;
-    sPk = pk;
+    //status = 0xFF;
+    r_status = -1;
+    status = r_status;
 
     // Sample A
     fft_matA = expandA(pk[0:32]);
 
     // Compute mu
-    keccak_state = st0(keccak_state);
-    tr = shake256_of_pk(pk, tr);
+    keccak_state_rsp = keccak_state;
+    keccak_state = st0(keccak_state_rsp);
+    keccak_state = keccak_state_rsp;
+    pk_rsp = pk;
+    tr_rsp = tr;
+    tr_rsp = shake256_of_pk(pk_rsp, tr_rsp);
+    tr = tr_rsp;
     mu = hash_tr_m(tr, m_len, m);
 
     // Unpack z
-    rSig = sSig;
+    sig_rsp = sig;
     for ii = 0 to Li2_l {
-		z_buf = rSig[32 + ii * Li2_pack_zlen : Li2_pack_zlen];
+		z_buf = sig_rsp[32 + ii * Li2_pack_zlen : Li2_pack_zlen];
 		z_to_unpack = z[ii * Li2_polydeg : Li2_polydeg];
 		z_to_unpack = polyz_unpack(z_to_unpack, z_buf);
         z[ii * Li2_polydeg : Li2_polydeg] = z_to_unpack;
@@ -183,8 +177,8 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
     if (z_normcheck_fail == 0) {
         z = fft_vec(z);
 
-        rSig = sSig;
-        hints_buf = rSig[Li2_pack_hstart : Li2_omega + Li2_k];
+        sig_rsp = sig;
+        hints_buf = sig_rsp[Li2_pack_hstart : Li2_omega + Li2_k];
         hints, hints_popcount_fail = unpack_hints(hints_buf, hints);
         if (hints_popcount_fail == 0) {
 
@@ -192,10 +186,10 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
             az = mult_mat_vec(fft_matA, z);
 
             // Sample challenge
-            rSig = sSig;
-            ?{}, i = #set0();
+            sig_rsp = sig;
+            ?{}, i = #set0_64();
             while (i < 32) {
-                byte = rSig[(int) i];
+                byte = sig_rsp[(int) i];
                 c_tilde[(int) i] = byte;
                 i += 1;
             }
@@ -205,8 +199,8 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
             challenge = fft(challenge);
             
             for ii = 0 to Li2_k {
-                rPk = sPk;
-                t1_buf = rPk[32 + ii * Li2_pack_t1len : Li2_pack_t1len];
+                pk_rsp = pk;
+                t1_buf = pk_rsp[32 + ii * Li2_pack_t1len : Li2_pack_t1len];
                 t1_elem = polyt1_unpack(t1_elem, t1_buf);
                 t1_elem = poly_shiftl(t1_elem);
                 t1_elem = fft(t1_elem);
@@ -232,47 +226,40 @@ fn verify(reg ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, reg ptr u8[Li2
     return status;
 }
 
-//
-inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
-{
-  stack u8[Li2_PK_LEN] public_key;
-  stack u8[Li2_SIGN_LEN] signature;
-  reg u8 c;
-  reg u32 r32;
-  reg u64 i r mlen;
+inline
+fn verify(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg u32 {
+    stack u8[Li2_PK_LEN] pk;
+    reg ptr u8[Li2_PK_LEN] pk_rsp;
+    stack ptr u8[Li2_PK_LEN] pk_ssp;
+    stack u8[Li2_SIGN_LEN] sig;
+    reg ptr u8[Li2_SIGN_LEN] sig_rsp;
+    stack ptr u8[Li2_SIGN_LEN] sig_ssp;
 
-  // copy public key
-  ?{}, i = #set0();
-	while(i < Li2_PK_LEN)
-  { c = (u8)[pk + i];
-		public_key[(int) i] = c;
-		i += 1;
-	} // pk dead.
+    reg u8 byte;
+    reg u64 i;
+    reg u32 status;
 
-  // copy signature
-  ?{}, i = #set0();
-  while(i < Li2_SIGN_LEN)
-  { c = (u8)[sm + i];
-	  signature[(int) i] = c;
-		i += 1;
-	}
-  sm = #LEA(sm + Li2_SIGN_LEN);
+    pk_rsp = pk;
+    sig_rsp = sig;
 
-  // write mlen_p
-  mlen = smlen - Li2_SIGN_LEN; // this is a variable renaming (mlen and smlen are merged)
-  (u64)[mlen_p + 0] = mlen; // mlen_p dead
-
-  // copy message from sm to m
-  ?{}, i = #set0();
-	while(i < mlen) {
-		c = (u8)[sm + i];
-		(u8)[m + i] = c;
+    ?{}, i = #set0_64();
+	while(i < Li2_PK_LEN) {
+		byte = (u8)[ptr_pk + i];
+		pk_rsp[(int) i] = byte;
 		i += 1;
 	}
 
-  r32 = verify(signature, m, mlen, public_key);
-  r = (64s) r32;
-  return r;
+    ?{}, i = #set0_64();
+    while(i < Li2_SIGN_LEN) {
+		byte = (u8)[ptr_sig + i];
+		sig_rsp[(int) i] = byte;
+		i += 1;
+	}
+
+    status = verify_inner(sig_rsp, ptr_m, m_len, pk_rsp);
+
+    pk = pk_rsp;
+    sig = sig_rsp;
+
+    return status;
 }
-
-
