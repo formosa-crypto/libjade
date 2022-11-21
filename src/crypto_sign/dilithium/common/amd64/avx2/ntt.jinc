@@ -707,16 +707,16 @@ fn ntt_transpose_inner_avx2(reg ptr u32[256] poly_ptr, reg u64 offset) -> reg pt
 	return poly_ptr;
 }
 
-fn ntt_transpose_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
+fn ntt_transpose_avx2(reg ptr u32[Li2_polydeg] poly) -> reg ptr u32[Li2_polydeg] {
 	reg u64 offset;
 
 	?{}, offset = #set0_64();
 	poly = ntt_transpose_inner_avx2(poly, offset);
-	offset += 256;
+	offset = Li2_polydeg;
 	poly = ntt_transpose_inner_avx2(poly, offset);
-	offset += 256;
+	offset = 2 * Li2_polydeg;
 	poly = ntt_transpose_inner_avx2(poly, offset);
-	offset += 256;
+	offset = 3 * Li2_polydeg;
 	poly = ntt_transpose_inner_avx2(poly, offset);
 	return poly;
 }
@@ -724,13 +724,11 @@ fn ntt_transpose_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
 // This function currently glues the avx2 ntt code to the ref-based code
 fn fft(reg ptr u32[Li2_polydeg] poly) -> reg ptr u32[Li2_polydeg] {
 	poly = ntt_avx2(poly);
-	poly = ntt_transpose_avx2(poly);
 	return poly;
 }
 
 // This function currently glues the avx2 ntt code to the ref-based code
 fn ifft_to_mont(reg ptr u32[Li2_polydeg] poly) -> reg ptr u32[Li2_polydeg] {
-	poly = ntt_transpose_avx2(poly);
 	poly = invntt_tomont_avx2(poly);
 	return poly;
 }

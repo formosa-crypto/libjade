@@ -4,7 +4,7 @@ inline
 fn expandA_aligned(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
 {
 	reg ptr u8[32] rho_rsp;
-	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3;
+	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3 poly_tmp;
 	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
 
 	stack u64[4] nonces;
@@ -30,6 +30,15 @@ fn expandA_aligned(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
 		poly0, poly1, poly2, poly3 = expandA_chunk(
 			rho_rsp, nonces, poly0, poly1, poly2, poly3);
 
+		poly_tmp = poly0;
+		poly0 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly1;
+		poly1 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly2;
+		poly2 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly3;
+		poly3 = ntt_transpose_avx2(poly_tmp);
+
 		matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
 		matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
 		matrix[(idx + 2) * Li2_polydeg : Li2_polydeg] = poly2;
@@ -48,7 +57,7 @@ fn expandA_unaligned2(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg
 	// This function specializes for this case.
 
 	reg ptr u8[32] rho_rsp;
-	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3;
+	reg ptr u32[Li2_polydeg] poly0 poly1 poly2 poly3 poly_tmp;
 	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
 	stack u32[Li2_polydeg] scratch0 scratch1;
 
@@ -75,6 +84,15 @@ fn expandA_unaligned2(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg
 		poly0, poly1, poly2, poly3 = expandA_chunk(
 			rho_rsp, nonces, poly0, poly1, poly2, poly3);
 
+		poly_tmp = poly0;
+		poly0 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly1;
+		poly1 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly2;
+		poly2 = ntt_transpose_avx2(poly_tmp);
+		poly_tmp = poly3;
+		poly3 = ntt_transpose_avx2(poly_tmp);
+
 		matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
 		matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
 		matrix[(idx + 2) * Li2_polydeg : Li2_polydeg] = poly2;
@@ -96,6 +114,11 @@ fn expandA_unaligned2(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg
 
 	poly0, poly1, scratch0, scratch1 = expandA_chunk(
 		rho_rsp, nonces, poly0, poly1, scratch0, scratch1);
+
+	poly_tmp = poly0;
+	poly0 = ntt_transpose_avx2(poly_tmp);
+	poly_tmp = poly1;
+	poly1 = ntt_transpose_avx2(poly_tmp);
 
 	matrix[(idx + 0) * Li2_polydeg : Li2_polydeg] = poly0;
 	matrix[(idx + 1) * Li2_polydeg : Li2_polydeg] = poly1;
