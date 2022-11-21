@@ -210,8 +210,8 @@ fn ntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 
 // Level 0
 inline
-fn ntt_levels0t1(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset)
--> reg ptr u256[32] {
+fn ntt_levels0t1(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
+-> reg ptr u32[256] {
 	// TODO: Interleave loads/stores with arithmetic ops
 
 	reg u256 zeta_qinv zeta;
@@ -260,8 +260,8 @@ fn ntt_levels0t1(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset)
 }
 
 inline
-fn ntt_levels2t7(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset) 
--> reg ptr u256[32] {
+fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) 
+-> reg ptr u32[256] {
 	// TODO: Interleave shuffles with butterflies
 
 	reg u256 zeta_qinv0 zeta_qinv1 zeta0 zeta1;
@@ -389,7 +389,7 @@ fn ntt_levels2t7(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset)
 	return poly_ptr;
 }
 
-fn ntt_avx2(reg ptr u256[32] poly) -> reg ptr u256[32] {
+fn ntt_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
 	reg u256 q;
 
 	q = #VPBROADCAST_8u32(const_q);
@@ -435,7 +435,7 @@ fn invntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 }
 
 inline
-fn invntt_levels0t5(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset) -> reg ptr u256[32] {
+fn invntt_levels0t5(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) -> reg ptr u32[256] {
 	reg u256 zeta_qinv0 zeta_qinv1 zeta0 zeta1;
 	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 polyx;
 
@@ -552,7 +552,7 @@ fn invntt_levels0t5(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset) ->
 }
 
 inline 
-fn invntt_levels6t7(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset) -> reg ptr u256[32] {
+fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) -> reg ptr u32[256] {
 	reg u256 zeta_qinv zeta;
 	reg u256 div div_qinv;
 	reg u256 ymm12 ymm13 ymm14 ymm15;
@@ -650,7 +650,7 @@ fn invntt_levels6t7(reg ptr u256[32] poly_ptr, reg u256 q, inline int offset) ->
 	return poly_ptr;
 }
 
-fn invntt_tomont_avx2(reg ptr u256[32] poly) -> reg ptr u256[32] {
+fn invntt_tomont_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
 	reg u256 q;
 
 	q = #VPBROADCAST_8u32(const_q);
@@ -668,7 +668,7 @@ fn invntt_tomont_avx2(reg ptr u256[32] poly) -> reg ptr u256[32] {
 	return poly;
 }
 
-fn ntt_transpose_inner_avx2(reg ptr u256[32] poly_ptr, reg u64 offset) -> reg ptr u256[32] {
+fn ntt_transpose_inner_avx2(reg ptr u32[256] poly_ptr, reg u64 offset) -> reg ptr u32[256] {
 	reg u256 ymm3 ymm4 ymm5 ymm6 ymm7 ymm8 ymm9 ymm10 ymm11;
 
 	ymm4 = #VMOVDQA_256(poly_ptr.[u256 32 * 0 + (int) offset]);
@@ -707,7 +707,7 @@ fn ntt_transpose_inner_avx2(reg ptr u256[32] poly_ptr, reg u64 offset) -> reg pt
 	return poly_ptr;
 }
 
-fn ntt_transpose_avx2(reg ptr u256[32] poly) -> reg ptr u256[32] {
+fn ntt_transpose_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
 	reg u64 offset;
 
 	?{}, offset = #set0_64();
@@ -722,65 +722,15 @@ fn ntt_transpose_avx2(reg ptr u256[32] poly) -> reg ptr u256[32] {
 }
 
 // This function currently glues the avx2 ntt code to the ref-based code
-fn fft(reg ptr u32[Li2_polydeg] poly32) -> reg ptr u32[Li2_polydeg] {
-	stack u256[32] poly256_ssp;
-	reg ptr u256[32] poly256_rsp;
-
-	reg u256 v256;
-
-	reg u32 v32;
-	reg u64 i dest v64;
-
-	poly256_rsp = poly256_ssp;
-
-	?{}, i = #set0_64();
-	while (i < 4 * Li2_polydeg) {
-		v256 = #VMOVDQU_256(poly32.[u256 (int) i]);
-		#VMOVDQA_256(poly256_rsp.[u256 (int) i]) = v256;
-		i += 32;
-	}
-
-	poly256_rsp = ntt_avx2(poly256_rsp);
-	poly256_rsp = ntt_transpose_avx2(poly256_rsp);
-
-	?{}, i = #set0_64();
-	while (i < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(poly256_rsp.[u256 (int) i]);
-		#VMOVDQU_256(poly32.[u256 (int) i]) = v256;
-		i += 32;
-	}
-
-	return poly32;
+fn fft(reg ptr u32[Li2_polydeg] poly) -> reg ptr u32[Li2_polydeg] {
+	poly = ntt_avx2(poly);
+	poly = ntt_transpose_avx2(poly);
+	return poly;
 }
 
 // This function currently glues the avx2 ntt code to the ref-based code
-fn ifft_to_mont(reg ptr u32[Li2_polydeg] poly32) -> reg ptr u32[Li2_polydeg] {
-	stack u256[32] poly256_ssp;
-	reg ptr u256[32] poly256_rsp;
-
-	reg u256 v256;
-
-	reg u32 v32;
-	reg u64 i dest v64;
-
-	poly256_rsp = poly256_ssp;
-
-	?{}, i = #set0_64();
-	while (i < 4 * Li2_polydeg) {
-		v256 = #VMOVDQU_256(poly32.[u256 (int) i]);
-		#VMOVDQA_256(poly256_rsp.[u256 (int) i]) = v256;
-		i += 32;
-	}
-
-	poly256_rsp = ntt_transpose_avx2(poly256_rsp);
-	poly256_rsp = invntt_tomont_avx2(poly256_rsp);
-
-	?{}, i = #set0_64();
-	while (i < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(poly256_rsp.[u256 (int) i]);
-		#VMOVDQU_256(poly32.[u256 (int) i]) = v256;
-		i += 32;
-	}
-
-	return poly32;
+fn ifft_to_mont(reg ptr u32[Li2_polydeg] poly) -> reg ptr u32[Li2_polydeg] {
+	poly = ntt_transpose_avx2(poly);
+	poly = invntt_tomont_avx2(poly);
+	return poly;
 }

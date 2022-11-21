@@ -1,7 +1,7 @@
 from Jade require "crypto_sign/dilithium/common/amd64/avx2/expandMask.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/expandS.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/fips202.jinc"
-from Jade require "crypto_sign/dilithium/common/amd64/poly.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/avx2/poly.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/rounding.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/avx2/ntt.jinc"
 
@@ -46,8 +46,8 @@ from Jade require "crypto_sign/dilithium/common/amd64/avx2/expandA_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/avx2/expandMask_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/expandS_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/hashing_end.jinc"
-from Jade require "crypto_sign/dilithium/common/amd64/poly_end.jinc"
-from Jade require "crypto_sign/dilithium/common/amd64/polyvec_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/avx2/poly_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/avx2/polyvec_end.jinc"
 
 inline
 fn expandA(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg] {
