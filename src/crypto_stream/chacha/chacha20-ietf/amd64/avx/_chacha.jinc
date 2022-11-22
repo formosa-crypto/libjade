@@ -1,0 +1,34 @@
+inline fn __chacha_xor_avx_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
+{
+  if(len < 129)
+  { _chacha_xor_h_x2_avx_ic_(output, input, len, nonce, counter, key); }
+  else
+  { _chacha_xor_v_avx_ic_(output, input, len, nonce, counter, key); }
+}
+
+inline fn __chacha_avx_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
+{
+  if(len < 129)
+  { _chacha_h_x2_avx_ic_(output, len, nonce, counter, key); }
+  else
+  { _chacha_v_avx_ic_(output, len, nonce, counter, key); }
+}
+
+//
+
+inline fn __chacha_xor_avx(reg u64 output input len nonce key)
+{
+  if(len < 129)
+  { __chacha_xor_h_x2_avx(output, input, len, nonce, key); }
+  else
+  { __chacha_xor_v_avx(output, input, len, nonce, key); }
+}
+
+inline fn __chacha_avx(reg u64 output len nonce key)
+{
+  if(len < 129)
+  { __chacha_h_x2_avx(output, len, nonce, key); }
+  else
+  { __chacha_v_avx(output, len, nonce, key); }
+}
+
