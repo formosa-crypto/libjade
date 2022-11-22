@@ -1,10 +1,15 @@
 param int CHACHA_ROUNDS=20;
 
 from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_state.jinc"
+
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_h.jinc"
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_h.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_entry_h.jinc"
+
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_v.jinc"
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_v.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_entry_v.jinc"
+
 from Jade require "crypto_stream/chacha/common/amd64/avx/_chacha.jinc"
 
 export fn jade_stream_chacha_chacha20_ietf_amd64_avx_xor(reg u64 output input len nonce key) -> reg u64
