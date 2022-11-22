@@ -1,0 +1,75 @@
+inline fn __chacha_xor_ref_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
+{
+  stack u64 s_output s_input s_len;
+  stack u32[16] st;
+  reg u32[16] k;  // the full state is in k[0..14] and k15;
+  stack u32 k15;
+
+  s_output = output;
+  s_input = input;
+  s_len = len;
+
+  st = __init_ref(nonce, counter, key);
+
+  while {len = s_len;} (len >= 64)
+  { k, k15 = __copy_state_ref(st);
+    k, k15 = __rounds_inline_ref(k, k15);
+    s_output, s_input, s_len = __sum_states_store_xor_ref(s_output, s_input, s_len, k, k15, st);
+    st = __increment_counter_ref(st);
+  }
+
+  if(len > 0)
+  { k, k15 = __copy_state_ref(st);
+    k, k15 = __rounds_inline_ref(k, k15);
+    k, k15 = __sum_states_ref(k, k15, st);
+    __store_xor_last_ref(s_output, s_input, s_len, k, k15);
+  }
+}
+
+
+inline fn __chacha_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
+{
+  stack u64 s_output s_len;
+  stack u32[16] st;
+  reg u32[16] k;  // the full state is in k[0..14] and k15;
+  stack u32 k15;
+
+  s_output = output;
+  s_len = len;
+
+  st = __init_ref(nonce, counter, key);
+
+  while {len = s_len;} (len >= 64)
+  { k, k15 = __copy_state_ref(st);
+    k, k15 = __rounds_inline_ref(k, k15);
+    s_output, s_len = __sum_states_store_ref(s_output, s_len, k, k15, st);
+    st = __increment_counter_ref(st);
+  }
+
+  if(len > 0)
+  { k, k15 = __copy_state_ref(st);
+    k, k15 = __rounds_inline_ref(k, k15);
+    k, k15 = __sum_states_ref(k, k15, st);
+    __store_last_ref(s_output, s_len, k, k15);
+  }
+}
+
+//
+
+inline fn __chacha_xor_ref(reg u64 output input len nonce key)
+{
+  reg u32 counter;
+
+  ?{}, counter = #set0_32();
+  __chacha_xor_ref_ic(output, input, len, nonce, counter, key);
+}
+
+
+inline fn __chacha_ref(reg u64 output len nonce key)
+{
+  reg u32 counter;
+
+  ?{}, counter = #set0_32();
+  __chacha_ref_ic(output, len, nonce, counter, key);
+}
+
