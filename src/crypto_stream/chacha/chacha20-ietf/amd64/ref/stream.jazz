@@ -26,7 +26,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_ref(reg u64 output len nonce ke
 export fn jade_stream_chacha_chacha20_ietf_amd64_ref_xor_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key) -> reg u64
 {
   reg u64 r;
-  __chacha_xor_ref_ic(output, input, len, nonce, counter, key);
+  _chacha_xor_ref_ic_(output, input, len, nonce, counter, key);
   _,_,_,_,_,r = #set0();
   return r;
 }
@@ -34,7 +34,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_ref_xor_ic(reg u64 output input
 export fn jade_stream_chacha_chacha20_ietf_amd64_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key) -> reg u64
 {
   reg u64 r;
-  __chacha_ref_ic(output, len, nonce, counter, key);
+  _chacha_ref_ic_(output, len, nonce, counter, key);
   _,_,_,_,_,r = #set0();
   return r;
 }

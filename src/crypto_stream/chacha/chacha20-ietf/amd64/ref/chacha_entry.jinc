@@ -1,4 +1,5 @@
-inline fn __chacha_xor_ref_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
+#[returnaddress="stack"]
+fn _chacha_xor_ref_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
 {
   stack u64 s_output s_input s_len;
   stack u32[16] st;
@@ -26,8 +27,25 @@ inline fn __chacha_xor_ref_ic(reg u64 output input len nonce, reg u32 counter, r
   }
 }
 
+inline fn _chacha_xor_ref_ic_(reg u64 _output _input _len _nonce, reg u32 _counter, reg u64 _key)
+{
+  reg u64 output input len nonce key;
+  reg u32 counter;
 
-inline fn __chacha_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
+  output = _output;
+  input = _input;
+  len = _len;
+  nonce = _nonce;
+  counter = _counter;
+  key = _key;
+
+  _chacha_xor_ref_ic(output, input, len, nonce, counter, key);
+}
+
+//
+
+#[returnaddress="stack"]
+fn _chacha_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
 {
   stack u64 s_output s_len;
   stack u32[16] st;
@@ -54,6 +72,21 @@ inline fn __chacha_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key
   }
 }
 
+inline fn _chacha_ref_ic_(reg u64 _output _len _nonce, reg u32 _counter, reg u64 _key)
+{
+  reg u64 output len nonce key;
+  reg u32 counter;
+
+  output = _output;
+  len = _len;
+  nonce = _nonce;
+  counter = _counter;
+  key = _key;
+
+  _chacha_ref_ic(output, len, nonce, counter, key);
+}
+
+
 //
 
 inline fn __chacha_xor_ref(reg u64 output input len nonce key)
@@ -61,7 +94,7 @@ inline fn __chacha_xor_ref(reg u64 output input len nonce key)
   reg u32 counter;
 
   ?{}, counter = #set0_32();
-  __chacha_xor_ref_ic(output, input, len, nonce, counter, key);
+  _chacha_xor_ref_ic_(output, input, len, nonce, counter, key);
 }
 
 
@@ -70,6 +103,6 @@ inline fn __chacha_ref(reg u64 output len nonce key)
   reg u32 counter;
 
   ?{}, counter = #set0_32();
-  __chacha_ref_ic(output, len, nonce, counter, key);
+  _chacha_ref_ic_(output, len, nonce, counter, key);
 }
 
