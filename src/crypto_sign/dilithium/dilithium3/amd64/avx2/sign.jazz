@@ -1,0 +1,52 @@
+require "common.jinc"
+require "packing.jinc"
+require "params.jinc"
+
+from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/avx2/sign_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jinc"
+
+from Jade require "crypto_sign/dilithium/common/amd64/sign.jinc"
+
+export fn jade_sign_dilithium_dilithium3_amd64_avx2_keypair(
+  reg u64 public_key
+          secret_key
+  ) -> reg u64
+{
+  reg u64 r;
+  keygen(public_key, secret_key);
+  ?{}, r = #set0();
+  return r;
+}
+
+
+export fn jade_sign_dilithium_dilithium3_amd64_avx2(
+  reg u64 signed_message
+          signed_message_length
+          message
+          message_length
+          secret_key
+   ) -> reg u64
+{
+  reg u64 r;
+  r = __sign(signed_message, signed_message_length,
+             message, message_length, secret_key);
+  return r;
+}
+
+
+export fn jade_sign_dilithium_dilithium3_amd64_avx2_open(
+  reg u64 message
+          message_length
+          signed_message
+          signed_message_length
+          public_key
+  ) -> reg u64
+{
+  reg u64 r;
+  r = __open(message, message_length, 
+             signed_message, signed_message_length, public_key);
+  return r;
+}
+
+
