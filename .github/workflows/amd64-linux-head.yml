@@ -19,8 +19,10 @@ jobs:
 
       - name: compile
         run: make -j$JOBS -C src/ CI=1 default
-      - name: dist
+      - name: dist amd64
         run: ./scripts/ci/releaser/jdist-src amd64
+      - name: check dist amd64
+        run: ./scripts/ci/releaser/jdist-src-test amd64
       - name: print logs
         run: make         -C src/ CI=1 reporter
       - name: return error if there are any errors
