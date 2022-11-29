@@ -169,14 +169,18 @@ seq 4 1 : (#pre /\
     case(to_uint len{2} < 8).
     + move => *; rewrite -W64.to_uint1  -to_uint_eq wordP =>  /= i ib.
       case (i = 0);1: by rewrite !get_to_uint /= ib /= => ->;  smt(pdiv_small W64.to_uint_cmp).
-      move => *; rewrite !get_to_uint /= ib /=;
-       have  := pdiv_small (to_uint b{1}) (2^i) _ => //;
-           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+      move => *; rewrite !get_to_uint /= ib /=.
+      by have -> /= : to_uint b{1} = 0 by smt(pdiv_small W64.to_uint_cmp).
+       
     + move => *; rewrite -W64.to_uint0  -to_uint_eq wordP =>  /= i ib.
       case (i = 0); 1: by rewrite !get_to_uint /=; smt(). 
       move => *; rewrite !get_to_uint /= ib /=;
-       have  := pdiv_small (to_uint b{1}) (2^i) _ => //;
+       have  := pdiv_small (to_uint b{1}) (2^i) _ => //; last
            smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+      have -> : to_uint b{1} = 2^0; first by simplify; smt().
+      split => *; 1: by auto. 
+      by smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+
   seq 2 0: (#pre /\  m{1} = if to_uint len{1} < 8 then W64.onew else W64.zero).
   + auto => /> &1 &2 *. 
     case(to_uint len{2} < 8).
@@ -217,8 +221,14 @@ seq 4 1 : (#pre /\
       rewrite H3 ifF 1:/# /= modz_small 1:/# modz_small 1:/#.
       pose x:= ((b{1} `<<<` (to_uint len{2} - 8) * 8) - W64.one).
       have Hx : to_uint x  %% 2^((to_uint len{2} - 8) * 8) = to_uint (W64.masklsb ((to_uint len{2} - 8) * 8)).
-      +  rewrite /x minus_one to_uintD /onew /= to_uint_shl 1:/# /= /max /= ifT 1:/# of_uintK /=.         by have /= expeb : 1 <= 2^((to_uint len{2} - 8) * 8) < 2^64; 
-          smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+      +  rewrite /x minus_one to_uintD /onew /= to_uint_shl 1:/# /= /max /= ifT 1:/# of_uintK /=.         
+         have /= expeb : 2^0 <= 2^((to_uint len{2} - 8) * 8) < 2^64; last
+            smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         split; 2:smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         case (to_uint len{2} = 8); 1: by move => -> ;simplify.
+         move => *; have : 2^0 <  2 ^ ((to_uint len{2} - 8) * 8); last by smt().
+         by apply ltr_weexpn2l; smt().
+         
       have : b2i x.[k * 8 + i] = 1; last by smt().
       rewrite W64.b2i_get 1:/#. 
       have : to_uint x %% 2 ^ ((to_uint len{2} - 8) * 8) %/ 2 ^ (k * 8 + i) %% 2 = 1.
@@ -235,8 +245,15 @@ seq 4 1 : (#pre /\
       + rewrite wordP => i ib /=.
         rewrite  /(`<<`) /truncateu8 /= H3 /= ifF 1:/# /=. 
         rewrite get_unpack8 // /(\bits8) 1:/# /= initiE //= !get_to_uint modz_dvd //=. 
-        have : to_uint b{1} %/ 2 ^ (k * 8 + i - to_uint len{2} %% 8 * 8 %% 64) = 0; 
+        have : to_uint b{1} %/ 2 ^ (k * 8 + i - to_uint len{2} %% 8 * 8 %% 64) = 0; last 
           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+        rewrite modz_small; 1: by smt().
+        have -> : to_uint b{1} = 2^0; first by simplify; smt().
+        apply pdiv_small; split => *; 1: by auto.
+        by have : 1<k * 8 + i - to_uint len{2} %% 8 * 8;
+          smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+
+
       rewrite /copy_64 /= /truncateu8 /= H2 /= ifF 1:/# /=. 
       rewrite /(`<<`)  /subc /borrow_sub get_unpack8 // /(\bits8) /b2i 1: /# /= wordP /= => i ib.
       rewrite /min /=  initiE //=. 
@@ -306,8 +323,11 @@ seq 4 1 : (#pre /\
       have Hx : to_uint x  %% 2^(to_uint len{2} * 8) = to_uint (W64.masklsb (to_uint len{2} * 8)).
       +  rewrite /x minus_one to_uintD /onew /= to_uint_shl 1:/# /= /max /= ifT 1:/# of_uintK /=.
          pose e:= to_uint len{2} * 8. 
-         by have /= expeb : 1 <= 2^e < 2^64; 
+         have /= expeb : 2^0 <= 2^e < 2^64; last
           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         split; last smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         have  : 2 ^ 0 < 2 ^ e; last by smt().
+         apply ltr_weexpn2l;by smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64).
       have : b2i x.[k * 8 + i] = 1; last by smt().
       rewrite W64.b2i_get 1:/#. 
       have : to_uint x %% 2 ^ (to_uint len{2}* 8) %/ 2 ^ (k * 8 + i) %% 2 = 1.
@@ -325,8 +345,13 @@ seq 4 1 : (#pre /\
         rewrite  /(`<<`) /truncateu8 /= H2 /= ifT 1:/# /=. 
         rewrite get_unpack8 // /(\bits8); 1:smt(W64.to_uint_cmp). 
         rewrite /= initiE //= !get_to_uint modz_dvd //=. 
-        have : to_uint nb{1} %/ 2 ^ (k * 8 + i - to_uint len{2} %% 8 * 8 %% 64) = 0; 
+        have : to_uint nb{1} %/ 2 ^ (k * 8 + i - to_uint len{2} %% 8 * 8 %% 64) = 0.
+        rewrite modz_small; 1: by smt().
+        have -> : to_uint nb{1} = 2^0; first by simplify; smt().
+        apply pdiv_small; split => *; 1: by auto.
+        have : 1<k * 8 + i - to_uint len{2} %% 8 * 8;
           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
+        by  smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l). 
       rewrite /copy_64 /= /truncateu8 /= H2 /= ifT 1:/# /=. 
       rewrite /(`<<`)  /subc /borrow_sub get_unpack8 // /(\bits8) /b2i; 1:smt(W64.to_uint_cmp). 
       rewrite /= wordP /= => i ib.
@@ -345,8 +370,12 @@ seq 4 1 : (#pre /\
          rewrite /max /= ifT;1:smt(W64.to_uint_cmp).
          rewrite of_uintK /=. 
          pose e:= to_uint len{2} * 8. 
-         by have /= expeb : 1 <= 2^e < 2^64;
+         have /= expeb : 2^0 <= 2^e < 2^64; last
           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         split; last smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         have  : 2 ^ 0 < 2 ^ e; last by smt().
+         apply ltr_weexpn2l;by smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64).
+
          have : b2i x.[k * 8 + i] = 0; last by smt().
          rewrite W64.b2i_get; 1:smt(W64.to_uint_cmp). 
          rewrite Hx -to_uint_shr; 1:smt(W64.to_uint_cmp).
@@ -373,8 +402,11 @@ seq 4 1 : (#pre /\
          rewrite /max /= ifT;1:smt(W64.to_uint_cmp).
          rewrite of_uintK /=. 
          pose e:= to_uint len{2} * 8. 
-         by have /= expeb : 1 <= 2^e < 2^64;
+         have /= expeb : 2^0 <= 2^e < 2^64; last
           smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         split; last smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64). 
+         have  : 2 ^ 0 < 2 ^ e; last by smt().
+         apply ltr_weexpn2l;by smt(Ring.IntID.expr0 W64.to_uint_cmp ltr_weexpn2l pow2_64).
          have : b2i x.[to_uint len{2} * 8 + i] = 0; last by smt().
          rewrite W64.b2i_get; 1:smt(W64.to_uint_cmp). 
          rewrite Hx -to_uint_shr; 1:smt(W64.to_uint_cmp).

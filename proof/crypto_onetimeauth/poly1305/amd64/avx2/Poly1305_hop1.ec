@@ -203,13 +203,11 @@ async while
            in_0{1} + W64.of_int (3*16) = in_00{2} /\
           v1_ = (to_uint inlen0{2})%r + 64%r /\ v2_ = (to_uint inlen0{1})%r + 16%r) 
         )).
-    inline *; auto => /> &1 &2.
-    rewrite !uleE !ultE  /= =>  H H0 H1 H2 ??.
-    rewrite !to_uintD /= !to_uintN /=; do split; 1,3..: smt(W64.to_uint_cmp pow2_64). 
-     elim H1. 
-     + move => *; right; do split; smt(W64.to_uint_cmp pow2_64). 
-     move => *; left; do split; smt(W64.to_uint_cmp pow2_64). 
-   
+    - inline *; auto => /> &1 &2;rewrite !uleE !ultE  /= =>  H H0 H1 H2 ??.
+      rewrite !to_uintD /= !to_uintN;elim H1; last by smt(). 
+      rewrite -!to_uint_eq; move => />; do split; 1,3..: by  smt(W64.to_uint_cmp pow2_64). 
+      right; do split; smt(W64.to_uint_cmp pow2_64). 
+
     - auto => /> &1 &2.
       rewrite !uleE !ultE  /= =>  H H0 H1 H2 ?.
       do split; smt(W64.to_uint_cmp pow2_64). 

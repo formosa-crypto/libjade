@@ -269,17 +269,44 @@ seq 1 2 : (#{/~n{1}}{~i{1}}pre); last first.
 +  auto => /> &2; rewrite /poly1305_pre /poly1305_post /poly1305_ref //=.
    move =>  H H0; split. 
    pose hh := poly1305_loop (load_clamp mem kk) mm (size mm).
-   rewrite tP => ? i ib; rewrite !initiE //=.
+   rewrite tP => HH i ib; rewrite !initiE //=.
    have -> : asint h{2} %% W128.modulus = asint hh %% W128.modulus; last by auto. 
-   by smt().
+   + move :HH => /=. 
+     pose a:= asint h{2} %% 340282366920938463463374607431768211456.
+     pose b:= asint hh %% 340282366920938463463374607431768211456.
+     pose c:= W128.to_uint _.
+     move => HH.
+     case(0<=a+c < 340282366920938463463374607431768211456).
+     + move => ?.
+       have ?: (0<=b+c < 340282366920938463463374607431768211456); 1: by 
+         smt(W128.to_uint_cmp pow2_128).
+       by move : HH; rewrite !modz_small;smt(StdOrder.IntOrder.ger0_norm).
+     + move => ?.
+       have ?: (!(0<=b+c < 340282366920938463463374607431768211456)); 1: by 
+         smt(W128.to_uint_cmp pow2_128).
+       by move : HH; rewrite !modz_minus; smt(W128.to_uint_cmp pow2_128).
    pose hh := poly1305_loop (load_clamp mem kk) mm (size mm).
    rewrite tP => Ha.
    move : (Ha 0 _) => //. rewrite !initiE //=. 
    move : (Ha 1 _) => //; rewrite !initiE //=.
-   rewrite !to_uint_eq /= !of_uintK /= => *. 
+   rewrite !to_uint_eq /= !of_uintK /= => HH0 HH1. 
    have -> : asint h{2} %% W128.modulus = asint hh %% W128.modulus; last by auto. 
-   by smt().
-
+   + move : HH0 HH1 => /=. 
+     pose a:= asint h{2} %% 340282366920938463463374607431768211456.
+     pose b:= asint hh %% 340282366920938463463374607431768211456.
+     pose c:= W128.to_uint _.
+     move => HH0 HH1.
+     have HH : (a + c) %% 340282366920938463463374607431768211456 = 
+               (b + c) %% 340282366920938463463374607431768211456 by smt().
+     case(0<=a+c < 340282366920938463463374607431768211456).
+     + move => ?.
+       have ?: (0<=b+c < 340282366920938463463374607431768211456); 1: by 
+         smt(W128.to_uint_cmp pow2_128).
+       by move : HH; rewrite !modz_small;smt(StdOrder.IntOrder.ger0_norm).
+     + move => ?.
+       have ?: (!(0<=b+c < 340282366920938463463374607431768211456)); 1: by 
+         smt(W128.to_uint_cmp pow2_128).
+       by move : HH; rewrite !modz_minus; smt(W128.to_uint_cmp pow2_128).
 
 (* Last block processing *)
 (* One last synched iteration? *)

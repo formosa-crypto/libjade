@@ -650,7 +650,7 @@ have X: ubW64 4 hh.[2] => valRep3 hh < 2*p.
 proc.
 seq 11: (#pre /\ val_limbs64 [g.[0]; g.[1]; g2] = valRep3 hh + 5) => //.
  wp;skip =>  &hr [#] <- H0 g0 tpl g1 tpl0 g3; rewrite H0; do split => //.
- have ->: 5 = val_limbs64 [W64.of_int 5] by smt().
+ have ->: 5 = val_limbs64 [W64.of_int 5] by rewrite /val_digits /=. 
  have ->: [g3.[0]; g3.[1]; (addc hh.[2] W64.zero tpl0.`1).`2]
           = add_limbs64nc [hh.[0]; hh.[1]; hh.[2]] [W64.of_int 5].
   by rewrite /add_limbs64nc /g3 /tpl0 /g1 /tpl /g0 /= !addcE.

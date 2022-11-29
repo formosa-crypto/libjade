@@ -446,7 +446,7 @@ proof.
 rewrite !bW64E => /> *; apply W64.to_uintM_small.
 move: (W64.to_uint_cmp x) (W64.to_uint_cmp y) => *.
 apply (StdOrder.IntOrder.ltr_le_trans (2^nx * 2^ny)).
- smt(StdOrder.IntOrder.ltr_pmul2l StdOrder.IntOrder.ltr_pmul2r).
+apply ltr_pmul; smt(W64.to_uint_cmp).
 rewrite -exprD_nneg //; apply ler_weexpn2l => //. 
 smt().
 qed.
