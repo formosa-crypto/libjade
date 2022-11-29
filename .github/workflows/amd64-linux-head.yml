@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - dilithium-avx2-integration
   pull_request:
 
 jobs:
