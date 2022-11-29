@@ -1,6 +1,7 @@
 from Jade require "crypto_sign/dilithium/common/amd64/expandMask.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/expandS.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/fips202.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/ntt.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/poly.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/rounding.jinc"
 
