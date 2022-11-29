@@ -1,3 +1,5 @@
+// TODO: s/VMOVDQU_256/VMOVDQA_256/ when https://github.com/jasmin-lang/jasmin/pull/279 gets merged / released
+
 // This ntt code is based on the official avx2 NTT code from Gregor Seiler.
 // https://github.com/pq-crystals/dilithium/blob/3e9b9f1412f6c7435dbeb4e10692ea58f181ee51/avx2/ntt.S
 
@@ -219,14 +221,14 @@ fn ntt_levels0t1(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 
 	inline int ii;
 
-	poly0 = #VMOVDQA_256(poly_ptr.[u256 (32 * (0*4 + offset))]);
-	poly1 = #VMOVDQA_256(poly_ptr.[u256 (32 * (1*4 + offset))]);
-	poly2 = #VMOVDQA_256(poly_ptr.[u256 (32 * (2*4 + offset))]);
-	poly3 = #VMOVDQA_256(poly_ptr.[u256 (32 * (3*4 + offset))]);
-	poly4 = #VMOVDQA_256(poly_ptr.[u256 (32 * (4*4 + offset))]);
-	poly5 = #VMOVDQA_256(poly_ptr.[u256 (32 * (5*4 + offset))]);
-	poly6 = #VMOVDQA_256(poly_ptr.[u256 (32 * (6*4 + offset))]);
-	poly7 = #VMOVDQA_256(poly_ptr.[u256 (32 * (7*4 + offset))]);
+	poly0 = #VMOVDQU_256(poly_ptr.[u256 (32 * (0*4 + offset))]);
+	poly1 = #VMOVDQU_256(poly_ptr.[u256 (32 * (1*4 + offset))]);
+	poly2 = #VMOVDQU_256(poly_ptr.[u256 (32 * (2*4 + offset))]);
+	poly3 = #VMOVDQU_256(poly_ptr.[u256 (32 * (3*4 + offset))]);
+	poly4 = #VMOVDQU_256(poly_ptr.[u256 (32 * (4*4 + offset))]);
+	poly5 = #VMOVDQU_256(poly_ptr.[u256 (32 * (5*4 + offset))]);
+	poly6 = #VMOVDQU_256(poly_ptr.[u256 (32 * (6*4 + offset))]);
+	poly7 = #VMOVDQU_256(poly_ptr.[u256 (32 * (7*4 + offset))]);
 
 	// Level 0
 	zeta_qinv = #VPBROADCAST_8u32(ntt_level0_zetas_qinv[0]);
@@ -247,14 +249,14 @@ fn ntt_levels0t1(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	poly4, poly6 = ntt_butterfly(poly4, poly6, zeta_qinv, zeta_qinv, zeta, zeta, q);
 	poly5, poly7 = ntt_butterfly(poly5, poly7, zeta_qinv, zeta_qinv, zeta, zeta, q);
 
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (0*4 + offset))]) = poly0;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (1*4 + offset))]) = poly1;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (2*4 + offset))]) = poly2;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (3*4 + offset))]) = poly3;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (4*4 + offset))]) = poly4;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (5*4 + offset))]) = poly5;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (6*4 + offset))]) = poly6;
-	#VMOVDQA_256(poly_ptr.[u256 (32 * (7*4 + offset))]) = poly7;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (0*4 + offset))]) = poly0;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (1*4 + offset))]) = poly1;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (2*4 + offset))]) = poly2;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (3*4 + offset))]) = poly3;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (4*4 + offset))]) = poly4;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (5*4 + offset))]) = poly5;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (6*4 + offset))]) = poly6;
+	#VMOVDQU_256(poly_ptr.[u256 (32 * (7*4 + offset))]) = poly7;
 
 	return poly_ptr;
 }
@@ -268,14 +270,14 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	reg u256[8] poly;
 	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 poly8 polyx;
 		
-	poly0 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 0)]);
-	poly1 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 1)]);
-	poly2 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 2)]);
-	poly3 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 3)]);
-	poly4 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 4)]);
-	poly5 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 5)]);
-	poly6 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 6)]);
-	poly7 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 7)]);
+	poly0 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]);
+	poly1 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 1)]);
+	poly2 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 2)]);
+	poly3 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 3)]);
+	poly4 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 4)]);
+	poly5 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 5)]);
+	poly6 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 6)]);
+	poly7 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 7)]);
 
 	// Level 2
 	zeta_qinv0 = #VPBROADCAST_8u32(level2_zetas_qinv[offset]);
@@ -291,8 +293,8 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	poly2, poly7 = shuffle8(poly3, poly7);
 
 	// Level 3
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[offset]);
 
 	polyx, poly1 = ntt_butterfly(polyx, poly1, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
 	poly4, poly6 = ntt_butterfly(poly4, poly6, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
@@ -305,8 +307,8 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	poly0, poly7 = shuffle4(poly5, poly7);
 
 	// Level 4
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[4 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[4 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[4 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[4 + offset]);
 
 	poly3, poly4 = ntt_butterfly(poly3, poly4, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
 	poly1, poly2 = ntt_butterfly(poly1, poly2, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
@@ -319,8 +321,8 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	polyx, poly7 = shuffle2(poly6, poly7);
 
 	// Level 5
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[8 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[8 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[8 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[8 + offset]);
 	// TODO: [electricdusk] unneccesary data hazards; precompute this
 	// NOTE: [electricdusk] Double-check whether the table would still fit
 	// in L1 cache (and whether that matters).
@@ -333,16 +335,16 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	poly2, poly7 = ntt_butterfly(poly2, poly7, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
 	// Level 6
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[12 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[12 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[12 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[12 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 
 	poly5, poly3 = ntt_butterfly(poly5, poly3, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 	poly4, poly2 = ntt_butterfly(poly4, poly2, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[16 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[16 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[16 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[16 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 
@@ -353,38 +355,38 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	// TODO: [electricdusk] Write a butterfly that loads the twiddle
 	// factors as immediates from memory (instead of buffering them in
 	// registers).
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[20 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[20 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[20 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[20 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 	poly5, poly4 = ntt_butterfly(poly5, poly4, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[24 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[24 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[24 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[24 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 	poly3, poly2 = ntt_butterfly(poly3, poly2, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[28 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[28 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[28 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[28 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 	poly1, poly0 = ntt_butterfly(poly1, poly0, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
-	zeta_qinv0 = #VMOVDQA_256(level3t7_zetas_qinv[32 + offset]);
-	zeta0 = #VMOVDQA_256(level3t7_zetas[32 + offset]);
+	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[32 + offset]);
+	zeta0 = #VMOVDQU_256(level3t7_zetas[32 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
 	zeta1 = #VMOVSHDUP_4u64(zeta0);
 	polyx, poly7 = ntt_butterfly(polyx, poly7, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 0)]) = poly5;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 1)]) = poly4;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 2)]) = poly3;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 3)]) = poly2;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 4)]) = poly1;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 5)]) = poly0;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 6)]) = polyx;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 7)]) = poly7;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]) = poly5;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 1)]) = poly4;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 2)]) = poly3;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 3)]) = poly2;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 4)]) = poly1;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 5)]) = poly0;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 6)]) = polyx;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 7)]) = poly7;
 
 	return poly_ptr;
 }
@@ -439,14 +441,14 @@ fn invntt_levels0t5(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	reg u256 zeta_qinv0 zeta_qinv1 zeta0 zeta1;
 	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 polyx;
 
-	poly0 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 0)]);
-	poly1 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 1)]);
-	poly2 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 2)]);
-	poly3 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 3)]);
-	poly4 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 4)]);
-	poly5 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 5)]);
-	poly6 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 6)]);
-	poly7 = #VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 7)]);
+	poly0 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]);
+	poly1 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 1)]);
+	poly2 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 2)]);
+	poly3 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 3)]);
+	poly4 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 4)]);
+	poly5 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 5)]);
+	poly6 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 6)]);
+	poly7 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 7)]);
 
 	// Level 0
 	// TODO: [electricdusk] This code might be unneccesarily hazardous.
@@ -539,14 +541,14 @@ fn invntt_levels0t5(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	poly2, poly4 = invntt_butterfly(poly2, poly4, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
 	poly0, poly7 = invntt_butterfly(poly0, poly7, zeta_qinv0, zeta_qinv0, zeta0, zeta0, q);
 
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 0)]) = poly5;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 1)]) = poly6;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 2)]) = poly2;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 3)]) = poly0;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 4)]) = polyx;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 5)]) = poly1;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 6)]) = poly4;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8*offset + 7)]) = poly7;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]) = poly5;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 1)]) = poly6;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 2)]) = poly2;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 3)]) = poly0;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 4)]) = polyx;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 5)]) = poly1;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 6)]) = poly4;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 7)]) = poly7;
 
 	return poly_ptr;
 }
@@ -558,14 +560,14 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	reg u256 ymm12 ymm13 ymm14 ymm15;
 	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7;
 
-	poly0 = #VMOVDQA_256(poly_ptr.[u256 32 * (0 + offset)]);
-	poly1 = #VMOVDQA_256(poly_ptr.[u256 32 * (4 + offset)]);
-	poly2 = #VMOVDQA_256(poly_ptr.[u256 32 * (8 + offset)]);
-	poly3 = #VMOVDQA_256(poly_ptr.[u256 32 * (12 + offset)]);
-	poly4 = #VMOVDQA_256(poly_ptr.[u256 32 * (16 + offset)]);
-	poly5 = #VMOVDQA_256(poly_ptr.[u256 32 * (20 + offset)]);
-	poly6 = #VMOVDQA_256(poly_ptr.[u256 32 * (24 + offset)]);
-	poly7 = #VMOVDQA_256(poly_ptr.[u256 32 * (28 + offset)]);
+	poly0 = #VMOVDQU_256(poly_ptr.[u256 32 * (0 + offset)]);
+	poly1 = #VMOVDQU_256(poly_ptr.[u256 32 * (4 + offset)]);
+	poly2 = #VMOVDQU_256(poly_ptr.[u256 32 * (8 + offset)]);
+	poly3 = #VMOVDQU_256(poly_ptr.[u256 32 * (12 + offset)]);
+	poly4 = #VMOVDQU_256(poly_ptr.[u256 32 * (16 + offset)]);
+	poly5 = #VMOVDQU_256(poly_ptr.[u256 32 * (20 + offset)]);
+	poly6 = #VMOVDQU_256(poly_ptr.[u256 32 * (24 + offset)]);
+	poly7 = #VMOVDQU_256(poly_ptr.[u256 32 * (28 + offset)]);
 
 	// Level 6
 	zeta_qinv = #VPBROADCAST_8u32(level1_zetas_qinv[1]);
@@ -586,10 +588,10 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	poly2, poly6 = invntt_butterfly(poly2, poly6, zeta_qinv, zeta_qinv, zeta, zeta, q);
 	poly3, poly7 = invntt_butterfly(poly3, poly7, zeta_qinv, zeta_qinv, zeta, zeta, q);
 
-	#VMOVDQA_256(poly_ptr.[u256 32 * (16 + offset)]) = poly4;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (20 + offset)]) = poly5;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (24 + offset)]) = poly6;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (28 + offset)]) = poly7;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (16 + offset)]) = poly4;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (20 + offset)]) = poly5;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (24 + offset)]) = poly6;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (28 + offset)]) = poly7;
 
 	// Divide by 256 and map to Montgomery domain
 	// TODO: Understand why we only have to do this with half of the
@@ -642,10 +644,10 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	poly2 = #VPBLEND_8u32(poly2, poly4, 0xAA);
 	poly3 = #VPBLEND_8u32(poly3, poly5, 0xAA);
 
-	#VMOVDQA_256(poly_ptr.[u256 32 * (0 + offset)]) = poly0;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (4 + offset)]) = poly1;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (8 + offset)]) = poly2;
-	#VMOVDQA_256(poly_ptr.[u256 32 * (12 + offset)]) = poly3;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (0 + offset)]) = poly0;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (4 + offset)]) = poly1;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (8 + offset)]) = poly2;
+	#VMOVDQU_256(poly_ptr.[u256 32 * (12 + offset)]) = poly3;
 
 	return poly_ptr;
 }
@@ -671,14 +673,14 @@ fn invntt_tomont_avx2(reg ptr u32[256] poly) -> reg ptr u32[256] {
 fn ntt_transpose_inner_avx2(reg ptr u32[256] poly_ptr, reg u64 offset) -> reg ptr u32[256] {
 	reg u256 ymm3 ymm4 ymm5 ymm6 ymm7 ymm8 ymm9 ymm10 ymm11;
 
-	ymm4 = #VMOVDQA_256(poly_ptr.[u256 32 * 0 + (int) offset]);
-	ymm5 = #VMOVDQA_256(poly_ptr.[u256 32 * 1 + (int) offset]);
-	ymm6 = #VMOVDQA_256(poly_ptr.[u256 32 * 2 + (int) offset]);
-	ymm7 = #VMOVDQA_256(poly_ptr.[u256 32 * 3 + (int) offset]);
-	ymm8 = #VMOVDQA_256(poly_ptr.[u256 32 * 4 + (int) offset]);
-	ymm9 = #VMOVDQA_256(poly_ptr.[u256 32 * 5 + (int) offset]);
-	ymm10 = #VMOVDQA_256(poly_ptr.[u256 32 * 6 + (int) offset]);
-	ymm11 = #VMOVDQA_256(poly_ptr.[u256 32 * 7 + (int) offset]);
+	ymm4 = #VMOVDQU_256(poly_ptr.[u256 32 * 0 + (int) offset]);
+	ymm5 = #VMOVDQU_256(poly_ptr.[u256 32 * 1 + (int) offset]);
+	ymm6 = #VMOVDQU_256(poly_ptr.[u256 32 * 2 + (int) offset]);
+	ymm7 = #VMOVDQU_256(poly_ptr.[u256 32 * 3 + (int) offset]);
+	ymm8 = #VMOVDQU_256(poly_ptr.[u256 32 * 4 + (int) offset]);
+	ymm9 = #VMOVDQU_256(poly_ptr.[u256 32 * 5 + (int) offset]);
+	ymm10 = #VMOVDQU_256(poly_ptr.[u256 32 * 6 + (int) offset]);
+	ymm11 = #VMOVDQU_256(poly_ptr.[u256 32 * 7 + (int) offset]);
 
 	ymm3, ymm8 = shuffle8(ymm4, ymm8);
 	ymm4, ymm9 = shuffle8(ymm5, ymm9);
@@ -695,14 +697,14 @@ fn ntt_transpose_inner_avx2(reg ptr u32[256] poly_ptr, reg u64 offset) -> reg pt
 	ymm5, ymm4 = shuffle2(ymm3, ymm4);
 	ymm3, ymm11 = shuffle2(ymm10, ymm11);
 
-	#VMOVDQA_256(poly_ptr.[u256 32 * 0 + (int) offset]) = ymm9;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 1 + (int) offset]) = ymm8;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 2 + (int) offset]) = ymm7;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 3 + (int) offset]) = ymm6;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 4 + (int) offset]) = ymm5;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 5 + (int) offset]) = ymm4;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 6 + (int) offset]) = ymm3;
-	#VMOVDQA_256(poly_ptr.[u256 32 * 7 + (int) offset]) = ymm11;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 0 + (int) offset]) = ymm9;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 1 + (int) offset]) = ymm8;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 2 + (int) offset]) = ymm7;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 3 + (int) offset]) = ymm6;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 4 + (int) offset]) = ymm5;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 5 + (int) offset]) = ymm4;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 6 + (int) offset]) = ymm3;
+	#VMOVDQU_256(poly_ptr.[u256 32 * 7 + (int) offset]) = ymm11;
 
 	return poly_ptr;
 }

@@ -18,9 +18,9 @@ fn poly_add(reg ptr u32[Li2_polydeg] f g result)
 
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(f.[u256 (int) offset]);
+		v256 = #VMOVDQU_256(f.[u256 (int) offset]);
 		v256 = #VPADD_8u32(v256, g.[u256 (int) offset]);
-		#VMOVDQA_256(result.[u256 (int) offset]) = v256;
+		#VMOVDQU_256(result.[u256 (int) offset]) = v256;
 
 		offset += 32;
 	}
@@ -35,9 +35,9 @@ fn poly_subtract(reg ptr u32[Li2_polydeg] f g result)
 
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(f.[u256 (int) offset]);
+		v256 = #VMOVDQU_256(f.[u256 (int) offset]);
 		v256 = #VPSUB_8u32(v256, g.[u256 (int) offset]);
-		#VMOVDQA_256(result.[u256 (int) offset]) = v256;
+		#VMOVDQU_256(result.[u256 (int) offset]) = v256;
 
 		offset += 32;
 	}
@@ -52,9 +52,9 @@ fn poly_accumulate(reg ptr u32[Li2_polydeg] f acc)
 
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(acc.[u256 (int) offset]);
+		v256 = #VMOVDQU_256(acc.[u256 (int) offset]);
 		v256 = #VPADD_8u32(v256, f.[u256 (int) offset]);
-		#VMOVDQA_256(acc.[u256 (int) offset]) = v256;
+		#VMOVDQU_256(acc.[u256 (int) offset]) = v256;
 
 		offset += 32;
 	}
@@ -69,19 +69,19 @@ fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
 
 	reg u64 offset;
 	
-	const_2_22 = #VMOVDQA_256(poly_reduce32_2_22[0]);
-	q = #VMOVDQA_256(poly_pointwise_q[0]);
+	const_2_22 = #VMOVDQU_256(poly_reduce32_2_22[0]);
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
 
 	?{}, offset = #set0_64();
 	while(offset < 4 * Li2_polydeg) {
 		// t = (a + (1 << 22)) >> 23
-		a = #VMOVDQA_256(poly.[u256 (int) offset]);
+		a = #VMOVDQU_256(poly.[u256 (int) offset]);
 		t = #VPADD_8u32(a, const_2_22);
 		t = #VPSRA_8u32(t, 23);
 		// t = a - t*Q
 		t = #VPMULL_8u32(t, q);
 		a = #VPSUB_8u32(a, t);
-		#VMOVDQA_256(poly.[u256 (int) offset]) = a;
+		#VMOVDQU_256(poly.[u256 (int) offset]) = a;
 
 		offset += 32;
 	}
@@ -104,13 +104,13 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 
 	reg u64 offset;
 
-	qinv = #VMOVDQA_256(poly_pointwise_qinv[0]);
-	q = #VMOVDQA_256(poly_pointwise_q[0]);
+	qinv = #VMOVDQU_256(poly_pointwise_qinv[0]);
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
 
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		f_lo = #VMOVDQA_256(fft_f.[u256 (int) offset]);
-		g_lo = #VMOVDQA_256(fft_g.[u256 (int) offset]);
+		f_lo = #VMOVDQU_256(fft_f.[u256 (int) offset]);
+		g_lo = #VMOVDQU_256(fft_g.[u256 (int) offset]);
 		f_hi = #VMOVSHDUP_4u64(f_lo);
 		g_hi = #VMOVSHDUP_4u64(g_lo);
 
@@ -128,7 +128,7 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 
 		prod_lo = #VMOVSHDUP_4u64(prod_lo);
 		prod_lo = #VPBLEND_8u32(prod_lo, prod_hi, 0xAA);
-		#VMOVDQA_256(fft_prod.[u256 (int) offset]) = prod_lo;
+		#VMOVDQU_256(fft_prod.[u256 (int) offset]) = prod_lo;
 
 		offset += 32;
 	}
@@ -145,7 +145,7 @@ fn zero_poly(reg ptr u32[Li2_polydeg] f)
 	?{}, offset = #set0_64();
 
 	while (offset < 4 * Li2_polydeg) {
-		#VMOVDQA_256(f.[u256 (int) offset]) = zero;
+		#VMOVDQU_256(f.[u256 (int) offset]) = zero;
 		offset += 32;
 	}
 	return f;
@@ -158,15 +158,15 @@ fn poly_caddq(reg ptr u32[Li2_polydeg] poly)
 	reg u64 offset;
 
 	?{}, zero = #set0_256();
-	q = #VMOVDQA_256(poly_pointwise_q[0]);
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
 	
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(poly.[u256 (int) offset]);
+		v256 = #VMOVDQU_256(poly.[u256 (int) offset]);
 		mask = #VPCMPGT_8u32(zero, v256);
 		add = #VPAND_256(q, mask);
 		v256 = #VPADD_8u32(v256, add);
-		#VMOVDQA_256(poly.[u256 (int) offset]) = v256;
+		#VMOVDQU_256(poly.[u256 (int) offset]) = v256;
 
 		offset += 32;
 	}
@@ -195,7 +195,7 @@ fn poly_checknorm(reg ptr u32[Li2_polydeg] poly, inline int threshold)
 
 	?{}, offset = #set0_64();
 	while (offset < 4 * Li2_polydeg) {
-		v256 = #VMOVDQA_256(poly.[u256 (int) offset]);
+		v256 = #VMOVDQU_256(poly.[u256 (int) offset]);
 		exceeds_pos = #VPCMPGT_8u32(v256, v256_threshold);
 		v256 = #VPSUB_8u32(v256_zero, v256);
 		exceeds_neg = #VPCMPGT_8u32(v256, v256_threshold);
