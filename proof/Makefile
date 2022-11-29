@@ -28,9 +28,13 @@ endif
 # --------------------------------------------------------------------
 SRC     := ../src
 PROOF   := .
-SOURCES ?= $(filter-out ../src/, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
+EXCLUDE ?= $(SRC)/ $(SRC)/crypto_sign/dilithium/dilithium2/amd64/avx2/ $(SRC)/crypto_sign/dilithium/dilithium3/amd64/avx2/ $(SRC)/crypto_sign/dilithium/dilithium5/amd64/avx2/
+SOURCES ?= $(filter-out $(EXCLUDE), $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 
 LOGS    ?= libjade-logs-proof.tar.gz
+
+d:
+	@echo $(SOURCES)
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
