@@ -1,3 +1,5 @@
+// TODO: s/VMOVDQU_256/VMOVDQA_256/ when https://github.com/jasmin-lang/jasmin/pull/279 gets merged / released
+
 require "../params.jinc"
 
 u256[1] poly_reduce32_2_22 = {
