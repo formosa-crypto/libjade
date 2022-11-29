@@ -1,0 +1,42 @@
+inline
+fn expandMask_buffered(
+	reg ptr u8[64] rho_prime,
+	reg u16 kappa,
+	reg ptr u32[4 * Li2_polydeg] buffer,
+	stack u64 buffer_offset)
+	-> stack u32[Li2_l * Li2_polydeg], reg ptr u32[4 * Li2_polydeg], stack u64
+{
+	reg u64 polys_generated;
+
+	stack u32[Li2_l * Li2_polydeg] y;
+	reg u64 i addr;
+
+	reg u32 v32;
+
+	reg ptr u32[Li2_polydeg] poly;
+
+	?{}, polys_generated = #set0_64();
+	while (polys_generated < Li2_l) {
+		if buffer_offset >= 4 {
+			buffer = expandMask_poly_4x(buffer, rho_prime, kappa);
+			buffer_offset = 0;
+		}
+
+		?{}, i = #set0_64();
+		while (i < Li2_polydeg) {
+			addr = buffer_offset;
+			addr <<= Li2_log2polydeg;
+			addr += i;
+			v32 = buffer[(int) addr];
+			addr = polys_generated;
+			addr <<= Li2_log2polydeg;
+			addr += i;
+			y[(int) addr] = v32;
+			i += 1;
+		}
+		buffer_offset += 1;
+		kappa += 1;
+		polys_generated += 1;
+	}
+	return y, buffer, buffer_offset;
+}

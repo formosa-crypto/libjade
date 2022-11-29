@@ -1,5 +1,5 @@
 require "poly.jinc"
-require "rounding.jinc"
+require "../rounding.jinc"
 
 fn reduce32_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 	-> reg ptr u32[Li2_l * Li2_polydeg]
@@ -188,7 +188,6 @@ fn subtract_veck(stack u32[Li2_k * Li2_polydeg] v1 v2)
 	}
 	return vdiff;
 }
-
 
 
 inline
