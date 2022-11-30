@@ -1,6 +1,6 @@
-require "keygen_end.jinc"
-require "sign_end.jinc"
-require "verify_end.jinc"
+// require "keygen_end.jinc"
+// require "sign_end.jinc"
+// require "verify_end.jinc"
 
 //
 inline fn __sign(reg u64 sm smlen_p m mlen sk) -> reg u64

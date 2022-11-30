@@ -1,0 +1,214 @@
+// TODO: s/VMOVDQU_256/VMOVDQA_256/ when https://github.com/jasmin-lang/jasmin/pull/279 gets merged / released
+
+require "../params.jinc"
+
+u256[1] poly_reduce32_2_22 = {
+	(8u32) [0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000, 0x00400000]
+};
+u256[1] poly_pointwise_qinv = {
+	(8u32) [58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449, 58728449]
+};
+u256[1] poly_pointwise_q = {
+	(8u32) [8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417, 8380417]
+};
+
+fn poly_add(reg ptr u32[Li2_polydeg] f g result)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u256 v256;
+	reg u64 offset;
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQU_256(f.[u256 (int) offset]);
+		v256 = #VPADD_8u32(v256, g.[u256 (int) offset]);
+		#VMOVDQU_256(result.[u256 (int) offset]) = v256;
+
+		offset += 32;
+	}
+	return result;
+}
+
+fn poly_subtract(reg ptr u32[Li2_polydeg] f g result)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u256 v256;
+	reg u64 offset;
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQU_256(f.[u256 (int) offset]);
+		v256 = #VPSUB_8u32(v256, g.[u256 (int) offset]);
+		#VMOVDQU_256(result.[u256 (int) offset]) = v256;
+
+		offset += 32;
+	}
+	return result;
+}
+
+fn poly_accumulate(reg ptr u32[Li2_polydeg] f acc)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u256 v256;
+	reg u64 offset;
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQU_256(acc.[u256 (int) offset]);
+		v256 = #VPADD_8u32(v256, f.[u256 (int) offset]);
+		#VMOVDQU_256(acc.[u256 (int) offset]) = v256;
+
+		offset += 32;
+	}
+	return acc;
+}
+
+fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	// TODO [electricdusk] Vectorize this function
+	reg u256 a t const_2_22 q;
+
+	reg u64 offset;
+	
+	const_2_22 = #VMOVDQU_256(poly_reduce32_2_22[0]);
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
+
+	?{}, offset = #set0_64();
+	while(offset < 4 * Li2_polydeg) {
+		// t = (a + (1 << 22)) >> 23
+		a = #VMOVDQU_256(poly.[u256 (int) offset]);
+		t = #VPADD_8u32(a, const_2_22);
+		t = #VPSRA_8u32(t, 23);
+		// t = a - t*Q
+		t = #VPMULL_8u32(t, q);
+		a = #VPSUB_8u32(a, t);
+		#VMOVDQU_256(poly.[u256 (int) offset]) = a;
+
+		offset += 32;
+	}
+
+	return poly;
+}
+
+fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
+	-> reg ptr u32[Li2_polydeg]
+{
+	// TODO: [electricdusk] This loop can be unrolled more to do 3 chunks
+	// in parallel each time.
+	// TODO: [electricdusk] Have the caller provide qinv and q.
+
+	reg u256 qinv q;
+	reg u256 f_lo f_hi;
+	reg u256 g_lo g_hi;
+	reg u256 prod_lo prod_hi;
+	reg u256 t_lo t_hi;
+
+	reg u64 offset;
+
+	qinv = #VMOVDQU_256(poly_pointwise_qinv[0]);
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		f_lo = #VMOVDQU_256(fft_f.[u256 (int) offset]);
+		g_lo = #VMOVDQU_256(fft_g.[u256 (int) offset]);
+		f_hi = #VMOVSHDUP_4u64(f_lo);
+		g_hi = #VMOVSHDUP_4u64(g_lo);
+
+		// Multiply
+		prod_lo = #VPMUL_256(f_lo, g_lo);
+		prod_hi = #VPMUL_256(f_hi, g_hi);
+
+		// Reduce
+		t_lo = #VPMUL_256(prod_lo, qinv);
+		t_hi = #VPMUL_256(prod_hi, qinv);
+		t_lo = #VPMUL_256(t_lo, q);
+		t_hi = #VPMUL_256(t_hi, q);
+		prod_lo = #VPSUB_4u64(prod_lo, t_lo);
+		prod_hi = #VPSUB_4u64(prod_hi, t_hi);
+
+		prod_lo = #VMOVSHDUP_4u64(prod_lo);
+		prod_lo = #VPBLEND_8u32(prod_lo, prod_hi, 0xAA);
+		#VMOVDQU_256(fft_prod.[u256 (int) offset]) = prod_lo;
+
+		offset += 32;
+	}
+	return fft_prod;
+}
+
+fn zero_poly(reg ptr u32[Li2_polydeg] f)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u256 zero;
+	reg u64 offset;
+
+	?{}, zero = #set0_256();
+	?{}, offset = #set0_64();
+
+	while (offset < 4 * Li2_polydeg) {
+		#VMOVDQU_256(f.[u256 (int) offset]) = zero;
+		offset += 32;
+	}
+	return f;
+}
+
+fn poly_caddq(reg ptr u32[Li2_polydeg] poly)
+	-> reg ptr u32[Li2_polydeg]
+{
+	reg u256 zero v256 mask q add;
+	reg u64 offset;
+
+	?{}, zero = #set0_256();
+	q = #VMOVDQU_256(poly_pointwise_q[0]);
+	
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQU_256(poly.[u256 (int) offset]);
+		mask = #VPCMPGT_8u32(zero, v256);
+		add = #VPAND_256(q, mask);
+		v256 = #VPADD_8u32(v256, add);
+		#VMOVDQU_256(poly.[u256 (int) offset]) = v256;
+
+		offset += 32;
+	}
+	return poly;
+}
+
+inline
+fn poly_checknorm(reg ptr u32[Li2_polydeg] poly, inline int threshold)
+	-> reg u8
+{
+	reg u256 v256 v256_zero v256_threshold;
+	reg u256 exceeds_pos exceeds_neg exceeds_any;
+	reg u64 v64;
+	reg u64 movmskb;
+	reg u8 v8 ret;
+	reg bool zf;
+
+	reg u64 offset;
+
+	?{}, ret = #set0_8();
+
+	v64 = threshold - 1;
+	v256_threshold = (256u) #VMOV(v64);
+	v256_threshold = #VPBROADCAST_8u32(v256_threshold);
+	?{}, v256_zero = #set0_256();
+
+	?{}, offset = #set0_64();
+	while (offset < 4 * Li2_polydeg) {
+		v256 = #VMOVDQU_256(poly.[u256 (int) offset]);
+		exceeds_pos = #VPCMPGT_8u32(v256, v256_threshold);
+		v256 = #VPSUB_8u32(v256_zero, v256);
+		exceeds_neg = #VPCMPGT_8u32(v256, v256_threshold);
+		exceeds_any = #VPOR_256(exceeds_pos, exceeds_neg);
+		movmskb = #VPMOVMSKB_u256u64(exceeds_any);
+		_,_,_,_,zf = #TEST_64(movmskb, movmskb);
+		v8 = #SETcc(!zf);
+		ret |= v8;
+
+		offset += 32;
+	}
+
+	return ret;
+}

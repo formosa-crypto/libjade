@@ -47,7 +47,7 @@ The following primitives are currently supported by Libjade
 * Kyber-768
 
 #### Signatures (`crypto_sign`)
-* Dilithium-XXX
+* Dilithium3
 
 
 ## Build instructions

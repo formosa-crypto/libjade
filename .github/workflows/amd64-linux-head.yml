@@ -20,8 +20,10 @@ jobs:
 
       - name: compile
         run: make -j$JOBS -C src/ CI=1 default
-      - name: dist
+      - name: dist amd64
         run: ./scripts/ci/releaser/jdist-src amd64
+      - name: check dist amd64
+        run: ./scripts/ci/releaser/jdist-src-test amd64
       - name: print logs
         run: make         -C src/ CI=1 reporter
       - name: return error if there are any errors
@@ -72,7 +74,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: extract and check
-        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS default
+        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS EXCLUDE="crypto_sign/dilithium/dilithium2/amd64/avx2/ crypto_sign/dilithium/dilithium3/amd64/avx2/ crypto_sign/dilithium/dilithium5/amd64/avx2/" default
       - name: dist
         run: ./scripts/ci/releaser/jdist-proof
       - name: print logs

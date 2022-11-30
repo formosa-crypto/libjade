@@ -2,6 +2,10 @@ require "common.jinc"
 require "packing.jinc"
 require "params.jinc"
 
+from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/sign_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jinc"
+
 from Jade require "crypto_sign/dilithium/common/amd64/sign.jinc"
 
 export fn jade_sign_dilithium_dilithium3_amd64_ref_keypair(
