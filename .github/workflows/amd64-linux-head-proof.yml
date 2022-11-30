@@ -1,0 +1,49 @@
+name: 'amd64-linux-head-proof'
+
+on:
+  workflow_run:
+    workflows: ["amd64-linux-head"]
+    branches: [main, main-proofs]
+    types:
+      - completed
+
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - main-proofs
+  pull_request:
+
+jobs:
+
+
+
+  proof-all:
+    runs-on: [self-hosted, linux, X64, amd64-head]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: extract and check
+        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS EXCLUDE="crypto_sign/dilithium/dilithium2/amd64/avx2/ crypto_sign/dilithium/dilithium3/amd64/avx2/ crypto_sign/dilithium/dilithium5/amd64/avx2/" default
+      - name: dist
+        run: ./scripts/ci/releaser/jdist-proof
+      - name: print logs
+        run: make         -C proof/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make         -C proof/ CI=1 err
+
+      - name: libjade-logs-proof.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-proof.tar.gz
+          path: proof/libjade-logs-proof.tar.gz
+
+      - name: libjade-dist-proof.tar.gz - contains all EasyCrypt files and test.config
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-dist-proof.tar.gz
+          path: libjade-dist-proof.tar.gz
+
