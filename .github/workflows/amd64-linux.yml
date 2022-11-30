@@ -66,14 +66,14 @@ jobs:
 
 
 
-  proof:
+  proof-extracted:
     runs-on: [self-hosted, linux, X64, amd64]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: extract and check
-        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS EXCLUDE="crypto_sign/dilithium/dilithium2/amd64/avx2/ crypto_sign/dilithium/dilithium3/amd64/avx2/ crypto_sign/dilithium/dilithium5/amd64/avx2/" default
+        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS EXCLUDE="crypto_sign/dilithium/dilithium2/amd64/avx2/ crypto_sign/dilithium/dilithium3/amd64/avx2/ crypto_sign/dilithium/dilithium5/amd64/avx2/" check-extracted
       - name: dist
         run: ./scripts/ci/releaser/jdist-proof
       - name: print logs

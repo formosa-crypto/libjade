@@ -1,4 +1,6 @@
 *.eco
 *_s.ec
+*_s.ec.out
 *_ct.ec
+*_ct.ec.out
 *Array*.ec
