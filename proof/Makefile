@@ -33,9 +33,6 @@ SOURCES ?= $(filter-out $(SRC)/ $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(
 
 LOGS    ?= libjade-logs-proof.tar.gz
 
-d:
-	@echo $(SOURCES)
-
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 .PHONY: backward_compatibility
