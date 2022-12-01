@@ -1,0 +1,109 @@
+#[returnaddress="stack"]
+fn _chacha_xor_v_avx2_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
+{
+  stack u256[16] st;
+  reg u256[16] k;
+  reg u256 _r16 _r8;
+  stack u256 r16 r8;
+
+  _r16 = CHACHA_R16_AVX2;
+  _r8  = CHACHA_R8_AVX2;
+  r16 = _r16;
+  r8 = _r8;
+
+  st = __init_v_avx2(nonce, counter, key);
+
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k, r16, r8);
+    k = __sum_states_v_avx2(k, st);
+    output, input, len = __store_xor_v_avx2(output, input, len, k);
+    st = __increment_counter_v_avx2(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k, r16, r8);
+    k = __sum_states_v_avx2(k, st);
+    __store_xor_last_v_avx2(output, input, len, k);
+  }
+}
+
+inline fn _chacha_xor_v_avx2_ic_(reg u64 _output _input _len _nonce, reg u32 _counter, reg u64 _key)
+{
+  reg u64 output input len nonce key;
+  reg u32 counter;
+
+  output = _output;
+  input = _input;
+  len = _len;
+  nonce = _nonce;
+  counter = _counter;
+  key = _key;
+
+  _chacha_xor_v_avx2_ic(output, input, len, nonce, counter, key);
+}
+
+inline fn __chacha_xor_v_avx2(reg u64 output input len nonce key)
+{
+  reg u32 counter;
+
+  ?{}, counter = #set0_32();
+  _chacha_xor_v_avx2_ic_(output, input, len, nonce, counter, key);
+}
+
+//
+
+#[returnaddress="stack"]
+fn _chacha_v_avx2_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
+{
+  stack u256[16] st;
+  reg u256[16] k;
+  reg u256 _r16 _r8;
+  stack u256 r16 r8;
+
+  _r16 = CHACHA_R16_AVX2;
+  _r8  = CHACHA_R8_AVX2;
+  r16 = _r16;
+  r8 = _r8;
+
+  st = __init_v_avx2(nonce, counter, key);
+
+  while(len >= 512)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k, r16, r8);
+    k = __sum_states_v_avx2(k, st);
+    output, len = __store_v_avx2(output, len, k);
+    st = __increment_counter_v_avx2(st);
+  }
+
+  if(len > 0)
+  { k = __copy_state_v_avx2(st);
+    k = __rounds_v_avx2(k, r16, r8);
+    k = __sum_states_v_avx2(k, st);
+    __store_last_v_avx2(output, len, k);
+  }
+}
+
+inline fn _chacha_v_avx2_ic_(reg u64 _output _len _nonce, reg u32 _counter, reg u64 _key)
+{
+  reg u64 output len nonce key;
+  reg u32 counter;
+
+  output = _output;
+  len = _len;
+  nonce = _nonce;
+  counter = _counter;
+  key = _key;
+
+  _chacha_v_avx2_ic(output, len, nonce, counter, key);
+}
+
+inline fn __chacha_v_avx2(reg u64 output len nonce key)
+{
+  reg u32 counter;
+
+  ?{}, counter = #set0_32();
+  _chacha_v_avx2_ic_(output, len, nonce, counter, key);
+}
+
