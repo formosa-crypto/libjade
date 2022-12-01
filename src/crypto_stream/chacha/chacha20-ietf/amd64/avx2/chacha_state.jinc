@@ -10,7 +10,7 @@ u256 CHACHA_P88888888_H_AVX2 = (8u32)[8,8,8,8,8,8,8,8];
 // nonce : 12 bytes
 // key : 32 bytes
 // counter : 4 bytes (starts at 0)
-inline fn __init_h_avx2(reg u64 nonce key) -> reg u256[4]
+inline fn __init_h_avx2(reg u64 nonce, reg u32 counter, reg u64 key) -> reg u256[4]
 {
   reg u256[4] st;
   reg u128 t;
@@ -21,6 +21,7 @@ inline fn __init_h_avx2(reg u64 nonce key) -> reg u256[4]
   st[2] = #VPBROADCAST_2u128((u128)[key + 16]);
 
   t = #set0_128();
+  t = #VPINSR_4u32(t, counter, 0);
   t = #VPINSR_4u32(t, (u32)[nonce + 0], 1);
   t = #VPINSR_2u64(t, (u64)[nonce + 4], 1);
 
@@ -59,11 +60,14 @@ inline fn __increment_counter0202_h_avx2(reg u256[4] st) -> reg u256[4]
 // nonce : 12 bytes
 // key : 32 bytes
 // counter : 4 bytes (starts at 0)
-inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
+inline fn __init_v_avx2(reg u64 nonce, reg u32 counter, reg u64 key) -> stack u256[16]
 {
   inline int i;
   stack u256[16] _st;
   reg u256[16] st;
+  stack u32 s_counter;
+
+  s_counter = counter;
 
   // sigma
   for i=0 to 4
@@ -74,7 +78,8 @@ inline fn __init_v_avx2(reg u64 nonce key) -> stack u256[16]
   { st[4+i] = #VPBROADCAST_8u32((u32)[key + 4*i]); }
 
   // counter
-  st[12] = CHACHA_P76543210_V_AVX;
+  st[12] = #VPBROADCAST_8u32(s_counter);
+  st[12] +8u32= CHACHA_P76543210_V_AVX;
 
   // nonce
   for i=0 to 3
