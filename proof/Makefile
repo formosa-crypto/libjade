@@ -58,9 +58,6 @@ OUT       := $(addsuffix .out, $(EXTRACTED))
 
 LOGS      ?= libjade-logs-proof.tar.gz
 
-d:
-	@echo $(OUT)
-
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 .PHONY: backward_compatibility
