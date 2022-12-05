@@ -1,9 +1,9 @@
 require "sha256.jinc"
 
-export fn jade_hash_sha256_amd64_ref(reg u64 out in inlen) -> reg u64
+export fn jade_hash_sha256_amd64_ref(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
-  __sha256(out, in, inlen);
+  __sha256(hash, input, input_length);
   _,_,_,_,_,r = #set0();
   return r;
 }
