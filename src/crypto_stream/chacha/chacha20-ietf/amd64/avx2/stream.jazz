@@ -12,37 +12,37 @@ from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx2/chacha_entry_v.
 
 from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx2/_chacha.jinc"
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(reg u64 output input len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(reg u64 output input input_length nonce key) -> reg u64
 {
   reg u64 r;
-  __chacha_xor_avx2(output, input, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_xor_avx2(output, input, input_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx2(reg u64 output len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx2(reg u64 stream stream_length nonce key) -> reg u64
 {
   reg u64 r;
-  __chacha_avx2(output, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_avx2(stream, stream_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }
 
 //
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic(reg u64 output input input_length nonce, reg u32 counter, reg u64 key) -> reg u64
 {
   reg u64 r;
-  __chacha_xor_avx2_ic(output, input, len, nonce, counter, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_xor_avx2_ic(output, input, input_length, nonce, counter, key);
+  ?{}, r = #set0();
   return r;
 }
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_ic(reg u64 output len nonce, reg u32 counter, reg u64 key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_ic(reg u64 stream stream_length nonce, reg u32 counter, reg u64 key) -> reg u64
 {
   reg u64 r;
-  __chacha_avx2_ic(output, len, nonce, counter, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_avx2_ic(stream, stream_length, nonce, counter, key);
+  ?{}, r = #set0();
   return r;
 }
 
