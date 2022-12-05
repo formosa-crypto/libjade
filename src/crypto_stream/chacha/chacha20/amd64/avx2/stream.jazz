@@ -6,7 +6,7 @@ export fn jade_stream_chacha_chacha20_amd64_avx2_xor(reg u64 output input input_
 {
   reg u64 r;
   __chacha_xor_avx2(output, input, input_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -14,6 +14,6 @@ export fn jade_stream_chacha_chacha20_amd64_avx2(reg u64 stream stream_length no
 {
   reg u64 r;
   __chacha_avx2(stream, stream_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }

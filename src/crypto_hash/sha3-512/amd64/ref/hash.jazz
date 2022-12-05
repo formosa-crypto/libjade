@@ -4,7 +4,7 @@ export fn jade_hash_sha3_512_amd64_ref(reg u64 hash input input_length) -> reg u
 {
   reg u64 r;
   __sha3_512_ref(hash, input, input_length);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 

@@ -4,7 +4,7 @@ export fn jade_stream_xsalsa20_amd64_avx_xor(reg u64 output input input_length n
 {
   reg u64 r;
   __xsalsa20_xor_avx(output, input, input_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -12,7 +12,7 @@ export fn jade_stream_xsalsa20_amd64_avx(reg u64 stream stream_length nonce key)
 {
   reg u64 r;
   __xsalsa20_avx(stream, stream_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 

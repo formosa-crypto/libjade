@@ -6,7 +6,7 @@ export fn jade_stream_salsa20_salsa2012_amd64_ref_xor(reg u64 output input input
 {
   reg u64 r;
   __salsa20_xor_ref(output, input, input_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -14,7 +14,7 @@ export fn jade_stream_salsa20_salsa2012_amd64_ref(reg u64 stream stream_length n
 {
   reg u64 r;
   __salsa20_ref(stream, stream_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 

@@ -16,7 +16,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor(reg u64 output input i
 {
   reg u64 r;
   __chacha_xor_avx2(output, input, input_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -24,7 +24,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_avx2(reg u64 stream stream_leng
 {
   reg u64 r;
   __chacha_avx2(stream, stream_length, nonce, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -34,7 +34,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic(reg u64 output inpu
 {
   reg u64 r;
   __chacha_xor_avx2_ic(output, input, input_length, nonce, counter, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
@@ -42,7 +42,7 @@ export fn jade_stream_chacha_chacha20_ietf_amd64_avx2_ic(reg u64 stream stream_l
 {
   reg u64 r;
   __chacha_avx2_ic(stream, stream_length, nonce, counter, key);
-  _,_,_,_,_,r = #set0();
+  ?{}, r = #set0();
   return r;
 }
 
