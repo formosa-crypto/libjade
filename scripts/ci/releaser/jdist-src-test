@@ -29,27 +29,49 @@ tar -xf $dist.tar.gz -C $top
 
 #---------------------------------------------------------
 # 1. check that the compilation of all *.jazz files produces the assembly code as provided
+
+
+# 1.1 move *.s to *.0
 while read asm
 do
-  echo "#diff, $asm"
+  mv $asm ${asm/.s/.0}
+done < <(find $jade -name "*.s")
+
+
+# 1.2 recompile files
+while read asm
+do
+  asm=${asm/.0/.s}
+  echo "(echo "$asm"; make -C $(dirname $asm) $(basename $asm) 2> $asm.log && rm -f $asm.error || mv $asm.log $asm.error)"
+done < <(find $jade -name "*.0") | \
+parallel --max-procs=$JOBS
+
+
+# 1.3 check for compilation errors (check if any $asm.error exists, then exit)
+while read asm
+do
+  if [ -f $asm.error ]
+  then
+    return_s=$(cat $asm.error)
+    checker "#make error" "$return_s" 1
+  fi
+done < <(find $jade -name "*.s")
+
+
+# 1.4 check for differences in the assembly files
+while read asm
+do
   asm0=${asm/.s/.0}
-  mv $asm $asm0
-
-  return_s=$(make -C $(dirname $asm) $(basename $asm) 2>&1)
-  return_c=$?
-  checker "#make error" "$return_s" $return_c
-
   return_s=$(diff -q $asm $asm0)
   return_c=$?
   checker "#diff error" "$return_s" $return_c
-
+  echo "OK, $asm"
 done < <(find $jade -name "*.s")
 
 #---------------------------------------------------------
 # 2. check that all examples compile and run without errors
 while read edir
 do
-  echo "#make, $edir"
   return_s=$(make -C $edir clean 2>&1)
   return_c=$?
   checker "#make clean" "$return_s" $return_c
@@ -61,6 +83,8 @@ do
   return_s=$(make -C $edir run 2>&1)
   return_c=$?
   checker "#make run" "$return_s" $return_c
+
+  echo "OK, $edir"
 
 done < <(find $examples -name Makefile -printf "%h\n")
 
