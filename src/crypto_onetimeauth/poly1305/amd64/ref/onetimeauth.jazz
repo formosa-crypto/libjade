@@ -1,27 +1,31 @@
 require "poly1305.jinc"
 
-export fn jade_onetimeauth_poly1305_amd64_ref(reg u64 _out _in _inlen _key) -> reg u64
+export fn jade_onetimeauth_poly1305_amd64_ref(reg u64 mac input input_length key) -> reg u64
 {
-  reg u64 r out in inlen key;
+  reg u64 r;
 
-  out = _out;
-  in = _in;
-  inlen = _inlen;
-  key = _key;
-  __poly1305_ref(out, in, inlen, key);
-  _,_,_,_,_,r = #set0();
+  mac = mac;
+  input = input;
+  input_length = input_length;
+  key = key;
+
+  __poly1305_ref(mac, input, input_length, key);
+
+  ?{}, r = #set0();
   return r;
 }
 
-export fn jade_onetimeauth_poly1305_amd64_ref_verify(reg u64 _h _in _inlen _key) -> reg u64
+export fn jade_onetimeauth_poly1305_amd64_ref_verify(reg u64 mac input input_length key) -> reg u64
 {
-  reg u64 r h in inlen key;
+  reg u64 r;
 
-  h = _h;
-  in = _in;
-  inlen = _inlen;
-  key = _key;
-  r = __poly1305_verify_ref(h, in, inlen, key);
+  mac = mac;
+  input = input;
+  input_length = input_length;
+  key = key;
+
+  r = __poly1305_verify_ref(mac, input, input_length, key);
+
   return r;
 }
 
