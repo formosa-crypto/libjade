@@ -13,3 +13,19 @@ equiv eq_jade_stream_chacha_chacha20_ietf_amd64_avx2_ct :
 proof.
 proc; inline *; sim => />.
 qed.
+
+(** **)
+
+equiv eq_jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic_ct : 
+  M.jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic ~ M.jade_stream_chacha_chacha20_ietf_amd64_avx2_xor_ic :
+    ={output, input, input_length, nonce, key, M.leakages} ==> ={M.leakages}.
+proof.
+proc; inline *; sim => />.
+qed.
+
+equiv eq_jade_stream_chacha_chacha20_ietf_amd64_avx2_ic_ct : 
+  M.jade_stream_chacha_chacha20_ietf_amd64_avx2_ic ~ M.jade_stream_chacha_chacha20_ietf_amd64_avx2_ic :
+    ={stream, stream_length, nonce, key, M.leakages} ==> ={M.leakages}.
+proof.
+proc; inline *; sim => />.
+qed.
