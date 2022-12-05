@@ -85,6 +85,8 @@ following assume that `jasminc` is available in a directory that is in `$PATH`.
 
 ## API documentation
 
+<!--
+Note: we address the following security guarantees in future releases;
 ## Security guarantees
 
 ### Properties guaranteed by jasmin
@@ -103,6 +105,7 @@ following assume that `jasminc` is available in a directory that is in `$PATH`.
 
 TODO: write this.
 Explain how to read what has been proven for each scheme
+-->
 
 ## Future plans
 
