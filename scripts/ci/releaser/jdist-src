@@ -68,10 +68,21 @@ do
   fi
 done
 
-# add a clean rule to all libjade/*/Makefile
+# add all and clean rule to libjade/*/Makefile
 while read makefile
 do
-  echo -e ".PHONY: clean\nclean:\n\trm -f *.s\n" >> $makefile
+  mkdir=$(dirname $makefile)
+  target_list=$(find $mkdir -maxdepth 1 -name "*.s" | while read file; do echo $(basename $file); done | xargs);
+cat <<END >> $makefile
+ALL := $target_list
+
+.PHONY: \$(ALL) clean
+
+all: \$(ALL)
+
+clean:
+	rm -f \$(ALL)
+END
 done < <(find $jade -name "Makefile")
 
 # ---------------------------------------------------------
@@ -181,7 +192,7 @@ clean:
 END
 
   done < <(find $cop -name "*.s" -printf "%h\n" | sort -u)
-done < <(find $jade -maxdepth 1 -name "crypto_*")
+done < <(find $jade -maxdepth 1 -type d -name "crypto_*")
 
 # ---------------------------------------------------------
 # copy randombytes (make sure it is clean first)
