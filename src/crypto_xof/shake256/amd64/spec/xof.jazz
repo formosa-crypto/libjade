@@ -1,9 +1,9 @@
 require "shake256.jinc"
 
-export fn jade_xof_shake256_amd64_spec(reg u64 out outlen in inlen) -> reg u64
+export fn jade_xof_shake256_amd64_spec(reg u64 output output_length input input_length) -> reg u64
 {
   reg u64 r;
-  __shake256_spec(out, outlen, in, inlen);
+  __shake256_spec(output, output_length, input, input_length);
   ?{}, r = #set0();
   return r;
 }
