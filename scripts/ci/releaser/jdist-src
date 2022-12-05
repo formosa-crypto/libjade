@@ -25,7 +25,7 @@ cp $top/LICENSE $dist/LICENSE
 
 # ---------------------------------------------------------
 # copy assembly, header, and preprocessed files;
-find $src -name "*.s" | \
+find $src -name "*.s" | sort | \
 while read asm
 do
   dir=$(dirname $asm)
@@ -60,7 +60,9 @@ do
 
     if ! [ -f $makefile ]; then
       echo    "JASMIN ?= jasminc" > $makefile
-      echo -e "JFLAGS ?=\n" >> $makefile
+      echo -e "override JFLAGS += -nowarning\n" >> $makefile
+      echo -e "default: all\n" >> $makefile
+
     fi
 
     echo "$(basename $dasm): $(basename $djazz)" >> $makefile
@@ -72,14 +74,13 @@ done
 while read makefile
 do
   mkdir=$(dirname $makefile)
-  target_list=$(find $mkdir -maxdepth 1 -name "*.s" | while read file; do echo $(basename $file); done | xargs);
+  target_list=$(find $mkdir -maxdepth 1 -name "*.s" | while read file; do echo $(basename $file); done | sort | xargs);
 cat <<END >> $makefile
 ALL := $target_list
 
-.PHONY: \$(ALL) clean
-
 all: \$(ALL)
 
+.PHONY: clean
 clean:
 	rm -f \$(ALL)
 END
@@ -151,6 +152,8 @@ cat <<END >> $makefile
 
 INCLUDE := -I$relative/examples/include -I$relative/examples/common -I$relative/libjade/
 DEPENDENCIES := $relative/ext/randombytes/randombytes.o $relative/examples/common/print.c
+
+default: all
 
 $relative/ext/randombytes/randombytes.o: $relative/ext/randombytes/randombytes.c
 	make -C $relative/ext/randombytes/
