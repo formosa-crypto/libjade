@@ -1,0 +1,31 @@
+name: 'amd64-linux-head-safety'
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - safety
+  pull_request:
+
+jobs:
+
+  compile:
+    runs-on: [self-hosted, linux, X64, amd64-head]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile
+        run: make -j$JOBS -C src/ CI=1 checksafety
+      - name: print logs
+        run: make         -C src/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make         -C src/ CI=1 err
+
+      - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
+

@@ -9,6 +9,7 @@ OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
+TIMEOUT ?= 30m
 CIDIR =
 CIT =
 ifeq ($(CI),1)
@@ -54,6 +55,12 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
 # --------------------------------------------------------------------
+.PHONY: checksafety
+
+checksafety : $(SRCS) | $(CIDIR)
+	(timeout $(TIMEOUT) $(JASMINC) -checksafety $<) $(CIT)
+
+# --------------------------------------------------------------------
 %.s : %.$(JEXT)
 %.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
 	@$(DEPS)
@@ -68,6 +75,8 @@ $(ECDIR)/%_ct.ec : %.$(JEXT)
 $(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
 	@$(DEPS)
 	@$(EXTRACT_CT)
+
+# --------------------------------------------------------------------
 
 $(DEPSDIR): ; @mkdir -p $@
 $(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep

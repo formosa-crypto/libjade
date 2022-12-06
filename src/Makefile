@@ -23,6 +23,8 @@ ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
 
+SAFETY  ?= $(addsuffix checksafety, $(JAZZ))
+
 LOGS    ?= libjade-logs-src.tar.gz
 
 # --------------------------------------------------------------------
@@ -53,14 +55,25 @@ $(JAZZ):
 	$(MAKE) -C $@ || true
 
 # --------------------------------------------------------------------
+.PHONY: checksafety
+checksafety: $(SAFETY)
+
+$(SAFETY):
+	$(MAKE) -C $(@D) $(@F) || true
+
+# --------------------------------------------------------------------
 ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
+	$(MAKE) reporter_safety
 	$(MAKE) $(LOGS)
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
+
+reporter_safety:
+	./../scripts/ci/reporter/jlog "Safety status" src/ checksafety $(CICL)
 
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
