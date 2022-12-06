@@ -89,8 +89,8 @@ def isolate_test_files(impl_path, test_prefix,
         os.mkdir(os.path.join(test_dir, 'test'))
 
         # Copy makefiles
-        shutil.copy(os.path.join('..', 'test', 'Makefile'),
-                    os.path.join(test_dir, 'test', 'Makefile'))
+        shutil.copy(os.path.join('..', 'test', 'Makefile2'),
+                    os.path.join(test_dir, 'test', 'Makefile2'))
 
         # Copy directories with support files
         for d in ['crypto_kem', 'crypto_stream', 'crypto_onetimeauth', 'crypto_hash', 'crypto_xof', 'crypto_scalarmult', 'crypto_secretbox', 'crypto_sign']: # TODO refactor/extend for more crypto_*
@@ -126,7 +126,37 @@ def make(*args, working_dir='.', env=None, expected_returncode=0, **kwargs):
     #            kwargs['{}_UPPERCASE'.format(envvar)] = (
     #                    kwargs[envvar].upper().replace('-', ''))
     else:
-        make_command = ['make']
+        make_command = ["make"]
+
+    return run_subprocess(
+        [
+            *make_command,
+            *['{}={}'.format(k, v) for k, v in kwargs.items()],
+            *args,
+        ],
+        working_dir=working_dir,
+        env=env,
+        expected_returncode=expected_returncode,
+    )
+
+def make2(*args, working_dir='.', env=None, expected_returncode=0, **kwargs):
+    """
+    Runs a make target in the specified working directory
+
+    Usage:
+        make('clean', 'targetb', SCHEME='bla')
+    """
+    if os.name == 'nt':
+        pass
+    #    make_command = ['nmake', '/f', 'Makefile.Microsoft_nmake',
+    #                    '/NOLOGO', '/E']
+    #    # we need SCHEME_UPPERCASE and IMPLEMENTATION_UPPERCASE with nmake
+    #    for envvar in ['IMPLEMENTATION', 'SCHEME']:
+    #        if envvar in kwargs:
+    #            kwargs['{}_UPPERCASE'.format(envvar)] = (
+    #                    kwargs[envvar].upper().replace('-', ''))
+    else:
+        make_command = ["make", "-f", "Makefile2"]
 
     return run_subprocess(
         [

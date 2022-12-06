@@ -27,7 +27,7 @@ def test_testvectors(implementation, impl_path, test_dir, init, destr):
     dest_dir = os.path.join(test_dir, 'bin')
     
     # check 'small' checksum
-    helpers.make('checksumsmall',
+    helpers.make2('checksumsmall',
                  TYPE=implementation.scheme.type,
                  SCHEME=implementation.scheme.name,
                  IMPLEMENTATION=implementation.name,
@@ -47,7 +47,7 @@ def test_testvectors(implementation, impl_path, test_dir, init, destr):
            == out)
 
     # check 'big' checksum
-    helpers.make('checksumbig',
+    helpers.make2('checksumbig',
                  TYPE=implementation.scheme.type,
                  SCHEME=implementation.scheme.name,
                  IMPLEMENTATION=implementation.name,
