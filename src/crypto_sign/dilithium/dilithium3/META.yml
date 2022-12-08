@@ -11,3 +11,10 @@ implementations:
           operating_systems:
               - Linux
               - Darwin
+    - name: amd64/avx2
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
