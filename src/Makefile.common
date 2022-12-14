@@ -9,7 +9,7 @@ OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
-TIMEOUT ?= 90m
+TIMEOUT ?= 240m
 CIDIR =
 CIT =
 ifeq ($(CI),1)
@@ -58,7 +58,7 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 .PHONY: checksafety
 
 checksafety : $(SRCS) | $(CIDIR)
-	(timeout $(TIMEOUT) $(JASMINC) -checksafety $<) $(CIT)
+	(time timeout -v $(TIMEOUT) $(JASMINC) -checksafety $<) $(CIT)
 
 # --------------------------------------------------------------------
 %.s : %.$(JEXT)
