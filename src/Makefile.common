@@ -9,7 +9,7 @@ OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
-TIMEOUT ?= 240m
+TIMEOUT ?= 720m
 CIDIR =
 CIT =
 ifeq ($(CI),1)

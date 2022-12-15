@@ -11,12 +11,13 @@ jobs:
 
   compile:
     runs-on: [self-hosted, linux, X64, amd64-head]
+    timeout-minutes: 1445
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile
-        run: make -j$JOBS -C src/ CI=1 checksafety
+        run: (timeout 1440m make -j4 -C src/ CI=1 checksafety) || true
       - name: print logs
         run: make         -C src/ CI=1 reporter
 
