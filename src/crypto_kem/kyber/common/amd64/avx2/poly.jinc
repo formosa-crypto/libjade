@@ -38,49 +38,54 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   return rp;
 }
 
-inline 
-fn __basemul_red(reg u256 a0 a1 b0 b1 qx16 qinvx16) -> reg u256, reg u256
-{
-  reg u256 zero x y z;
+inline
+fn __w256_interleave_u16(reg u256 al ah) -> reg u256, reg u256 {
+ reg u256 a0 a1;
 
-  zero = #set0_256();
-  y = #VPBLEND_16u16(a0,zero,0xAA);
-  z = #VPBLEND_16u16(a1,zero,0xAA);
+ a0  = #VPUNPCKL_16u16(al, ah);
+ a1  = #VPUNPCKH_16u16(al, ah);
+
+ return a0, a1;
+}
+
+inline
+fn __w256_deintereleave_u16(reg u256 _zero a0 a1) -> reg u256, reg u256 {
+  reg u256 al ah;
+
+  al = #VPBLEND_16u16(a0,_zero,0xAA);
+  ah = #VPBLEND_16u16(a1,_zero,0xAA);
+  al = #VPACKUS_8u32(al, ah);
   a0 = #VPSRL_8u32(a0,16);
   a1 = #VPSRL_8u32(a1,16);
-  z = #VPACKUS_8u32(y, z);
-  a0 = #VPACKUS_8u32(a0, a1);
+  ah = #VPACKUS_8u32(a0, a1);
 
-  y = #VPBLEND_16u16(b0,zero,0xAA);
-  x = #VPBLEND_16u16(b1,zero,0xAA);
-  b0 = #VPSRL_8u32(b0,16);
-  b1 = #VPSRL_8u32(b1,16);
-  y = #VPACKUS_8u32(y, x);
-  b0 = #VPACKUS_8u32(b0, b1);
+  return al, ah;
+}
 
-  z  = #VPMULL_16u16(z, qinvx16);
-  y  = #VPMULL_16u16(y, qinvx16);
-  z  = #VPMULH_16u16(z, qx16);
-  y  = #VPMULH_16u16(y, qx16);
-  a0 = #VPSUB_16u16(a0, z);
-  b0 = #VPSUB_16u16(b0, y);
+inline
+fn __mont_red(reg u256 lo hi qx16 qinvx16) -> reg u256 {
+  reg u256 m;
 
-  return a0, b0;
+  m  = #VPMULL_16u16(lo, qinvx16);
+  m  = #VPMULH_16u16(m, qx16);
+  lo = #VPSUB_16u16(hi, m);
+
+  return lo;
 }
 
 inline
 fn __wmul_16u16(reg u256 x y) -> reg u256, reg u256 {
  reg u256 xyL xyH xy0 xy1;
  xyL = #VPMULL_16u16(x, y);
- xyH = #VPMULH_16u16(x, y); 
- xy0  = #VPUNPCKL_16u16(xyL, xyH);
- xy1  = #VPUNPCKH_16u16(xyL, xyH);
+ xyH = #VPMULH_16u16(x, y);
+ xy0, xy1 = __w256_interleave_u16(xyL, xyH);
+
  return xy0, xy1;
 }
 
 inline 
 fn __schoolbook16x(reg u256 are aim bre bim zeta zetaqinv qx16 qinvx16, inline int sign) -> reg u256, reg u256
-{ reg u256 zaim ac0 ac1 zbd0 zbd1 ad0 ad1 bc0 bc1 x0 x1 y0 y1;
+{ reg u256 zaim ac0 ac1 zbd0 zbd1 ad0 ad1 bc0 bc1 x0 x1 y0 y1 _zero;
 
   zaim = __fqmulprecomp16x(aim, zetaqinv, zeta, qx16);
 
@@ -99,8 +104,12 @@ fn __schoolbook16x(reg u256 are aim bre bim zeta zetaqinv qx16 qinvx16, inline i
   y0 = #VPADD_8u32(bc0, ad0);
   y1 = #VPADD_8u32(bc1, ad1);
 
-  x0, x1 = __basemul_red(x0, x1, y0, y1, qx16, qinvx16);
-  return x0, x1;
+  _zero = #set0_256();
+  x0, x1 = __w256_deintereleave_u16(_zero, x0, x1);
+  y0, y1 = __w256_deintereleave_u16(_zero, y0, y1);
+  x0 = __mont_red(x0, x1, qx16, qinvx16);
+  y0 = __mont_red(y0, y1, qx16, qinvx16);
+  return x0, y0;
 }
 
 fn _poly_basemul(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
@@ -910,15 +919,16 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     r0, r1, r4, r5, r2, r3, r6, r7 = __invntt___butterfly64x(r0, r1, r4, r5, r2, r3, r6, r7, zeta0, zeta1, zeta2, zeta3, qx16);
 
     // level 1:
-  vx16 = jvx16[u256 0];
+    vx16 = jvx16[u256 0];
     zeta0 = zetasp.[u256 128+392*i];
     zeta1 = zetasp.[u256 160+392*i];
+    r0 = __red16x(r0, qx16, vx16);
+    r1 = __red16x(r1, qx16, vx16);
+    r4 = __red16x(r4, qx16, vx16);
+    r5 = __red16x(r5, qx16, vx16);
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
     
-    r0 = __red16x(r0, qx16, vx16);
-    r1 = __red16x(r1, qx16, vx16);
-
     r0, r1 = __shuffle1(r0, r1);
     r2, r3 = __shuffle1(r2, r3);
     r4, r5 = __shuffle1(r4, r5);
@@ -930,6 +940,8 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
 
     r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
+
+    r0 = __red16x(r0, qx16, vx16);
 
     r0, r2 = __shuffle2(r0, r2);
     r4, r6 = __shuffle2(r4, r6);
