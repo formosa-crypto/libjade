@@ -7,7 +7,7 @@
 #include "api.h"
 #include "jade_onetimeauth.h"
 
-extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
 
 /*
 
@@ -32,9 +32,10 @@ int main(void)
   int r;
   uint8_t mac[JADE_ONETIMEAUTH_BYTES];
   uint8_t input[] = {0x61, 0x62, 0x63};
-  uint8_t key[JADE_ONETIMEAUTH_KEYBYTES];
+  uint8_t _key[JADE_ONETIMEAUTH_KEYBYTES];
+  uint8_t* key = _key;
 
-  __jasmin_syscall_randombytes__(key, JADE_ONETIMEAUTH_KEYBYTES);
+  key = __jasmin_syscall_randombytes__(key, JADE_ONETIMEAUTH_KEYBYTES);
 
   r = jade_onetimeauth(mac, input, sizeof(input), key);
     assert(r == 0);

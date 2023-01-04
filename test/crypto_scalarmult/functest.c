@@ -7,7 +7,7 @@
 #include "api.h"
 #include "jade_scalarmult.h"
 
-extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
 
 /*
 
@@ -29,14 +29,18 @@ int main(void)
   int r;
   uint8_t public_key_a[JADE_SCALARMULT_BYTES];
   uint8_t public_key_b[JADE_SCALARMULT_BYTES];
-  uint8_t secret_key_a[JADE_SCALARMULT_SCALARBYTES];
-  uint8_t secret_key_b[JADE_SCALARMULT_SCALARBYTES];
+
+  uint8_t _secret_key_a[JADE_SCALARMULT_SCALARBYTES];
+  uint8_t _secret_key_b[JADE_SCALARMULT_SCALARBYTES];
+  uint8_t* secret_key_a = _secret_key_a;
+  uint8_t* secret_key_b = _secret_key_b;
+
   uint8_t secret_a[JADE_SCALARMULT_BYTES];
   uint8_t secret_b[JADE_SCALARMULT_BYTES];
 
   //
-  __jasmin_syscall_randombytes__(secret_key_a, JADE_SCALARMULT_SCALARBYTES);
-  __jasmin_syscall_randombytes__(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
+  secret_key_a = __jasmin_syscall_randombytes__(secret_key_a, JADE_SCALARMULT_SCALARBYTES);
+  secret_key_b = __jasmin_syscall_randombytes__(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
 
   //
   r = jade_scalarmult_base(public_key_a, secret_key_a);

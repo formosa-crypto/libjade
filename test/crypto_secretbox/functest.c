@@ -7,7 +7,7 @@
 #include "api.h"
 #include "jade_secretbox.h"
 
-extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
 
 /*
 
@@ -39,12 +39,14 @@ int main(void)
   uint8_t  plaintext_1[JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH];
   uint8_t  plaintext_2[JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH];
   uint64_t length = JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH;
-  uint8_t  nonce[JADE_SECRETBOX_NONCEBYTES];
-  uint8_t  key[JADE_SECRETBOX_KEYBYTES];
+  uint8_t  _nonce[JADE_SECRETBOX_NONCEBYTES];
+  uint8_t  _key[JADE_SECRETBOX_KEYBYTES];
+  uint8_t* nonce = _nonce;
+  uint8_t* key = _key;
 
   //
-  __jasmin_syscall_randombytes__(nonce, JADE_SECRETBOX_NONCEBYTES);
-  __jasmin_syscall_randombytes__(key, JADE_SECRETBOX_KEYBYTES);
+  nonce = __jasmin_syscall_randombytes__(nonce, JADE_SECRETBOX_NONCEBYTES);
+  key = __jasmin_syscall_randombytes__(key, JADE_SECRETBOX_KEYBYTES);
 
   memset(plaintext_1, 0, JADE_SECRETBOX_ZEROBYTES);
   memcpy(&(plaintext_1[JADE_SECRETBOX_ZEROBYTES]), plaintext, sizeof(plaintext));
