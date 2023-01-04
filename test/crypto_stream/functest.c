@@ -7,7 +7,7 @@
 #include "api.h"
 #include "jade_stream.h"
 
-extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
 
 /*
 
@@ -38,12 +38,14 @@ int main(void)
   uint8_t ciphertext[PLAINTEXT_LENGTH];
   uint8_t stream[PLAINTEXT_LENGTH];
   uint64_t length = PLAINTEXT_LENGTH;
-  uint8_t nonce[JADE_STREAM_NONCEBYTES];
-  uint8_t key[JADE_STREAM_KEYBYTES];
+  uint8_t _nonce[JADE_STREAM_NONCEBYTES];
+  uint8_t _key[JADE_STREAM_KEYBYTES];
+  uint8_t* nonce = _nonce;
+  uint8_t* key = _key;
 
   //
-  __jasmin_syscall_randombytes__(nonce, JADE_STREAM_NONCEBYTES);
-  __jasmin_syscall_randombytes__(key, JADE_STREAM_KEYBYTES);
+  nonce = __jasmin_syscall_randombytes__(nonce, JADE_STREAM_NONCEBYTES);
+  key = __jasmin_syscall_randombytes__(key, JADE_STREAM_KEYBYTES);
 
   //
   r = jade_stream(stream, length, nonce, key);
