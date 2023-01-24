@@ -2,8 +2,8 @@
 
 # --------------------------------------------------------------------
 AS      ?= as
-CC      ?= gcc
-CFLAGS  ?= -Wall -Wno-unused-function -Ofast
+CC      ?= clang
+CFLAGS  ?= -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
 CI      ?= 0
 export CI
 
