@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 //
 
@@ -42,19 +43,22 @@ int main(int argc, char**argv)
 
   uint8_t *_ps, *ps, *p; // CRYPTO_PUBLICKEYBYTES
   uint8_t *_ss, *ss, *s; // CRYPTO_SECRETKEYBYTES
-  uint8_t *_k, *k; // CRYPTO_BYTES
-  uint8_t *_c, *c; // CRYPTO_CIPHERTEXTBYTES
-  uint8_t *_t, *t; // CRYPTO_BYTES
-  size_t plen, slen;
+  uint8_t *_ks, *ks, *k; // CRYPTO_BYTES
+  uint8_t *_cs, *cs, *c; // CRYPTO_CIPHERTEXTBYTES
+  uint8_t *_ts, *ts, *t; // CRYPTO_BYTES
+  size_t plen, slen, klen, clen, tlen;
 
   plen = alignedcalloc_step(CRYPTO_PUBLICKEYBYTES);
   slen = alignedcalloc_step(CRYPTO_SECRETKEYBYTES);
+  klen = alignedcalloc_step(CRYPTO_BYTES);
+  clen = alignedcalloc_step(CRYPTO_CIPHERTEXTBYTES);
+  tlen = alignedcalloc_step(CRYPTO_BYTES);
 
   ps = alignedcalloc(&_ps, plen * TIMINGS);
   ss = alignedcalloc(&_ss, slen * TIMINGS);
-  k = alignedcalloc(&_k, CRYPTO_BYTES);
-  c = alignedcalloc(&_c, CRYPTO_CIPHERTEXTBYTES);
-  t = alignedcalloc(&_t, CRYPTO_BYTES);
+  ks = alignedcalloc(&_ks, klen * TIMINGS);
+  cs = alignedcalloc(&_cs, clen * TIMINGS);
+  ts = alignedcalloc(&_ts, tlen * TIMINGS);
 
   for(loop = 0; loop < LOOPS; loop++)
   {
@@ -66,27 +70,33 @@ int main(int argc, char**argv)
     results[0][loop] = cpucycles_median(cycles, TIMINGS);
 
     // enc
-    p = ps;
-    for (i = 0; i < TIMINGS; i++, p += plen)
+    c = cs; k = ks; p = ps;
+    for (i = 0; i < TIMINGS; i++, c += clen, k += klen, p += plen)
     { cycles[i] = cpucycles();
       crypto_kem_enc(c, k, p); }
     results[1][loop] = cpucycles_median(cycles, TIMINGS);
 
     // dec
-    s = ss;
-    for (i = 0; i < TIMINGS; i++, s += slen)
+    t = ts; c = cs; s = ss;
+    for (i = 0; i < TIMINGS; i++, t += tlen, c += clen, s += slen)
     { cycles[i] = cpucycles();
       crypto_kem_dec(t, c, s); }
     results[2][loop] = cpucycles_median(cycles, TIMINGS);
+
+    #if defined(ASSERT)
+    k = ks; t = ts;
+    for (i = 0; i < TIMINGS; i++, k += klen, t += tlen)
+    { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
+    #endif
   }
 
   pb_print_1(argc, results, op_str);
 
   free(_ps);
   free(_ss);
-  free(_k);
-  free(_c);
-  free(_t);
+  free(_ks);
+  free(_cs);
+  free(_ts);
 
   return 0;
 }

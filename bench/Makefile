@@ -46,7 +46,8 @@ RANDLIB  ?= $(EXT)/randombytes/librandombytes.a
 RANDINC  ?= $(EXT)/randombytes/
 SSBD_DIR := $(EXT)/ssbd-tools
 
-JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+FILTER   ?= $(SRC)/crypto_%
+JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 BENCHDIR := $(subst $(SRC),$(BIN), $(JAZZ))
 
 EXEC     := $(addsuffix bench, $(BENCHDIR))
@@ -114,7 +115,7 @@ ifeq ($(CI),1)
 reporter:
 	$(MAKE) reporter_compilation
 	$(MAKE) reporter_execution
-	$(MAKE) $(LOGS)
+	#$(MAKE) $(LOGS)
 
 reporter_compilation:
 	./../scripts/ci/reporter/jlog "Compilation status" bench/bin bench $(CICL)
