@@ -31,7 +31,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r, i;
+  int run, loop, r, i;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_secretbox,.csv),
@@ -51,31 +51,35 @@ int main(int argc, char**argv)
   nonce = alignedcalloc(&_nonce, CRYPTO_NONCEBYTES);
   key = alignedcalloc(&_key, CRYPTO_KEYBYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
     {
-      benchrandombytes(plaintext + CRYPTO_ZEROBYTES, len);
-      benchrandombytes(nonce, CRYPTO_NONCEBYTES);
-      benchrandombytes(key, CRYPTO_KEYBYTES);
+      for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+      {
+        benchrandombytes(plaintext + CRYPTO_ZEROBYTES, len);
+        benchrandombytes(nonce, CRYPTO_NONCEBYTES);
+        benchrandombytes(key, CRYPTO_KEYBYTES);
 
-      // secretbox
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_secretbox(ciphertext, plaintext, len + CRYPTO_ZEROBYTES, nonce, key); }
-      results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        // secretbox
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_secretbox(ciphertext, plaintext, len + CRYPTO_ZEROBYTES, nonce, key); }
+        results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
-      // secretbox_open
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_secretbox_open(plaintext, ciphertext, len + CRYPTO_ZEROBYTES, nonce, key); }
-      results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+        // secretbox_open
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_secretbox_open(plaintext, ciphertext, len + CRYPTO_ZEROBYTES, nonce, key); }
+        results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
 
-      // secretbox_open - forgery
-      ciphertext[CRYPTO_ZEROBYTES] += 1;
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_secretbox_open(plaintext, ciphertext, len + CRYPTO_ZEROBYTES, nonce, key); }
-      results[2][loop][r] = cpucycles_median(cycles, TIMINGS);
+        // secretbox_open - forgery
+        ciphertext[CRYPTO_ZEROBYTES] += 1;
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_secretbox_open(plaintext, ciphertext, len + CRYPTO_ZEROBYTES, nonce, key); }
+        results[2][loop][r] = cpucycles_median(cycles, TIMINGS);
+      }
     }
   }
 

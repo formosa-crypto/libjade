@@ -34,7 +34,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, i;
+  int run, loop, i;
   uint64_t cycles[TIMINGS];
   uint64_t results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_kem_keypair,.csv),
@@ -60,34 +60,37 @@ int main(int argc, char**argv)
   cs = alignedcalloc(&_cs, clen * TIMINGS);
   ts = alignedcalloc(&_ts, tlen * TIMINGS);
 
-  for(loop = 0; loop < LOOPS; loop++)
+  for(run = 0; run < RUNS; run++)
   {
-    // keypair
-    p = ps; s = ss;
-    for (i = 0; i < TIMINGS; i++, p += plen, s += slen)
-    { cycles[i] = cpucycles();
-      crypto_kem_keypair(p, s); }
-    results[0][loop] = cpucycles_median(cycles, TIMINGS);
+    for(loop = 0; loop < LOOPS; loop++)
+    {
+      // keypair
+      p = ps; s = ss;
+      for (i = 0; i < TIMINGS; i++, p += plen, s += slen)
+      { cycles[i] = cpucycles();
+        crypto_kem_keypair(p, s); }
+      results[0][loop] = cpucycles_median(cycles, TIMINGS);
 
-    // enc
-    c = cs; k = ks; p = ps;
-    for (i = 0; i < TIMINGS; i++, c += clen, k += klen, p += plen)
-    { cycles[i] = cpucycles();
-      crypto_kem_enc(c, k, p); }
-    results[1][loop] = cpucycles_median(cycles, TIMINGS);
+      // enc
+      c = cs; k = ks; p = ps;
+      for (i = 0; i < TIMINGS; i++, c += clen, k += klen, p += plen)
+      { cycles[i] = cpucycles();
+        crypto_kem_enc(c, k, p); }
+      results[1][loop] = cpucycles_median(cycles, TIMINGS);
 
-    // dec
-    t = ts; c = cs; s = ss;
-    for (i = 0; i < TIMINGS; i++, t += tlen, c += clen, s += slen)
-    { cycles[i] = cpucycles();
-      crypto_kem_dec(t, c, s); }
-    results[2][loop] = cpucycles_median(cycles, TIMINGS);
+      // dec
+      t = ts; c = cs; s = ss;
+      for (i = 0; i < TIMINGS; i++, t += tlen, c += clen, s += slen)
+      { cycles[i] = cpucycles();
+        crypto_kem_dec(t, c, s); }
+      results[2][loop] = cpucycles_median(cycles, TIMINGS);
 
-    #if defined(ASSERT)
-    k = ks; t = ts;
-    for (i = 0; i < TIMINGS; i++, k += klen, t += tlen)
-    { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
-    #endif
+      #if defined(ASSERT)
+      k = ks; t = ts;
+      for (i = 0; i < TIMINGS; i++, k += klen, t += tlen)
+      { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
+      #endif
+    }
   }
 
   pb_print_1(argc, results, op_str);

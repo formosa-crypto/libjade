@@ -29,7 +29,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r, i;
+  int run, loop, r, i;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_stream,.csv),
@@ -48,22 +48,26 @@ int main(int argc, char**argv)
   nonce = alignedcalloc(&_nonce, CRYPTO_NONCEBYTES);
   key = alignedcalloc(&_key, CRYPTO_KEYBYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
     {
-      benchrandombytes(plaintext, len);
-      benchrandombytes(nonce, CRYPTO_NONCEBYTES);
-      benchrandombytes(key, CRYPTO_KEYBYTES);
+      for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+      {
+        benchrandombytes(plaintext, len);
+        benchrandombytes(nonce, CRYPTO_NONCEBYTES);
+        benchrandombytes(key, CRYPTO_KEYBYTES);
 
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_stream(ciphertext, len, nonce, key); }
-      results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_stream(ciphertext, len, nonce, key); }
+        results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_stream_xor(ciphertext, plaintext, len, nonce, key); }
-      results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_stream_xor(ciphertext, plaintext, len, nonce, key); }
+        results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+      }
     }
   }
 

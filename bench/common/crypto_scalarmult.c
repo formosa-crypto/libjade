@@ -29,7 +29,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, i;
+  int run, loop, i;
   uint64_t cycles[TIMINGS];
   uint64_t results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_scalarmult_base,.csv),
@@ -45,23 +45,25 @@ int main(int argc, char**argv)
   p = alignedcalloc(&_p, CRYPTO_BYTES);
   q = alignedcalloc(&_q, CRYPTO_BYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
+  for(run = 0; run < RUNS; run++)
   {
-    benchrandombytes(m, CRYPTO_SCALARBYTES);
-    benchrandombytes(n, CRYPTO_SCALARBYTES);
+    for(loop = 0; loop < LOOPS; loop++)
+    {
+      benchrandombytes(m, CRYPTO_SCALARBYTES);
+      benchrandombytes(n, CRYPTO_SCALARBYTES);
 
-    // scalarmult_base
-    for (i = 0; i < TIMINGS; i++)
-    { cycles[i] = cpucycles();
-      crypto_scalarmult_base(p,m); }
-    results[1][loop] = cpucycles_median(cycles, TIMINGS);
+      // scalarmult_base
+      for (i = 0; i < TIMINGS; i++)
+      { cycles[i] = cpucycles();
+        crypto_scalarmult_base(p,m); }
+      results[1][loop] = cpucycles_median(cycles, TIMINGS);
 
-    // scalarmult
-    for (i = 0; i < TIMINGS; i++)
-    { cycles[i] = cpucycles();
-      crypto_scalarmult(q,n,p); }
-    results[0][loop] = cpucycles_median(cycles, TIMINGS);
-
+      // scalarmult
+      for (i = 0; i < TIMINGS; i++)
+      { cycles[i] = cpucycles();
+        crypto_scalarmult(q,n,p); }
+      results[0][loop] = cpucycles_median(cycles, TIMINGS);
+    }
   }
 
   pb_print_1(argc, results, op_str);

@@ -30,7 +30,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r, i;
+  int run, loop, r, i;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_onetimeauth,.csv),
@@ -47,21 +47,25 @@ int main(int argc, char**argv)
   in = alignedcalloc(&_in, MAXINBYTES);
   key = alignedcalloc(&_key, CRYPTO_KEYBYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
     {
-      benchrandombytes(in, len);
-      benchrandombytes(key, CRYPTO_KEYBYTES);
+      for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+      {
+        benchrandombytes(in, len);
+        benchrandombytes(key, CRYPTO_KEYBYTES);
 
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_onetimeauth(out, in, len, key); }
-      results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_onetimeauth(out, in, len, key); }
+        results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_onetimeauth_verify(out, in, len, key); }
-      results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_onetimeauth_verify(out, in, len, key); }
+        results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+      }
     }
   }
 

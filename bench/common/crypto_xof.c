@@ -27,7 +27,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r0, r1, i;
+  int run, loop, r0, r1, i;
   uint64_t cycles[TIMINGS];
   uint64_t** results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_xof,.csv)};
@@ -42,16 +42,21 @@ int main(int argc, char**argv)
   out = alignedcalloc(&_out, MAXOUTBYTES);
   in = alignedcalloc(&_in, MAXINBYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
-  { for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
-    { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
+    {
+      for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
       {
-        benchrandombytes(in, inlen);
+        for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
+        {
+          benchrandombytes(in, inlen);
 
-        for (i = 0; i < TIMINGS; i++)
-        { cycles[i] = cpucycles();
-          crypto_xof(out, outlen, in, inlen); }
-        results[0][loop][r0][r1] = cpucycles_median(cycles, TIMINGS);
+          for (i = 0; i < TIMINGS; i++)
+          { cycles[i] = cpucycles();
+            crypto_xof(out, outlen, in, inlen); }
+          results[0][loop][r0][r1] = cpucycles_median(cycles, TIMINGS);
+        }
       }
     }
   }

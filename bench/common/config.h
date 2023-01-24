@@ -3,8 +3,12 @@
 
 //
 
+#ifndef RUNS
+#define RUNS 1
+#endif
+
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 1
 #endif
 
 #ifndef TIMINGS

@@ -37,7 +37,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r, i;
+  int run, loop, r, i;
   uint64_t cycles[TIMINGS];
 
   uint64_t  results_keypair[1][LOOPS];
@@ -75,36 +75,38 @@ int main(int argc, char**argv)
   ts     = alignedcalloc(&_ts,  a_tlen  * TIMINGS);
   smlens = calloc(sizeof(uint64_t), TIMINGS);
 
-
-  for(loop = 0; loop < LOOPS; loop++)
-  { 
-    // keypair
-    pk = pks; sk = sks;
-    for (i = 0; i < TIMINGS; i++, pk += a_pklen, sk += a_sklen)
-    { cycles[i] = cpucycles();
-      crypto_sign_keypair(pk, sk); }
-    results_keypair[0][loop] = cpucycles_median(cycles, TIMINGS);
-
-    for (mlen = MININBYTES, r = 0; mlen <= MAXINBYTES; mlen = inc_in(mlen), r += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
     {
-      // for current mlen, initialize TIMINGS messages with mlen bytes
-      m = ms;
-      for (i = 0; i < TIMINGS; i++, m += a_mlen)
-      { benchrandombytes(m, mlen); }
-
-      // sign
-      sm = sms; smlen = smlens; m = ms; sk = sks;
-      for (i = 0; i < TIMINGS; i++, sm += a_smlen, smlen++, m += a_mlen, sk += a_sklen)
+      // keypair
+      pk = pks; sk = sks;
+      for (i = 0; i < TIMINGS; i++, pk += a_pklen, sk += a_sklen)
       { cycles[i] = cpucycles();
-        crypto_sign(sm, smlen, m, mlen, sk); }
-      results_sign_open[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        crypto_sign_keypair(pk, sk); }
+      results_keypair[0][loop] = cpucycles_median(cycles, TIMINGS);
 
-      // open
-      t = ts; sm = sms; smlen = smlens; pk = pks;
-      for (i = 0; i < TIMINGS; i++, t += a_tlen, sm += a_smlen, smlen++, pk += a_pklen)
-      { cycles[i] = cpucycles();
-        crypto_sign_open(t, &tlen, sm, *smlen, pk); }
-      results_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+      for (mlen = MININBYTES, r = 0; mlen <= MAXINBYTES; mlen = inc_in(mlen), r += 1)
+      {
+        // for current mlen, initialize TIMINGS messages with mlen bytes
+        m = ms;
+        for (i = 0; i < TIMINGS; i++, m += a_mlen)
+        { benchrandombytes(m, mlen); }
+
+        // sign
+        sm = sms; smlen = smlens; m = ms; sk = sks;
+        for (i = 0; i < TIMINGS; i++, sm += a_smlen, smlen++, m += a_mlen, sk += a_sklen)
+        { cycles[i] = cpucycles();
+          crypto_sign(sm, smlen, m, mlen, sk); }
+        results_sign_open[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+
+        // open
+        t = ts; sm = sms; smlen = smlens; pk = pks;
+        for (i = 0; i < TIMINGS; i++, t += a_tlen, sm += a_smlen, smlen++, pk += a_pklen)
+        { cycles[i] = cpucycles();
+          crypto_sign_open(t, &tlen, sm, *smlen, pk); }
+        results_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+      }
     }
   }
 

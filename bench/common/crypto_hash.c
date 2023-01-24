@@ -27,7 +27,7 @@
 
 int main(int argc, char**argv)
 {
-  int loop, r, i;
+  int run, loop, r, i;
   uint64_t cycles[TIMINGS];
   uint64_t* results[OP][LOOPS];
   char *op_str[] = {xstr(crypto_hash,.csv)};
@@ -41,15 +41,19 @@ int main(int argc, char**argv)
   out = alignedcalloc(&_out, CRYPTO_BYTES);
   in = alignedcalloc(&_in, MAXINBYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
-  { for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+  for(run = 0; run < RUNS; run++)
+  {
+    for(loop = 0; loop < LOOPS; loop++)
     {
-      benchrandombytes(in, len);
+      for (len = MININBYTES, r = 0; len <= MAXINBYTES; len = inc_in(len), r += 1)
+      {
+        benchrandombytes(in, len);
 
-      for (i = 0; i < TIMINGS; i++)
-      { cycles[i] = cpucycles();
-        crypto_hash(out, in, len); }
-      results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        for (i = 0; i < TIMINGS; i++)
+        { cycles[i] = cpucycles();
+          crypto_hash(out, in, len); }
+        results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+      }
     }
   }
 
