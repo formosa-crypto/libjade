@@ -5,23 +5,17 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "min.c"
+
 // ////////////////////////////////////////////////////////////////////////////
 
 #if defined(OP1)
 static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
 {
   int op, loop;
-  uint64_t min;
   FILE *f;
 
-  // get min median of LOOP runs
-  for (op = 0; op < OP1; op++)
-  { min = results[op][0];
-    for (loop = 1; loop < LOOPS; loop++)
-    { if (min > results[op][loop])
-      { min = results[op][loop]; } }
-    results[op][0] = min;
-  }
+  min_1(results);
 
   // print to file
   f = stdout;
@@ -58,20 +52,11 @@ static void pb_free_2(uint64_t* results[OP2][LOOPS])
 static void pb_print_2(int argc, uint64_t* results[OP2][LOOPS], char *op_str[])
 {
   int op, loop, r;
-  uint64_t len, min;
+  uint64_t len;
   double cpb;
   FILE *f;
 
-  // get min median of LOOP runs
-  for (len = MININBYTES, r=0; len <= MAXINBYTES; len = inc_in(len), r +=1)
-  { for (op = 0; op < OP2; op++)
-    { min = results[op][0][r];
-      for (loop = 1; loop < LOOPS; loop++)
-      { if (min > results[op][loop][r])
-        { min = results[op][loop][r]; } }
-      results[op][0][r] = min;
-    }
-  }
+  min_2(results);
 
   // print to file
   f = stdout;
@@ -121,22 +106,11 @@ static void pb_free_3(uint64_t** results[OP3][LOOPS], size_t _x)
 static void pb_print_3(int argc, uint64_t** results[OP3][LOOPS], char *op_str[])
 {
   int op, loop, r0, r1;
-  uint64_t outlen, inlen, min;
+  uint64_t outlen, inlen;
   double cpb;
   FILE *f;
 
-  // get min median of LOOP runs
-  for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
-  { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)
-    { for (op = 0; op < OP3; op++)
-      { min = results[op][0][r0][r1];
-        for (loop = 1; loop < LOOPS; loop++)
-        { if (min > results[op][loop][r0][r1])
-          { min = results[op][loop][r0][r1]; } }
-        results[op][0][r0][r1] = min;
-      }
-    }
-  }
+  min_3(results);
 
   // print to file
   f = stdout;
