@@ -12,7 +12,7 @@
 
 #define crypto_xof JADE_NAMESPACE_LC
 
-#define OP 1
+#define OP3 1
 
 //
 
@@ -29,8 +29,8 @@ int main(int argc, char**argv)
 {
   int run, loop, r0, r1, i;
   uint64_t cycles[TIMINGS];
-  uint64_t** results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_xof,.csv)};
+  uint64_t** results[OP3][LOOPS];
+  char *op3_str[] = {xstr(crypto_xof,.csv)};
 
   uint8_t *_out, *out; // MAXOUTBYTES
   uint8_t *_in, *in; // MAXINBYTES
@@ -59,7 +59,7 @@ int main(int argc, char**argv)
         }
       }
     }
-    pb_print_3(argc, results, op_str);
+    pb_print_3(argc, results, op3_str);
   }
 
   pb_free_3(results, outsize);

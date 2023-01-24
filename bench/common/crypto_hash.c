@@ -12,7 +12,7 @@
 #define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
 #define crypto_hash JADE_NAMESPACE_LC
 
-#define OP 1
+#define OP2 1
 
 //
 
@@ -29,8 +29,8 @@ int main(int argc, char**argv)
 {
   int run, loop, r, i;
   uint64_t cycles[TIMINGS];
-  uint64_t* results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_hash,.csv)};
+  uint64_t* results[OP2][LOOPS];
+  char *op2_str[] = {xstr(crypto_hash,.csv)};
 
   uint8_t *_out, *out; // CRYPTO_BYTES
   uint8_t *_in, *in; // MAXINBYTES
@@ -55,7 +55,7 @@ int main(int argc, char**argv)
         results[0][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
-    pb_print_2(argc, results, op_str);
+    pb_print_2(argc, results, op2_str);
   }
 
   pb_free_2(results);

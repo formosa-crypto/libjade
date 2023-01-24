@@ -14,7 +14,7 @@
 #define crypto_scalarmult      JADE_NAMESPACE_LC
 #define crypto_scalarmult_base NAMESPACE_LC(base)
 
-#define OP 2
+#define OP1 2
 
 //
 
@@ -31,9 +31,9 @@ int main(int argc, char**argv)
 {
   int run, loop, i;
   uint64_t cycles[TIMINGS];
-  uint64_t results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_scalarmult_base,.csv),
-                    xstr(crypto_scalarmult,.csv)};
+  uint64_t results[OP1][LOOPS];
+  char *op1_str[] = {xstr(crypto_scalarmult_base,.csv),
+                     xstr(crypto_scalarmult,.csv)};
 
   uint8_t *_m, *m; // CRYPTO_SCALARBYTES
   uint8_t *_n, *n; // CRYPTO_SCALARBYTES
@@ -64,7 +64,7 @@ int main(int argc, char**argv)
         crypto_scalarmult(q,n,p); }
       results[0][loop] = cpucycles_median(cycles, TIMINGS);
     }
-    pb_print_1(argc, results, op_str);
+    pb_print_1(argc, results, op1_str);
   }
 
   free(_m);

@@ -19,7 +19,7 @@
 #define crypto_kem_enc NAMESPACE_LC(enc)
 #define crypto_kem_dec NAMESPACE_LC(dec)
 
-#define OP 3
+#define OP1 3
 
 //
 
@@ -36,10 +36,10 @@ int main(int argc, char**argv)
 {
   int run, loop, i;
   uint64_t cycles[TIMINGS];
-  uint64_t results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_kem_keypair,.csv),
-                    xstr(crypto_kem_enc,.csv),
-                    xstr(crypto_kem_dec,.csv)};
+  uint64_t results[OP1][LOOPS];
+  char *op1_str[] = {xstr(crypto_kem_keypair,.csv),
+                     xstr(crypto_kem_enc,.csv),
+                     xstr(crypto_kem_dec,.csv)};
 
   uint8_t *_ps, *ps, *p; // CRYPTO_PUBLICKEYBYTES
   uint8_t *_ss, *ss, *s; // CRYPTO_SECRETKEYBYTES
@@ -91,7 +91,7 @@ int main(int argc, char**argv)
       { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
       #endif
     }
-    pb_print_1(argc, results, op_str);
+    pb_print_1(argc, results, op1_str);
   }
 
   free(_ps);

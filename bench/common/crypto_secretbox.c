@@ -17,7 +17,7 @@
 #define crypto_secretbox_open NAMESPACE_LC(open)
 #define crypto_secretbox JADE_NAMESPACE_LC
 
-#define OP 3
+#define OP2 3
 
 //
 #include "config.h"
@@ -33,10 +33,10 @@ int main(int argc, char**argv)
 {
   int run, loop, r, i;
   uint64_t cycles[TIMINGS];
-  uint64_t* results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_secretbox,.csv),
-                    xstr(crypto_secretbox_open,.csv),
-                    xstr(crypto_secretbox_open,_forgery.csv)};
+  uint64_t* results[OP2][LOOPS];
+  char *op2_str[] = {xstr(crypto_secretbox,.csv),
+                     xstr(crypto_secretbox_open,.csv),
+                     xstr(crypto_secretbox_open,_forgery.csv)};
 
   uint8_t *_ciphertext, *ciphertext; // MAXINBYTES + CRYPTO_ZEROBYTES
   uint8_t *_plaintext, *plaintext; // MAXINBYTES + CRYPTO_ZEROBYTES
@@ -81,7 +81,7 @@ int main(int argc, char**argv)
         results[2][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
-    pb_print_2(argc, results, op_str);
+    pb_print_2(argc, results, op2_str);
   }
 
   pb_free_2(results);

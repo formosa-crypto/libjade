@@ -17,19 +17,15 @@
 #define crypto_sign JADE_NAMESPACE_LC
 #define crypto_sign_open NAMESPACE_LC(open)
 
+#define OP1 1
+#define OP2 2
+
 //
 
 #include "config.h"
 #include "cpucycles.c"
 #include "increment.c"
-
-#define OP 1
-#include "printbench1.c"
-#undef OP
-#define OP 2
-#include "printbench2.c"
-#undef OP
-
+#include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
 
@@ -40,8 +36,8 @@ int main(int argc, char**argv)
   int run, loop, r, i;
   uint64_t cycles[TIMINGS];
 
-  uint64_t  results_keypair[1][LOOPS];
-  uint64_t* results_sign_open[2][LOOPS];
+  uint64_t  results_keypair[OP1][LOOPS];
+  uint64_t* results_sign_open[OP2][LOOPS];
 
   char *op_str_keypair[]   = { xstr(crypto_sign_keypair,.csv)};
   char *op_str_sign_open[] = { xstr(crypto_sign,.csv),
