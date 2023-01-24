@@ -10,6 +10,19 @@
 // ////////////////////////////////////////////////////////////////////////////
 
 #if defined(OP1)
+static void pb_init_1(int argc, char *op_str[])
+{
+  int op;
+  FILE *f;
+
+  if(argc == 1)
+  { for (op = 0; op < OP1; op++)
+    { f = fopen(op_str[op], "w");
+      fclose(f);
+    }
+  }
+}
+
 static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
 {
   int op, loop;
@@ -20,7 +33,7 @@ static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
   // print to file
   f = stdout;
   for (op = 0; op < OP1; op++)
-  { if(argc == 1) { f = fopen(op_str[op], "w"); }
+  { if(argc == 1) { f = fopen(op_str[op], "a"); }
     loop = 0;
     fprintf(f, "%" PRIu64 "\n", results[op][loop]);
     if(argc == 1) { fclose(f); }
@@ -31,6 +44,19 @@ static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
 // ////////////////////////////////////////////////////////////////////////////
 
 #if defined(OP2)
+static void pb_init_2(int argc, char *op_str[])
+{
+  int op;
+  FILE *f;
+
+  if(argc == 1)
+  { for (op = 0; op < OP2; op++)
+    { f = fopen(op_str[op], "w");
+      fclose(f);
+    }
+  }
+}
+
 static void pb_alloc_2(uint64_t* results[OP2][LOOPS], size_t _x)
 {
   size_t o, l;
@@ -61,7 +87,7 @@ static void pb_print_2(int argc, uint64_t* results[OP2][LOOPS], char *op_str[])
   // print to file
   f = stdout;
   for (op = 0; op < OP2; op++)
-  { if(argc == 1) { f = fopen(op_str[op], "w"); }
+  { if(argc == 1) { f = fopen(op_str[op], "a"); }
     loop = 0;
     for (len = MININBYTES, r=0; len <= MAXINBYTES; len = inc_in(len), r +=1)
     { if(len == 0)
@@ -79,6 +105,19 @@ static void pb_print_2(int argc, uint64_t* results[OP2][LOOPS], char *op_str[])
 // ////////////////////////////////////////////////////////////////////////////
 
 #if defined(OP3)
+static void pb_init_3(int argc, char *op_str[])
+{
+  int op;
+  FILE *f;
+
+  if(argc == 1)
+  { for (op = 0; op < OP3; op++)
+    { f = fopen(op_str[op], "w");
+      fclose(f);
+    }
+  }
+}
+
 static void pb_alloc_3(uint64_t** results[OP3][LOOPS], size_t _x, size_t _y)
 {
   size_t o, l, x;
@@ -115,7 +154,7 @@ static void pb_print_3(int argc, uint64_t** results[OP3][LOOPS], char *op_str[])
   // print to file
   f = stdout;
   for (op = 0; op < OP3; op++)
-  { if(argc == 1) { f = fopen(op_str[op], "w"); }
+  { if(argc == 1) { f = fopen(op_str[op], "a"); }
     loop = 0;
     for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
     { for (inlen = MININBYTES, r1 = 0; inlen <= MAXINBYTES; inlen = inc_in(inlen), r1 += 1)

@@ -40,6 +40,8 @@ int main(int argc, char**argv)
   uint8_t *_p, *p; // CRYPTO_BYTES
   uint8_t *_q, *q; // CRYPTO_BYTES
 
+  pb_init_1(argc, op1_str);
+
   m = alignedcalloc(&_m, CRYPTO_SCALARBYTES);
   n = alignedcalloc(&_n, CRYPTO_SCALARBYTES);
   p = alignedcalloc(&_p, CRYPTO_BYTES);

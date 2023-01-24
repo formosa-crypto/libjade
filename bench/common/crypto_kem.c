@@ -48,6 +48,8 @@ int main(int argc, char**argv)
   uint8_t *_ts, *ts, *t; // CRYPTO_BYTES
   size_t plen, slen, klen, clen, tlen;
 
+  pb_init_1(argc, op1_str);
+
   plen = alignedcalloc_step(CRYPTO_PUBLICKEYBYTES);
   slen = alignedcalloc_step(CRYPTO_SECRETKEYBYTES);
   klen = alignedcalloc_step(CRYPTO_BYTES);

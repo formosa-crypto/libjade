@@ -36,6 +36,7 @@ int main(int argc, char**argv)
   uint8_t *_in, *in; // MAXINBYTES
   size_t outsize, outlen, inlen;
 
+  pb_init_3(argc, op3_str);
   outsize = size_inc_out(MINOUTBYTES,MAXOUTBYTES);
   pb_alloc_3(results, outsize, size_inc_in(MININBYTES,MAXINBYTES));
 

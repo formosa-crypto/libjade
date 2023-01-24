@@ -54,8 +54,8 @@ int main(int argc, char**argv)
   size_t a_pklen, a_sklen, a_mlen, a_smlen, a_tlen;
   size_t mlen, tlen; // [MININBYTES..MAXINBYTES] x2
 
-  //
-
+  pb_init_1(argc, op_str_keypair);
+  pb_init_2(argc, op_str_sign_open);
   pb_alloc_2(results_sign_open, size_inc_in(MININBYTES,MAXINBYTES));
 
   a_pklen  = alignedcalloc_step(CRYPTO_PUBLICKEYBYTES);

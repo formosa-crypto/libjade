@@ -41,6 +41,7 @@ int main(int argc, char**argv)
   uint8_t *_key, *key; // CRYPTO_KEYBYTES
   size_t len;
 
+  pb_init_2(argc, op2_str);
   pb_alloc_2(results, size_inc_in(MININBYTES,MAXINBYTES));
 
   out = alignedcalloc(&_out, CRYPTO_BYTES);
