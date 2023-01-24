@@ -59,11 +59,10 @@ int main(int argc, char**argv)
         }
       }
     }
+    pb_print_3(argc, results, op_str);
   }
 
-  pb_print_3(argc, results, op_str);
   pb_free_3(results, outsize);
-
   free(_out);
   free(_in);
 

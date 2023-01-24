@@ -64,9 +64,8 @@ int main(int argc, char**argv)
         crypto_scalarmult(q,n,p); }
       results[0][loop] = cpucycles_median(cycles, TIMINGS);
     }
+    pb_print_1(argc, results, op_str);
   }
-
-  pb_print_1(argc, results, op_str);
 
   free(_m);
   free(_n);

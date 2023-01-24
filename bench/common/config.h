@@ -2,6 +2,9 @@
 #define CONFIG_H
 
 //
+#ifndef RUNS
+#define RUNS 1
+#endif
 
 #ifndef RUNS
 #define RUNS 1

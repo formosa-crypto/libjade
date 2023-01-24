@@ -108,13 +108,11 @@ int main(int argc, char**argv)
         results_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
+    pb_print_1(argc, results_keypair, op_str_keypair);
+    pb_print_2(argc, results_sign_open, op_str_sign_open);
   }
 
-  pb_print_1(argc, results_keypair, op_str_keypair);
-  pb_print_2(argc, results_sign_open, op_str_sign_open);
-
   pb_free_2(results_sign_open);
-
   free(_pks);
   free(_sks);
   free(_ms);

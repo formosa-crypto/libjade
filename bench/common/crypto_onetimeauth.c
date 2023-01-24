@@ -67,11 +67,10 @@ int main(int argc, char**argv)
         results[1][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
+    pb_print_2(argc, results, op_str);
   }
 
-  pb_print_2(argc, results, op_str);
   pb_free_2(results);
-
   free(_in);
   free(_out);
   free(_key);

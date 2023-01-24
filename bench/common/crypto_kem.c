@@ -91,9 +91,8 @@ int main(int argc, char**argv)
       { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
       #endif
     }
+    pb_print_1(argc, results, op_str);
   }
-
-  pb_print_1(argc, results, op_str);
 
   free(_ps);
   free(_ss);
