@@ -1,8 +1,8 @@
-name: 'amd64-linux-main-proof'
+name: amd64-linux-main-proof
 
 on:
   workflow_run:
-    workflows: ["amd64-linux-main"]
+    workflows: [amd64-linux-main]
     branches: [main]
     types:
       - completed
