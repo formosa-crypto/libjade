@@ -3,8 +3,7 @@ name: amd64-linux-main-proof
 on:
   workflow_run:
     workflows: [amd64-linux-main]
-    types:
-      - completed
+    types: [completed]
 
 jobs:
 
