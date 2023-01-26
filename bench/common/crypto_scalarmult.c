@@ -34,8 +34,10 @@ int main(int argc, char**argv)
   uint64_t cycles[TIMINGS];
   uint64_t median_loops[OP1][LOOPS];
 
+#if defined(ST_ON)
   uint64_t median_runs[OP1][RUNS];
   double   sd_runs[OP1], mean_runs[OP1];
+#endif
 
   char *op1_str[] = {xstr(crypto_scalarmult_base,.csv),
                      xstr(crypto_scalarmult,.csv)};
