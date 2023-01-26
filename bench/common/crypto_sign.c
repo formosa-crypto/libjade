@@ -28,6 +28,7 @@
 #include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
+#include "stability.c"
 
 //
 
@@ -36,8 +37,13 @@ int main(int argc, char**argv)
   int run, loop, r, i;
   uint64_t cycles[TIMINGS];
 
-  uint64_t  results_keypair[OP1][LOOPS];
-  uint64_t* results_sign_open[OP2][LOOPS];
+  uint64_t  median_loops_keypair[OP1][LOOPS];
+  uint64_t* median_loops_sign_open[OP2][LOOPS];
+
+#if defined(ST_ON)
+  uint64_t   median_runs1[OP1][RUNS]; double  sd_runs1[OP1]; double  mean_runs1[OP1];
+  uint64_t** median_runs2[OP2];       double* sd_runs2[OP2]; double* mean_runs2[OP2];
+#endif
 
   char *op_str_keypair[]   = { xstr(crypto_sign_keypair,.csv)};
   char *op_str_sign_open[] = { xstr(crypto_sign,.csv),
@@ -54,9 +60,17 @@ int main(int argc, char**argv)
   size_t a_pklen, a_sklen, a_mlen, a_smlen, a_tlen;
   size_t mlen, tlen; // [MININBYTES..MAXINBYTES] x2
 
+  size_t size_inc;
+
+  size_inc = size_inc_in(MININBYTES,MAXINBYTES);
+
   pb_init_1(argc, op_str_keypair);
   pb_init_2(argc, op_str_sign_open);
-  pb_alloc_2(results_sign_open, size_inc_in(MININBYTES,MAXINBYTES));
+  pb_alloc_2(median_loops_sign_open, size_inc);
+
+  _st_alloc_2(median_runs2, size_inc);
+  _st_d_alloc_2(sd_runs2, size_inc);
+  _st_d_alloc_2(mean_runs2, size_inc);
 
   a_pklen  = alignedcalloc_step(CRYPTO_PUBLICKEYBYTES);
   a_sklen  = alignedcalloc_step(CRYPTO_SECRETKEYBYTES);
@@ -71,8 +85,12 @@ int main(int argc, char**argv)
   ts     = alignedcalloc(&_ts,  a_tlen  * TIMINGS);
   smlens = calloc(sizeof(uint64_t), TIMINGS);
 
+_st_while_b
+
   for(run = 0; run < RUNS; run++)
   {
+    _st_reset_notrandombytes
+
     for(loop = 0; loop < LOOPS; loop++)
     {
       // keypair
@@ -80,7 +98,7 @@ int main(int argc, char**argv)
       for (i = 0; i < TIMINGS; i++, pk += a_pklen, sk += a_sklen)
       { cycles[i] = cpucycles();
         crypto_sign_keypair(pk, sk); }
-      results_keypair[0][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops_keypair[0][loop] = cpucycles_median(cycles, TIMINGS);
 
       for (mlen = MININBYTES, r = 0; mlen <= MAXINBYTES; mlen = inc_in(mlen), r += 1)
       {
@@ -94,21 +112,37 @@ int main(int argc, char**argv)
         for (i = 0; i < TIMINGS; i++, sm += a_smlen, smlen++, m += a_mlen, sk += a_sklen)
         { cycles[i] = cpucycles();
           crypto_sign(sm, smlen, m, mlen, sk); }
-        results_sign_open[0][loop][r] = cpucycles_median(cycles, TIMINGS);
+        median_loops_sign_open[0][loop][r] = cpucycles_median(cycles, TIMINGS);
 
         // open
         t = ts; sm = sms; smlen = smlens; pk = pks;
         for (i = 0; i < TIMINGS; i++, t += a_tlen, sm += a_smlen, smlen++, pk += a_pklen)
         { cycles[i] = cpucycles();
           crypto_sign_open(t, &tlen, sm, *smlen, pk); }
-        results_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
+        median_loops_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
-    pb_print_1(argc, results_keypair, op_str_keypair);
-    pb_print_2(argc, results_sign_open, op_str_sign_open);
+    _st_ifnotst(pb_print_1(argc, median_loops_keypair, op_str_keypair))
+    _st_ifnotst(pb_print_2(argc, median_loops_sign_open, op_str_sign_open))
+
+    _st_store_1(median_runs1, run, median_loops_keypair)
+    _st_store_2(median_runs2, run, median_loops_sign_open)
   }
 
-  pb_free_2(results_sign_open);
+  // all results must be within 'spec' at the same time
+  // does not save 'best' results
+  _st_check_1_2(sd_runs1, mean_runs1, median_runs1,
+                sd_runs2, mean_runs2, median_runs2)
+
+_st_while_e
+
+_st_print_1(argc, sd_runs1, mean_runs1, median_runs1, op_str_keypair)
+_st_print_2(argc, sd_runs2, mean_runs2, median_runs2, op_str_sign_open)
+
+  pb_free_2(median_loops_sign_open);
+  _st_free_2(median_runs2, size_inc);
+  _st_d_free_2(sd_runs2);
+  _st_d_free_2(mean_runs2);
   free(_pks);
   free(_sks);
   free(_ms);

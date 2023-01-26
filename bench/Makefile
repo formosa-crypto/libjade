@@ -7,7 +7,7 @@ EXCLUDE ?= crypto_xof/shake256/amd64/spec/
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= clang
-CFLAGS  ?= -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
+CFLAGS  ?= -Wall -Wno-unused-function -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
 
 # --------------------------------------------------------------------
 # CI  - 0 or 1 depending if in CI or not : example : $ make ... CI=1 ...
@@ -66,7 +66,7 @@ MAIN        = $(COMMON)/crypto_$(OPERATION).c
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(RANDINC)
-COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB) $(CIL)
+COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB) -lgsl $(CIL)
 
 # --------------------------------------------------------------------
 .PHONY: __phony benchs

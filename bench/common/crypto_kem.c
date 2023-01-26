@@ -29,14 +29,19 @@
 #include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
+#include "stability.c"
 
 //
 
 int main(int argc, char**argv)
 {
-  int run, loop, i;
+  size_t run, loop, i;
   uint64_t cycles[TIMINGS];
-  uint64_t results[OP1][LOOPS];
+  uint64_t median_loops[OP1][LOOPS];
+
+  uint64_t median_runs[OP1][RUNS];
+  double   sd_runs[OP1], mean_runs[OP1];
+
   char *op1_str[] = {xstr(crypto_kem_keypair,.csv),
                      xstr(crypto_kem_enc,.csv),
                      xstr(crypto_kem_dec,.csv)};
@@ -62,8 +67,13 @@ int main(int argc, char**argv)
   cs = alignedcalloc(&_cs, clen * TIMINGS);
   ts = alignedcalloc(&_ts, tlen * TIMINGS);
 
+_st_while_b
+
   for(run = 0; run < RUNS; run++)
   {
+
+    _st_reset_notrandombytes
+
     for(loop = 0; loop < LOOPS; loop++)
     {
       // keypair
@@ -71,21 +81,21 @@ int main(int argc, char**argv)
       for (i = 0; i < TIMINGS; i++, p += plen, s += slen)
       { cycles[i] = cpucycles();
         crypto_kem_keypair(p, s); }
-      results[0][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops[0][loop] = cpucycles_median(cycles, TIMINGS);
 
       // enc
       c = cs; k = ks; p = ps;
       for (i = 0; i < TIMINGS; i++, c += clen, k += klen, p += plen)
       { cycles[i] = cpucycles();
         crypto_kem_enc(c, k, p); }
-      results[1][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops[1][loop] = cpucycles_median(cycles, TIMINGS);
 
       // dec
       t = ts; c = cs; s = ss;
       for (i = 0; i < TIMINGS; i++, t += tlen, c += clen, s += slen)
       { cycles[i] = cpucycles();
         crypto_kem_dec(t, c, s); }
-      results[2][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops[2][loop] = cpucycles_median(cycles, TIMINGS);
 
       #if defined(ASSERT)
       k = ks; t = ts;
@@ -93,8 +103,18 @@ int main(int argc, char**argv)
       { assert(memcmp(k, t, CRYPTO_BYTES) == 0); }
       #endif
     }
-    pb_print_1(argc, results, op1_str);
+
+    _st_ifnotst(pb_print_1(argc, median_loops, op1_str))
+    _st_store_1(median_runs, run, median_loops)
   }
+
+  // all results must be within 'spec' at the same time
+  // does not save 'best' results
+  _st_check_1(sd_runs, mean_runs, median_runs)
+
+_st_while_e
+
+_st_print_1(argc, sd_runs, mean_runs, median_runs, op1_str)
 
   free(_ps);
   free(_ss);

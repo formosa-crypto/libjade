@@ -24,14 +24,19 @@
 #include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
+#include "stability.c"
 
 //
 
 int main(int argc, char**argv)
 {
-  int run, loop, i;
+  size_t run, loop, i;
   uint64_t cycles[TIMINGS];
-  uint64_t results[OP1][LOOPS];
+  uint64_t median_loops[OP1][LOOPS];
+
+  uint64_t median_runs[OP1][RUNS];
+  double   sd_runs[OP1], mean_runs[OP1];
+
   char *op1_str[] = {xstr(crypto_scalarmult_base,.csv),
                      xstr(crypto_scalarmult,.csv)};
 
@@ -47,8 +52,12 @@ int main(int argc, char**argv)
   p = alignedcalloc(&_p, CRYPTO_BYTES);
   q = alignedcalloc(&_q, CRYPTO_BYTES);
 
+_st_while_b
+
   for(run = 0; run < RUNS; run++)
   {
+    _st_reset_notrandombytes
+
     for(loop = 0; loop < LOOPS; loop++)
     {
       benchrandombytes(m, CRYPTO_SCALARBYTES);
@@ -58,16 +67,26 @@ int main(int argc, char**argv)
       for (i = 0; i < TIMINGS; i++)
       { cycles[i] = cpucycles();
         crypto_scalarmult_base(p,m); }
-      results[1][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops[1][loop] = cpucycles_median(cycles, TIMINGS);
 
       // scalarmult
       for (i = 0; i < TIMINGS; i++)
       { cycles[i] = cpucycles();
         crypto_scalarmult(q,n,p); }
-      results[0][loop] = cpucycles_median(cycles, TIMINGS);
+      median_loops[0][loop] = cpucycles_median(cycles, TIMINGS);
     }
-    pb_print_1(argc, results, op1_str);
+
+    _st_ifnotst(pb_print_1(argc, median_loops, op1_str))
+    _st_store_1(median_runs, run, median_loops)
   }
+
+  // all results must be within 'spec' at the same time
+  // does not save 'best' results
+  _st_check_1(sd_runs, mean_runs, median_runs)
+
+_st_while_e
+
+_st_print_1(argc, sd_runs, mean_runs, median_runs, op1_str)
 
   free(_m);
   free(_n);

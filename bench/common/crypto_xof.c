@@ -22,6 +22,7 @@
 #include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
+#include "stability.c"
 
 //
 
@@ -29,22 +30,40 @@ int main(int argc, char**argv)
 {
   int run, loop, r0, r1, i;
   uint64_t cycles[TIMINGS];
-  uint64_t** results[OP3][LOOPS];
+  uint64_t** median_loops[OP3][LOOPS];
+
   char *op3_str[] = {xstr(crypto_xof,.csv)};
+
+#if defined(ST_ON)
+  uint64_t*** median_runs[OP3]; // op -> outlen -> inlen -> [runs]
+  double**    sd_runs[OP3];     // op -> outlen -> inlen -> stdev
+  double**    mean_runs[OP3];   // op -> outlen -> inlen -> mean
+#endif
 
   uint8_t *_out, *out; // MAXOUTBYTES
   uint8_t *_in, *in; // MAXINBYTES
-  size_t outsize, outlen, inlen;
+  size_t outlen, inlen;
+  size_t size_out, size_in;
+
+  size_out = size_inc_out(MINOUTBYTES,MAXOUTBYTES);
+  size_in  = size_inc_in(MININBYTES,MAXINBYTES);
 
   pb_init_3(argc, op3_str);
-  outsize = size_inc_out(MINOUTBYTES,MAXOUTBYTES);
-  pb_alloc_3(results, outsize, size_inc_in(MININBYTES,MAXINBYTES));
+  pb_alloc_3(median_loops, size_out, size_in);
+
+  _st_alloc_3(median_runs, size_out, size_in);
+  _st_d_alloc_3(sd_runs, size_out, size_in);
+  _st_d_alloc_3(mean_runs, size_out, size_in);
 
   out = alignedcalloc(&_out, MAXOUTBYTES);
   in = alignedcalloc(&_in, MAXINBYTES);
 
+_st_while_b
+
   for(run = 0; run < RUNS; run++)
   {
+    _st_reset_notrandombytes
+
     for(loop = 0; loop < LOOPS; loop++)
     {
       for (outlen = MINOUTBYTES, r0 = 0; outlen <= MAXOUTBYTES; outlen = inc_out(outlen), r0 += 1)
@@ -56,14 +75,26 @@ int main(int argc, char**argv)
           for (i = 0; i < TIMINGS; i++)
           { cycles[i] = cpucycles();
             crypto_xof(out, outlen, in, inlen); }
-          results[0][loop][r0][r1] = cpucycles_median(cycles, TIMINGS);
+          median_loops[0][loop][r0][r1] = cpucycles_median(cycles, TIMINGS);
         }
       }
     }
-    pb_print_3(argc, results, op3_str);
+    _st_ifnotst(pb_print_3(argc, median_loops, op3_str))
+    _st_store_3(median_runs, run, median_loops)
   }
 
-  pb_free_3(results, outsize);
+  // all results must be within 'spec' at the same time
+  // does not save 'best' results
+  _st_check_3(sd_runs, mean_runs, median_runs)
+
+_st_while_e
+
+_st_print_3(argc, sd_runs, mean_runs, median_runs, op3_str)
+
+  pb_free_3(median_loops, size_out);
+  _st_free_3(median_runs, size_out, size_in);
+  _st_d_free_3(sd_runs, size_out);
+  _st_d_free_3(mean_runs, size_out);
   free(_out);
   free(_in);
 
