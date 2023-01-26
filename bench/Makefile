@@ -9,6 +9,8 @@ AS      ?= as
 CC      ?= clang
 CFLAGS  ?= -Wall -Wno-unused-function -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
 
+JASMIN  ?= jasminc
+
 # --------------------------------------------------------------------
 # CI  - 0 or 1 depending if in CI or not : example : $ make ... CI=1 ...
 # CID - CI DIRNAME
@@ -68,6 +70,8 @@ DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(RANDINC)
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB) -lgsl $(CIL)
 
+LOGS       ?= libjade-logs-bench.tar.gz
+
 # --------------------------------------------------------------------
 .PHONY: __phony benchs
 
@@ -115,7 +119,7 @@ ifeq ($(CI),1)
 reporter:
 	$(MAKE) reporter_compilation
 	$(MAKE) reporter_execution
-	#$(MAKE) $(LOGS)
+	$(MAKE) $(LOGS)
 
 reporter_compilation:
 	./../scripts/ci/reporter/jlog "Compilation status" bench/bin bench $(CICL)
@@ -148,3 +152,4 @@ clean:
 	rm -fr $(BIN)
 
 distclean: clean
+	rm -f $(LOGS)
