@@ -45,6 +45,7 @@ jobs:
 
 
   test:
+    needs: [compile]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
@@ -67,6 +68,7 @@ jobs:
 
 
   bench1:
+    needs: [compile]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
@@ -89,6 +91,7 @@ jobs:
 
 
   bench2:
+    needs: [compile]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
@@ -112,6 +115,7 @@ jobs:
 
 
   proof-extracted:
+    needs: [test]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
