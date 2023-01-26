@@ -74,7 +74,7 @@ endif
 default: check
 
 check: extract
-	$(ECCHECK) --bin-args="$(ECARGS)" --jobs="$(ECJOBS)" $(ECCONF) $(CHECKS)
+	$(EASYCRYPT) runtest $(ECCONF) $(CHECKS)
 
 extract: $(SOURCES)
 	@true
