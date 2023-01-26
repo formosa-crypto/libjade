@@ -1,4 +1,4 @@
-name: 'amd64-linux-head'
+name: amd64-linux-main
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
 
 
   compile:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -45,7 +45,7 @@ jobs:
 
 
   test:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -67,7 +67,7 @@ jobs:
 
 
   proof-extracted:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3

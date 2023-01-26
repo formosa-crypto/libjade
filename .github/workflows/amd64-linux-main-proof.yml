@@ -1,8 +1,8 @@
-name: 'amd64-linux-head-proof'
+name: amd64-linux-main-proof
 
 on:
   workflow_run:
-    workflows: ["amd64-linux-head"]
+    workflows: [amd64-linux-main]
     branches: [main]
     types:
       - completed
@@ -18,7 +18,7 @@ jobs:
 
 
   proof-all:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
