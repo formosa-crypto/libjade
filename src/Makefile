@@ -14,6 +14,8 @@ export CI
 CICL    ?= "1"
 
 # --------------------------------------------------------------------
+LOGS    := libjade-logs-src.tar.gz
+
 EXCLUDE ?=
 SRC     := .
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
@@ -21,8 +23,6 @@ SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile')))
 ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
-
-LOGS    ?= libjade-logs-src.tar.gz
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)

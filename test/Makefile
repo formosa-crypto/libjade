@@ -37,7 +37,7 @@ endif
 
 # --------------------------------------------------------------------
 BIN      ?= bin
-LOGS     :=
+LOGS     := libjade-logs-test.tar.gz
 
 SRC      := ../src
 COMMON   := common
@@ -70,8 +70,6 @@ DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
 PRINT       = common/print.c
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
-
-LOGS       ?= libjade-logs-test.tar.gz
 
 # --------------------------------------------------------------------
 .PHONY: __phony default
@@ -115,8 +113,6 @@ endif
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-override LOGS := libjade-logs-test.tar.gz
-
 .PHONY: reporter $(LOGS)
 
 reporter:
@@ -127,17 +123,17 @@ reporter:
 
 reporter_compilation:
 	@for type in checksumsmall checksumbig printparams functest; do \
-	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/bin $$type $(CICL); \
+	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
 	@for type in checksumsmall checksumbig printparams functest; do \
-	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/bin $$type.out $(CICL); \
+	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 
 reporter_checksums:
 	./scripts/checksumsok
-	./../scripts/ci/reporter/jlog "Checksums status" test/bin checksum*.ok $(CICL);
+	./../scripts/ci/reporter/jlog "Checksums status" test/$(BIN) checksum*.ok $(CICL);
 
 ERR := $(shell test -d $(BIN) && find $(BIN) -name '*.error')
 CIR := $(shell test -d $(BIN) && find $(BIN) -name '*.log') $(ERR)

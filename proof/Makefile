@@ -17,7 +17,7 @@ EASYCRYPT ?= easycrypt
 # CIC - CI CLEAR LOGS and ERRORS
 # CIL - CI LOG stderr
 
-CI      ?= 0
+CI  ?= 0
 export CI
 
 
@@ -49,14 +49,14 @@ endif
 endif
 
 # --------------------------------------------------------------------
+LOGS      := libjade-logs-proof.tar.gz
+
 SRC       := ../src
 PROOF     := .
 EXCLUDE   ?=
 SOURCES   ?= $(filter-out $(SRC)/ $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 EXTRACTED := $(shell find $(PROOF) -name "*_s.ec" -o -name "*_ct.ec")
 OUT       := $(addsuffix .out, $(EXTRACTED))
-
-LOGS      ?= libjade-logs-proof.tar.gz
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
@@ -154,4 +154,5 @@ ifeq ($(CI),1)
 	rm -fr $(shell find $(PROOF) -name '.ci')
 	rm -f $(LOGS)
 endif
+	$(MAKE) -C $(SRC) distclean
 

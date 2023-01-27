@@ -8,7 +8,6 @@ EXCLUDE ?= crypto_xof/shake256/amd64/spec/
 AS      ?= as
 CC      ?= clang
 CFLAGS  ?= -Wall -Wno-unused-function -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
-
 JASMIN  ?= jasminc
 
 # --------------------------------------------------------------------
@@ -40,7 +39,7 @@ endif
 
 # --------------------------------------------------------------------
 BIN      ?= bin
-LOGS     :=
+LOGS     := libjade-logs-bench.tar.gz
 
 SRC      := ../src
 COMMON   := common
@@ -114,8 +113,6 @@ ssbd-tools:
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-override LOGS := libjade-logs-test.tar.gz
-
 .PHONY: reporter $(LOGS)
 
 reporter:
@@ -124,10 +121,10 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	./../scripts/ci/reporter/jlog "Compilation status" bench/bin bench $(CICL)
+	./../scripts/ci/reporter/jlog "Compilation status" bench/$(BIN) bench $(CICL)
 
 reporter_execution:
-	./../scripts/ci/reporter/jlog "Execution status" bench/bin bench.out $(CICL)
+	./../scripts/ci/reporter/jlog "Execution status" bench/$(BIN) bench.out $(CICL)
 
 ERR := $(shell test -d $(BIN) && find $(BIN) -name '*.error')
 CIR := $(shell test -d $(BIN) && find $(BIN) -name '*.log') $(ERR)
