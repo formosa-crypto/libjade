@@ -1,7 +1,6 @@
 #include <stdint.h>
 
-uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen)
-asm("__jasmin_syscall_randombytes__");
+#include "randombytes.h"
 
 #if defined(__linux__) 
 

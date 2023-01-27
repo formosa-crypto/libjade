@@ -14,7 +14,7 @@
 #define crypto_scalarmult      JADE_NAMESPACE_LC
 #define crypto_scalarmult_base NAMESPACE_LC(base)
 
-#define OP 2
+#define OP1 2
 
 //
 
@@ -24,47 +24,71 @@
 #include "printbench.c"
 #include "alignedcalloc.c"
 #include "benchrandombytes.c"
+#include "stability.c"
 
 //
 
 int main(int argc, char**argv)
 {
-  int loop, i;
+  size_t run, loop, i;
   uint64_t cycles[TIMINGS];
-  uint64_t results[OP][LOOPS];
-  char *op_str[] = {xstr(crypto_scalarmult_base,.csv),
-                    xstr(crypto_scalarmult,.csv)};
+  uint64_t median_loops[OP1][LOOPS];
+
+#if defined(ST_ON)
+  uint64_t median_runs[OP1][RUNS];
+  double   sd_runs[OP1], mean_runs[OP1];
+#endif
+
+  char *op1_str[] = {xstr(crypto_scalarmult_base,.csv),
+                     xstr(crypto_scalarmult,.csv)};
 
   uint8_t *_m, *m; // CRYPTO_SCALARBYTES
   uint8_t *_n, *n; // CRYPTO_SCALARBYTES
   uint8_t *_p, *p; // CRYPTO_BYTES
   uint8_t *_q, *q; // CRYPTO_BYTES
 
+  pb_init_1(argc, op1_str);
+
   m = alignedcalloc(&_m, CRYPTO_SCALARBYTES);
   n = alignedcalloc(&_n, CRYPTO_SCALARBYTES);
   p = alignedcalloc(&_p, CRYPTO_BYTES);
   q = alignedcalloc(&_q, CRYPTO_BYTES);
 
-  for(loop = 0; loop < LOOPS; loop++)
+_st_while_b
+
+  for(run = 0; run < RUNS; run++)
   {
-    benchrandombytes(m, CRYPTO_SCALARBYTES);
-    benchrandombytes(n, CRYPTO_SCALARBYTES);
+    _st_reset_notrandombytes
 
-    // scalarmult_base
-    for (i = 0; i < TIMINGS; i++)
-    { cycles[i] = cpucycles();
-      crypto_scalarmult_base(p,m); }
-    results[1][loop] = cpucycles_median(cycles, TIMINGS);
+    for(loop = 0; loop < LOOPS; loop++)
+    {
+      benchrandombytes(m, CRYPTO_SCALARBYTES);
+      benchrandombytes(n, CRYPTO_SCALARBYTES);
 
-    // scalarmult
-    for (i = 0; i < TIMINGS; i++)
-    { cycles[i] = cpucycles();
-      crypto_scalarmult(q,n,p); }
-    results[0][loop] = cpucycles_median(cycles, TIMINGS);
+      // scalarmult_base
+      for (i = 0; i < TIMINGS; i++)
+      { cycles[i] = cpucycles();
+        crypto_scalarmult_base(p,m); }
+      median_loops[1][loop] = cpucycles_median(cycles, TIMINGS);
 
+      // scalarmult
+      for (i = 0; i < TIMINGS; i++)
+      { cycles[i] = cpucycles();
+        crypto_scalarmult(q,n,p); }
+      median_loops[0][loop] = cpucycles_median(cycles, TIMINGS);
+    }
+
+    _st_ifnotst(pb_print_1(argc, median_loops, op1_str))
+    _st_store_1(median_runs, run, median_loops)
   }
 
-  pb_print_1(argc, results, op_str);
+  // all results must be within 'spec' at the same time
+  // does not save 'best' results
+  _st_check_1(sd_runs, mean_runs, median_runs)
+
+_st_while_e
+
+_st_print_1(argc, sd_runs, mean_runs, median_runs, op1_str)
 
   free(_m);
   free(_n);

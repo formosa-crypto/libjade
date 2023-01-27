@@ -3,8 +3,12 @@
 
 //
 
+#ifndef RUNS
+#define RUNS 1
+#endif
+
 #ifndef LOOPS
-#define LOOPS 3
+#define LOOPS 1
 #endif
 
 #ifndef TIMINGS
@@ -39,6 +43,25 @@
 #define INC_OUTBYTES 2
 #endif
 
+//
+
+#if defined(ST_ON)
+
+ #ifndef ST_MAX
+ #define ST_MAX 5
+ #endif
+
+ // 0.1 %
+ #ifndef ST_PER
+ #define ST_PER 0.1
+ #endif
+
+ #ifndef ST_CHK
+ #define ST_CHK (((double)ST_PER)/((double)100.0))
+ #endif
+
+#endif
+//
 
 #endif
 
