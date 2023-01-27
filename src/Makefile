@@ -16,7 +16,6 @@ CICL    ?= "1"
 # --------------------------------------------------------------------
 EXCLUDE ?=
 SRC     := .
-BUILD   := .build
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -84,10 +83,7 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -fr libjade.a libjade.h
-ifeq ($(CI),1)
-	rm -f $(LOGS)
-endif
+	rm -f libjade.a libjade.h $(LOGS)
 
 distclean: clean
 	for i in $(SOURCES); do $(MAKE) -C $$i clean; done

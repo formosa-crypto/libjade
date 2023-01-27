@@ -39,8 +39,10 @@ CIL = 2> $(CID)/$(@F).log || \
 endif
 
 # --------------------------------------------------------------------
-SRC      := ../src
 BIN      ?= bin
+LOGS     :=
+
+SRC      := ../src
 COMMON   := common
 
 EXT      := ../ext
@@ -69,8 +71,6 @@ DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(RANDINC)
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB) -lgsl $(CIL)
-
-LOGS       ?= libjade-logs-bench.tar.gz
 
 # --------------------------------------------------------------------
 .PHONY: __phony benchs
@@ -114,6 +114,8 @@ ssbd-tools:
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
+override LOGS := libjade-logs-test.tar.gz
+
 .PHONY: reporter $(LOGS)
 
 reporter:
@@ -149,7 +151,8 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -fr $(BIN)
+	rm -fr $(BIN) $(LOGS)
 
 distclean: clean
-	rm -f $(LOGS)
+	$(MAKE) -C $(SRC) distclean
+

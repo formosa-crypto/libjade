@@ -36,8 +36,10 @@ CIL = 2> $(CID)/$(@F).log || \
 endif
 
 # --------------------------------------------------------------------
-SRC      := ../src
 BIN      ?= bin
+LOGS     :=
+
+SRC      := ../src
 COMMON   := common
 
 EXT      := ../ext
@@ -113,6 +115,8 @@ endif
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
+override LOGS := libjade-logs-test.tar.gz
+
 .PHONY: reporter $(LOGS)
 
 reporter:
@@ -157,7 +161,8 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -fr $(BIN)
+	rm -fr $(BIN) $(LOGS)
 
 distclean: clean
+	$(MAKE) -C $(SRC) distclean
 
