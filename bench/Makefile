@@ -8,7 +8,6 @@ EXCLUDE ?= crypto_xof/shake256/amd64/spec/
 AS      ?= as
 CC      ?= clang
 CFLAGS  ?= -Wall -Wno-unused-function -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
-
 JASMIN  ?= jasminc
 
 # --------------------------------------------------------------------
@@ -39,8 +38,10 @@ CIL = 2> $(CID)/$(@F).log || \
 endif
 
 # --------------------------------------------------------------------
-SRC      := ../src
 BIN      ?= bin
+LOGS     := libjade-logs-bench.tar.gz
+
+SRC      := ../src
 COMMON   := common
 
 EXT      := ../ext
@@ -69,8 +70,6 @@ DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -I$(RANDINC)
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) $(MAIN) $(ASM) $(RANDLIB) -lgsl $(CIL)
-
-LOGS       ?= libjade-logs-bench.tar.gz
 
 # --------------------------------------------------------------------
 .PHONY: __phony benchs
@@ -122,10 +121,10 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	./../scripts/ci/reporter/jlog "Compilation status" bench/bin bench $(CICL)
+	./../scripts/ci/reporter/jlog "Compilation status" bench/$(BIN) bench $(CICL)
 
 reporter_execution:
-	./../scripts/ci/reporter/jlog "Execution status" bench/bin bench.out $(CICL)
+	./../scripts/ci/reporter/jlog "Execution status" bench/$(BIN) bench.out $(CICL)
 
 ERR := $(shell test -d $(BIN) && find $(BIN) -name '*.error')
 CIR := $(shell test -d $(BIN) && find $(BIN) -name '*.log') $(ERR)
@@ -149,7 +148,8 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -fr $(BIN)
+	rm -fr $(BIN) $(LOGS)
 
 distclean: clean
-	rm -f $(LOGS)
+	$(MAKE) -C $(SRC) distclean
+
