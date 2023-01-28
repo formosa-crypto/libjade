@@ -63,7 +63,7 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 # - "jade_xof_shake256_amd64_spec>output,input;output_length,input_length"
 # url:
 # - https://github.com/jasmin-lang/jasmin/issues/306#issuecomment-1344453035
-# 
+#
 .PHONY: checksafety
 
 checksafety : $(SRCS) | $(CIDIR)
