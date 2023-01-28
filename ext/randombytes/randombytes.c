@@ -1,17 +1,16 @@
 #include <stdint.h>
 
-void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
-asm("__jasmin_syscall_randombytes__");
+#include "randombytes.h"
 
 #if defined(__linux__) 
 
 #include <unistd.h>
 #include <sys/random.h>
 
-void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* _x, uint64_t xlen)
 {
-
   int i;
+  uint8_t* x = _x;
 
   while (xlen > 0) {
     if (xlen < 1048576) i = xlen; else i = 1048576;
@@ -24,6 +23,8 @@ void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
     x += i;
     xlen -= i;
   }
+
+  return _x;
 }
 
 #elif defined(__APPLE__)
@@ -34,8 +35,9 @@ void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen)
 #error "macOS version not supported (>= 10.12)"
 #endif
 
-void __jasmin_syscall_randombytes__(uint8_t *p, uint64_t plen){
-  arc4random_buf(p, plen);
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen){
+  arc4random_buf(x, xlen);
+  return x;
 }
 
 #endif

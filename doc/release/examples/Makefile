@@ -1,8 +1,8 @@
 # --------------------------------------------------------------------
 AS      ?= as
-CC      ?= gcc
+CC      ?= clang
 CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
-	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
-	         -fstrict-aliasing -fno-common -pipe -g
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
+	         -fstrict-aliasing -fno-common -pipe
 
 # --------------------------------------------------------------------

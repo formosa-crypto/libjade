@@ -6,13 +6,12 @@ require "keccakf1600.jinc"
 inline fn __keccak_init_ref() -> stack u64[25]
 {
   stack u64[25] state;
-  reg u64 i t;
+  reg u64 t;
+  inline int i;
 
   _,_,_,_,_, t = #set0();
-  i = 0;
-  while (i < 25)
-  { state[(int)i] = t;
-    i += 1;
+  for i = 0 to 25
+  { state[i] = t;
   }
 
   return state;

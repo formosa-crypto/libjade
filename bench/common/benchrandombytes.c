@@ -4,11 +4,12 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-extern void __jasmin_syscall_randombytes__(uint8_t *x, uint64_t xlen);
+extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
 
-static void benchrandombytes(uint8_t *x, uint64_t xlen)
+static uint8_t* benchrandombytes(uint8_t* x, uint64_t xlen)
 {
-  __jasmin_syscall_randombytes__(x, xlen);
+  x = __jasmin_syscall_randombytes__(x, xlen);
+  return x;
 }
 
 #endif

@@ -140,7 +140,7 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
     a = __round_ref(e, rc);
 
     c += 2;
-  } (c < KECCAK_ROUNDS)
+  } (c < KECCAK_ROUNDS - 1)
 
   return a;
 }

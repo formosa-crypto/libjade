@@ -1,4 +1,4 @@
-name: 'amd64-linux-head'
+name: amd64-linux-main
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
 
 
   compile:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -45,7 +45,8 @@ jobs:
 
 
   test:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    needs: [compile]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -66,8 +67,56 @@ jobs:
 
 
 
+  bench1:
+    needs: [compile]
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile and run
+        run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=100'
+      - name: print logs
+        run: make     -C bench/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make     -C bench/ CI=1 err
+
+      - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-bench1.tar.gz
+          path: bench/libjade-logs-bench.tar.gz
+
+
+
+  bench2:
+    needs: [compile]
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile and run
+        run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=100 -DRUNS=2 -DST_ON' RANDLIB='../test/common/notrandombytes.c ../test/common/notrandombytes1.c'
+      - name: print logs
+        run: make     -C bench/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make     -C bench/ CI=1 err
+
+      - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-bench2.tar.gz
+          path: bench/libjade-logs-bench.tar.gz
+
+
+
+
   proof-extracted:
-    runs-on: [self-hosted, linux, X64, amd64-head]
+    needs: [test]
+    runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
         uses: actions/checkout@v3

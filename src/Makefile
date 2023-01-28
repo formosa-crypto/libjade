@@ -2,9 +2,9 @@
 
 # --------------------------------------------------------------------
 AS      ?= as
-CC      ?= gcc
+CC      ?= clang
 CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
-	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes\
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
 	         -fstrict-aliasing -fno-common -pipe
 JASMIN  ?= jasminc
 
@@ -14,18 +14,18 @@ export CI
 CICL    ?= "1"
 
 # --------------------------------------------------------------------
+LOGS    := libjade-logs-src.tar.gz
+
 EXCLUDE ?=
 SRC     := .
-BUILD   := .build
+
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+SAFETY  ?= $(addsuffix checksafety, $(JAZZ))
+
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
-
-SAFETY  ?= $(addsuffix checksafety, $(JAZZ))
-
-LOGS    ?= libjade-logs-src.tar.gz
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
@@ -66,11 +66,11 @@ ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
-	$(MAKE) reporter_safety
 	$(MAKE) $(LOGS)
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
+	$(MAKE) $(LOGS)
 
 reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ checksafety $(CICL)
@@ -97,10 +97,7 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -fr libjade.a libjade.h
-ifeq ($(CI),1)
-	rm -f $(LOGS)
-endif
+	rm -f libjade.a libjade.h $(LOGS)
 
 distclean: clean
 	for i in $(SOURCES); do $(MAKE) -C $$i clean; done
