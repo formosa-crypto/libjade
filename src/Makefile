@@ -18,7 +18,10 @@ LOGS    := libjade-logs-src.tar.gz
 
 EXCLUDE ?=
 SRC     := .
+
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+SAFETY  ?= $(addsuffix checksafety, $(JAZZ))
+
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
@@ -52,6 +55,13 @@ $(JAZZ):
 	$(MAKE) -C $@ || true
 
 # --------------------------------------------------------------------
+.PHONY: checksafety
+checksafety: $(SAFETY)
+
+$(SAFETY):
+	$(MAKE) -C $(@D) $(@F) || true
+
+# --------------------------------------------------------------------
 ifeq ($(CI),1)
 
 reporter:
@@ -60,6 +70,10 @@ reporter:
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
+	$(MAKE) $(LOGS)
+
+reporter_safety:
+	./../scripts/ci/reporter/jlog "Safety status" src/ checksafety $(CICL)
 
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
