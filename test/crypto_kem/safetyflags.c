@@ -30,7 +30,7 @@ int main(void)
   printf("-safetyparam \"%s>public_key,secret_key;%zu,%zu",
     f[0],(size_t)JADE_KEM_PUBLICKEYBYTES,(size_t)JADE_KEM_SECRETKEYBYTES);
 
-  printf("|%s>ciphertext,shared_secret,public_key;%zu,%zu,%zu\"",
+  printf("|%s>ciphertext,shared_secret,public_key;%zu,%zu,%zu",
     f[1],(size_t)JADE_KEM_CIPHERTEXTBYTES,(size_t)JADE_KEM_BYTES,(size_t)JADE_KEM_PUBLICKEYBYTES);
 
   printf("|%s>shared_secret,ciphertext,secret_key;%zu,%zu,%zu\"",

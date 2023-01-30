@@ -1,10 +1,15 @@
 
 # --------------------------------------------------------------------
-TOP = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
-SRC = $(TOP)/src/
-CDIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
-RDIR = $(subst $(SRC),,$(CDIR))
-PDIR = $(TOP)/proof/$(RDIR)
+TOP   = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
+SRC   = $(TOP)/src/
+TEST  = $(TOP)/test/
+PROOF = $(TOP)/proof/
+
+CDIR  = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
+RDIR  = $(subst $(SRC),,$(CDIR))
+TDIR  = $(TEST)/bin/$(RDIR)
+PDIR  = $(PROOF)/$(RDIR)
+
 OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
@@ -53,23 +58,8 @@ extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
 extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 	@true
 
-# --------------------------------------------------------------------
-#
-# TODO: implement script to auto gen -safetyparam argument based on
-#       values declared on */include/api.h and then close corresponding
-#       issue;
-# example:
-# - "jade_xof_shake256_amd64_spec>output,input;output_length,input_length"
-# url:
-# - https://github.com/jasmin-lang/jasmin/issues/306#issuecomment-1344453035
-#
-
-TIMEOUT_SAFETY ?= 1440m
-
-.PHONY: checksafety
-
-checksafety : $(SRCS) | $(CIDIR)
-	(time timeout -v $(TIMEOUT_SAFETY) $(JASMINC) -checksafety $<) $(CIT)
+safety: $(SRCS:%.$(JEXT)=%.safety)
+	@true
 
 # --------------------------------------------------------------------
 %.s : %.$(JEXT)
@@ -88,7 +78,19 @@ $(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
 	@$(EXTRACT_CT)
 
 # --------------------------------------------------------------------
+SAFETY_TIMEOUT ?= 1440m
+SAFETY_FLAGS_FILE = $(TDIR)/safetyflags.out
+SAFETY_FLAGS = $(shell cat $(SAFETY_FLAGS_FILE))
 
+%.safety : %.$(JEXT)
+%.safety : %.$(JEXT) $(SAFETY_FLAGS_FILE) $(DEPSDIR)/%.safety.d  | $(DEPSDIR) $(CIDIR)
+	@$(DEPS)
+	(time timeout -v $(SAFETY_TIMEOUT) $(JASMINC) -checksafety $(SAFETY_FLAGS) $< 2> $@) $(CIT)
+
+$(SAFETY_FLAGS_FILE):
+	$(MAKE) -C $(TEST) bin/$(RDIR)/$(@F)
+
+# --------------------------------------------------------------------
 $(DEPSDIR): ; @mkdir -p $@
 $(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
 ifeq ($(CI),1)
@@ -98,7 +100,8 @@ endif
 DEPFILES := \
  $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) \
  $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_s.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_ct.ec.d)
+ $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_ct.ec.d) \
+ $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.safety.d)
 
 $(DEPFILES):
 
@@ -113,7 +116,7 @@ include $(wildcard $(DEPFILES))
 .PHONY: clean
 
 clean:
-	@rm -fr $(DEPSDIR) *.s *.o *.a .jflags
+	@rm -fr $(DEPSDIR) *.s *.safety *.o *.a .jflags
 ifeq ($(CI),1)
 	@rm -fr $(CIDIR)
 endif

@@ -34,7 +34,7 @@ int main(void)
   printf("-safetyparam \"%s>public_key,secret_key;%zu,%zu",
     f[0],(size_t)JADE_SIGN_PUBLICKEYBYTES,(size_t)JADE_SIGN_SECRETKEYBYTES);
 
-  printf("|%s>signed_message,signed_message_length,message,secret_key;%zu+message_length,%zu,message_length,%zu\"",
+  printf("|%s>signed_message,signed_message_length,message,secret_key;%zu+message_length,%zu,message_length,%zu",
     f[1],(size_t)JADE_SIGN_BYTES,(size_t)(sizeof(uint64_t)),(size_t)JADE_SIGN_SECRETKEYBYTES);
 
   printf("|%s>message,message_length,signed_message,public_key;signed_message_length-%zu,%zu,signed_message_length,%zu\"",

@@ -109,6 +109,13 @@ $(OUT):
 	./$* > $@ $(CIL) || true
 
 # --------------------------------------------------------------------
+checksumsmall-all: $(CHECKSUMSMALL)
+checksumbig-all:   $(CHECKSUMBIG)
+printparams-all:   $(PRINTPARAMS)
+functest-all:      $(FUNCTEST)
+safetyflags-all:   $(SAFETYFLAGS)
+
+# --------------------------------------------------------------------
 
 $(TESTDIR): ; @mkdir -p $@
 ifeq ($(CI),1)
