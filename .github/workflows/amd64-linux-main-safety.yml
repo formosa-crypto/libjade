@@ -1,5 +1,10 @@
 name: amd64-linux-main-safety
 
+on:
+  workflow_run:
+    workflows: [amd64-linux-main]
+    types: [completed]
+
 jobs:
 
   safety:
