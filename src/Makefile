@@ -20,7 +20,7 @@ EXCLUDE ?=
 SRC     := .
 
 JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
-SAFETY  ?= $(addsuffix checksafety, $(JAZZ))
+SAFETY  ?= $(addsuffix safety, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -55,8 +55,12 @@ $(JAZZ):
 	$(MAKE) -C $@ || true
 
 # --------------------------------------------------------------------
-.PHONY: checksafety
-checksafety: $(SAFETY)
+
+SAFETY_TIMEOUT ?= 1440m
+export SAFETY_TIMEOUT
+
+.PHONY: safety
+safety: $(SAFETY)
 
 $(SAFETY):
 	$(MAKE) -C $(@D) $(@F) || true
@@ -73,7 +77,8 @@ reporter_s:
 	$(MAKE) $(LOGS)
 
 reporter_safety:
-	./../scripts/ci/reporter/jlog "Safety status" src/ checksafety $(CICL)
+	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
+	$(MAKE) $(LOGS)
 
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
@@ -97,7 +102,7 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -f libjade.a libjade.h $(LOGS)
+	rm -f libjade.a libjade.h $(LOGS) check.tar.gz
 
 distclean: clean
 	for i in $(SOURCES); do $(MAKE) -C $$i clean; done
