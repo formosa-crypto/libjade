@@ -9,7 +9,6 @@ OPERATION = $(word 1, $(subst /, ,$(RDIR)))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
-TIMEOUT ?= 1440m
 CIDIR =
 CIT =
 ifeq ($(CI),1)
@@ -64,10 +63,13 @@ extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
 # url:
 # - https://github.com/jasmin-lang/jasmin/issues/306#issuecomment-1344453035
 #
+
+TIMEOUT_SAFETY ?= 1440m
+
 .PHONY: checksafety
 
 checksafety : $(SRCS) | $(CIDIR)
-	(time timeout -v $(TIMEOUT) $(JASMINC) -checksafety $<) $(CIT)
+	(time timeout -v $(TIMEOUT_SAFETY) $(JASMINC) -checksafety $<) $(CIT)
 
 # --------------------------------------------------------------------
 %.s : %.$(JEXT)

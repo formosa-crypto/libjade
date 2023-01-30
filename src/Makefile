@@ -55,6 +55,10 @@ $(JAZZ):
 	$(MAKE) -C $@ || true
 
 # --------------------------------------------------------------------
+
+TIMEOUT_SAFETY ?= 1440m
+export TIMEOUT_SAFETY
+
 .PHONY: checksafety
 checksafety: $(SAFETY)
 
@@ -74,6 +78,7 @@ reporter_s:
 
 reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ checksafety $(CICL)
+	$(MAKE) $(LOGS)
 
 ERR := $(shell find $(BIN) -name '*.error')
 CIR := $(shell find $(BIN) -name '*.log') $(ERR)
@@ -97,7 +102,7 @@ endif
 
 # --------------------------------------------------------------------
 clean:
-	rm -f libjade.a libjade.h $(LOGS)
+	rm -f libjade.a libjade.h $(LOGS) check.tar.gz
 
 distclean: clean
 	for i in $(SOURCES); do $(MAKE) -C $$i clean; done
