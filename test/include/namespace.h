@@ -14,3 +14,7 @@
 #if !HAS_NAMESPACE(API_H)
 #error "namespace not properly defined for header guard"
 #endif
+
+#define xstr(s,e) str(s)#e
+#define str(s) #s
+

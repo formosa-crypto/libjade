@@ -52,8 +52,9 @@ CHECKSUMSMALL := $(addsuffix checksumsmall, $(TESTDIR))
 CHECKSUMBIG   := $(addsuffix checksumbig, $(TESTDIR))
 PRINTPARAMS   := $(addsuffix printparams, $(TESTDIR))
 FUNCTEST      := $(addsuffix functest, $(TESTDIR))
+SAFETYFLAGS   := $(addsuffix safetyflags, $(TESTDIR))
 
-EXEC          := $(CHECKSUMSMALL) $(CHECKSUMBIG) $(PRINTPARAMS) $(FUNCTEST)
+EXEC          := $(CHECKSUMSMALL) $(CHECKSUMBIG) $(PRINTPARAMS) $(FUNCTEST) $(SAFETYFLAGS)
 OUT           := $(addsuffix .out, $(EXEC))
 
 # --------------------------------------------------------------------
@@ -97,6 +98,11 @@ $(EXEC):
 	$(CIC)
 	$(COMPILE) || true
 
+%/safetyflags: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(COMPILE) || true
+
 $(OUT):
 %.out: %
 	$(CIC)
@@ -122,12 +128,12 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	@for type in checksumsmall checksumbig printparams functest; do \
+	@for type in checksumsmall checksumbig printparams functest safetyflags; do \
 	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
-	@for type in checksumsmall checksumbig printparams functest; do \
+	@for type in checksumsmall checksumbig printparams functest safetyflags; do \
 	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 
