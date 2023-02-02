@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+git clone https://gitlab.com/jasmin-lang/jasmin-compiler.git
+cd jasmin-compiler/compiler
+git fetch -a
+git checkout main
+nix-channel --update
+nix-shell --command "make"
+./jasminc -help
