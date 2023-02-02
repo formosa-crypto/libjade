@@ -64,8 +64,8 @@ Please also see [the nix installation guide](https://nixos.org/download.html)
 ### Obtaining and building the jasmin compiler
 With nix installed, you are ready to obtain and build the jasmin compiler:
 ```
-git clone https://github.com/jasmin-lang/jasmin.git
-cd jasmin
+git clone https://gitlab.com/jasmin-lang/jasmin-compiler.git
+cd jasmin-compiler/compiler
 git fetch -a
 git checkout main
 nix-channel --update
@@ -73,13 +73,10 @@ nix-shell
 ```
 Then, inside `nix-shell`, run
 ```
-cd compiler
-make CIL
 make
-make check
 exit
 ```
-Now you should have a working compiler binary called `jasminc` in `jasmin/compiler/`.
+Now you should have a working compiler binary called `jasminc` in `jasmin-compiler/compiler/`.
 We recommend adding this directory to your `$PATH` variable; the instructions in the
 following assume that `jasminc` is available in a directory that is in `$PATH`.
 
