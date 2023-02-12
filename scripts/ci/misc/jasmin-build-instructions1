@@ -5,5 +5,5 @@ cd jasmin-compiler/compiler
 git fetch -a
 git checkout main
 nix-channel --update
-nix-shell --command "make"
+nix-shell --command "NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE --sysroot=/\"; make"
 ./jasminc -help

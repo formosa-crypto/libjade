@@ -5,5 +5,7 @@ cd jasmin/
 git fetch -a
 git checkout main
 nix-channel --update
-nix-shell --command "cd compiler && make CIL && make"
-./compiler/jasminc -help
+nix-shell --command "cd compiler && make CIL"
+cd compiler/
+nix-shell --command "NIX_CFLAGS_COMPILE=\"$NIX_CFLAGS_COMPILE --sysroot=/\" && make"
+./jasminc -help
