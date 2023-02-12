@@ -1,0 +1,28 @@
+name: amd64-linux-main-build-instructions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  build0:
+    runs-on: [self-hosted, linux, X64, amd64-main-build-instructions]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: sh scripts/ci/misc/jasmin-build-instructions0
+
+  build1:
+    runs-on: [self-hosted, linux, X64, amd64-main-build-instructions]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: sh scripts/ci/misc/jasmin-build-instructions1
