@@ -77,6 +77,10 @@ COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 
 default: $(OUT)
 
+# --------------------------------------------------------------------
+# TODO target for falcon
+# --------------------------------------------------------------------
+
 $(EXEC):
 %/checksumsmall: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
