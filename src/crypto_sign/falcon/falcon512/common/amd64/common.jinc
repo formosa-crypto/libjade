@@ -1,0 +1,56 @@
+
+
+from Jade require "crypto_sign/falcon/falcon512/common/params.jinc"
+
+
+inline
+fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
+{
+
+    reg u32 s ng;
+
+    reg u32 z t;
+
+    reg u32 res;
+
+    inline int i;
+
+    s = 0;
+    ng = 0;
+
+    for i = 0 to ARRAY_N{
+
+        z = (32s)s1[i];
+        t = z;
+        t *= z;
+        s += t;
+        s = s;
+        ng |= s;
+
+
+        z = (32s)s2[i];
+        t = z;
+        t *= z;
+        s += t;
+        s = s;
+        ng |= s;
+
+    }
+
+    t = ng >> 31;
+    t = -t;
+    s |= t;
+    t = BOUND;
+
+    if(s <= BOUND){
+        res = 1;
+    }else{
+        res = 0;
+    }
+
+    return res;
+
+}
+
+
+

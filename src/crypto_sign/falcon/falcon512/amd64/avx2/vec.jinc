@@ -1,0 +1,94 @@
+
+require "NTT_params.jinc"
+
+u16 _q = 12289;
+u16 _qhalp = 6144;
+u16 _qhaln = -6144;
+u16 _qbar = 3;
+u16 _qinv = -12287;
+
+inline
+fn __load4_u256(reg u256 buff0 buff1 buff2 buff3, stack u16[ARRAY_N] src, reg u64 src_indx jump) -> reg u256, reg u256, reg u256, reg u256{
+
+    reg u64 __src_indx;
+
+    __src_indx = src_indx;
+    buff0 = src.[u256 (int) __src_indx];
+    __src_indx += jump;
+    buff1 = src.[u256 (int) __src_indx];
+    __src_indx += jump;
+    buff2 = src.[u256 (int) __src_indx];
+    __src_indx += jump;
+    buff3 = src.[u256 (int) __src_indx];
+
+    return buff0, buff1, buff2, buff3;
+
+}
+
+inline
+fn __store4_u256(reg u256 buff0 buff1 buff2 buff3, stack u16[ARRAY_N] des, reg u64 des_indx jump) -> stack u16[ARRAY_N] {
+
+    reg u64 __des_indx;
+
+    __des_indx = des_indx;
+    des.[u256 (int) __des_indx] = buff0;
+    __des_indx += jump;
+    des.[u256 (int) __des_indx] = buff1;
+    __des_indx += jump;
+    des.[u256 (int) __des_indx] = buff2;
+    __des_indx += jump;
+    des.[u256 (int) __des_indx] = buff3;
+
+    return des;
+
+}
+
+inline
+fn __sub_canonical(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
+
+    reg u256 t0 t1 t;
+    reg u256 __q __qbar;
+    reg u256 __qhalp, __qhaln;
+    reg u256 cmpp, cmpn;
+
+    reg u64 i;
+
+    __q = #VPBROADCAST_16u16(_q);
+    __qhalp = #VPBROADCAST_16u16(_qhalp);
+    __qhaln = #VPBROADCAST_16u16(_qhaln);
+    __qbar = #VPBROADCAST_16u16(_qbar);
+
+    i = 0;
+    while(i < ARRAY_N * 2){
+
+        t0 = src1.[u256 (int) i];
+        t1 = src2.[u256 (int) i];
+
+        t0 = #VPSUB_16u16(t0, t1);
+
+        t = #VPMULHRS_16u16(t0, __qbar);
+        t = #VPMULL_16u16(t, __q);
+        t0 = #VPSUB_16u16(t0, t);
+
+        cmpp = #VPCMPGT_16u16(t0, __qhalp);
+        cmpn = #VPCMPGT_16u16(__qhaln, t0);
+        cmpn = #VPSUB_16u16(cmpn, cmpp);
+
+        cmpn = #VPAND_256(cmpn, __q);
+
+        t0 = #VPADD_16u16(t0, cmpn);
+
+        des.[u256 (int) i] = t0;
+
+        i += 32;
+
+    }
+
+    return des;
+
+}
+
+
+
+
+

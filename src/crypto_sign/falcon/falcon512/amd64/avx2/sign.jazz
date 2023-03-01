@@ -1,0 +1,279 @@
+
+from Jade require "crypto_sign/falcon/falcon512/common/params.jinc"
+from Jade require "crypto_sign/falcon/falcon512/common/amd64/shake256.jinc"
+from Jade require "crypto_sign/falcon/falcon512/common/amd64/common.jinc"
+from Jade require "crypto_sign/falcon/falcon512/common/amd64/encode_decode.jinc"
+
+require "verify.jinc"
+
+inline
+fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARRAY_N], reg u32 {
+
+    reg u32 failed res;
+    reg u8 t;
+    reg u64 ptr0;
+    reg u64 i;
+
+    failed = 0;
+
+    t = (u8)[pk];
+    if(t != LOGN){
+        failed = -1;
+    }
+
+    ptr0 = pk + 1;
+    h, ptr0, res = __modq_decode(h, ptr0);
+
+    if(res == 0){
+        failed = -1;
+    }
+
+    return h, failed;
+
+}
+
+inline
+fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stack u16[ARRAY_N], reg u32 {
+
+    reg u32 failed res;
+    reg u8 t;
+    reg u64 ptr0 t_sign_len;
+
+    reg u64 i;
+
+    failed = 0;
+
+    t = (u8)[esign];
+    if(t != 0x20 + LOGN){
+        failed = -1;
+    }
+
+    ptr0 = esign + 1;
+    t_sign_len = sign_len - 1;
+    sign, res = __comp_decode(sign, ptr0, t_sign_len);
+
+    if(res == 0){
+        failed = -1;
+    }
+
+    return sign, failed;
+
+}
+
+inline
+fn __check_len(stack u64 esig_buff sig_len_buff msg_len_buff, reg u64 sm smlen)
+    -> stack u64, stack u64, stack u64, reg u32
+{
+
+    reg u32 failed;
+    reg u64 esig sig_len msg_len;
+    reg u64 t;
+
+    failed = 0;
+
+    if(smlen < 2 + NONCELEN){
+        failed = -1;
+    }
+
+    sig_len = (64u)(u8)[sm]; t = (64u)(u8)[sm + 1]; sig_len <<= 8; sig_len |= t;
+
+    t = smlen;
+    t -= 2; t -= NONCELEN;
+    if(sig_len > t){
+        failed = -1;
+    }
+
+    if(sig_len < 1){
+        failed = -1;
+    }
+
+    msg_len = smlen;
+    msg_len -= 2; msg_len -= NONCELEN; msg_len -= sig_len;
+
+    esig = sm; esig += 2; esig += NONCELEN; esig += msg_len;
+
+    esig_buff = esig;
+    sig_len_buff = sig_len;
+    msg_len_buff = msg_len;
+
+    return esig_buff, sig_len_buff, msg_len_buff, failed;
+
+}
+
+inline
+fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) -> stack u64[25], stack u16[ARRAY_N] {
+
+    stack u8[SHAKE256_RATE] block_buff;
+    stack u8[8] buff;
+    stack u64 s_t s_indx;
+    stack u64 s_hm_i;
+
+    reg u64 t;
+    reg u64 hm_i;
+
+    inline int i;
+
+    reg ptr u8[SHAKE256_RATE] block_buff_ptr;
+
+    for i = 0 to 8 {
+        buff[i] = 0;
+    }
+
+    t = SHAKE256_RATE;
+    s_indx = t;
+
+
+    t = 0;
+    s_t = t;
+
+    hm_i = 0;
+    s_hm_i = hm_i;
+
+    while{
+
+        t = s_indx;
+
+        if(t == SHAKE256_RATE){
+
+            block_buff_ptr = block_buff;
+            state, block_buff_ptr = __shake256_squeezeblock(state, block_buff_ptr);
+            block_buff = block_buff_ptr;
+            buff[1] = block_buff[0];
+            buff[0] = block_buff[1];
+            t = 2;
+            s_indx = t;
+
+        } else if(t == SHAKE256_RATE - 1){
+
+            buff[1] = block_buff[SHAKE256_RATE - 1];
+            block_buff_ptr = block_buff;
+            state, block_buff_ptr = __shake256_squeezeblock(state, block_buff_ptr);
+            block_buff = block_buff_ptr;
+            buff[0] = block_buff[0];
+            t = 1;
+            s_indx = t;
+
+        } else if(t < SHAKE256_RATE - 1){
+
+            buff[1] = block_buff[(int) t];
+            t += 1;
+            buff[0] = block_buff[(int) t];
+            t += 1;
+            s_indx = t;
+
+        }
+
+        t = buff[u64 0];
+
+        if(t < 61445){
+            while(t >= 12289){
+                t -= 12289;
+            }
+
+            hm_i = s_hm_i;
+            hm[(int) hm_i] = (16u)t;
+            hm_i += 1;
+            s_hm_i = hm_i;
+
+            t = s_t;
+            t += 1;
+            s_t = t;
+
+        }
+
+        t = s_t;
+
+    } (t != ARRAY_N)
+
+    return state, hm;
+
+}
+
+
+export
+fn jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen pk) -> reg u32 {
+
+    reg u64 sig_len msg_len esig;
+    reg u64 shake_in;
+    reg u64[25] state;
+    reg u64 i;
+    reg u32 failed res;
+    reg u16[ARRAY_N] h hm sig;
+
+    reg u8 tmp8;
+
+    stack u64 s_sig_len s_msg_len s_esig;
+    stack u64[25] s_state;
+    stack u64 s_m s_mlen;
+    stack u64 s_sm s_smlen;
+    stack u32 s_failed;
+    stack u16[ARRAY_N] s_h s_hm s_sig;
+
+    s_m = m; s_mlen = mlen;
+    s_sm = sm; s_smlen = smlen;
+
+    failed = 0;
+    s_failed = failed;
+
+    s_esig, s_sig_len, s_msg_len, failed = __check_len(s_esig, s_sig_len, s_msg_len, sm, smlen);
+    if(failed == -1){
+        s_failed = failed;
+    }
+
+    s_h, failed = __decode_public_key(s_h, pk);
+    if(failed == -1){
+        s_failed = failed;
+    }
+
+    esig = s_esig;
+    sig_len = s_sig_len;
+
+    s_sig, failed = __decode_sign(s_sig, esig, sig_len);
+    if(failed == -1){
+        s_failed = failed;
+    }
+
+    msg_len = s_msg_len;
+    msg_len += NONCELEN;
+    shake_in = sm + 2;
+
+    if(failed == -1){
+        msg_len = 0;
+    }
+
+    s_state = __shake256_absorb(s_state, shake_in, msg_len);
+    s_state, s_hm = __hash_to_point_vartime(s_state, s_hm);
+
+    failed = __verify_raw(s_hm, s_sig, s_h);
+
+    res = 0;
+
+    if(failed == 0){
+        res = -1;
+    }
+
+    failed = s_failed;
+    if(failed == -1){
+        res = -1;
+    }
+
+
+    if(res == 0){
+        msg_len = s_msg_len;
+        m = s_m; mlen = s_mlen;
+        sm = s_sm;
+
+        i = 0;
+        while(i < msg_len){
+            tmp8 = (u8)[sm + 2 + NONCELEN + i];
+            (u8)[m + i] = tmp8;
+            i += 1;
+        }
+
+        [mlen] = msg_len;
+    }
+
+    return res;
+
+
+}
