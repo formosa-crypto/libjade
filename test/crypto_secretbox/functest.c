@@ -6,11 +6,9 @@
 
 #include "api.h"
 #include "jade_secretbox.h"
-
-extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
+#include "randombytes.h"
 
 /*
-
 int jade_secretbox(
   uint8_t *ciphertext,
   const uint8_t *plaintext,
@@ -26,7 +24,6 @@ int jade_secretbox_open(
   const uint8_t *nonce,
   const uint8_t *key
 );
-
 */
 
 int main(void)

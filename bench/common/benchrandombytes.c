@@ -4,7 +4,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
-extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
+#include "randombytes.h"
 
 static uint8_t* benchrandombytes(uint8_t* x, uint64_t xlen)
 {
