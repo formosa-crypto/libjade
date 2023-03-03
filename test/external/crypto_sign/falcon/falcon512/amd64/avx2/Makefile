@@ -18,11 +18,11 @@ LIBS =
 
 C_HEADERs = api.h fpr.h fips202.h inner.h randombytes.h type.h
 C_SOURCEs = codec.c common.c fft.c fpr.c rng.c randombytes.c fips202.c \
-	keygen.c sign.c
+	keygen.c sign.c vrfy.c
 ASM_HEADERs =
 ASM_SOURCEs =
 
-OBJs := codec.o common.o fft.o fpr.o rng.o randombytes.o fips202.o keygen.o sign.o operations.o
+OBJs := codec.o common.o fft.o fpr.o rng.o randombytes.o fips202.o keygen.o sign.o vrfy.o operations.o
 
 LIB = external_crypto_sign_falcon_falcon512_amd64_avx2.a
 
@@ -41,12 +41,8 @@ $(LIB): $(OBJs)
 	ar -rc $@ $(OBJs)
 	ranlib $@
 
-build:
-	-mkdir build
-
 .PHONY: clean
 clean:
-	rm -rf build
 	rm -rf $(OBJs)
 	rm -rf $(LIB)
 
