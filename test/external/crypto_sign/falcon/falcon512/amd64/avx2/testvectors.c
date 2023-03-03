@@ -2,6 +2,7 @@
 /* Deterministic randombytes by Daniel J. Bernstein */
 /* taken from SUPERCOP (https://bench.cr.yp.to)     */
 
+#if 0
 #include "api.h"
 
 #include <stdio.h>
@@ -129,4 +130,5 @@ int main(void)
   return 0;
 }
 
+#endif
 

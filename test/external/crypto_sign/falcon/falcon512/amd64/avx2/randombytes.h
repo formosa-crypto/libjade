@@ -2,9 +2,8 @@
 #define RANDOMBYTES_H
 
 #include <stdint.h>
-#include <stddef.h>
 
-int randombytes(uint8_t *x, size_t xlen);
+void randombytes(uint8_t* _x, uint64_t xlen);
 
 #endif
 

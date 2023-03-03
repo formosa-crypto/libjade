@@ -65,7 +65,7 @@ static union {
 #ifdef KEYGEN_SIGN
 
 int
-jade_sign_falcon_falcon512_amd64_ref_keypair(unsigned char *pk, unsigned char *sk)
+jade_sign_falcon_falcon512_amd64_avx2_keypair(unsigned char *pk, unsigned char *sk)
 {
     int8_t *f, *g, *F, *G;
     uint16_t *h;
@@ -149,7 +149,7 @@ jade_sign_falcon_falcon512_amd64_ref_keypair(unsigned char *pk, unsigned char *s
 }
 
 int
-jade_sign_falcon_falcon512_amd64_ref(unsigned char *sm, size_t *smlen,
+jade_sign_falcon_falcon512_amd64_avx2(unsigned char *sm, size_t *smlen,
     const unsigned char *m, size_t mlen,
     const unsigned char *sk)
 {
