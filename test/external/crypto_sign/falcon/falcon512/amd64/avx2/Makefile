@@ -8,7 +8,7 @@
 
 .POSIX:
 
-CC = gcc
+CC ?= clang
 CFLAGS = -mtune=native -march=native -O3 -mavx2 
 CFLAGS += -Wall -Wextra -Wpedantic -Wmissing-prototypes -Wredundant-decls \
           -Wshadow -Wpointer-arith -fomit-frame-pointer
@@ -24,12 +24,12 @@ ASM_SOURCEs =
 
 OBJs := codec.o common.o fft.o fpr.o rng.o randombytes.o fips202.o keygen.o sign.o operations.o
 
-LIB = lib.a
+LIB = external_crypto_sign_falcon_falcon512_amd64_avx2.a
 
 HEADERs = $(C_HEADERs)
 SOURCEs = $(C_SOURCEs)
 
-all: build build/testvectors
+all: $(LIB)
 
 operations.o: $(HEADERs) $(SOURCEs) operations.c
 	$(CC) $(CFLAGS) -DALGNAME=falcon512fpu -DKEYGEN_SIGN -c operations.c $(OBJS)
@@ -37,7 +37,7 @@ operations.o: $(HEADERs) $(SOURCEs) operations.c
 %.o: %.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
-lib.a: $(OBJs)
+$(LIB): $(OBJs)
 	ar -rc $@ $(OBJs)
 	ranlib $@
 
