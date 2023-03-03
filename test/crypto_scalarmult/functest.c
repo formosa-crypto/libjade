@@ -6,11 +6,9 @@
 
 #include "api.h"
 #include "jade_scalarmult.h"
-
-extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
+#include "randombytes.h"
 
 /*
-
 int jade_scalarmult(
  uint8_t *q,
  const uint8_t *n,
@@ -21,7 +19,6 @@ int jade_scalarmult_base(
  uint8_t *q,
  const uint8_t *n
 );
-
 */
 
 int main(void)

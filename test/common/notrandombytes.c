@@ -154,7 +154,7 @@ static int crypto_rng(
   const uint8_t *g  /* old key */
 )
 {
-  unsigned char x[KEYBYTES + OUTPUTBYTES];
+  uint8_t x[KEYBYTES + OUTPUTBYTES];
   chacha20(x,sizeof x,nonce,g);
   memcpy(n,x,KEYBYTES);
   memcpy(r,x + KEYBYTES,OUTPUTBYTES);
@@ -190,9 +190,8 @@ void resetnotrandombytes(void)
   memset(g, 0, KEYBYTES);
 }
 
-void notrandombytes(unsigned char *x, uint64_t xlen)
+void notrandombytes(uint8_t* x, uint64_t xlen)
 {
   randombytes_internal(x,xlen);
 }
-
 

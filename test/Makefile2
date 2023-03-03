@@ -114,13 +114,13 @@ $(DEST_DIR)/testvectors_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(
 	mkdir -p $(DEST_DIR)
 	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/testvectors.c $(COMMON_FILES) $(COMMON_DIR)/notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC) -L$(RND_DIR) -l$(RND_VAR)
 
-$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/notrandombytes1.c
+$(DEST_DIR)/checksumsmall_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/jasmin_notrandombytes.c
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/notrandombytes1.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -DSMALL -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/jasmin_notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
-$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/notrandombytes1.c
+$(DEST_DIR)/checksumbig_$(SCHEME_IMPLEMENTATION_LC): $(SCHEME_LIBRARY) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/jasmin_notrandombytes.c
 	mkdir -p $(DEST_DIR)
-	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/notrandombytes1.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
+	$(CC) $(CFLAGS) -DJADE_NAMESPACE=$(JADE_NAMESPACE) -DJADE_NAMESPACE_LC=$(JADE_NAMESPACE_LC) -I$(SCHEME_INCLUDE_DIR) crypto_$(TYPE)/checksums.c $(COMMON_DIR)/notrandombytes.c $(COMMON_DIR)/jasmin_notrandombytes.c -o $@ -L$(SCHEME_DIR) -l$(SCHEME_IMPLEMENTATION_LC)
 
 $(DEST_DIR)/printparams_$(SCHEME_IMPLEMENTATION_LC): crypto_$(TYPE)/printparams.c
 	mkdir -p $(DEST_DIR)

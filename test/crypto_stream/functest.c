@@ -6,11 +6,9 @@
 
 #include "api.h"
 #include "jade_stream.h"
-
-extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
+#include "randombytes.h"
 
 /*
-
 int jade_stream_xor(
  uint8_t *output,
  const uint8_t *input,
@@ -25,7 +23,6 @@ int jade_stream(
  const uint8_t *nonce,
  const uint8_t *key
 );
-
 */
 
 int main(void)

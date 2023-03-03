@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 
-TOP=$(cd "$(dirname "$0")/../../../" ; pwd -P)
-JOBS=4
+# usage:   $ ./run   # runs with 1 JOBS (make -j1 ...)
+#          $ ./run 4 # runs with 4 JOBS (make -j4 ...)
 
-SLOG=CIshort.log
-LLOG=CIlong.log
+TOP=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+JOBS=1
+
+if [ ! "$#" -eq 0 ]
+then
+  JOBS=$1
+fi
+
+SLOG=CIs.log
+LLOG=CIl.log
 
 make_err()
 {
@@ -48,40 +56,40 @@ make_err        test/ "" "test"
 # bench1
 (
 echo "#start: bench1";
-make -j1 -C bench/ clean    CI=1          BIN=bin_bench1;
-make -j1 -C bench/ run      CI=1          BIN=bin_bench1 DEFINE='-DTIMINGS=100';
-make     -C bench/ reporter CI=1 CICL="0" BIN=bin_bench1;
+make -j1 -C bench/ clean    CI=1         ;
+make -j1 -C bench/ run      CI=1         DEFINE='-DTIMINGS=10';
+make     -C bench/ reporter CI=1;
 ) >> $LLOG
-make_err    bench/ BIN=bin_bench1 "bench1"
+make_err    bench/ "" "bench1"
 
 # bench2
 (
 echo "#start: bench2";
-make -j1 -C bench/ clean    CI=1          BIN=bin_bench2;
-make -j1 -C bench/ run      CI=1          BIN=bin_bench2 DEFINE='-DTIMINGS=100 -DRUNS=2 -DST_ON' RANDLIB='../test/common/notrandombytes.c ../test/common/notrandombytes1.c';
-make     -C bench/ reporter CI=1 CICL="0" BIN=bin_bench2;
+make -j1 -C bench/ clean    CI=1;
+make -j1 -C bench/ run      CI=1 DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDLIB='../test/common/notrandombytes.c ../test/common/jasmin_notrandombytes.c';
+make     -C bench/ reporter CI=1;
 ) >> $LLOG
-make_err    bench/ BIN=bin_bench2 "bench2"
+make_err    bench/ "" "bench2"
 
 # proof-extracted
 (
 echo "#start: proof-extracted";
-make -jJOBS -C proof/ check-extracted CI=1 ECJOBS=$JOBS;
-make        -C proof/ reporter        CI=1;
+make -j$JOBS -C proof/ check-extracted CI=1 ECJOBS=$JOBS;
+make         -C proof/ reporter        CI=1;
 ) >> $LLOG
-make_err       proof/ "" "proof-extracted"
+make_err        proof/ "" "proof-extracted"
 
 # proof-all
 (
 echo "#start: proof-all";
 make -j$JOBS -C proof/ default  CI=1 ECJOBS=$JOBS;
 make         -C proof/ reporter CI=1;
-) >> $LLOG
+) # redirect to file not supported # >> $LLOG
 make_err        proof/ "" "proof-all"
 
 # dist-proof
-echo "#start: dist-proof"                        >> $LLOG
-env JOBS=$JOBS ./scripts/ci/releaser/jdist-proof >> $LLOG || \
+echo "#start: dist-proof"                         >> $LLOG
+env JOBS=$JOBS; ./scripts/ci/releaser/jdist-proof >> $LLOG || \
  echo "dist-proof: ERROR, ./scripts/ci/releaser/jdist-proof amd64 " >> $SLOG
 
 
