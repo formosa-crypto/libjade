@@ -150,7 +150,7 @@ then
 cp $top/doc/release/examples/Makefile $makefile
 cat <<END >> $makefile
 
-INCLUDE := -I$relative/examples/include -I$relative/examples/common -I$relative/libjade/
+INCLUDE := -I$relative/examples/include -I$relative/examples/common -I$relative/libjade/ -I$relative/ext/randombytes/
 DEPENDENCIES := $relative/ext/randombytes/randombytes.o $relative/examples/common/print.c
 
 default: all

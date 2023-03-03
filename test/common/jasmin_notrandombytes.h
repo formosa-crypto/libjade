@@ -1,5 +1,5 @@
-#ifndef LIBJADE_RANDOMBYTES_H
-#define LIBJADE_RANDOMBYTES_H
+#ifndef JASMIN_NOTRANDOMBYTES_H
+#define JASMIN_NOTRANDOMBYTES_H
 
 #include <stdint.h>
 
