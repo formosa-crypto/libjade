@@ -43,7 +43,7 @@ SRC      := ../src
 COMMON   := common
 
 EXT      := ../ext
-RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/notrandombytes1.c
+RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/jasmin_notrandombytes.c
 
 JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))

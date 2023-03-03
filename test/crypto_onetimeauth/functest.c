@@ -6,11 +6,9 @@
 
 #include "api.h"
 #include "jade_onetimeauth.h"
-
-extern uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen);
+#include "randombytes.h"
 
 /*
-
 int jade_onetimeauth(
  uint8_t *mac,
  const uint8_t *input,
@@ -24,7 +22,6 @@ int jade_onetimeauth_verify(
  uint64_t input_length,
  const uint8_t *key
 );
-
 */
 
 int main(void)
