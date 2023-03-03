@@ -69,7 +69,7 @@ _st_while_b
 
   for(run = 0; run < RUNS; run++)
   {
-    _st_reset_notrandombytes
+    _st_reset_randombytes
 
     for(loop = 0; loop < LOOPS; loop++)
     {

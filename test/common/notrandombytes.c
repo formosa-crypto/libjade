@@ -184,13 +184,13 @@ static void randombytes_internal(uint8_t *x, uint64_t xlen)
 
 // ////////////////////////////////////////////////////////////////////////////
 
-void resetnotrandombytes(void)
+void resetrandombytes(void)
 {
   pos = OUTPUTBYTES;
   memset(g, 0, KEYBYTES);
 }
 
-void notrandombytes(uint8_t* x, uint64_t xlen)
+void randombytes(uint8_t* x, uint64_t xlen)
 {
   randombytes_internal(x,xlen);
 }

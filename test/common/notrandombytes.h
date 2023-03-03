@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-void resetnotrandombytes(void);
-void notrandombytes(uint8_t* x, uint64_t xlen);
+void resetrandombytes(void);
+void randombytes(uint8_t* x, uint64_t xlen);
 
 #endif

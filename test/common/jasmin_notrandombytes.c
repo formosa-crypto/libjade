@@ -3,6 +3,6 @@
 
 uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen)
 {
-  notrandombytes(x, xlen);
+  randombytes(x, xlen);
   return x;
 }
