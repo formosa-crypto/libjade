@@ -18,7 +18,7 @@ LIBS =
 
 C_HEADERs = api.h fpr.h fips202.h inner.h randombytes.h type.h
 C_SOURCEs = codec.c common.c fft.c fpr.c rng.c randombytes.c fips202.c \
-	keygen.c sign.c
+	keygen.c sign.c vrfy.c
 ASM_HEADERs =
 ASM_SOURCEs =
 
