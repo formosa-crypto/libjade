@@ -1,0 +1,11 @@
+name: Falcon512
+type: sign
+checksumsmall: 430db40df18e9fb4c223db4ac8374e12c72d6302337123ec450fd796f4c94464
+checksumbig: ad674dea953ab0722f0e44044aedfd9180923228274ff070a9f2fc007458b02a 
+    - name: amd64/avx2
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
