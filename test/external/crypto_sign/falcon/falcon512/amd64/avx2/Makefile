@@ -22,14 +22,14 @@ C_SOURCEs = codec.c common.c fft.c fpr.c rng.c randombytes.c fips202.c \
 ASM_HEADERs =
 ASM_SOURCEs =
 
-OBJs := codec.o common.o fft.o fpr.o rng.o randombytes.o fips202.o keygen.o sign.o operations.o
+OBJs := codec.o common.o fft.o fpr.o rng.o randombytes.o fips202.o keygen.o sign.o vrfy.o operations.o
 
 LIB = lib.a
 
 HEADERs = $(C_HEADERs)
 SOURCEs = $(C_SOURCEs)
 
-all: build build/testvectors
+all: lib.a
 
 operations.o: $(HEADERs) $(SOURCEs) operations.c
 	$(CC) $(CFLAGS) -DALGNAME=falcon512fpu -DKEYGEN_SIGN -c operations.c $(OBJS)
@@ -41,12 +41,8 @@ lib.a: $(OBJs)
 	ar -rc $@ $(OBJs)
 	ranlib $@
 
-build:
-	-mkdir build
-
 .PHONY: clean
 clean:
-	rm -rf build
 	rm -rf $(OBJs)
 	rm -rf $(LIB)
 
