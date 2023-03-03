@@ -1,0 +1,130 @@
+This is an implementation of the post-quantum signature algorithm
+Falcon-512, as per NIST PQC (round 2). This version includes the
+2019/09/18 fixes.
+
+
+PRIVATE KEY FORMAT
+
+In this implementation, private key storage uses the portable and
+compact format (the three vectors f, g and F, whose coordinates are
+small integers). The "Falcon tree" is recomputed dynamically with
+each signature.
+
+
+IMPLEMENTATION OF FLOATING-POINT
+
+This code uses the native 'double' type for floating-point operations,
+along with AVX2 intrinsics. It works only on x86 CPU that offer AVX2.
+Computations will be correct only if the 'double' type uses strict
+IEEE-754 round-to-nearest-even rules with the 'binary64' precision
+(52-bit mantissa); on 32-bit x86, where the 387 FPU may be used
+(depending on host conventions), this code temporarily adjusts the FPU
+control word in order to achieve this exact precision. This code was
+tested on:
+
+ * x86 64-bit (amd64 on i7-6567U):
+
+    - Linux (Ubuntu 18.04), GCC 7.4.0
+    - Linux (Ubuntu 18.04), Clang 6.0.0
+    - Windows (10), MSVC 2015
+
+ * x86 32-bit (i386 on i7-6567U):
+
+    - Linux (Ubuntu 18.04), GCC 7.4.0
+    - Linux (Ubuntu 18.04), Clang 6.0.0
+    - Windows (10), MSVC 2015
+
+This code has no dependency on libm. It will fail to compile on any
+compiler that does not provide the AVX2 intrinsics; however, it includes
+the relevant function attributes (__attribute__((target("avx2"))) with
+GCC and Clang) so that AVX2 intrinsics are usable even if the compiler
+command line did not include the '-mavx2' or similar argument.
+
+This implementation can be deemed constant-time as long as:
+
+ * Additions, subtractions and multiplications on normal values are
+   constant-time.
+
+ * Divisions and square roots on normal values are mostly constant-time
+   (a slightly faster division when the divisor is a power of 2, or a
+   slightly faster square root when the operand is a power of 4, are
+   tolerable).
+
+By 'normal values', we mean that all operands and results are either
+zeros (+0.0 or -0.0) or values which are not subnormals, infinites or
+NaNs; divisor is never zero, and operand to square root is always
+positive. Falcon does not exercise support for subnormals, infinites or
+NaNs. Slightly non-constant-time divisions and square roots are
+tolerable because they occur only in a small fraction of private keys
+(about 0.18%) and reveal at worst only a static information on a single
+private key element (one leaf of the LDL tree), regardless of the
+message to sign (only the LDL tree building uses divisions and square
+roots, not the signature generation process itself).
+
+
+CONSTANT-TIME STATUS
+
+This implementation can be deemed constant-time as long as:
+
+ * Additions, subtractions and multiplications on normal values are
+   constant-time.
+
+ * Divisions and square roots on normal values are mostly constant-time
+   (a slightly faster division when the divisor is a power of 2, or a
+   slightly faster square root when the operand is a power of 4, are
+   tolerable).
+
+By 'normal values', we mean that all operands and results are either
+zeros (+0.0 or -0.0) or values which are not subnormals, infinites or
+NaNs; divisor is never zero, and operand to square root is always
+positive. Falcon does not exercise support for subnormals, infinites or
+NaNs. Slightly non-constant-time divisions and square roots are
+tolerable because they occur only in a small fraction of private keys
+(about 0.18%) and reveal at worst only a static information on a single
+private key element (one leaf of the LDL tree), regardless of the
+message to sign (only the LDL tree building uses divisions and square
+roots, not the signature generation process itself).
+
+These properties are true on most recent x86 processors, since at least
+the Westmere core in Intel CPU, and K10 in AMD CPU. See:
+   https://ranjitjhala.github.io/static/ctfp-ccs18.pdf
+
+
+LICENSE
+
+This code is provided under the MIT license:
+
+ * ==========================(LICENSE BEGIN)============================
+ * Copyright (c) 2017-2019  Falcon Project
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+ * IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+ * CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ===========================(LICENSE END)=============================
+
+It was written by Thomas Pornin <thomas.pornin@nccgroup.com>.
+
+It has been reported that patent US7308097B2 may be applicable to parts
+of Falcon. William Whyte, one of the designers of Falcon and also
+representative of OnBoard Security (current owner of the said patent),
+has pledged, as part of the IP statements submitted to the NIST for the
+PQC project, that in the event of Falcon being selected for
+standardization, a worldwide non-exclusive license to the patent will be
+granted for the purpose of implementing the standard "without
+compensation and under reasonable terms and conditions that are
+demonstrably free of any unfair discrimination".

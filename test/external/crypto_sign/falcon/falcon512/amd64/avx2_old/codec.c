@@ -33,7 +33,7 @@
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_modq_encode(
+Zf(modq_encode)(
 	void *out, size_t max_out_len,
 	const uint16_t *x, unsigned logn)
 {
@@ -72,49 +72,96 @@ falcon512dyn_avx2_modq_encode(
 	return out_len;
 }
 
+static
+size_t
+modq_decode_8(uint16_t *x, const void *in){
+
+	size_t i;
+
+	const uint8_t *buf;
+	uint32_t acc;
+	int acc_len;
+	uint8_t is_zero;
+	size_t res;
+
+	is_zero = 0;
+
+	buf = in;
+	acc = 0;
+	acc_len = 0;
+	i = 0;
+	while(i < 8){
+		acc = (acc << 8) | (*buf ++);
+		acc_len += 8;
+		if(acc_len >= 14){
+			uint32_t w;
+
+			acc_len -= 14;
+			w = (acc >> acc_len) & 0x3fff;
+			if(w >= 12289){
+				is_zero = 1;
+			}
+			x[i++] = (uint16_t)w;
+		}
+
+	}
+
+	res = 8;
+	if(is_zero){
+		res = 0;
+	}
+
+	return res;
+
+}
+
 /* see inner.h */
 size_t
-falcon512dyn_avx2_modq_decode(
+Zf(modq_decode)(
 	uint16_t *x, unsigned logn,
 	const void *in, size_t max_in_len)
 {
+
 	size_t n, in_len, u;
 	const uint8_t *buf;
 	uint32_t acc;
 	int acc_len;
+	uint8_t is_zero;
+	size_t res;
+
+	is_zero = 0;
 
 	n = (size_t)1 << logn;
 	in_len = ((n * 14) + 7) >> 3;
 	if (in_len > max_in_len) {
-		return 0;
+		is_zero = 1;
 	}
 	buf = in;
 	acc = 0;
 	acc_len = 0;
 	u = 0;
 	while (u < n) {
-		acc = (acc << 8) | (*buf ++);
-		acc_len += 8;
-		if (acc_len >= 14) {
-			unsigned w;
-
-			acc_len -= 14;
-			w = (acc >> acc_len) & 0x3FFF;
-			if (w >= 12289) {
-				return 0;
-			}
-			x[u ++] = (uint16_t)w;
+		if(modq_decode_8(x + u, buf) == 0){
+			is_zero = 1;
 		}
+		u += 8;
+		buf += 14;
 	}
 	if ((acc & (((uint32_t)1 << acc_len) - 1)) != 0) {
-		return 0;
+		is_zero = 1;
 	}
-	return in_len;
+
+	res = in_len;
+	if(is_zero){
+		res = 0;
+	}
+
+	return res;
 }
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i16_encode(
+Zf(trim_i16_encode)(
 	void *out, size_t max_out_len,
 	const int16_t *x, unsigned logn, unsigned bits)
 {
@@ -159,7 +206,7 @@ falcon512dyn_avx2_trim_i16_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i16_decode(
+Zf(trim_i16_decode)(
 	int16_t *x, unsigned logn, unsigned bits,
 	const void *in, size_t max_in_len)
 {
@@ -210,7 +257,7 @@ falcon512dyn_avx2_trim_i16_decode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i8_encode(
+Zf(trim_i8_encode)(
 	void *out, size_t max_out_len,
 	const int8_t *x, unsigned logn, unsigned bits)
 {
@@ -255,7 +302,7 @@ falcon512dyn_avx2_trim_i8_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i8_decode(
+Zf(trim_i8_decode)(
 	int8_t *x, unsigned logn, unsigned bits,
 	const void *in, size_t max_in_len)
 {
@@ -305,7 +352,7 @@ falcon512dyn_avx2_trim_i8_decode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_comp_encode(
+Zf(comp_encode)(
 	void *out, size_t max_out_len,
 	const int16_t *x, unsigned logn)
 {
@@ -402,14 +449,19 @@ falcon512dyn_avx2_comp_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_comp_decode(
+Zf(comp_decode)(
 	int16_t *x, unsigned logn,
 	const void *in, size_t max_in_len)
 {
+
 	const uint8_t *buf;
 	size_t n, u, v;
 	uint32_t acc;
 	unsigned acc_len;
+	size_t res;
+	uint8_t is_zero;
+
+	is_zero = 0;
 
 	n = (size_t)1 << logn;
 	buf = in;
@@ -434,7 +486,14 @@ falcon512dyn_avx2_comp_decode(
 		/*
 		 * Get next bits until a 1 is reached.
 		 */
-		for (;;) {
+
+		m -= 128;
+
+		do {
+			m += 128;
+			if(m > 2047){
+				is_zero =1;
+			}
 			if (acc_len == 0) {
 				if (v >= max_in_len) {
 					return 0;
@@ -443,17 +502,31 @@ falcon512dyn_avx2_comp_decode(
 				acc_len = 8;
 			}
 			acc_len --;
-			if (((acc >> acc_len) & 1) != 0) {
-				break;
-			}
-			m += 128;
-			if (m > 2047) {
-				return 0;
-			}
+		} while( ((acc >> acc_len) & 1) == 0);
+
+		/*
+		 * "-0" is forbidden.
+		 */
+		if (s && m == 0) {
+			is_zero = 1;;
 		}
+
 		x[u] = (int16_t)(s ? -(int)m : (int)m);
 	}
-	return v;
+
+	/*
+	 * Unused bits in the last byte must be zero.
+	 */
+	if ((acc & ((1u << acc_len) - 1u)) != 0) {
+		is_zero = 1;
+	}
+
+	res = v;
+	if(is_zero){
+		res = 0;
+	}
+
+	return res;
 }
 
 /*
@@ -488,7 +561,7 @@ falcon512dyn_avx2_comp_decode(
  * of max_fg_bits[] and max_FG_bits[] shall be greater than 8.
  */
 
-const uint8_t falcon512dyn_avx2_max_fg_bits[] = {
+const uint8_t Zf(max_fg_bits)[] = {
 	0, /* unused */
 	8,
 	8,
@@ -502,7 +575,7 @@ const uint8_t falcon512dyn_avx2_max_fg_bits[] = {
 	5
 };
 
-const uint8_t falcon512dyn_avx2_max_FG_bits[] = {
+const uint8_t Zf(max_FG_bits)[] = {
 	0, /* unused */
 	8,
 	8,
@@ -544,7 +617,7 @@ const uint8_t falcon512dyn_avx2_max_FG_bits[] = {
  * in -2047..2047, i.e. 12 bits.
  */
 
-const uint8_t falcon512dyn_avx2_max_sig_bits[] = {
+const uint8_t Zf(max_sig_bits)[] = {
 	0, /* unused */
 	10,
 	11,
