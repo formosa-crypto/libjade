@@ -49,10 +49,10 @@ JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell f
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
 CHECKSUMSMALL := $(addsuffix checksumsmall, $(TESTDIR))
-CHECKSUMBIG   := $(addsuffix checksumbig, $(TESTDIR))
-PRINTPARAMS   := $(addsuffix printparams, $(TESTDIR))
-FUNCTEST      := $(addsuffix functest, $(TESTDIR))
-SAFETYFLAGS   := $(addsuffix safetyflags, $(TESTDIR))
+CHECKSUMBIG   := $(addsuffix checksumbig,   $(TESTDIR))
+PRINTPARAMS   := $(addsuffix printparams,   $(TESTDIR))
+FUNCTEST      := $(addsuffix functest,      $(TESTDIR))
+SAFETYFLAGS   := $(addsuffix safetyflags,   $(TESTDIR))
 
 EXEC          := $(CHECKSUMSMALL) $(CHECKSUMBIG) $(PRINTPARAMS) $(FUNCTEST) $(SAFETYFLAGS)
 OUT           := $(addsuffix .out, $(EXEC))
@@ -76,12 +76,12 @@ COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 .PHONY: __phony default
 
 default: $(OUT)
-
-# --------------------------------------------------------------------
-# TODO target for falcon
-# --------------------------------------------------------------------
-
 $(EXEC):
+
+# --------------------------------------------------------------------
+include Makefile.partial_implementations
+
+# --------------------------------------------------------------------
 %/checksumsmall: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)

@@ -1,0 +1,36 @@
+EXTERNAL_PATH    = $(subst $(BIN),external,$(@D))
+EXTERNAL_LIB     = $(EXTERNAL_PATH)/$(subst -,_,$(subst /,_,$(EXTERNAL_PATH))).a
+EXTERNAL_COMPILE = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(EXTERNAL_LIB) $(CIL)
+
+
+#-- falcon512
+
+bin/crypto_sign/falcon/falcon512/amd64/avx2/checksumsmall: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
+
+bin/crypto_sign/falcon/falcon512/amd64/avx2/checksumbig: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
+
+bin/crypto_sign/falcon/falcon512/amd64/avx2/printparams: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
+
+bin/crypto_sign/falcon/falcon512/amd64/avx2/functest: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
+
+bin/crypto_sign/falcon/falcon512/amd64/avx2/safetyflags: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
