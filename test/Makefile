@@ -176,6 +176,6 @@ endif
 clean:
 	rm -fr $(BIN) $(LOGS)
 
-distclean: clean
+distclean: clean clean-external
 	$(MAKE) -C $(SRC) distclean
 
