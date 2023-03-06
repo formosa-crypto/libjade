@@ -1,5 +1,25 @@
 # -*- Makefile -*-
-
+#
+# examples:
+#
+# 0.1) clean 'everything' (including libjade/src/**)
+#   $ make CI=1 distclean
+#
+# 0.2) clean test directory (doesn't touch libjade/src/**)
+#   $ make CI=1 clean
+#
+# 1) run crypto_hash tests (replace crypto_hash for other tests; replace the '2' in -j2 with the number of processes)
+#   $ make -j2 CI=1 FILTER=../src/crypto_hash/%
+#   $ make -j2 CI=1 reporter_checksums
+#
+# 2) run kyber tests (NOTE: checking that the locally computed checksums are
+#    equal to those specified in **/META.yml files is done by a separate
+#    script (libjade/scripts/checksumsok) that does not consider the FILTER
+#    variable; Hence, you might want to clean ( 0.2) ) before running the
+#    following commands:
+#   $ make -j2 CI=1 FILTER=../src/crypto_kem/kyber/%
+#   $ make -j2 CI=1 reporter_checksums
+#
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= clang
@@ -19,7 +39,7 @@ export CI
 
 
 CID  =
-CIC  = true 
+CIC  = true
 CIL  =
 CICL ?= "1"
 
@@ -45,7 +65,8 @@ COMMON   := common
 EXT      := ../ext
 RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/jasmin_notrandombytes.c
 
-JAZZ     ?= $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+FILTER   ?= $(SRC)/crypto_%
+JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
 CHECKSUMSMALL := $(addsuffix checksumsmall, $(TESTDIR))
