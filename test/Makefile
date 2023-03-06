@@ -8,7 +8,8 @@
 # 0.2) clean test directory (doesn't touch libjade/src/**)
 #   $ make CI=1 clean
 #
-# 1) run crypto_hash tests (replace crypto_hash for other tests; replace the '2' in -j2 with the number of processes)
+# 1) run crypto_hash tests (replace crypto_hash for other tests; replace
+#    the '2' in -j2 with the number of processes)
 #   $ make -j2 CI=1 FILTER=../src/crypto_hash/%
 #   $ make -j2 CI=1 reporter_checksums
 #
