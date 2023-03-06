@@ -94,7 +94,10 @@ inline fn __set_row_ref(
   { 
     x1 = (x + 1) % 5;
     x2 = (x + 2) % 5;
-    t  = !b[x1] & b[x2];
+
+    //t  = !b[x1] & b[x2];
+    t = b[x1]; t = !t; t &= b[x2];
+
     t ^= b[x];
     if( x==0 && y==0 ){ t ^= rc; }
     e[x + y*5] = t;
