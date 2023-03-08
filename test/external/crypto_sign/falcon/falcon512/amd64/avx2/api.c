@@ -207,6 +207,7 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	return 0;
 }
 
+extern int __decode_public_key_external(uint16_t*, const unsigned char*);
 extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
 
 int
@@ -228,8 +229,10 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	/*
 	 * Decode public key.
 	 */
-#if 0
-
+#if 1
+	if(__decode_public_key_external(h, pk) == -1){
+		return -1;
+	}
 #else
 	if (pk[0] != 0x00 + 9) {
 		return -1;
