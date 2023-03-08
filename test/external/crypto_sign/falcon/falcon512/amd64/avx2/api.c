@@ -210,7 +210,7 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 extern int __decode_public_key_external(uint16_t*, const unsigned char*);
 extern int __check_len_external(const unsigned char**, size_t*, size_t*,
 		const unsigned char*, unsigned long long);
-
+extern int __decode_sign_external(int16_t*, const unsigned char*, size_t);
 extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
 
 int
@@ -263,20 +263,26 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	if (sig_len > (smlen - 2 - NONCELEN)) {
 		return -1;
 	}
+	if(sig_len < 1){
+		return -1;
+	}
 	msg_len = smlen - 2 - NONCELEN - sig_len;
 
 	/*
 	 * Decode signature.
 	 */
-	esig = sm + 2 + NONCELEN + msg_len;
-	if (sig_len < 1 || esig[0] != 0x20 + 9) {
-		return -1;
-	}
+
 #endif
 
-#if 0
-
+#if 1
+	if(__decode_sign_external(sig, esig, sig_len) == -1){
+		return -1;
+	}
 #else
+	esig = sm + 2 + NONCELEN + msg_len;
+	if (esig[0] != 0x20 + 9) {
+		return -1;
+	}
 	if (falcon512dyn_avx2_comp_decode(
 		sig, 9, esig + 1, sig_len - 1) != sig_len - 1)
 	{
