@@ -1,5 +1,6 @@
 
 require "params.jinc"
+require "vec.jinc"
 require "verify.jinc"
 
 require "sign.jinc"
@@ -124,6 +125,30 @@ fn __hash_to_point_vartime_export(reg u64 state hm){
 
     for i = 0 to ARRAY_N {
         (u16)[hm + 2 * i] = hm_buff[i];
+    }
+
+}
+
+export
+fn __sub_canonical_external(reg u64 des src1 src2){
+
+    stack u16[ARRAY_N] buff1 buff2 buff3;
+
+    reg u64 i;
+
+    i = 0;
+    while(i < ARRAY_N){
+        buff1[(int) i] = (u16)[src1 + 2 * i];
+        buff2[(int) i] = (u16)[src2 + 2 * i];
+        i += 1;
+    }
+
+    buff3 = __sub_canonical(buff3, buff1, buff2);
+
+    i = 0;
+    while(i < ARRAY_N){
+        (u16)[des + 2 * i] = buff3[(int) i];
+        i += 1;
     }
 
 }

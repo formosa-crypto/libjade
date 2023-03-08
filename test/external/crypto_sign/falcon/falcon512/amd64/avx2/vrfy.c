@@ -640,6 +640,8 @@ falcon512dyn_avx2_to_ntt_monty(uint16_t *h, unsigned logn)
 	mq_poly_tomonty(h, logn);
 }
 
+extern void __sub_canonical_external(uint16_t*, uint16_t*, const uint16_t*);
+
 /* see inner.h */
 int
 falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
@@ -668,6 +670,11 @@ falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
 	mq_NTT(tt, logn);
 	mq_poly_montymul_ntt(tt, h, logn);
 	mq_iNTT(tt, logn);
+
+
+#if 1
+	__sub_canonical_external(tt, tt, c0);
+#else
 	mq_poly_sub(tt, c0, logn);
 
 	/*
@@ -680,6 +687,7 @@ falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
 		w -= (int32_t)(Q & -(((Q >> 1) - (uint32_t)w) >> 31));
 		((int16_t *)tt)[u] = (int16_t)w;
 	}
+#endif
 
 	/*
 	 * Signature is valid if and only if the aggregate (-s1,s2) vector
