@@ -7,7 +7,7 @@
 
 #define crypto_sign_keypair jade_sign_falcon_falcon512_amd64_avx2_keypair
 #define crypto_sign jade_sign_falcon_falcon512_amd64_avx2
-#define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
+// #define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
 
 #include "api.h"
 //#include "crypto_sign.h"

@@ -194,7 +194,7 @@ fn __verify_raw_external(reg u64 c0 s2 h) -> reg u32 {
 
 }
 
-export fn jazz_jade_sign_falcon_falcon512_amd64_avx2_open(
+export fn jade_sign_falcon_falcon512_amd64_avx2_open(
   reg u64 message
           message_length
           signed_message
