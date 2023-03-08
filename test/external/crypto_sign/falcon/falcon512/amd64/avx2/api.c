@@ -211,6 +211,8 @@ extern int __decode_public_key_external(uint16_t*, const unsigned char*);
 extern int __check_len_external(const unsigned char**, size_t*, size_t*,
 		const unsigned char*, unsigned long long);
 extern int __decode_sign_external(int16_t*, const unsigned char*, size_t);
+extern int __shake256_absorb_external(uint64_t*, const unsigned char*, size_t);
+extern int __hash_to_point_vartime_export(uint64_t*, uint16_t*);
 extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
 
 int
@@ -293,8 +295,9 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	/*
 	 * Hash nonce + message into a vector.
 	 */
-#if 0
-
+#if 1
+	__shake256_absorb_external(sc.st.A, sm + 2, NONCELEN + msg_len);
+	__hash_to_point_vartime_export(sc.st.A, hm);
 #else
 	inner_shake256_init(&sc);
 	inner_shake256_inject(&sc, sm + 2, NONCELEN + msg_len);
