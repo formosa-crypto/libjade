@@ -208,6 +208,9 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 }
 
 extern int __decode_public_key_external(uint16_t*, const unsigned char*);
+extern int __check_len_external(const unsigned char**, size_t*, size_t*,
+		const unsigned char*, unsigned long long);
+
 extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
 
 int
@@ -248,8 +251,10 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	/*
 	 * Find nonce, signature, message length.
 	 */
-#if 0
-
+#if 1
+	if(__check_len_external(&esig, &sig_len, &msg_len, sm, smlen) == -1){
+		return -1;
+	}
 #else
 	if (smlen < 2 + NONCELEN) {
 		return -1;
