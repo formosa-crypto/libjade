@@ -71,12 +71,12 @@ fn __sub_canonical(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
         t0 = #VPSUB_16u16(t0, t);
 
         cmpp = #VPCMPGT_16u16(t0, __qhalp);
+        cmpp = #VPMULL_16u16(cmpp, __q);
+        t0 = #VPADD_16u16(t0, cmpp);
+
         cmpn = #VPCMPGT_16u16(__qhaln, t0);
-        cmpn = #VPSUB_16u16(cmpn, cmpp);
-
-        cmpn = #VPAND_256(cmpn, __q);
-
-        t0 = #VPADD_16u16(t0, cmpn);
+        cmpn = #VPMULL_16u16(cmpn, __q);
+        t0 = #VPSUB_16u16(t0, cmpn);
 
         des.[u256 (int) i] = t0;
 

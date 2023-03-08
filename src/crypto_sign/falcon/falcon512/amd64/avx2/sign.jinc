@@ -207,57 +207,58 @@ fn __jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen pk) -> r
     stack u64[25] s_state;
     stack u64 s_m s_mlen;
     stack u64 s_sm s_smlen;
-    stack u32 s_failed;
+    stack u64 s_res;
     stack u16[ARRAY_N] s_h s_hm s_sig;
 
     s_m = m; s_mlen = mlen;
     s_sm = sm; s_smlen = smlen;
 
-    failed = 0;
-    s_failed = failed;
+    res = 0;
+    s_res = res;
+
 
     s_esig, s_sig_len, s_msg_len, failed = __check_len(s_esig, s_sig_len, s_msg_len, sm, smlen);
     if(failed == -1){
-        s_failed = failed;
-    }
-
-    s_h, failed = __decode_public_key(s_h, pk);
-    if(failed == -1){
-        s_failed = failed;
-    }
-
-    esig = s_esig;
-    sig_len = s_sig_len;
-
-    s_sig, failed = __decode_sign(s_sig, esig, sig_len);
-    if(failed == -1){
-        s_failed = failed;
-    }
-
-    msg_len = s_msg_len;
-    msg_len += NONCELEN;
-    shake_in = sm + 2;
-
-    if(failed == -1){
-        msg_len = 0;
-    }
-
-    s_state = __shake256_absorb(s_state, shake_in, msg_len);
-    s_state, s_hm = __hash_to_point_vartime(s_state, s_hm);
-
-    failed = __verify_raw(s_hm, s_sig, s_h);
-
-    res = 0;
-
-    if(failed == 0){
         res = -1;
+        s_res = res;
+    }else{
+
+        s_h, failed = __decode_public_key(s_h, pk);
+        if(failed == -1){
+            res = -1;
+            s_res = res;
+        }else{
+
+            esig = s_esig;
+            sig_len = s_sig_len;
+
+            s_sig, failed = __decode_sign(s_sig, esig, sig_len);
+            if(failed == -1){
+                res = -1;
+                s_res = res;
+            }else{
+
+                msg_len = s_msg_len;
+                msg_len += NONCELEN;
+                shake_in = sm + 2;
+
+                s_state = __shake256_absorb(s_state, shake_in, msg_len);
+                s_state, s_hm = __hash_to_point_vartime(s_state, s_hm);
+
+                failed = __verify_raw(s_hm, s_sig, s_h);
+                if(failed == 0){
+                    res = -1;
+                    s_res = res;
+                }
+
+            }
+
+        }
+
     }
 
-    failed = s_failed;
-    if(failed == -1){
-        res = -1;
-    }
 
+    res = s_res;
 
     if(res == 0){
         msg_len = s_msg_len;

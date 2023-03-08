@@ -1,6 +1,156 @@
+
+require "params.jinc"
+require "verify.jinc"
+
 require "sign.jinc"
 
-export fn jade_sign_falcon_falcon512_amd64_avx2_open(
+export
+fn __decode_public_key_external(reg u64 h pk) -> reg u32 {
+
+    reg u32 failed;
+    stack u16[ARRAY_N] h_buff;
+    reg u64 i;
+    reg u16 tmp16;
+
+    h_buff, failed = __decode_public_key(h_buff, pk);
+
+    i = 0;
+    while(i < ARRAY_N){
+        (u16)[h + 2 * i] = h_buff[(int) i];
+        i += 1;
+    }
+
+    return failed;
+
+}
+
+export
+fn __decode_sign_external(reg u64 sign esign sign_len) -> reg u32 {
+
+    reg u32 failed;
+    stack u16[ARRAY_N] sign_buff;
+    reg u64 i;
+
+
+    sign_buff, failed = __decode_sign(sign_buff, esign, sign_len);
+
+    i = 0;
+    while(i < ARRAY_N){
+        (u16)[sign + 2 * i] = sign_buff[(int) i];
+        i += 1;
+    }
+
+    return failed;
+
+}
+
+export
+fn __check_len_external(reg u64 esig_ptr sig_len_ptr msg_len_ptr, reg u64 sm smlen) -> reg u32 {
+
+    stack u64 sig_len msg_len esig;
+    reg u32 failed;
+
+    esig, sig_len, msg_len, failed = __check_len(esig, sig_len, msg_len, sm, smlen);
+
+    [sig_len_ptr] = sig_len;
+    [msg_len_ptr] = msg_len;
+    [esig_ptr] = esig;
+
+    return failed;
+
+
+
+}
+
+export
+fn __shake256_absorb_external(reg u64 state in inlen){
+
+    stack u64[25] state_buff;
+    reg u64 i;
+
+    state_buff = __shake256_absorb(state_buff, in, inlen);
+
+    i = 0;
+    while(i < 25){
+        [state + 8 * i] = state_buff[(int) i];
+        i += 1;
+    }
+
+}
+
+export
+fn __shake256_squeezeblock_external(reg u64 state block){
+
+    stack u64[25] state_buff;
+    stack u8[SHAKE256_RATE] block_buff;
+    reg ptr u8[SHAKE256_RATE] block_buff_ptr;
+
+    inline int i;
+
+    for i = 0 to 25 {
+        state_buff[i] = (u64)[state + 8 * i];
+    }
+
+    state_buff, block_buff_ptr = __shake256_squeezeblock(state_buff, block_buff_ptr);
+
+    for i = 0 to SHAKE256_RATE {
+        (u8)[block + i] = block_buff[i];
+    }
+
+}
+
+export
+fn __hash_to_point_vartime_export(reg u64 state hm){
+
+    stack u64[25] state_buff;
+    stack u16[ARRAY_N] hm_buff;
+    stack u64 s_hm;
+
+    inline int i;
+
+    for i = 0 to 25 {
+        state_buff[i] = [state + 8 * i];
+    }
+
+    s_hm = hm;
+
+    state_buff, hm_buff = __hash_to_point_vartime(state_buff, hm_buff);
+
+    hm = s_hm;
+
+    for i = 0 to 25 {
+        [state + 8 * i] = state_buff[i];
+    }
+
+    for i = 0 to ARRAY_N {
+        (u16)[hm + 2 * i] = hm_buff[i];
+    }
+
+}
+
+export
+fn __verify_raw_external(reg u64 c0 s2 h) -> reg u32 {
+
+    stack u16[ARRAY_N] buff1 buff2 buff3;
+
+    reg u64 i;
+    reg u32 res;
+
+    i = 0;
+    while(i < ARRAY_N){
+        buff1[(int) i] = (u16)[c0 + 2 * i];
+        buff2[(int) i] = (u16)[s2 + 2 * i];
+        buff3[(int) i] = (u16)[h + 2 * i];
+        i += 1;
+    }
+
+    res = __verify_raw(buff1, buff2, buff3);
+
+    return res;
+
+}
+
+export fn jazz_jade_sign_falcon_falcon512_amd64_avx2_open(
   reg u64 message
           message_length
           signed_message
@@ -17,4 +167,5 @@ export fn jade_sign_falcon_falcon512_amd64_avx2_open(
 
   return r;
 }
+
 

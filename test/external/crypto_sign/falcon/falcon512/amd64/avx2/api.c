@@ -7,7 +7,7 @@
 
 #define crypto_sign_keypair jade_sign_falcon_falcon512_amd64_avx2_keypair
 #define crypto_sign jade_sign_falcon_falcon512_amd64_avx2
-//define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
+#define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
 
 #include "api.h"
 //#include "crypto_sign.h"
@@ -207,6 +207,8 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	return 0;
 }
 
+extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
+
 int
 crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	const unsigned char *sm, unsigned long long smlen,
@@ -226,6 +228,9 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	/*
 	 * Decode public key.
 	 */
+#if 0
+
+#else
 	if (pk[0] != 0x00 + 9) {
 		return -1;
 	}
@@ -235,11 +240,14 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	{
 		return -1;
 	}
-	falcon512dyn_avx2_to_ntt_monty(h, 9);
+#endif
 
 	/*
 	 * Find nonce, signature, message length.
 	 */
+#if 0
+
+#else
 	if (smlen < 2 + NONCELEN) {
 		return -1;
 	}
@@ -256,29 +264,51 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	if (sig_len < 1 || esig[0] != 0x20 + 9) {
 		return -1;
 	}
+#endif
+
+#if 0
+
+#else
 	if (falcon512dyn_avx2_comp_decode(
 		sig, 9, esig + 1, sig_len - 1) != sig_len - 1)
 	{
 		return -1;
 	}
+#endif
 
 	/*
 	 * Hash nonce + message into a vector.
 	 */
+#if 0
+
+#else
 	inner_shake256_init(&sc);
 	inner_shake256_inject(&sc, sm + 2, NONCELEN + msg_len);
 	inner_shake256_flip(&sc);
 	falcon512dyn_avx2_hash_to_point_vartime(
 		&sc, hm, 9);
+#endif
+
+
+
 
 	/*
 	 * Verify signature.
 	 */
+#if 0
+	// this is wrong
+	if(!__verify_raw_external(hm, sig, h)){
+		return -1;
+	}
+#else
+	falcon512dyn_avx2_to_ntt_monty(h, 9);
 	if (!falcon512dyn_avx2_verify_raw(
 		hm, sig, h, 9, tmp.b))
 	{
 		return -1;
 	}
+#endif
+
 
 	/*
 	 * Return plaintext.
