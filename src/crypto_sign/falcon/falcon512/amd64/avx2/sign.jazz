@@ -154,6 +154,25 @@ fn __sub_canonical_external(reg u64 des src1 src2){
 }
 
 export
+fn __is_short_external(reg u64 s1 s2) -> reg u32 {
+
+    stack u16[ARRAY_N] buff1 buff2;
+    reg u32 res;
+
+    reg u64 i;
+
+    i = 0;
+    while(i < ARRAY_N){
+        buff1[(int) i] = (u16)[s1 + 2 * i];
+        buff2[(int) i] = (u16)[s2 + 2 * i];
+        i += 1;
+    }
+
+    res = __is_short(buff1, buff2);
+    return res;
+}
+
+export
 fn __verify_raw_external(reg u64 c0 s2 h) -> reg u32 {
 
     stack u16[ARRAY_N] buff1 buff2 buff3;

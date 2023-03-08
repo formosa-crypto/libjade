@@ -641,6 +641,7 @@ falcon512dyn_avx2_to_ntt_monty(uint16_t *h, unsigned logn)
 }
 
 extern void __sub_canonical_external(uint16_t*, uint16_t*, const uint16_t*);
+extern int __is_short_external(int16_t*, const int16_t*);
 
 /* see inner.h */
 int
@@ -693,7 +694,14 @@ falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
 	 * Signature is valid if and only if the aggregate (-s1,s2) vector
 	 * is short enough.
 	 */
+
+#if 1
+	// this is broken
+	return __is_short_external((int16_t*)tt, s2);
+#else
 	return falcon512dyn_avx2_is_short((int16_t *)tt, s2, logn);
+#endif
+
 }
 
 /* see inner.h */

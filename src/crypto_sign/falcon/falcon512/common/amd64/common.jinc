@@ -37,7 +37,7 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
 
     }
 
-    t = ng >> 31;
+    t = ng >>s 31;
     t = -t;
     s |= t;
     t = BOUND;
