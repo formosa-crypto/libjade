@@ -1,7 +1,7 @@
 from Jade require "crypto_kem/kyber/kyber512/common/params.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/ref/poly.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/ref/polyvec.jinc"
-require "gen_matrix.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc"
 
 inline
 fn __indcpa_keypair(reg u64 pkp, reg u64 skp)
