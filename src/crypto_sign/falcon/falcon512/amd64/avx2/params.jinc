@@ -1,0 +1,10 @@
+
+param int LOGN = 9;
+param int ARRAY_N = 512;
+
+param int NONCELEN = 40;
+
+param int MODQ_DECODE_BYTES = 896;
+
+param int BOUND = 34034726;
+

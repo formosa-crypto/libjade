@@ -1,0 +1,11 @@
+name: Falcon512-Round3
+type: sign
+checksumsmall: 5d6505b062338d6a30ba9e6c9836e18de1d8d2dd80a26117d48533597b8470d7
+checksumbig: 7509c3daf876e211887283e5335d8d0e7fe6c18f7f5384fe1e7d9ce801882023
+    - name: amd64/avx2
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin

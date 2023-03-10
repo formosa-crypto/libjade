@@ -1,0 +1,10 @@
+
+require "params.jinc"
+
+param int TWIDDLE_N = 576;
+
+
+param int FINAL_SCALElo = -683;
+// 128 * RmodQ mod^+- 12289
+param int FINAL_SCALEhi = -4779;
+

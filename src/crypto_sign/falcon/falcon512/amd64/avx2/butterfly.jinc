@@ -1,0 +1,841 @@
+
+require "NTT_params.jinc"
+
+require "vec.jinc"
+
+
+
+inline
+fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
+    reg u64 twiddle_indx,
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
+    inline int barrett0, inline int barrett1)
+    ->
+    reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+
+    reg u256 t0, t1, t2, t3, t4, t5;
+    reg u256 __q, __qbar;
+
+    __q = #VPBROADCAST_16u16(_q);
+
+    if((barrett0 | barrett1) == 1 ){
+        __qbar = #VPBROADCAST_16u16(_qbar);
+    }
+
+// ========
+
+    if(barrett0 == 1){
+
+        t0 = #VPMULHRS_16u16(buff0, __qbar);
+        t1 = #VPMULHRS_16u16(buff1, __qbar);
+        t2 = #VPMULHRS_16u16(buff4, __qbar);
+        t3 = #VPMULHRS_16u16(buff5, __qbar);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff5 = #VPSUB_16u16(buff5, t3);
+
+    }
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+
+
+    t4    = #VPMULL_16u16(buff2, t0);
+    buff2 = #VPMULH_16u16(buff2, t1);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff2, t4);
+    buff2 = #VPSUB_16u16(buff0, t5);
+    buff0 = #VPADD_16u16(buff0, t5);
+
+    t4    = #VPMULL_16u16(buff3, t0);
+    buff3 = #VPMULH_16u16(buff3, t1);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff3, t4);
+    buff3 = #VPSUB_16u16(buff1, t5);
+    buff1 = #VPADD_16u16(buff1, t5);
+
+    t4    = #VPMULL_16u16(buff6, t2);
+    buff6 = #VPMULH_16u16(buff6, t3);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff6, t4);
+    buff6 = #VPSUB_16u16(buff4, t5);
+    buff4 = #VPADD_16u16(buff4, t5);
+
+    t4    = #VPMULL_16u16(buff7, t2);
+    buff7 = #VPMULH_16u16(buff7, t3);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff7, t4);
+    buff7 = #VPSUB_16u16(buff5, t5);
+    buff5 = #VPADD_16u16(buff5, t5);
+
+// ========
+
+    if(barrett1 == 1){
+
+        t0 = #VPMULHRS_16u16(buff0, __qbar);
+        t1 = #VPMULHRS_16u16(buff2, __qbar);
+        t2 = #VPMULHRS_16u16(buff4, __qbar);
+        t3 = #VPMULHRS_16u16(buff6, __qbar);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff2 = #VPSUB_16u16(buff2, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff6 = #VPSUB_16u16(buff6, t3);
+
+    }
+
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+
+    t4    = #VPMULL_16u16(buff1, t0);
+    buff1 = #VPMULH_16u16(buff1, t1);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff1, t4);
+    buff1 = #VPSUB_16u16(buff0, t5);
+    buff0 = #VPADD_16u16(buff0, t5);
+
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+
+    t4    = #VPMULL_16u16(buff3, t2);
+    buff3 = #VPMULH_16u16(buff3, t3);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff3, t4);
+    buff3 = #VPSUB_16u16(buff2, t5);
+    buff2 = #VPADD_16u16(buff2, t5);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+
+    t4    = #VPMULL_16u16(buff5, t0);
+    buff5 = #VPMULH_16u16(buff5, t1);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff5, t4);
+    buff5 = #VPSUB_16u16(buff4, t5);
+    buff4 = #VPADD_16u16(buff4, t5);
+
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+
+    t4    = #VPMULL_16u16(buff7, t2);
+    buff7 = #VPMULH_16u16(buff7, t3);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPSUB_16u16(buff7, t4);
+    buff7 = #VPSUB_16u16(buff6, t5);
+    buff6 = #VPADD_16u16(buff6, t5);
+
+// ========
+
+    return buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7;
+
+}
+
+inline
+fn __2_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
+    reg u64 twiddle_indx,
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
+    inline int barrett0, inline int barrett1)
+    ->
+    reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+
+    reg u256 t0, t1, t2, t3, t4, t5;
+    reg u256 __q, __qbar;
+
+    __q = #VPBROADCAST_16u16(_q);
+
+    if((barrett0 | barrett1) == 1 ){
+        __qbar = #VPBROADCAST_16u16(_qbar);
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+
+    t4    = #VPSUB_16u16(buff0, buff1);
+    t5    = #VPSUB_16u16(buff2, buff3);
+    buff0 = #VPADD_16u16(buff0, buff1);
+    buff2 = #VPADD_16u16(buff2, buff3);
+    buff1 = #VPMULL_16u16(t4, t0);
+    buff3 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff1 = #VPMULH_16u16(buff1, __q);
+    buff3 = #VPMULH_16u16(buff3, __q);
+    buff1 = #VPSUB_16u16(t4, buff1);
+    buff3 = #VPSUB_16u16(t5, buff3);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+
+    t4    = #VPSUB_16u16(buff4, buff5);
+    t5    = #VPSUB_16u16(buff6, buff7);
+    buff4 = #VPADD_16u16(buff4, buff5);
+    buff6 = #VPADD_16u16(buff6, buff7);
+    buff5 = #VPMULL_16u16(t4, t0);
+    buff7 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff5 = #VPMULH_16u16(buff5, __q);
+    buff7 = #VPMULH_16u16(buff7, __q);
+    buff5 = #VPSUB_16u16(t4, buff5);
+    buff7 = #VPSUB_16u16(t5, buff7);
+
+    if(barrett1 == 1){
+
+        t0 = #VPMULHRS_16u16(buff0, __qbar);
+        t1 = #VPMULHRS_16u16(buff2, __qbar);
+        t2 = #VPMULHRS_16u16(buff4, __qbar);
+        t3 = #VPMULHRS_16u16(buff6, __qbar);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff2 = #VPSUB_16u16(buff2, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff6 = #VPSUB_16u16(buff6, t3);
+
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+
+    t4    = #VPSUB_16u16(buff0, buff2);
+    t5    = #VPSUB_16u16(buff1, buff3);
+    buff0 = #VPADD_16u16(buff0, buff2);
+    buff1 = #VPADD_16u16(buff1, buff3);
+    buff2 = #VPMULL_16u16(t4, t0);
+    buff3 = #VPMULL_16u16(t5, t0);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t1);
+    buff2 = #VPMULH_16u16(buff2, __q);
+    buff3 = #VPMULH_16u16(buff3, __q);
+    buff2 = #VPSUB_16u16(t4, buff2);
+    buff3 = #VPSUB_16u16(t5, buff3);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+
+    t4    = #VPSUB_16u16(buff4, buff6);
+    t5    = #VPSUB_16u16(buff5, buff7);
+    buff4 = #VPADD_16u16(buff4, buff6);
+    buff5 = #VPADD_16u16(buff5, buff7);
+    buff6 = #VPMULL_16u16(t4, t0);
+    buff7 = #VPMULL_16u16(t5, t0);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t1);
+    buff6 = #VPMULH_16u16(buff6, __q);
+    buff7 = #VPMULH_16u16(buff7, __q);
+    buff6 = #VPSUB_16u16(t4, buff6);
+    buff7 = #VPSUB_16u16(t5, buff7);
+
+    if(barrett0 == 1){
+
+        t0 = #VPMULHRS_16u16(buff0, __qbar);
+        t1 = #VPMULHRS_16u16(buff1, __qbar);
+        t2 = #VPMULHRS_16u16(buff4, __qbar);
+        t3 = #VPMULHRS_16u16(buff5, __qbar);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff5 = #VPSUB_16u16(buff5, t3);
+
+    }
+
+// ========
+
+    return buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7;
+
+}
+
+inline
+fn __3_layer_CT_butterfly_8(
+    reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
+    reg u64 twiddle_indx,
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
+    inline int barrett0, inline int barrett1, inline int barrett2)
+    ->
+    reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+
+    reg u256 t0, t1, t2, t3, t4, t5;
+    reg u256 __q;
+
+    __q = #VPBROADCAST_16u16(_q);
+
+// ========
+
+    if(barrett0 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff1, t5);
+        t2 = #VPMULHRS_16u16(buff2, t5);
+        t3 = #VPMULHRS_16u16(buff3, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff2 = #VPSUB_16u16(buff2, t2);
+        buff3 = #VPSUB_16u16(buff3, t3);
+
+    }
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+
+    t2    = #VPMULL_16u16(buff4, t0);
+    t4    = #VPMULL_16u16(buff5, t0);
+    buff4 = #VPMULH_16u16(buff4, t1);
+    buff5 = #VPMULH_16u16(buff5, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t3    = #VPSUB_16u16(buff4, t2);
+    t5    = #VPSUB_16u16(buff5, t4);
+    buff4 = #VPSUB_16u16(buff0, t3);
+    buff5 = #VPSUB_16u16(buff1, t5);
+    buff0 = #VPADD_16u16(buff0, t3);
+    buff1 = #VPADD_16u16(buff1, t5);
+
+    t2    = #VPMULL_16u16(buff6, t0);
+    t4    = #VPMULL_16u16(buff7, t0);
+    buff6 = #VPMULH_16u16(buff6, t1);
+    buff7 = #VPMULH_16u16(buff7, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t3    = #VPSUB_16u16(buff6, t2);
+    t5    = #VPSUB_16u16(buff7, t4);
+    buff6 = #VPSUB_16u16(buff2, t3);
+    buff7 = #VPSUB_16u16(buff3, t5);
+    buff2 = #VPADD_16u16(buff2, t3);
+    buff3 = #VPADD_16u16(buff3, t5);
+
+// ========
+
+    if(barrett1 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff1, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff5, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff5 = #VPSUB_16u16(buff5, t3);
+
+    }
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+
+    t2    = #VPMULL_16u16(buff2, t0);
+    t4    = #VPMULL_16u16(buff3, t0);
+    buff2 = #VPMULH_16u16(buff2, t1);
+    buff3 = #VPMULH_16u16(buff3, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t3    = #VPSUB_16u16(buff2, t2);
+    t5    = #VPSUB_16u16(buff3, t4);
+    buff2 = #VPSUB_16u16(buff0, t3);
+    buff3 = #VPSUB_16u16(buff1, t5);
+    buff0 = #VPADD_16u16(buff0, t3);
+    buff1 = #VPADD_16u16(buff1, t5);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+
+    t2    = #VPMULL_16u16(buff6, t0);
+    t4    = #VPMULL_16u16(buff7, t0);
+    buff6 = #VPMULH_16u16(buff6, t1);
+    buff7 = #VPMULH_16u16(buff7, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t3    = #VPSUB_16u16(buff6, t2);
+    t5    = #VPSUB_16u16(buff7, t4);
+    buff6 = #VPSUB_16u16(buff4, t3);
+    buff7 = #VPSUB_16u16(buff5, t5);
+    buff4 = #VPADD_16u16(buff4, t3);
+    buff5 = #VPADD_16u16(buff5, t5);
+
+// ========
+
+    if(barrett2 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff2, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff6, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff2 = #VPSUB_16u16(buff2, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff6 = #VPSUB_16u16(buff6, t3);
+
+    }
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+
+    t4    = #VPMULL_16u16(buff1, t0);
+    t0    = #VPMULL_16u16(buff3, t2);
+    buff1 = #VPMULH_16u16(buff1, t1);
+    buff3 = #VPMULH_16u16(buff3, t3);
+    t4    = #VPMULH_16u16(t4, __q);
+    t0    = #VPMULH_16u16(t0, __q);
+    t5    = #VPSUB_16u16(buff1, t4);
+    t1    = #VPSUB_16u16(buff3, t0);
+    buff1 = #VPSUB_16u16(buff0, t5);
+    buff3 = #VPSUB_16u16(buff2, t1);
+    buff0 = #VPADD_16u16(buff0, t5);
+    buff2 = #VPADD_16u16(buff2, t1);
+
+    t4 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
+    t5 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
+
+    t2    = #VPMULL_16u16(buff5, t4);
+    t4    = #VPMULL_16u16(buff7, t0);
+    buff5 = #VPMULH_16u16(buff5, t5);
+    buff7 = #VPMULH_16u16(buff7, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t3    = #VPSUB_16u16(buff5, t2);
+    t5    = #VPSUB_16u16(buff7, t4);
+    buff5 = #VPSUB_16u16(buff4, t3);
+    buff7 = #VPSUB_16u16(buff6, t5);
+    buff4 = #VPADD_16u16(buff4, t3);
+    buff6 = #VPADD_16u16(buff6, t5);
+
+// ========
+
+    return buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7;
+
+}
+
+inline
+fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
+    reg u64 twiddle_indx,
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
+    inline int barrett0 barrett1 barrett2)
+    ->
+    reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+
+    reg u256 t0, t1, t2, t3, t4, t5;
+    reg u256 __q;
+
+    __q = #VPBROADCAST_16u16(_q);
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+
+    t4    = #VPSUB_16u16(buff0, buff1);
+    t5    = #VPSUB_16u16(buff2, buff3);
+    buff0 = #VPADD_16u16(buff0, buff1);
+    buff2 = #VPADD_16u16(buff2, buff3);
+    buff1 = #VPMULL_16u16(t4, t0);
+    buff3 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff1 = #VPMULH_16u16(buff1, __q);
+    buff3 = #VPMULH_16u16(buff3, __q);
+    buff1 = #VPSUB_16u16(t4, buff1);
+    buff3 = #VPSUB_16u16(t5, buff3);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
+
+    t4    = #VPSUB_16u16(buff4, buff5);
+    t5    = #VPSUB_16u16(buff6, buff7);
+    buff4 = #VPADD_16u16(buff4, buff5);
+    buff6 = #VPADD_16u16(buff6, buff7);
+    buff5 = #VPMULL_16u16(t4, t0);
+    buff7 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff5 = #VPMULH_16u16(buff5, __q);
+    buff7 = #VPMULH_16u16(buff7, __q);
+    buff5 = #VPSUB_16u16(t4, buff5);
+    buff7 = #VPSUB_16u16(t5, buff7);
+
+    if(barrett2 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff2, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff6, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff2 = #VPSUB_16u16(buff2, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff6 = #VPSUB_16u16(buff6, t3);
+
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+
+    t2    = #VPSUB_16u16(buff0, buff2);
+    t4    = #VPSUB_16u16(buff1, buff3);
+    buff0 = #VPADD_16u16(buff0, buff2);
+    buff1 = #VPADD_16u16(buff1, buff3);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff2 = #VPSUB_16u16(t2, t3);
+    buff3 = #VPSUB_16u16(t4, t5);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+
+    t2    = #VPSUB_16u16(buff4, buff6);
+    t4    = #VPSUB_16u16(buff5, buff7);
+    buff4 = #VPADD_16u16(buff4, buff6);
+    buff5 = #VPADD_16u16(buff5, buff7);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff6 = #VPSUB_16u16(t2, t3);
+    buff7 = #VPSUB_16u16(t4, t5);
+
+    if(barrett1 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff1, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff5, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff5 = #VPSUB_16u16(buff5, t3);
+
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+
+    t2    = #VPSUB_16u16(buff0, buff4);
+    t4    = #VPSUB_16u16(buff1, buff5);
+    buff0 = #VPADD_16u16(buff0, buff4);
+    buff1 = #VPADD_16u16(buff1, buff5);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff4 = #VPSUB_16u16(t2, t3);
+    buff5 = #VPSUB_16u16(t4, t5);
+
+    t2    = #VPSUB_16u16(buff2, buff6);
+    t4    = #VPSUB_16u16(buff3, buff7);
+    buff2 = #VPADD_16u16(buff2, buff6);
+    buff3 = #VPADD_16u16(buff3, buff7);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff6 = #VPSUB_16u16(t2, t3);
+    buff7 = #VPSUB_16u16(t4, t5);
+
+    if(barrett0 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff1, t5);
+        t2 = #VPMULHRS_16u16(buff2, t5);
+        t3 = #VPMULHRS_16u16(buff3, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff2 = #VPSUB_16u16(buff2, t2);
+        buff3 = #VPSUB_16u16(buff3, t3);
+
+    }
+
+// ========
+
+    return buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7;
+
+}
+
+inline
+fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
+    reg u64 twiddle_indx,
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
+    inline int barrett0 barrett1 barrett2)
+    ->
+    reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
+{
+
+    reg u256 t0, t1, t2, t3, t4, t5;
+    reg u256 __q;
+
+    __q = #VPBROADCAST_16u16(_q);
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+
+    t4    = #VPSUB_16u16(buff0, buff1);
+    t5    = #VPSUB_16u16(buff2, buff3);
+    buff0 = #VPADD_16u16(buff0, buff1);
+    buff2 = #VPADD_16u16(buff2, buff3);
+    buff1 = #VPMULL_16u16(t4, t0);
+    buff3 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff1 = #VPMULH_16u16(buff1, __q);
+    buff3 = #VPMULH_16u16(buff3, __q);
+    buff1 = #VPSUB_16u16(t4, buff1);
+    buff3 = #VPSUB_16u16(t5, buff3);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
+    t2 = twiddlelo.[u256 (int) twiddle_indx + 7 * 32];
+    t3 = twiddlehi.[u256 (int) twiddle_indx + 7 * 32];
+
+    t4    = #VPSUB_16u16(buff4, buff5);
+    t5    = #VPSUB_16u16(buff6, buff7);
+    buff4 = #VPADD_16u16(buff4, buff5);
+    buff6 = #VPADD_16u16(buff6, buff7);
+    buff5 = #VPMULL_16u16(t4, t0);
+    buff7 = #VPMULL_16u16(t5, t2);
+    t4    = #VPMULH_16u16(t4, t1);
+    t5    = #VPMULH_16u16(t5, t3);
+    buff5 = #VPMULH_16u16(buff5, __q);
+    buff7 = #VPMULH_16u16(buff7, __q);
+    buff5 = #VPSUB_16u16(t4, buff5);
+    buff7 = #VPSUB_16u16(t5, buff7);
+
+    if(barrett2 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff2, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff6, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff2 = #VPSUB_16u16(buff2, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff6 = #VPSUB_16u16(buff6, t3);
+
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+
+    t2    = #VPSUB_16u16(buff0, buff2);
+    t4    = #VPSUB_16u16(buff1, buff3);
+    buff0 = #VPADD_16u16(buff0, buff2);
+    buff1 = #VPADD_16u16(buff1, buff3);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff2 = #VPSUB_16u16(t2, t3);
+    buff3 = #VPSUB_16u16(t4, t5);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+
+    t2    = #VPSUB_16u16(buff4, buff6);
+    t4    = #VPSUB_16u16(buff5, buff7);
+    buff4 = #VPADD_16u16(buff4, buff6);
+    buff5 = #VPADD_16u16(buff5, buff7);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff6 = #VPSUB_16u16(t2, t3);
+    buff7 = #VPSUB_16u16(t4, t5);
+
+    if(barrett1 == 1){
+
+        t5 = #VPBROADCAST_16u16(_qbar);
+
+        t0 = #VPMULHRS_16u16(buff0, t5);
+        t1 = #VPMULHRS_16u16(buff1, t5);
+        t2 = #VPMULHRS_16u16(buff4, t5);
+        t3 = #VPMULHRS_16u16(buff5, t5);
+
+        t0 = #VPMULL_16u16(t0, __q);
+        t1 = #VPMULL_16u16(t1, __q);
+        t2 = #VPMULL_16u16(t2, __q);
+        t3 = #VPMULL_16u16(t3, __q);
+
+        buff0 = #VPSUB_16u16(buff0, t0);
+        buff1 = #VPSUB_16u16(buff1, t1);
+        buff4 = #VPSUB_16u16(buff4, t2);
+        buff5 = #VPSUB_16u16(buff5, t3);
+
+    }
+
+// ========
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+
+    t2    = #VPSUB_16u16(buff0, buff4);
+    t4    = #VPSUB_16u16(buff1, buff5);
+    buff0 = #VPADD_16u16(buff0, buff4);
+    buff1 = #VPADD_16u16(buff1, buff5);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff4 = #VPSUB_16u16(t2, t3);
+    buff5 = #VPSUB_16u16(t4, t5);
+
+    t2    = #VPSUB_16u16(buff2, buff6);
+    t4    = #VPSUB_16u16(buff3, buff7);
+    buff2 = #VPADD_16u16(buff2, buff6);
+    buff3 = #VPADD_16u16(buff3, buff7);
+    t3    = #VPMULL_16u16(t2, t0);
+    t5    = #VPMULL_16u16(t4, t0);
+    t2    = #VPMULH_16u16(t2, t1);
+    t4    = #VPMULH_16u16(t4, t1);
+    t3    = #VPMULH_16u16(t3, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff6 = #VPSUB_16u16(t2, t3);
+    buff7 = #VPSUB_16u16(t4, t5);
+
+    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+
+    t2    = #VPMULL_16u16(buff0, t0);
+    t3    = #VPMULL_16u16(buff1, t0);
+    t4    = #VPMULL_16u16(buff2, t0);
+    t5    = #VPMULL_16u16(buff3, t0);
+    buff0 = #VPMULH_16u16(buff0, t1);
+    buff1 = #VPMULH_16u16(buff1, t1);
+    buff2 = #VPMULH_16u16(buff2, t1);
+    buff3 = #VPMULH_16u16(buff3, t1);
+    t2    = #VPMULH_16u16(t2, __q);
+    t3    = #VPMULH_16u16(t3, __q);
+    t4    = #VPMULH_16u16(t4, __q);
+    t5    = #VPMULH_16u16(t5, __q);
+    buff0 = #VPSUB_16u16(buff0, t2);
+    buff1 = #VPSUB_16u16(buff1, t3);
+    buff2 = #VPSUB_16u16(buff2, t4);
+    buff3 = #VPSUB_16u16(buff3, t5);
+
+// ========
+
+    return buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7;
+
+}
+

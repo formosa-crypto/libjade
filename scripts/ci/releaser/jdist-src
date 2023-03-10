@@ -30,6 +30,12 @@ while read asm
 do
   dir=$(dirname $asm)
 
+  # check if it is a partial implementation (only provides part of the expected API)
+  dasm_suffix=""
+  if [ -f $dir/.partial ]; then
+    dasm_suffix=".p"
+  fi
+
   # assembly
   dasm=$(echo $dir | sed  -e 's/\(.*\)\//\1_/' -e 's/\(.*\)\//\1_/').s
   dasm=${dasm/$src/$jade}
@@ -37,7 +43,7 @@ do
   # destination directory
   ddir=$(dirname $dasm)
   mkdir -p $ddir
-  cp $asm $dasm
+  cp $asm ${dasm}${dasm_suffix}
 
   # header
   sapi=$dir/include/api.h
@@ -196,6 +202,16 @@ END
 
   done < <(find $cop -name "*.s" -printf "%h\n" | sort -u)
 done < <(find $jade -maxdepth 1 -type d -name "crypto_*")
+
+# ---------------------------------------------------------
+# partial implementations were not considered in the examples'
+# Makefiles because of the additional suffix .p; we need to
+# move them into .s
+
+while read file
+do
+  mv $file ${file/.p/}
+done < <(find $jade -name "*.s.p")
 
 # ---------------------------------------------------------
 # copy randombytes (make sure it is clean first)

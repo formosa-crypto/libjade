@@ -1,0 +1,538 @@
+
+require "NTT_params.jinc"
+
+require "vec.jinc"
+require "butterfly.jinc"
+require "table.jinc"
+
+inline
+fn __NTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi) -> stack u16[ARRAY_N] {
+
+    reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7;
+
+    reg u64 src_indx src_indx0 src_indx1 jump;
+    reg u64 twiddle_indx;
+
+    reg u64 i;
+
+    twiddle_indx = 0;
+    src_indx = 0;
+    jump = 128;
+
+    i = 0;
+    while(i < 4){
+
+        src_indx0 = src_indx + 0 * 128;
+        src_indx1 = src_indx + 4 * 128;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __3_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+                twiddle_indx, twiddlelo, twiddlehi, 1, 0, 0);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        src_indx += 32;
+
+        i += 1;
+
+    }
+
+    twiddle_indx += 7 * 32;
+    src_indx = 0;
+    jump = 32;
+
+    i = 0;
+    while(i < 4){
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 4 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 1, 0);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+        src_indx += 256;
+
+        i += 1;
+
+    }
+
+    return src;
+
+}
+
+inline
+fn __NTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi) -> stack u16[ARRAY_N] {
+
+    reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7;
+
+    reg u64 src_indx src_indx0 src_indx1 jump;
+    reg u64 twiddle_indx;
+
+    reg u64 i;
+
+    twiddle_indx = 0;
+    src_indx = 0;
+    i = 0;
+    while(i < 2){
+
+        jump = 128;
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 2 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        src_indx0 = src_indx + 1 * 32;
+        src_indx1 = src_indx + 3 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+
+        jump = 32;
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 4 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 0);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+
+        src_indx0 = src_indx + 8 * 32;
+        src_indx1 = src_indx + 12 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_CT_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 0);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+        src_indx += 16 * 32;
+
+        i += 1;
+
+    }
+
+    return src;
+
+}
+
+inline
+fn __iNTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi) -> stack u16[ARRAY_N] {
+
+    reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7;
+
+    reg u64 src_indx src_indx0 src_indx1 jump;
+    reg u64 twiddle_indx;
+
+    reg u64 i;
+
+    twiddle_indx = 1 * 32 + 7 * 32;
+    src_indx = 0;
+    jump = 32;
+
+    i = 0;
+    while(i < 4){
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 4 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_GS_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+        src_indx += 256;
+        i += 1;
+
+    }
+
+    twiddle_indx -= 1 * 32 + 31 * 32;
+    src_indx = 0;
+    jump = 128;
+
+    i = 0;
+    while(i < 4){
+
+        src_indx0 = src_indx + 0 * 128;
+        src_indx1 = src_indx + 4 * 128;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __3_layer_GS_butterfly_8_last(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        src_indx += 32;
+
+        i += 1;
+
+    }
+
+    return src;
+
+}
+
+inline
+fn __iNTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi) -> stack u16[ARRAY_N] {
+
+    reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7;
+
+    reg u64 src_indx src_indx0 src_indx1 jump;
+    reg u64 twiddle_indx;
+
+    reg u64 i;
+
+    twiddle_indx = 0;
+    src_indx = 0;
+    i = 0;
+
+    while(i < 2){
+
+        twiddle_indx += 6 * 32;
+        jump = 32;
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 4 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_GS_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 6 * 32;
+
+        src_indx0 = src_indx + 8 * 32;
+        src_indx1 = src_indx + 12 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_GS_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx -= 12 * 32;
+
+        jump = 128;
+
+        src_indx0 = src_indx + 0 * 32;
+        src_indx1 = src_indx + 2 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_GS_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        src_indx0 = src_indx + 1 * 32;
+        src_indx1 = src_indx + 3 * 32;
+
+        buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
+            __2_layer_GS_butterfly_8(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
+
+        src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
+        src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
+
+        twiddle_indx += 18 * 32;
+        src_indx += 16 * 32;
+
+        i += 1;
+
+    }
+
+    return src;
+
+}
+
+inline
+fn __basemul(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
+
+    reg u256 a b c;
+    reg u256 lo hi;
+    reg u256 __q __qinv;
+
+    reg u64 i;
+
+    __q = #VPBROADCAST_16u16(_q);
+    __qinv = #VPBROADCAST_16u16(_qinv);
+
+    i = 0;
+    while(i < ARRAY_N * 2){
+
+        a = src1.[u256 (int) i];
+        b = src2.[u256 (int) i];
+
+        lo = #VPMULL_16u16(a, b);
+        hi = #VPMULH_16u16(a, b);
+
+        lo = #VPMULL_16u16(lo, __qinv);
+        lo = #VPMULH_16u16(lo, __q);
+        c = #VPSUB_16u16(hi, lo);
+
+        des.[u256 (int) i] = c;
+
+        i += 32;
+
+    }
+
+    return des;
+
+}
+
+inline
+fn __transpose(stack u16[256] src) -> stack u16[256] {
+
+    reg u256[16] a;
+    reg u256[16] b;
+    reg u256[16] c;
+    reg u256[16] d;
+    reg u256[16] e;
+
+    stack u256[4] buff;
+
+    a[0] = src.[u256 0 * 32];
+    a[1] = src.[u256 1 * 32];
+    b[0] = #VPUNPCKL_16u16(a[0], a[1]);
+    b[1] = #VPUNPCKH_16u16(a[0], a[1]);
+    a[2] = src.[u256 2 * 32];
+    a[3] = src.[u256 3 * 32];
+    b[2] = #VPUNPCKL_16u16(a[2], a[3]);
+    b[3] = #VPUNPCKH_16u16(a[2], a[3]);
+    c[0] = #VPUNPCKL_8u32(b[0], b[2]);
+    c[1] = #VPUNPCKH_8u32(b[0], b[2]);
+    c[2] = #VPUNPCKL_8u32(b[1], b[3]);
+    c[3] = #VPUNPCKH_8u32(b[1], b[3]);
+
+    a[4] = src.[u256 4 * 32];
+    a[5] = src.[u256 5 * 32];
+    b[4] = #VPUNPCKL_16u16(a[4], a[5]);
+    b[5] = #VPUNPCKH_16u16(a[4], a[5]);
+    a[6] = src.[u256 6 * 32];
+    a[7] = src.[u256 7 * 32];
+    b[6] = #VPUNPCKL_16u16(a[6], a[7]);
+    b[7] = #VPUNPCKH_16u16(a[6], a[7]);
+    c[4] = #VPUNPCKL_8u32(b[4], b[6]);
+    c[5] = #VPUNPCKH_8u32(b[4], b[6]);
+    c[6] = #VPUNPCKL_8u32(b[5], b[7]);
+    c[7] = #VPUNPCKH_8u32(b[5], b[7]);
+
+    buff[0] = #VMOVDQU_256(c[2]);
+    buff[1] = #VMOVDQU_256(c[3]);
+    buff[2] = #VMOVDQU_256(c[6]);
+    buff[3] = #VMOVDQU_256(c[7]);
+
+    a[8] = src.[u256 8 * 32];
+    a[9] = src.[u256 9 * 32];
+    b[8] = #VPUNPCKL_16u16(a[8], a[9]);
+    b[9] = #VPUNPCKH_16u16(a[8], a[9]);
+    a[10] = src.[u256 10 * 32];
+    a[11] = src.[u256 11 * 32];
+    b[10] = #VPUNPCKL_16u16(a[10], a[11]);
+    b[11] = #VPUNPCKH_16u16(a[10], a[11]);
+    c[8] = #VPUNPCKL_8u32(b[8], b[10]);
+    c[9] = #VPUNPCKH_8u32(b[8], b[10]);
+    c[10] = #VPUNPCKL_8u32(b[9], b[11]);
+    c[11] = #VPUNPCKH_8u32(b[9], b[11]);
+
+    a[12] = src.[u256 12 * 32];
+    a[13] = src.[u256 13 * 32];
+    b[12] = #VPUNPCKL_16u16(a[12], a[13]);
+    b[13] = #VPUNPCKH_16u16(a[12], a[13]);
+    a[14] = src.[u256 14 * 32];
+    a[15] = src.[u256 15 * 32];
+    b[14] = #VPUNPCKL_16u16(a[14], a[15]);
+    b[15] = #VPUNPCKH_16u16(a[14], a[15]);
+    c[12] = #VPUNPCKL_8u32(b[12], b[14]);
+    c[13] = #VPUNPCKH_8u32(b[12], b[14]);
+    c[14] = #VPUNPCKL_8u32(b[13], b[15]);
+    c[15] = #VPUNPCKH_8u32(b[13], b[15]);
+
+
+    d[0] = #VPUNPCKL_4u64(c[0], c[4]);
+    d[4] = #VPUNPCKH_4u64(c[0], c[4]);
+    d[8] = #VPUNPCKL_4u64(c[8], c[12]);
+    d[12] = #VPUNPCKH_4u64(c[8], c[12]);
+    e[0] = #VPERM2I128(d[0], d[8], 0x20);
+    e[8] = #VPERM2I128(d[0], d[8], 0x31);
+    e[4] = #VPERM2I128(d[4], d[12], 0x20);
+    e[12] = #VPERM2I128(d[4], d[12], 0x31);
+    src.[u256 0 * 32] = e[ 0];
+    src.[u256 1 * 32] = e[ 4];
+    src.[u256 8 * 32] = e[ 8];
+    src.[u256 9 * 32] = e[12];
+
+    d[1] = #VPUNPCKL_4u64(c[1], c[5]);
+    d[5] = #VPUNPCKH_4u64(c[1], c[5]);
+    d[9] = #VPUNPCKL_4u64(c[9], c[13]);
+    d[13] = #VPUNPCKH_4u64(c[9], c[13]);
+    e[1] = #VPERM2I128(d[1], d[9], 0x20);
+    e[9] = #VPERM2I128(d[1], d[9], 0x31);
+    e[5] = #VPERM2I128(d[5], d[13], 0x20);
+    e[13] = #VPERM2I128(d[5], d[13], 0x31);
+    src.[u256 2 * 32] = e[ 1];
+    src.[u256 3 * 32] = e[ 5];
+    src.[u256 10 * 32] = e[ 9];
+    src.[u256 11 * 32] = e[13];
+
+    c[2] = #VMOVDQU_256(buff[0]);
+    c[3] = #VMOVDQU_256(buff[1]);
+    c[6] = #VMOVDQU_256(buff[2]);
+    c[7] = #VMOVDQU_256(buff[3]);
+
+    d[2] = #VPUNPCKL_4u64(c[2], c[6]);
+    d[6] = #VPUNPCKH_4u64(c[2], c[6]);
+    d[10] = #VPUNPCKL_4u64(c[10], c[14]);
+    d[14] = #VPUNPCKH_4u64(c[10], c[14]);
+    e[2] = #VPERM2I128(d[2], d[10], 0x20);
+    e[10] = #VPERM2I128(d[2], d[10], 0x31);
+    e[6] = #VPERM2I128(d[6], d[14], 0x20);
+    e[14] = #VPERM2I128(d[6], d[14], 0x31);
+    src.[u256 4 * 32] = e[ 2];
+    src.[u256 5 * 32] = e[ 6];
+    src.[u256 12 * 32] = e[10];
+    src.[u256 13 * 32] = e[14];
+
+    d[3] = #VPUNPCKL_4u64(c[3], c[7]);
+    d[7] = #VPUNPCKH_4u64(c[3], c[7]);
+    d[11] = #VPUNPCKL_4u64(c[11], c[15]);
+    d[15] = #VPUNPCKH_4u64(c[11], c[15]);
+    e[3] = #VPERM2I128(d[3], d[11], 0x20);
+    e[11] = #VPERM2I128(d[3], d[11], 0x31);
+    e[7] = #VPERM2I128(d[7], d[15], 0x20);
+    e[15] = #VPERM2I128(d[7], d[15], 0x31);
+    src.[u256 6 * 32] = e[ 3];
+    src.[u256 7 * 32] = e[ 7];
+    src.[u256 14 * 32] = e[11];
+    src.[u256 15 * 32] = e[15];
+
+    return src;
+
+}
+
+inline
+fn __transpose_poly(stack u16[ARRAY_N] src) -> stack u16[ARRAY_N] {
+
+    stack u16[256] tmp_ptr;
+
+    tmp_ptr = src[0:256];
+    src[0:256] = __transpose(tmp_ptr);
+    tmp_ptr = src[256:256];
+    src[256:256] = __transpose(tmp_ptr);
+
+    return src;
+
+}
+
+inline
+fn __NTT_transpose(stack u16[ARRAY_N] src) -> stack u16[ARRAY_N] {
+
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi;
+
+    twiddlelo = ntt_top_lo_table;
+    twiddlehi = ntt_top_hi_table;
+
+    src = __NTT_top(src, twiddlelo, twiddlehi);
+
+    src[  0:256] = __transpose(src[  0:256]);
+    src[256:256] = __transpose(src[256:256]);
+
+    twiddlelo = ntt_bot_lo_table;
+    twiddlehi = ntt_bot_hi_table;
+
+    src = __NTT_bot(src, twiddlelo, twiddlehi);
+
+    return src;
+
+}
+
+inline
+fn __iNTT_transpose(stack u16[ARRAY_N] src) -> stack u16[ARRAY_N] {
+
+    reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi;
+
+    twiddlelo = intt_bot_lo_table;
+    twiddlehi = intt_bot_hi_table;
+
+    src = __iNTT_bot(src, twiddlelo, twiddlehi);
+
+    src[  0:256] = __transpose(src[  0:256]);
+    src[256:256] = __transpose(src[256:256]);
+
+    twiddlelo = intt_top_lo_table;
+    twiddlehi = intt_top_hi_table;
+
+    src = __iNTT_top(src, twiddlelo, twiddlehi);
+
+    return src;
+
+}
+
+

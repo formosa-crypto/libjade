@@ -1,0 +1,25 @@
+
+require "params.jinc"
+require "vec.jinc"
+require "verify.jinc"
+require "sign.jinc"
+
+export fn jade_sign_falcon_falcon512_amd64_avx2_open(
+  reg u64 message
+          message_length
+          signed_message
+          signed_message_length
+          public_key
+  ) -> reg u64
+{
+  reg u64 r;
+
+  r = __jade_sign_falcon_falcon512_amd64_avx2_open(
+          message, message_length, 
+          signed_message, signed_message_length,
+          public_key);
+
+  return r;
+}
+
+

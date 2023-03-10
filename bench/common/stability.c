@@ -23,10 +23,10 @@ void check_uint64_t_ulong(void){ _st_static_check(sizeof(uint64_t) == sizeof(uns
 
 #define _st_while_b int _st_ok = 0, _st_it = ST_MAX; while(_st_it > 0 && _st_ok == 0){
 #define _st_while_e _st_it--; }
-#define _st_reset_notrandombytes resetnotrandombytes();
+#define _st_reset_randombytes resetrandombytes();
 #define _st_ifnotst(a)
 
-extern void resetnotrandombytes();
+extern void resetrandombytes();
 
 static uint64_t st_median(uint64_t *r, size_t length)
 {
@@ -348,7 +348,7 @@ static uint64_t st_median(uint64_t *r, size_t length)
 
  #define _st_while_b
  #define _st_while_e
- #define _st_reset_notrandombytes
+ #define _st_reset_randombytes
  #define _st_ifnotst(a) a;
 
  #define _st_store_1(median_r, run, median_loops)

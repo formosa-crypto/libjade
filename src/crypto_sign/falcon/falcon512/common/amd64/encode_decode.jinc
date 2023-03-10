@@ -1,0 +1,230 @@
+
+from Jade require "crypto_sign/falcon/falcon512/common/params.jinc"
+
+inline fn __modq_decode_8(
+  stack u16[ARRAY_N] out,
+  reg u64 out_b,
+  reg u64 in)
+  ->
+  stack u16[ARRAY_N],
+  reg u64,
+  reg u32
+{
+  reg u32 w res is_zero acc acc_len t;
+  reg u64 out_i out_e;
+
+  is_zero = 0;
+
+  acc = 0;
+  acc_len = 0;
+  out_i = out_b;
+  out_e = #LEA(out_b + 8);
+
+  while(out_i < out_e)
+  {
+    acc <<= 8; t = (32u)(u8)[in]; in += 1; acc |= t;
+    acc_len += 8;
+
+    if(acc_len >= 14)
+    {
+      acc_len -= 14;
+      w = acc; w >>= acc_len; w &= 0x3fff;
+
+      if(w >= 12289)
+      { is_zero = 1; }
+
+      out.[(int) out_i * 2] = (16u)w;
+
+      out_i += 1;
+    }
+  }
+
+  res = 8;
+  if(is_zero == 1)
+  { res = 0; }
+
+  return out, in, res;
+}
+
+inline fn __modq_decode(
+  stack u16[ARRAY_N] out,
+  reg u64 in)
+  ->
+  stack u16[ARRAY_N],
+  reg u64,
+  reg u32
+{
+  reg u32 res is_zero acc acc_len;
+  reg u64 out_i;
+
+  is_zero = 0;
+  acc = 0;
+  acc_len = 0;
+
+  out_i = 0;
+  while(out_i < ARRAY_N)
+  {
+    out, in, res = __modq_decode_8(out, out_i, in);
+
+    if(res == 0)
+    { is_zero = 1; }
+
+    out_i += 8;
+  }
+
+  res = MODQ_DECODE_BYTES;
+  if(is_zero == 1)
+  { res = 0; }
+
+  return out, in, res;
+}
+
+//
+
+inline
+fn __modq_decode_8_unrolled(stack u16[8] out, reg u64 in)
+    -> stack u16[8], reg u64, reg u32
+{
+
+    reg u32 w res is_zero;
+    reg u32 acc acc_len t;
+    reg u64 out_i;
+
+    is_zero = 0;
+
+    acc = 0;
+    acc_len = 0;
+    out_i = 0;
+    while(out_i < 8){
+
+        acc <<= 8; t = (32u)(u8)[in]; in += 1; acc |= t;
+        acc_len += 8;
+
+        if(acc_len >= 14) {
+            acc_len -= 14;
+            w = acc; w >>= acc_len; w &= 0x3fff;
+
+            if(w >= 12289){
+                is_zero = 1;
+            }
+
+            out.[(int) out_i * 2] = (16u)w;
+
+            out_i += 1;
+        }
+
+    }
+
+    res = 8;
+    if(is_zero == 1){
+        res = 0;
+    }
+
+    return out, in, res;
+
+}
+
+inline
+fn __modq_decode_unrolled(stack u16[ARRAY_N] out, reg u64 in)
+    -> stack u16[ARRAY_N], reg u64, reg u32
+{
+
+    reg u32 res is_zero;
+    reg u32 acc acc_len;
+    inline int out_i;
+
+    is_zero = 0;
+
+    acc = 0;
+    acc_len = 0;
+    for out_i = 0 to ARRAY_N / 8{
+
+        out[8 * out_i:8], in, res =
+            __modq_decode_8_unrolled(out[8 * out_i:8], in);
+
+        if(res == 0){
+            is_zero = 1;
+        }
+
+    }
+
+    res = MODQ_DECODE_BYTES;
+    if(is_zero == 1){
+        res = 0;
+    }
+
+    return out, in, res;
+
+}
+
+inline
+fn __comp_decode(stack u16[ARRAY_N] out, reg u64 in, reg u64 max_in_len)
+    -> stack u16[ARRAY_N], reg u32
+{
+
+    reg u32 res is_zero;
+    reg u32 acc acc_len t;
+    reg u32 getnext;
+    reg u32 b s m;
+    reg u64 in_i out_i;
+
+    is_zero = 0;
+
+    acc = 0;
+    acc_len = 0;
+    in_i = 0;
+    out_i = 0;
+    while(out_i < ARRAY_N){
+
+        if(in_i >= max_in_len){
+            in_i -= 1;
+            is_zero = 1;
+        }
+
+        acc <<= 8; t = (32u)(u8)[in + in_i]; in_i += 1; acc |= t;
+        b = acc; b >>= acc_len;
+        s = b; s &= 128;
+        m = b; m &= 127;
+
+        m -= 128;
+
+        while {
+            m += 128;
+            if(m > 2047){
+                is_zero = 1;
+            }
+            if(acc_len == 0){
+
+                if(in_i >= max_in_len){
+                    in_i -= 1;
+                    is_zero = 1;
+                }
+
+                acc <<= 8; t = (32u)(u8)[in + in_i]; in_i += 1; acc |= t;
+                acc_len = 8;
+            }
+            acc_len -= 1;
+            getnext = acc; getnext >>= acc_len; getnext &= 1;
+        } (getnext == 0)
+
+        if(s != 0){
+            if(m == 0){
+                is_zero = 1;
+            }
+            m = -m;
+        }
+        out[(int) out_i] = m;
+        out_i += 1;
+    }
+
+    res = (32u)in_i;
+
+    if(is_zero == 1){
+        res = 0;
+    }
+
+    return out, res;
+
+}
+
+

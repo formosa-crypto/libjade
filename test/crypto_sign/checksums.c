@@ -12,6 +12,8 @@
 #include "api.h"
 #include "jade_sign.h"
 
+#include "print.h"
+
 // ////////////////////////////////////////////////////////////////////////////
 
 typedef struct state {
@@ -185,7 +187,14 @@ void test(unsigned char *checksum_state, state *_s)
     memcpy(s.p2, s.p, s.plen);
     double_canary(s.p2, s.p, s.plen);
     result = jade_sign_open(s.t, &s.tlen, s.c, s.clen, s.p);
-    if (result != 0) fail("jade_sign_open returns nonzero - 0");
+    if (result != 0){
+      #ifdef DEBUG
+      print_str_u8("message", s.t, s.tlen);
+      print_str_u8("signed_message", s.c, s.clen);
+      print_str_u8("public_key", s.p, JADE_SIGN_PUBLICKEYBYTES);
+      #endif
+      fail("jade_sign_open returns nonzero - 0");
+    }
     if (s.tlen != s.mlen) fail("jade_sign_open does not match mlen");
     if (memcmp(s.t, s.m, s.mlen) != 0) fail("jade_sign_open does not match m");
     checksum(checksum_state, s.t, s.tlen);
