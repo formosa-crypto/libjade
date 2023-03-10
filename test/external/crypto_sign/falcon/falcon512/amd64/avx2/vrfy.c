@@ -634,18 +634,15 @@ mq_poly_sub(uint16_t *f, const uint16_t *g, unsigned logn)
 
 /* see inner.h */
 void
-falcon512dyn_avx2_to_ntt_monty(uint16_t *h, unsigned logn)
+Zf(to_ntt_monty)(uint16_t *h, unsigned logn)
 {
 	mq_NTT(h, logn);
 	mq_poly_tomonty(h, logn);
 }
 
-extern void __sub_canonical_external(uint16_t*, uint16_t*, const uint16_t*);
-extern int __is_short_external(int16_t*, const int16_t*);
-
 /* see inner.h */
 int
-falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
+Zf(verify_raw)(const uint16_t *c0, const int16_t *s2,
 	const uint16_t *h, unsigned logn, uint8_t *tmp)
 {
 	size_t u, n;
@@ -671,11 +668,6 @@ falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
 	mq_NTT(tt, logn);
 	mq_poly_montymul_ntt(tt, h, logn);
 	mq_iNTT(tt, logn);
-
-
-#if 1
-	__sub_canonical_external(tt, tt, c0);
-#else
 	mq_poly_sub(tt, c0, logn);
 
 	/*
@@ -688,25 +680,17 @@ falcon512dyn_avx2_verify_raw(const uint16_t *c0, const int16_t *s2,
 		w -= (int32_t)(Q & -(((Q >> 1) - (uint32_t)w) >> 31));
 		((int16_t *)tt)[u] = (int16_t)w;
 	}
-#endif
 
 	/*
 	 * Signature is valid if and only if the aggregate (-s1,s2) vector
 	 * is short enough.
 	 */
-
-#if 1
-	// this is broken
-	return __is_short_external((int16_t*)tt, s2);
-#else
-	return falcon512dyn_avx2_is_short((int16_t *)tt, s2, logn);
-#endif
-
+	return Zf(is_short)((int16_t *)tt, s2, logn);
 }
 
 /* see inner.h */
 int
-falcon512dyn_avx2_compute_public(uint16_t *h,
+Zf(compute_public)(uint16_t *h,
 	const int8_t *f, const int8_t *g, unsigned logn, uint8_t *tmp)
 {
 	size_t u, n;
@@ -732,7 +716,7 @@ falcon512dyn_avx2_compute_public(uint16_t *h,
 
 /* see inner.h */
 int
-falcon512dyn_avx2_complete_private(int8_t *G,
+Zf(complete_private)(int8_t *G,
 	const int8_t *f, const int8_t *g, const int8_t *F,
 	unsigned logn, uint8_t *tmp)
 {
@@ -778,7 +762,7 @@ falcon512dyn_avx2_complete_private(int8_t *G,
 
 /* see inner.h */
 int
-falcon512dyn_avx2_is_invertible(
+Zf(is_invertible)(
 	const int16_t *s2, unsigned logn, uint8_t *tmp)
 {
 	size_t u, n;
@@ -804,7 +788,7 @@ falcon512dyn_avx2_is_invertible(
 
 /* see inner.h */
 int
-falcon512dyn_avx2_verify_recover(uint16_t *h,
+Zf(verify_recover)(uint16_t *h,
 	const uint16_t *c0, const int16_t *s1, const int16_t *s2,
 	unsigned logn, uint8_t *tmp)
 {
@@ -844,7 +828,7 @@ falcon512dyn_avx2_verify_recover(uint16_t *h,
 	r = 0;
 	for (u = 0; u < n; u ++) {
 		r |= (uint32_t)(tt[u] - 1);
-		h[u] = mq_div_12289(h[u], tt[u]);
+		h[u] = (uint16_t)mq_div_12289(h[u], tt[u]);
 	}
 	mq_iNTT(h, logn);
 
@@ -854,13 +838,13 @@ falcon512dyn_avx2_verify_recover(uint16_t *h,
 	 * check that the rebuilt public key matches the expected
 	 * value (e.g. through a hash).
 	 */
-	r = ~r & (uint32_t)-falcon512dyn_avx2_is_short(s1, s2, logn);
+	r = ~r & (uint32_t)-Zf(is_short)(s1, s2, logn);
 	return (int)(r >> 31);
 }
 
 /* see inner.h */
 int
-falcon512dyn_avx2_count_nttzero(int16_t *sig, unsigned logn, uint8_t *tmp)
+Zf(count_nttzero)(const int16_t *sig, unsigned logn, uint8_t *tmp)
 {
 	uint16_t *s2;
 	size_t u, n;

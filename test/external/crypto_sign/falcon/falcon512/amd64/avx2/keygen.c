@@ -2206,8 +2206,32 @@ poly_sub_scaled_ntt(uint32_t *restrict F, size_t Flen, size_t Fstride,
 /* ==================================================================== */
 
 
-#define RNG_CONTEXT   prng
-#define get_rng_u64   prng_get_u64
+#define RNG_CONTEXT   inner_shake256_context
+
+/*
+ * Get a random 8-byte integer from a SHAKE-based RNG. This function
+ * ensures consistent interpretation of the SHAKE output so that
+ * the same values will be obtained over different platforms, in case
+ * a known seed is used.
+ */
+static inline uint64_t
+get_rng_u64(inner_shake256_context *rng)
+{
+	/*
+	 * We enforce little-endian representation.
+	 */
+
+	/*
+	 * On little-endian systems we just interpret the bytes "as is"
+	 * (this is correct because the exact-width types such as
+	 * 'uint64_t' are guaranteed to have no padding and no trap
+	 * representation).
+	 */
+	uint64_t r;
+
+	inner_shake256_extract(rng, (uint8_t *)&r, sizeof r);
+	return r;
+}
 
 
 /*
@@ -3076,11 +3100,11 @@ solve_NTRU_intermediate(unsigned logn_top,
 	 * Compute 1/(f*adj(f)+g*adj(g)) in rt5. We also keep adj(f)
 	 * and adj(g) in rt3 and rt4, respectively.
 	 */
-	falcon512dyn_avx2_FFT(rt3, logn);
-	falcon512dyn_avx2_FFT(rt4, logn);
-	falcon512dyn_avx2_poly_invnorm2_fft(rt5, rt3, rt4, logn);
-	falcon512dyn_avx2_poly_adj_fft(rt3, logn);
-	falcon512dyn_avx2_poly_adj_fft(rt4, logn);
+	Zf(FFT)(rt3, logn);
+	Zf(FFT)(rt4, logn);
+	Zf(poly_invnorm2_fft)(rt5, rt3, rt4, logn);
+	Zf(poly_adj_fft)(rt3, logn);
+	Zf(poly_adj_fft)(rt4, logn);
 
 	/*
 	 * Reduce F and G repeatedly.
@@ -3136,13 +3160,13 @@ solve_NTRU_intermediate(unsigned logn_top,
 		/*
 		 * Compute (F*adj(f)+G*adj(g))/(f*adj(f)+g*adj(g)) in rt2.
 		 */
-		falcon512dyn_avx2_FFT(rt1, logn);
-		falcon512dyn_avx2_FFT(rt2, logn);
-		falcon512dyn_avx2_poly_mul_fft(rt1, rt3, logn);
-		falcon512dyn_avx2_poly_mul_fft(rt2, rt4, logn);
-		falcon512dyn_avx2_poly_add(rt2, rt1, logn);
-		falcon512dyn_avx2_poly_mul_autoadj_fft(rt2, rt5, logn);
-		falcon512dyn_avx2_iFFT(rt2, logn);
+		Zf(FFT)(rt1, logn);
+		Zf(FFT)(rt2, logn);
+		Zf(poly_mul_fft)(rt1, rt3, logn);
+		Zf(poly_mul_fft)(rt2, rt4, logn);
+		Zf(poly_add)(rt2, rt1, logn);
+		Zf(poly_mul_autoadj_fft)(rt2, rt5, logn);
+		Zf(iFFT)(rt2, logn);
 
 		/*
 		 * (f,g) are scaled by 'scale_fg', meaning that the
@@ -3597,10 +3621,10 @@ solve_NTRU_binary_depth1(unsigned logn_top,
 	 *   rt4 = g
 	 * in that order in RAM. We convert all of them to FFT.
 	 */
-	falcon512dyn_avx2_FFT(rt1, logn);
-	falcon512dyn_avx2_FFT(rt2, logn);
-	falcon512dyn_avx2_FFT(rt3, logn);
-	falcon512dyn_avx2_FFT(rt4, logn);
+	Zf(FFT)(rt1, logn);
+	Zf(FFT)(rt2, logn);
+	Zf(FFT)(rt3, logn);
+	Zf(FFT)(rt4, logn);
 
 	/*
 	 * Compute:
@@ -3610,14 +3634,14 @@ solve_NTRU_binary_depth1(unsigned logn_top,
 	 */
 	rt5 = rt4 + n;
 	rt6 = rt5 + n;
-	falcon512dyn_avx2_poly_add_muladj_fft(rt5, rt1, rt2, rt3, rt4, logn);
-	falcon512dyn_avx2_poly_invnorm2_fft(rt6, rt3, rt4, logn);
+	Zf(poly_add_muladj_fft)(rt5, rt1, rt2, rt3, rt4, logn);
+	Zf(poly_invnorm2_fft)(rt6, rt3, rt4, logn);
 
 	/*
 	 * Compute:
 	 *   rt5 = (F*adj(f)+G*adj(g)) / (f*adj(f)+g*adj(g))
 	 */
-	falcon512dyn_avx2_poly_mul_autoadj_fft(rt5, rt6, logn);
+	Zf(poly_mul_autoadj_fft)(rt5, rt6, logn);
 
 	/*
 	 * Compute k as the rounded version of rt5. Check that none of
@@ -3626,7 +3650,7 @@ solve_NTRU_binary_depth1(unsigned logn_top,
 	 * note that any out-of-bounds value here implies a failure and
 	 * (f,g) will be discarded, so we can make a simple test.
 	 */
-	falcon512dyn_avx2_iFFT(rt5, logn);
+	Zf(iFFT)(rt5, logn);
 	for (u = 0; u < n; u ++) {
 		fpr z;
 
@@ -3636,17 +3660,17 @@ solve_NTRU_binary_depth1(unsigned logn_top,
 		}
 		rt5[u] = fpr_of(fpr_rint(z));
 	}
-	falcon512dyn_avx2_FFT(rt5, logn);
+	Zf(FFT)(rt5, logn);
 
 	/*
 	 * Subtract k*f from F, and k*g from G.
 	 */
-	falcon512dyn_avx2_poly_mul_fft(rt3, rt5, logn);
-	falcon512dyn_avx2_poly_mul_fft(rt4, rt5, logn);
-	falcon512dyn_avx2_poly_sub(rt1, rt3, logn);
-	falcon512dyn_avx2_poly_sub(rt2, rt4, logn);
-	falcon512dyn_avx2_iFFT(rt1, logn);
-	falcon512dyn_avx2_iFFT(rt2, logn);
+	Zf(poly_mul_fft)(rt3, rt5, logn);
+	Zf(poly_mul_fft)(rt4, rt5, logn);
+	Zf(poly_sub)(rt1, rt3, logn);
+	Zf(poly_sub)(rt2, rt4, logn);
+	Zf(iFFT)(rt1, logn);
+	Zf(iFFT)(rt2, logn);
 
 	/*
 	 * Convert back F and G to integers, and return.
@@ -3866,7 +3890,7 @@ solve_NTRU_binary_depth0(unsigned logn,
 	for (u = 0; u < n; u ++) {
 		rt3[u] = fpr_of(((int32_t *)t2)[u]);
 	}
-	falcon512dyn_avx2_FFT(rt3, logn);
+	Zf(FFT)(rt3, logn);
 	rt2 = align_fpr(tmp, t2);
 	memmove(rt2, rt3, hn * sizeof *rt3);
 
@@ -3877,14 +3901,14 @@ solve_NTRU_binary_depth0(unsigned logn,
 	for (u = 0; u < n; u ++) {
 		rt3[u] = fpr_of(((int32_t *)t1)[u]);
 	}
-	falcon512dyn_avx2_FFT(rt3, logn);
+	Zf(FFT)(rt3, logn);
 
 	/*
 	 * Compute (F*adj(f)+G*adj(g))/(f*adj(f)+g*adj(g)) and get
 	 * its rounded normal representation in t1.
 	 */
-	falcon512dyn_avx2_poly_div_autoadj_fft(rt3, rt2, logn);
-	falcon512dyn_avx2_iFFT(rt3, logn);
+	Zf(poly_div_autoadj_fft)(rt3, rt2, logn);
+	Zf(iFFT)(rt3, logn);
 	for (u = 0; u < n; u ++) {
 		t1[u] = modp_set((int32_t)fpr_rint(rt3[u]), p);
 	}
@@ -4088,7 +4112,7 @@ poly_small_mkgauss(RNG_CONTEXT *rng, int8_t *f, unsigned logn)
 
 /* see falcon.h */
 void
-falcon512dyn_avx2_keygen(inner_shake256_context *rng,
+Zf(keygen)(inner_shake256_context *rng,
 	int8_t *f, int8_t *g, int8_t *F, int8_t *G, uint16_t *h,
 	unsigned logn, uint8_t *tmp)
 {
@@ -4114,11 +4138,9 @@ falcon512dyn_avx2_keygen(inner_shake256_context *rng,
 	size_t n, u;
 	uint16_t *h2, *tmp2;
 	RNG_CONTEXT *rc;
-	prng p;
 
 	n = MKN(logn);
-	falcon512dyn_avx2_prng_init(&p, rng);
-	rc = &p;
+	rc = rng;
 
 	/*
 	 * We need to generate f and g randomly, until we find values
@@ -4160,7 +4182,7 @@ falcon512dyn_avx2_keygen(inner_shake256_context *rng,
 		 * overwhelming probability; this guarantees that the
 		 * key will be encodable with FALCON_COMP_TRIM.
 		 */
-		lim = 1 << (falcon512dyn_avx2_max_fg_bits[logn] - 1);
+		lim = 1 << (Zf(max_fg_bits)[logn] - 1);
 		for (u = 0; u < n; u ++) {
 			/*
 			 * We can use non-CT tests since on any failure
@@ -4199,17 +4221,17 @@ falcon512dyn_avx2_keygen(inner_shake256_context *rng,
 		rt3 = rt2 + n;
 		poly_small_to_fp(rt1, f, logn);
 		poly_small_to_fp(rt2, g, logn);
-		falcon512dyn_avx2_FFT(rt1, logn);
-		falcon512dyn_avx2_FFT(rt2, logn);
-		falcon512dyn_avx2_poly_invnorm2_fft(rt3, rt1, rt2, logn);
-		falcon512dyn_avx2_poly_adj_fft(rt1, logn);
-		falcon512dyn_avx2_poly_adj_fft(rt2, logn);
-		falcon512dyn_avx2_poly_mulconst(rt1, fpr_q, logn);
-		falcon512dyn_avx2_poly_mulconst(rt2, fpr_q, logn);
-		falcon512dyn_avx2_poly_mul_autoadj_fft(rt1, rt3, logn);
-		falcon512dyn_avx2_poly_mul_autoadj_fft(rt2, rt3, logn);
-		falcon512dyn_avx2_iFFT(rt1, logn);
-		falcon512dyn_avx2_iFFT(rt2, logn);
+		Zf(FFT)(rt1, logn);
+		Zf(FFT)(rt2, logn);
+		Zf(poly_invnorm2_fft)(rt3, rt1, rt2, logn);
+		Zf(poly_adj_fft)(rt1, logn);
+		Zf(poly_adj_fft)(rt2, logn);
+		Zf(poly_mulconst)(rt1, fpr_q, logn);
+		Zf(poly_mulconst)(rt2, fpr_q, logn);
+		Zf(poly_mul_autoadj_fft)(rt1, rt3, logn);
+		Zf(poly_mul_autoadj_fft)(rt2, rt3, logn);
+		Zf(iFFT)(rt1, logn);
+		Zf(iFFT)(rt2, logn);
 		bnorm = fpr_zero;
 		for (u = 0; u < n; u ++) {
 			bnorm = fpr_add(bnorm, fpr_sqr(rt1[u]));
@@ -4230,14 +4252,14 @@ falcon512dyn_avx2_keygen(inner_shake256_context *rng,
 			h2 = h;
 			tmp2 = (uint16_t *)tmp;
 		}
-		if (!falcon512dyn_avx2_compute_public(h2, f, g, logn, (uint8_t *)tmp2)) {
+		if (!Zf(compute_public)(h2, f, g, logn, (uint8_t *)tmp2)) {
 			continue;
 		}
 
 		/*
 		 * Solve the NTRU equation to get F and G.
 		 */
-		lim = (1 << (falcon512dyn_avx2_max_FG_bits[logn] - 1)) - 1;
+		lim = (1 << (Zf(max_FG_bits)[logn] - 1)) - 1;
 		if (!solve_NTRU(logn, F, G, f, g, lim, (uint32_t *)tmp)) {
 			continue;
 		}

@@ -6,8 +6,7 @@ from Jade require "crypto_sign/falcon/falcon512/common/amd64/encode_decode.jinc"
 
 require "verify.jinc"
 
-inline
-fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARRAY_N], reg u32 {
+inline fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARRAY_N], reg u32 {
 
     reg u32 failed res;
     reg u8 t;
@@ -32,8 +31,7 @@ fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARRAY_N], 
 
 }
 
-inline
-fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stack u16[ARRAY_N], reg u32 {
+inline fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stack u16[ARRAY_N], reg u32 {
 
     reg u32 failed res;
     reg u8 t;
@@ -60,8 +58,7 @@ fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stack u16[A
 
 }
 
-inline
-fn __check_len(stack u64 esig_buff sig_len_buff msg_len_buff, reg u64 sm smlen)
+inline fn __check_len(stack u64 esig_buff sig_len_buff msg_len_buff, reg u64 sm smlen)
     -> stack u64, stack u64, stack u64, reg u32
 {
 
@@ -100,8 +97,7 @@ fn __check_len(stack u64 esig_buff sig_len_buff msg_len_buff, reg u64 sm smlen)
 
 }
 
-inline
-fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) -> stack u64[25], stack u16[ARRAY_N] {
+inline fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) -> stack u64[25], stack u16[ARRAY_N] {
 
     stack u8[SHAKE256_RATE] block_buff;
     stack u8[8] buff;
@@ -190,8 +186,7 @@ fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) -> stack 
 }
 
 
-inline
-fn __jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen pk) -> reg u64 {
+inline fn __jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen pk) -> reg u64 {
 
     reg u64 sig_len msg_len esig;
     reg u64 shake_in;

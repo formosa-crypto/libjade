@@ -33,92 +33,13 @@
 
 #include "inner.h"
 
-/*
- * Include relevant system header files. For Win32, this will also need
- * linking with advapi32.dll, which we trigger with an appropriate #pragma.
- */
-#if FALCON_RAND_GETENTROPY
-#include <unistd.h>
-#endif
-#if FALCON_RAND_URANDOM
-#include <sys/types.h>
-#if !FALCON_RAND_GETENTROPY
-#include <unistd.h>
-#endif
-#include <fcntl.h>
-#include <errno.h>
-#endif
-#if FALCON_RAND_WIN32
-#include <windows.h>
-#include <wincrypt.h>
-#pragma comment(lib, "advapi32")
-#endif
-
-/* see inner.h */
-int
-falcon512dyn_avx2_get_seed(void *seed, size_t len)
-{
-	(void)seed;
-	if (len == 0) {
-		return 1;
-	}
-#if FALCON_RAND_GETENTROPY
-	if (getentropy(seed, len) == 0) {
-		return 1;
-	}
-#endif
-#if FALCON_RAND_URANDOM
-	{
-		int f;
-
-		f = open("/dev/urandom", O_RDONLY);
-		if (f >= 0) {
-			while (len > 0) {
-				ssize_t rlen;
-
-				rlen = read(f, seed, len);
-				if (rlen < 0) {
-					if (errno == EINTR) {
-						continue;
-					}
-					break;
-				}
-				seed = (uint8_t *)seed + rlen;
-				len -= (size_t)rlen;
-			}
-			close(f);
-			if (len == 0) {
-				return 1;
-			}
-		}
-	}
-#endif
-#if FALCON_RAND_WIN32
-	{
-		HCRYPTPROV hp;
-
-		if (CryptAcquireContext(&hp, 0, 0, PROV_RSA_FULL,
-			CRYPT_VERIFYCONTEXT | CRYPT_SILENT))
-		{
-			BOOL r;
-
-			r = CryptGenRandom(hp, (DWORD)len, seed);
-			CryptReleaseContext(hp, 0);
-			if (r) {
-				return 1;
-			}
-		}
-	}
-#endif
-	return 0;
-}
 
 /* see inner.h */
 void
-falcon512dyn_avx2_prng_init(prng *p, inner_shake256_context *src)
+Zf(prng_init)(prng *p, inner_shake256_context *src)
 {
 	inner_shake256_extract(src, p->state.d, 56);
-	falcon512dyn_avx2_prng_refill(p);
+	Zf(prng_refill)(p);
 }
 
 /*
@@ -137,7 +58,7 @@ falcon512dyn_avx2_prng_init(prng *p, inner_shake256_context *src)
  */
 TARGET_AVX2
 void
-falcon512dyn_avx2_prng_refill(prng *p)
+Zf(prng_refill)(prng *p)
 {
 
 	static const uint32_t CW[] = {
@@ -241,7 +162,7 @@ falcon512dyn_avx2_prng_refill(prng *p)
 
 /* see inner.h */
 void
-falcon512dyn_avx2_prng_get_bytes(prng *p, void *dst, size_t len)
+Zf(prng_get_bytes)(prng *p, void *dst, size_t len)
 {
 	uint8_t *buf;
 
@@ -258,7 +179,7 @@ falcon512dyn_avx2_prng_get_bytes(prng *p, void *dst, size_t len)
 		len -= clen;
 		p->ptr += clen;
 		if (p->ptr == sizeof p->buf.d) {
-			falcon512dyn_avx2_prng_refill(p);
+			Zf(prng_refill)(p);
 		}
 	}
 }

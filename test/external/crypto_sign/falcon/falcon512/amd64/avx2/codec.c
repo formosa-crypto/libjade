@@ -33,7 +33,7 @@
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_modq_encode(
+Zf(modq_encode)(
 	void *out, size_t max_out_len,
 	const uint16_t *x, unsigned logn)
 {
@@ -74,7 +74,7 @@ falcon512dyn_avx2_modq_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_modq_decode(
+Zf(modq_decode)(
 	uint16_t *x, unsigned logn,
 	const void *in, size_t max_in_len)
 {
@@ -114,7 +114,7 @@ falcon512dyn_avx2_modq_decode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i16_encode(
+Zf(trim_i16_encode)(
 	void *out, size_t max_out_len,
 	const int16_t *x, unsigned logn, unsigned bits)
 {
@@ -159,7 +159,7 @@ falcon512dyn_avx2_trim_i16_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i16_decode(
+Zf(trim_i16_decode)(
 	int16_t *x, unsigned logn, unsigned bits,
 	const void *in, size_t max_in_len)
 {
@@ -210,7 +210,7 @@ falcon512dyn_avx2_trim_i16_decode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i8_encode(
+Zf(trim_i8_encode)(
 	void *out, size_t max_out_len,
 	const int8_t *x, unsigned logn, unsigned bits)
 {
@@ -255,7 +255,7 @@ falcon512dyn_avx2_trim_i8_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_trim_i8_decode(
+Zf(trim_i8_decode)(
 	int8_t *x, unsigned logn, unsigned bits,
 	const void *in, size_t max_in_len)
 {
@@ -305,7 +305,7 @@ falcon512dyn_avx2_trim_i8_decode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_comp_encode(
+Zf(comp_encode)(
 	void *out, size_t max_out_len,
 	const int16_t *x, unsigned logn)
 {
@@ -402,7 +402,7 @@ falcon512dyn_avx2_comp_encode(
 
 /* see inner.h */
 size_t
-falcon512dyn_avx2_comp_decode(
+Zf(comp_decode)(
 	int16_t *x, unsigned logn,
 	const void *in, size_t max_in_len)
 {
@@ -451,8 +451,24 @@ falcon512dyn_avx2_comp_decode(
 				return 0;
 			}
 		}
+
+		/*
+		 * "-0" is forbidden.
+		 */
+		if (s && m == 0) {
+			return 0;
+		}
+
 		x[u] = (int16_t)(s ? -(int)m : (int)m);
 	}
+
+	/*
+	 * Unused bits in the last byte must be zero.
+	 */
+	if ((acc & ((1u << acc_len) - 1u)) != 0) {
+		return 0;
+	}
+
 	return v;
 }
 
@@ -488,7 +504,7 @@ falcon512dyn_avx2_comp_decode(
  * of max_fg_bits[] and max_FG_bits[] shall be greater than 8.
  */
 
-const uint8_t falcon512dyn_avx2_max_fg_bits[] = {
+const uint8_t Zf(max_fg_bits)[] = {
 	0, /* unused */
 	8,
 	8,
@@ -502,7 +518,7 @@ const uint8_t falcon512dyn_avx2_max_fg_bits[] = {
 	5
 };
 
-const uint8_t falcon512dyn_avx2_max_FG_bits[] = {
+const uint8_t Zf(max_FG_bits)[] = {
 	0, /* unused */
 	8,
 	8,
@@ -544,7 +560,7 @@ const uint8_t falcon512dyn_avx2_max_FG_bits[] = {
  * in -2047..2047, i.e. 12 bits.
  */
 
-const uint8_t falcon512dyn_avx2_max_sig_bits[] = {
+const uint8_t Zf(max_sig_bits)[] = {
 	0, /* unused */
 	10,
 	11,

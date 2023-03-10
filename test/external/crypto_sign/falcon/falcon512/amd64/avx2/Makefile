@@ -5,7 +5,7 @@ CFLAGS += -Wall -Wextra -Wpedantic -Wredundant-decls \
 
 
 HEADERs := api.h  fpr.h  inner.h
-SOURCEs := api.c  codec.c  common.c  fft.c  fpr.c  keygen.c  rng.c  shake.c  sign.c  vrfy.c
+SOURCEs := codec.c common.c fft.c fpr.c keygen.c nist.c rng.c shake.c sign.c vrfy.c
 OBJs    := $(SOURCEs:%.c=%.o)
 
 LIB     := external_crypto_sign_falcon_falcon512_amd64_avx2.a
@@ -24,4 +24,3 @@ $(LIB): $(OBJs)
 clean:
 	rm -rf $(OBJs)
 	rm -rf $(LIB)
-

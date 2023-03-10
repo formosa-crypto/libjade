@@ -33,7 +33,7 @@
 
 /* see inner.h */
 void
-falcon512dyn_avx2_hash_to_point_vartime(
+Zf(hash_to_point_vartime)(
 	inner_shake256_context *sc,
 	uint16_t *x, unsigned logn)
 {
@@ -68,7 +68,7 @@ falcon512dyn_avx2_hash_to_point_vartime(
 
 /* see inner.h */
 void
-falcon512dyn_avx2_hash_to_point_ct(
+Zf(hash_to_point_ct)(
 	inner_shake256_context *sc,
 	uint16_t *x, unsigned logn, uint8_t *tmp)
 {
@@ -233,9 +233,28 @@ falcon512dyn_avx2_hash_to_point_ct(
 	}
 }
 
+/*
+ * Acceptance bound for the (squared) l2-norm of the signature depends
+ * on the degree. This array is indexed by logn (1 to 10). These bounds
+ * are _inclusive_ (they are equal to floor(beta^2)).
+ */
+static const uint32_t l2bound[] = {
+	0,    /* unused */
+	101498,
+	208714,
+	428865,
+	892039,
+	1852696,
+	3842630,
+	7959734,
+	16468416,
+	34034726,
+	70265242
+};
+
 /* see inner.h */
 int
-falcon512dyn_avx2_is_short(
+Zf(is_short)(
 	const int16_t *s1, const int16_t *s2, unsigned logn)
 {
 	/*
@@ -261,17 +280,12 @@ falcon512dyn_avx2_is_short(
 	}
 	s |= -(ng >> 31);
 
-	/*
-	 * Acceptance bound on the l2-norm is:
-	 *   1.2*1.55*sqrt(q)*sqrt(2*N)
-	 * Value 7085 is floor((1.2^2)*(1.55^2)*2*1024).
-	 */
-	return s < (((uint32_t)7085 * (uint32_t)12289) >> (10 - logn));
+	return s <= l2bound[logn];
 }
 
 /* see inner.h */
 int
-falcon512dyn_avx2_is_short_half(
+Zf(is_short_half)(
 	uint32_t sqn, const int16_t *s2, unsigned logn)
 {
 	size_t n, u;
@@ -288,10 +302,5 @@ falcon512dyn_avx2_is_short_half(
 	}
 	sqn |= -(ng >> 31);
 
-	/*
-	 * Acceptance bound on the l2-norm is:
-	 *   1.2*1.55*sqrt(q)*sqrt(2*N)
-	 * Value 7085 is floor((1.2^2)*(1.55^2)*2*1024).
-	 */
-	return sqn < (((uint32_t)7085 * (uint32_t)12289) >> (10 - logn));
+	return sqn <= l2bound[logn];
 }

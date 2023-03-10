@@ -1,35 +1,46 @@
 /*
- * Wrapper for implementing the SUPERCOP API.
+ * Wrapper for implementing the NIST API for the PQC standardization
+ * process.
  */
 
 #include <stddef.h>
 #include <string.h>
 
-#define crypto_sign_keypair jade_sign_falcon_falcon512_amd64_avx2_keypair
-#define crypto_sign jade_sign_falcon_falcon512_amd64_avx2
-// #define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
-
 #include "api.h"
-//#include "crypto_sign.h"
 #include "inner.h"
 
 #define NONCELEN   40
-#define SEEDLEN    48
 
+#define crypto_sign_keypair jade_sign_falcon_falcon512_amd64_avx2_keypair
+#define crypto_sign jade_sign_falcon_falcon512_amd64_avx2
+//define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
+
+/*
+ * If stack usage is an issue, define TEMPALLOC to static in order to
+ * allocate temporaries in the data section instead of the stack. This
+ * would make the crypto_sign_keypair(), crypto_sign(), and
+ * crypto_sign_open() functions not reentrant and not thread-safe, so
+ * this should be done only for testing purposes.
+ */
+#define TEMPALLOC
+
+void randombytes_init(unsigned char *entropy_input,
+	unsigned char *personalization_string,
+	int security_strength);
 int randombytes(unsigned char *x, unsigned long long xlen);
 
 int
 crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 {
-	union {
-		uint8_t b[28 * 512];
+	TEMPALLOC union {
+		uint8_t b[FALCON_KEYGEN_TEMP_9];
 		uint64_t dummy_u64;
 		fpr dummy_fpr;
 	} tmp;
-	int8_t f[512], g[512], F[512], G[512];
-	uint16_t h[512];
-	unsigned char seed[SEEDLEN];
-	inner_shake256_context rng;
+	TEMPALLOC int8_t f[512], g[512], F[512];
+	TEMPALLOC uint16_t h[512];
+	TEMPALLOC unsigned char seed[48];
+	TEMPALLOC inner_shake256_context rng;
 	size_t u, v;
 	unsigned savcw;
 
@@ -42,32 +53,29 @@ crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 	inner_shake256_init(&rng);
 	inner_shake256_inject(&rng, seed, sizeof seed);
 	inner_shake256_flip(&rng);
-	falcon512dyn_avx2_keygen(
-		&rng, f, g, F, G, h, 9, tmp.b);
+	Zf(keygen)(&rng, f, g, F, NULL, h, 9, tmp.b);
 
 	set_fpu_cw(savcw);
+
 	/*
 	 * Encode private key.
 	 */
 	sk[0] = 0x50 + 9;
 	u = 1;
-	v = falcon512dyn_avx2_trim_i8_encode(
-		sk + u, CRYPTO_SECRETKEYBYTES - u, f, 9,
-		falcon512dyn_avx2_max_fg_bits[9]);
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		f, 9, Zf(max_fg_bits)[9]);
 	if (v == 0) {
 		return -1;
 	}
 	u += v;
-	v = falcon512dyn_avx2_trim_i8_encode(
-		sk + u, CRYPTO_SECRETKEYBYTES - u, g, 9,
-		falcon512dyn_avx2_max_fg_bits[9]);
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		g, 9, Zf(max_fg_bits)[9]);
 	if (v == 0) {
 		return -1;
 	}
 	u += v;
-	v = falcon512dyn_avx2_trim_i8_encode(
-		sk + u, CRYPTO_SECRETKEYBYTES - u, F, 9,
-		falcon512dyn_avx2_max_FG_bits[9]);
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		F, 9, Zf(max_FG_bits)[9]);
 	if (v == 0) {
 		return -1;
 	}
@@ -80,8 +88,7 @@ crypto_sign_keypair(unsigned char *pk, unsigned char *sk)
 	 * Encode public key.
 	 */
 	pk[0] = 0x00 + 9;
-	v = falcon512dyn_avx2_modq_encode(
-		pk + 1, CRYPTO_PUBLICKEYBYTES - 1, h, 9);
+	v = Zf(modq_encode)(pk + 1, CRYPTO_PUBLICKEYBYTES - 1, h, 9);
 	if (v != CRYPTO_PUBLICKEYBYTES - 1) {
 		return -1;
 	}
@@ -94,21 +101,20 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	const unsigned char *m, unsigned long long mlen,
 	const unsigned char *sk)
 {
-	union {
+	TEMPALLOC union {
 		uint8_t b[72 * 512];
 		uint64_t dummy_u64;
 		fpr dummy_fpr;
 	} tmp;
-	int8_t f[512], g[512], F[512], G[512];
-	union {
+	TEMPALLOC int8_t f[512], g[512], F[512], G[512];
+	TEMPALLOC union {
 		int16_t sig[512];
 		uint16_t hm[512];
 	} r;
-	unsigned char seed[SEEDLEN], nonce[NONCELEN];
-	unsigned char esig[CRYPTO_BYTES - 2 - sizeof nonce];
-	inner_shake256_context sc;
-	size_t u, sig_len;
-	size_t v;
+	TEMPALLOC unsigned char seed[48], nonce[NONCELEN];
+	TEMPALLOC unsigned char esig[CRYPTO_BYTES - 2 - sizeof nonce];
+	TEMPALLOC inner_shake256_context sc;
+	size_t u, v, sig_len;
 	unsigned savcw;
 
 	/*
@@ -118,25 +124,19 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 		return -1;
 	}
 	u = 1;
-	v = falcon512dyn_avx2_trim_i8_decode(
-		f, 9,
-		falcon512dyn_avx2_max_fg_bits[9],
+	v = Zf(trim_i8_decode)(f, 9, Zf(max_fg_bits)[9],
 		sk + u, CRYPTO_SECRETKEYBYTES - u);
 	if (v == 0) {
 		return -1;
 	}
 	u += v;
-	v = falcon512dyn_avx2_trim_i8_decode(
-		g, 9,
-		falcon512dyn_avx2_max_fg_bits[9],
+	v = Zf(trim_i8_decode)(g, 9, Zf(max_fg_bits)[9],
 		sk + u, CRYPTO_SECRETKEYBYTES - u);
 	if (v == 0) {
 		return -1;
 	}
 	u += v;
-	v = falcon512dyn_avx2_trim_i8_decode(
-		F, 9,
-		falcon512dyn_avx2_max_FG_bits[9],
+	v = Zf(trim_i8_decode)(F, 9, Zf(max_FG_bits)[9],
 		sk + u, CRYPTO_SECRETKEYBYTES - u);
 	if (v == 0) {
 		return -1;
@@ -145,13 +145,9 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	if (u != CRYPTO_SECRETKEYBYTES) {
 		return -1;
 	}
-	if (!falcon512dyn_avx2_complete_private(
-		G, f, g, F, 9, tmp.b))
-	{
+	if (!Zf(complete_private)(G, f, g, F, 9, tmp.b)) {
 		return -1;
 	}
-
-	savcw = set_fpu_cw(2);
 
 	/*
 	 * Create a random nonce (40 bytes).
@@ -165,8 +161,7 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	inner_shake256_inject(&sc, nonce, sizeof nonce);
 	inner_shake256_inject(&sc, m, mlen);
 	inner_shake256_flip(&sc);
-	falcon512dyn_avx2_hash_to_point_vartime(
-		&sc, r.hm, 9);
+	Zf(hash_to_point_vartime)(&sc, r.hm, 9);
 
 	/*
 	 * Initialize a RNG.
@@ -176,11 +171,12 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	inner_shake256_inject(&sc, seed, sizeof seed);
 	inner_shake256_flip(&sc);
 
+	savcw = set_fpu_cw(2);
+
 	/*
 	 * Compute the signature.
 	 */
-	falcon512dyn_avx2_sign_dyn(
-		r.sig, &sc, f, g, F, G, r.hm, 9, tmp.b);
+	Zf(sign_dyn)(r.sig, &sc, f, g, F, G, r.hm, 9, tmp.b);
 
 	set_fpu_cw(savcw);
 
@@ -192,8 +188,7 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	 *   signature            slen bytes
 	 */
 	esig[0] = 0x20 + 9;
-	sig_len = falcon512dyn_avx2_comp_encode(
-		esig + 1, (sizeof esig) - 1, r.sig, 9);
+	sig_len = Zf(comp_encode)(esig + 1, (sizeof esig) - 1, r.sig, 9);
 	if (sig_len == 0) {
 		return -1;
 	}
@@ -207,57 +202,39 @@ crypto_sign(unsigned char *sm, unsigned long long *smlen,
 	return 0;
 }
 
-extern int __decode_public_key_external(uint16_t*, const unsigned char*);
-extern int __check_len_external(const unsigned char**, size_t*, size_t*,
-		const unsigned char*, unsigned long long);
-extern int __decode_sign_external(int16_t*, const unsigned char*, size_t);
-extern int __shake256_absorb_external(uint64_t*, const unsigned char*, size_t);
-extern int __hash_to_point_vartime_export(uint64_t*, uint16_t*);
-extern int __verify_raw_external(uint16_t*, int16_t*, uint16_t*);
-
+#if 0
 int
 crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	const unsigned char *sm, unsigned long long smlen,
 	const unsigned char *pk)
 {
-	union {
+	TEMPALLOC union {
 		uint8_t b[2 * 512];
 		uint64_t dummy_u64;
 		fpr dummy_fpr;
 	} tmp;
 	const unsigned char *esig;
-	uint16_t h[512], hm[512];
-	int16_t sig[512];
-	inner_shake256_context sc;
+	TEMPALLOC uint16_t h[512], hm[512];
+	TEMPALLOC int16_t sig[512];
+	TEMPALLOC inner_shake256_context sc;
 	size_t sig_len, msg_len;
 
 	/*
 	 * Decode public key.
 	 */
-#if 1
-	if(__decode_public_key_external(h, pk) == -1){
-		return -1;
-	}
-#else
 	if (pk[0] != 0x00 + 9) {
 		return -1;
 	}
-	if (falcon512dyn_avx2_modq_decode(
-		h, 9, pk + 1, CRYPTO_PUBLICKEYBYTES - 1)
+	if (Zf(modq_decode)(h, 9, pk + 1, CRYPTO_PUBLICKEYBYTES - 1)
 		!= CRYPTO_PUBLICKEYBYTES - 1)
 	{
 		return -1;
 	}
-#endif
+	Zf(to_ntt_monty)(h, 9);
 
 	/*
 	 * Find nonce, signature, message length.
 	 */
-#if 1
-	if(__check_len_external(&esig, &sig_len, &msg_len, sm, smlen) == -1){
-		return -1;
-	}
-#else
 	if (smlen < 2 + NONCELEN) {
 		return -1;
 	}
@@ -265,67 +242,35 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	if (sig_len > (smlen - 2 - NONCELEN)) {
 		return -1;
 	}
-	if(sig_len < 1){
-		return -1;
-	}
 	msg_len = smlen - 2 - NONCELEN - sig_len;
 
 	/*
 	 * Decode signature.
 	 */
-
-#endif
-
-#if 1
-	if(__decode_sign_external(sig, esig, sig_len) == -1){
-		return -1;
-	}
-#else
 	esig = sm + 2 + NONCELEN + msg_len;
-	if (esig[0] != 0x20 + 9) {
+	if (sig_len < 1 || esig[0] != 0x20 + 9) {
 		return -1;
 	}
-	if (falcon512dyn_avx2_comp_decode(
-		sig, 9, esig + 1, sig_len - 1) != sig_len - 1)
+	if (Zf(comp_decode)(sig, 9,
+		esig + 1, sig_len - 1) != sig_len - 1)
 	{
 		return -1;
 	}
-#endif
 
 	/*
 	 * Hash nonce + message into a vector.
 	 */
-#if 1
-	__shake256_absorb_external(sc.st.A, sm + 2, NONCELEN + msg_len);
-	__hash_to_point_vartime_export(sc.st.A, hm);
-#else
 	inner_shake256_init(&sc);
 	inner_shake256_inject(&sc, sm + 2, NONCELEN + msg_len);
 	inner_shake256_flip(&sc);
-	falcon512dyn_avx2_hash_to_point_vartime(
-		&sc, hm, 9);
-#endif
-
-
-
+	Zf(hash_to_point_vartime)(&sc, hm, 9);
 
 	/*
 	 * Verify signature.
 	 */
-#if 0
-	// this is wrong
-	if(!__verify_raw_external(hm, sig, h)){
+	if (!Zf(verify_raw)(hm, sig, h, 9, tmp.b)) {
 		return -1;
 	}
-#else
-	falcon512dyn_avx2_to_ntt_monty(h, 9);
-	if (!falcon512dyn_avx2_verify_raw(
-		hm, sig, h, 9, tmp.b))
-	{
-		return -1;
-	}
-#endif
-
 
 	/*
 	 * Return plaintext.
@@ -334,3 +279,4 @@ crypto_sign_open(unsigned char *m, unsigned long long *mlen,
 	*mlen = msg_len;
 	return 0;
 }
+#endif
