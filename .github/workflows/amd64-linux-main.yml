@@ -19,10 +19,6 @@ jobs:
 
       - name: compile
         run: make -j$JOBS -C src/ CI=1 default
-      - name: dist amd64
-        run: ./scripts/ci/releaser/jdist-src amd64
-      - name: check dist amd64
-        run: ./scripts/ci/releaser/jdist-src-test amd64
       - name: print logs
         run: make         -C src/ CI=1 reporter
       - name: return error if there are any errors
@@ -34,13 +30,6 @@ jobs:
         with:
           name: libjade-logs-src.tar.gz
           path: src/libjade-logs-src.tar.gz
-
-      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-dist-src-amd64.tar.gz
-          path: libjade-dist-src-amd64.tar.gz
 
 
 
@@ -113,7 +102,6 @@ jobs:
 
 
 
-
   proof-extracted:
     needs: [test]
     runs-on: [self-hosted, linux, X64, amd64-main]
@@ -143,4 +131,23 @@ jobs:
         with:
           name: libjade-dist-proof.tar.gz
           path: libjade-dist-proof.tar.gz
+
+
+
+  dist:
+    needs: [compile]
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: dist amd64
+        run: ./scripts/ci/releaser/jdist-src amd64
+
+      - name: check dist amd64
+        run: ./scripts/ci/releaser/jdist-src-test amd64
+
+      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-dist-src-amd64.tar.gz
+          path: libjade-dist-src-amd64.tar.gz
 
