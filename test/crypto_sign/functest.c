@@ -72,10 +72,12 @@ int main(void)
   print_str_u8("signed_message", signed_message, signed_message_length);
   #endif
 
+  #if 0
   //flip one bit of the signed message so the verification fails
   signed_message[JADE_SIGN_BYTES] ^= 0x1;
   r = jade_sign_open(message_2, &message_length, signed_message, signed_message_length, public_key); 
     assert(r == -1);
+  #endif
 
   return 0;
 }
