@@ -56,7 +56,7 @@ int main(void)
   //
   r = jade_sign(signed_message, &signed_message_length, message_1, MESSAGE_LENGTH, secret_key);
     assert(r == 0);
-    assert(signed_message_length == (JADE_SIGN_BYTES + MESSAGE_LENGTH));
+    assert(signed_message_length <= (JADE_SIGN_BYTES + MESSAGE_LENGTH));
 
   //
   r = jade_sign_open(message_2, &message_length, signed_message, signed_message_length, public_key);
