@@ -88,6 +88,10 @@ default: benchs
 benchs: $(EXEC)
 
 $(EXEC):
+
+# --------------------------------------------------------------------
+include Makefile.partial_implementations
+
 %/bench: $(RANDLIB) __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)
