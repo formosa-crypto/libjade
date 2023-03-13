@@ -3,7 +3,7 @@ require "sha512.jinc"
 export fn jade_hash_sha512_amd64_ref(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
-  __sha512(hash, input, input_length);
+  __sha512_ref(hash, input, input_length);
   ?{}, r = #set0();
   return r;
 }
