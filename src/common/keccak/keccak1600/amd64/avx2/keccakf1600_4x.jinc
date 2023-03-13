@@ -109,7 +109,7 @@ inline fn __rol_sum_4x_avx2(
   {
     x_ = (x + 3*y) % 5;
     y_ = x;
-    r = __rhotates(x_, y_);
+    r = __rhotates_spec(x_, y_);
 
     // B[x] = A[x',y']
     b[x] = a[x_ + y_*5];
@@ -200,7 +200,7 @@ inline fn __keccakf1600_4x_avx2(reg ptr u256[25] a) -> reg ptr u256[25]
   return a;
 }
 
-
+#[returnaddress="stack"]
 fn _keccakf1600_4x_avx2(reg ptr u256[25] a) -> reg ptr u256[25]
 {
   a = __keccakf1600_4x_avx2(a);
