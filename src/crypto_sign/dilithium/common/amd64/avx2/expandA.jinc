@@ -1,4 +1,4 @@
-require "keccakf1600_4x.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
 
 // SHAKE128 rate is 168 bytes
 // Then the pad byte is at the 8th byte of the 5th u256 block
@@ -151,7 +151,7 @@ fn expandA_chunk(
 	while {
 		v64 = coeffs_filled[lane];
 	} (done != 0x0F) {
-		xof = _KeccakF1600_StatePermute4x(xof);
+		xof = _keccakf1600_4x_avx2(xof);
 		for lane = 0 to 4 {
 			xof_offset[lane] = 0;
 		}
