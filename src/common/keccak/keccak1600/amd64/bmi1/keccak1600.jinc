@@ -2,35 +2,20 @@ param int KECCAK_ROUNDS=24;
 
 require "keccakf1600.jinc"
 
-/*
-inline fn __keccak_init_bmi1() -> stack u64[25]
+
+inline fn __keccak_init_bmi1(reg ptr u64[25] state) -> reg ptr u64[25]
 {
-  stack u64[25] state;
-  reg u64 i t;
-
-  ?{}, t = #set0();
-  i = 0;
-  while (i < 25)
-  { state[(int)i] = t;
-    i += 1;
-  }
-
-  return state;
-}
-*/
-
-inline fn __keccak_init_bmi1() -> stack u64[25]
-{
-  stack u64[25] state;
   inline int i;
   reg u64 t;
 
+  // TODO: CHECKMELATER: go back to while loop and use annotations for safety checking?
   ?{}, t = #set0();
   for i=0 to 25
   { state[i] = t; }
 
   return state;
 }
+
 
 
 inline fn __add_full_block_bmi1(
@@ -237,8 +222,8 @@ inline fn __keccak1600_bmi1(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
   s_outlen = outlen;
   s_trail_byte = trail_byte;
 
-  _state = __keccak_init_bmi1();
   state = _state;
+  state = __keccak_init_bmi1(state);
 
   // absorb
   state, rate = __absorb_bmi1(state, in, inlen, s_trail_byte, rate);
