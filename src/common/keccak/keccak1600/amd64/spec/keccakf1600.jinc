@@ -1,7 +1,7 @@
 
 require "keccakf1600_globals.jinc"
 
-inline fn __index(inline int x y) -> inline int
+inline fn __index_spec(inline int x y) -> inline int
 {
   inline int r;
   r = (x % 5) + 5 * (y % 5);
@@ -9,7 +9,7 @@ inline fn __index(inline int x y) -> inline int
 }
 
 
-inline fn __keccak_rho_offsets(inline int i) -> inline int
+inline fn __keccak_rho_offsets_spec(inline int i) -> inline int
 {
   inline int r x y z t;
 
@@ -30,11 +30,11 @@ inline fn __keccak_rho_offsets(inline int i) -> inline int
 }
 
 
-inline fn __rhotates(inline int x y) -> inline int
+inline fn __rhotates_spec(inline int x y) -> inline int
 {
   inline int i r;
-  i = __index(x, y);
-  r = __keccak_rho_offsets(i);
+  i = __index_spec(x, y);
+  r = __keccak_rho_offsets_spec(i);
   return r;
 }
 
@@ -73,8 +73,8 @@ inline fn __rho_spec(stack u64[25] a) -> stack u64[25]
 
   for x = 0 to 5 {
     for y = 0 to 5 {
-      i = __index(x, y);
-      z = __keccak_rho_offsets(i);
+      i = __index_spec(x, y);
+      z = __keccak_rho_offsets_spec(i);
       _, _, a[i] = #ROL_64(a[i], z);
     }
   }
@@ -95,7 +95,7 @@ inline fn __pi_spec(stack u64[25] a) -> stack u64[25]
   for x = 0 to 5 {
     for y = 0 to 5 {
       t = b[x + 5 * y];
-      i = __index(y, 2 * x + 3 * y);
+      i = __index_spec(y, 2 * x + 3 * y);
       a[i] = t;
     }
   }
@@ -110,12 +110,12 @@ inline fn __chi_spec(stack u64[25] a) -> stack u64[25]
 
   for y = 0 to 5 {
     for x = 0 to 5 {
-      i = __index(x + 1, y);
+      i = __index_spec(x + 1, y);
       c[x] = a[i];
       c[x] = !c[x];
-      i = __index(x + 2, y);
+      i = __index_spec(x + 2, y);
       c[x] &= a[i];
-      i = __index(x, y);
+      i = __index_spec(x, y);
       c[x] ^= a[i];
     }
     for x = 0 to 5 {
