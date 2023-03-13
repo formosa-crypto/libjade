@@ -2,7 +2,7 @@ param int KECCAK_ROUNDS=24;
 
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600.jinc"
-require "fips202_params_DIRTY.jinc"
+require "fips202_params.jinc"
 
 #[returnaddress="stack"]
 fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]

@@ -1,13 +1,22 @@
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
 
-inline
-fn __shake256_squeezeblock4x(reg ptr u256[25] state, reg ptr u8[SHAKE256_RATE] h0 h1 h2 h3) -> reg ptr u256[25], reg ptr u8[SHAKE256_RATE], reg ptr u8[SHAKE256_RATE], reg ptr u8[SHAKE256_RATE], reg ptr u8[SHAKE256_RATE]
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
+from Jade require "common/keccak/common/fips202_params.jinc" // SHAKE256_RATE
+
+inline fn __shake256_squeezeblock4x(
+  reg ptr u256[25] state,
+  reg ptr u8[SHAKE256_RATE] h0 h1 h2 h3)
+  ->
+  reg ptr u256[25],
+  reg ptr u8[SHAKE256_RATE],
+  reg ptr u8[SHAKE256_RATE],
+  reg ptr u8[SHAKE256_RATE],
+  reg ptr u8[SHAKE256_RATE]
 {
   reg u256 t256;
   reg u128 t128;
   inline int i;
 
-  state = _KeccakF1600_StatePermute4x(state);
+  state = _keccakf1600_4x_avx2_(state);
 
 	for i = 0 to (SHAKE256_RATE / 8) {
     t256 = state[i];

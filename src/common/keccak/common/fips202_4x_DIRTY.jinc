@@ -1,5 +1,5 @@
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
-from Jade require "common/keccak/common/fips202_params_DIRTY.jinc"
+from Jade require "common/keccak/common/fips202_params.jinc"
 
 fn _shake128_absorb4x_34(reg ptr u256[25] s, reg ptr u8[34] m0 m1 m2 m3) -> reg ptr u256[25]
 {
