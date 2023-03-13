@@ -167,3 +167,12 @@ fn _keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
 }
 
 
+inline fn _keccakf1600_bmi1_(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = a;
+  a = _keccakf1600_bmi1(a);
+  a = a;
+  return a;
+}
+
+

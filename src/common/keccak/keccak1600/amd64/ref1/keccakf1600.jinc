@@ -168,3 +168,12 @@ fn _keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 }
 
 
+inline fn _keccakf1600_ref1_(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = a;
+  a = _keccakf1600_ref1(a);
+  a = a;
+  return a;
+}
+
+
