@@ -24,48 +24,6 @@ inline fn __load_add(reg u64[3] h, reg u64 in) -> reg u64[3]
   return h;
 }
 
-
-// @pre: 0 <= len <= 15
-inline fn __load_last_add_mask(reg u64 len) -> reg u64[2], reg u64[2]
-{
-  reg bool cf;
-  reg u64 s0 s1 s2 nb b m;
-  reg u64[2] m1 m2;
-
-  _,_,_,_,_,s0 = #set0();
-  s1  = len;
-  s1 &= 7;
-  s1 <<= 3; // [0,8,...,56]
-
-  // if 4th bit is set (>=8) then m = 0 else m = 0xffff..
-  b   = len;
-  b >>= 3;
-  nb  = b;
-  nb ^= 1;
-  m   = b;
-  m  -= 1;
-
-  // swap if < 8
-  s2  = s1;
-  s2 &= m; 
-  s0 ^= s2;
-  s1 ^= s2;
-
-  m1[0] = nb;
-  m1[1] =  b;
-  m1[0] <<= s0;
-  s0 = s1; //rcx
-  m1[1] <<= s0;
-
-  m2 = #copy(m1);
-
-  cf, m2[0] -= 1;
-   _, m2[1] -= 0 - cf;
-
-  return m2, m1;
-}
-
-
 inline fn __load_last_add(reg u64[3] h, reg u64 in, reg u64 len) -> reg u64[3]
 {
   reg bool cf;

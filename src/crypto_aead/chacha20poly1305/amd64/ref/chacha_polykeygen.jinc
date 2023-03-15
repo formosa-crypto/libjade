@@ -1,0 +1,7 @@
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/ref/chacha_state.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_store.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_core.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/ref/chacha_entry.jinc"
+require "chacha_entry_polykeygen.jinc"
+
+

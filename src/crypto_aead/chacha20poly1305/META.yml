@@ -1,0 +1,12 @@
+name: Chaha20Poly1305
+type: aead
+checksumsmall: 
+checksumbig: 
+implementations:
+    - name: amd64/ref
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin

@@ -1,0 +1,82 @@
+
+require "chacha_polykeygen.jinc"
+require "poly1305_incremental.jinc"
+
+inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
+{
+  reg u64 r tag ct;
+  stack u64 c_s tag_s m_s mlen_s ad_s adlen_s nonce_s key_s;
+  stack u64[4] otk;
+
+  tag_s = c;
+  ct   = #LEA(c + 16);
+  c_s = ct;
+  ad_s = ad;
+  adlen_s = adlen;
+  mlen_s = mlen;
+  nonce_s = nonce;
+  key_s = key;
+  __chacha_xor_ref_1(ct, m, mlen, nonce, key);
+  
+  nonce = nonce_s;
+  key = key_s;
+  otk = __poly1305_key_gen(otk,nonce,key);
+
+
+  tag = tag_s;
+  c = c_s;
+  ad = ad_s;
+  adlen = adlen_s;
+  mlen = mlen_s;
+  
+  __poly1305_ad_ref(tag, ad, adlen, c, mlen, otk);
+ 
+  r = 0;
+
+  return r;
+} 
+
+
+inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> reg u64
+{
+  reg u64 r tag ct ctl;
+  stack u64 c_s tag_s m_s clen_s ad_s adlen_s nonce_s key_s;
+  stack u64[4] otk;
+
+  r = -1;
+  
+  if (clen >= 16) {
+    m_s = m;
+    ad_s = ad;
+    adlen_s = adlen;
+    tag_s = c;
+    ct = #LEA(c + 16);
+    c_s = ct;
+    ctl = #LEA(clen - 16);
+    clen_s = ctl;
+    nonce_s = nonce;
+    key_s = key;
+  
+    otk = __poly1305_key_gen(otk,nonce,key);
+  
+    tag = tag_s;
+    ad = ad_s;
+    adlen = adlen_s;
+    c = c_s;
+    clen = clen_s;
+  
+    r = __poly1305_ad_verify_ref(tag,ad,adlen,c,clen,otk);
+    if (r==0) {
+      m = m_s;
+      c= c_s;
+      clen = clen_s;
+      nonce = nonce_s;
+      key  = key_s;
+       __chacha_xor_ref_1(m, c, clen, nonce, key);
+       r = 0;
+    }
+  }
+  
+  return r;
+
+}
