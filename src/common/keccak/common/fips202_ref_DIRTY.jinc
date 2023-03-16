@@ -1,20 +1,19 @@
-param int KECCAK_ROUNDS=24;
-
 from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
-from Jade require "common/keccak/keccak1600/amd64/ref1/keccakf1600.jinc"
-require "fips202_params_DIRTY.jinc"
+require "fips202_params.jinc"
 
 #[returnaddress="stack"]
 fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
 {
   stack ptr u8[128] s_out;
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   reg u8 c;
   inline int i;
 
   s_out = out;
 
-  state =  __keccak_init_ref1();
+  state = _state;
+  state =  __keccak_init_ref1(state);
 
   for i = 0 to 33 {
     c = in[i];
@@ -23,7 +22,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
   state[u8 33] ^= 0x1f;
   state[u8 SHAKE256_RATE-1] ^= 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
   
@@ -38,13 +37,15 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
 fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[192]
 {
   stack ptr u8[192] s_out;
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   reg u8 c;
   inline int i;
 
   s_out = out;
 
-  state =  __keccak_init_ref1();
+  state = _state;
+  state =  __keccak_init_ref1(state);
 
   for i = 0 to 33 {
     c = in[i];
@@ -53,7 +54,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
   state[u8 33] ^= 0x1f;
   state[u8 SHAKE256_RATE-1] ^= 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
   
@@ -64,7 +65,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
 
   s_out = out;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
   
@@ -80,13 +81,15 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
 fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 {
   stack ptr u8[64] s_out;
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   reg u8 c;
   inline int i;
 
   s_out = out;
 
-  state = __keccak_init_ref1();
+  state = _state;
+  state = __keccak_init_ref1(state);
 
   for i = 0 to 32 {
     c = in[i];
@@ -95,7 +98,7 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
   state[u8 32] ^= 0x06;
   state[u8 SHA3_512_RATE-1] ^= 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
 
@@ -112,7 +115,7 @@ fn __shake128_absorb34(stack u64[25] state, reg const ptr u8[34] in) -> stack u6
   reg u8 c;
   inline int i;
 
-  state = __keccak_init_ref1();
+  state = __keccak_init_ref1(state);
 
   for i = 0 to 34 {
     c = in[i];
@@ -133,7 +136,7 @@ fn __shake128_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE128_RATE] out) -
 
   s_out = out;
   
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
 
@@ -148,7 +151,8 @@ fn __shake128_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE128_RATE] out) -
 #[returnaddress="stack"]
 fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 {
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   stack ptr u8[32] s_out;
   stack u64 s_in s_ilen s_r8;
   reg u64 ilen r8 t64;
@@ -157,7 +161,8 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 
   s_out = out;
 
-  state = __keccak_init_ref1();
+  state = _state;
+  state = __keccak_init_ref1(state);
 
   r8 = SHA3_256_RATE;
   ilen = inlen;
@@ -170,7 +175,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
     s_ilen = ilen;
     s_r8 = r8;
 
-    state = __keccakf1600_ref1(state);
+    state = _keccakf1600_ref1(state);
 
     in = s_in;
     ilen = s_ilen;
@@ -180,7 +185,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   t8 = 0x06;
   state = __add_final_block_ref1(state, in, ilen, t8, r8);
 
- state = __keccakf1600_ref1(state);
+ state = _keccakf1600_ref1(state);
 
   out = s_out;
 
@@ -196,14 +201,16 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 #[returnaddress="stack"]
 fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
 {
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   stack ptr u8[32] s_out;
   reg u64 t64;
   inline int i;
 
   s_out = out;
 
-  state = __keccak_init_ref1();
+  state = _state;
+  state = __keccak_init_ref1(state);
 
   for i=0 to KYBER_SYMBYTES/8
   {
@@ -214,7 +221,7 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
   state[u8 KYBER_SYMBYTES] ^= 0x06;
   state[u8 SHA3_256_RATE - 1] = 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = s_out;
 
@@ -230,14 +237,16 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
 #[returnaddress="stack"]
 fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 {
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   stack ptr u8[64] out_s;
   reg u64 t64;
   inline int i;
 
   out_s = out;
 
-  state = __keccak_init_ref1();
+  state = _state;
+  state = __keccak_init_ref1(state);
 
   for i = 0 to 8
   {
@@ -248,7 +257,7 @@ fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
   state[u8 64] ^= 0x06;
   state[u8 SHA3_512_RATE - 1] ^= 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   out = out_s;
 
@@ -266,14 +275,16 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 {
   reg u64 t64 j;
   reg u8 c;
-  stack u64[25] state;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
   stack u64 s_out s_outlen;
   inline int i;
 
   s_out = out;
   s_outlen = outlen;
 
-  state = __keccak_init_ref1();
+  state = _state;
+  state = __keccak_init_ref1(state);
 
   for i = 0 to 8 {
     t64 = in[u64 i];
@@ -283,7 +294,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   state[u8 64] ^= 0x1f;
   state[u8 SHAKE256_RATE-1] ^= 0x80;
 
-  state = __keccakf1600_ref1(state);
+  state = _keccakf1600_ref1(state);
 
   outlen = s_outlen;
   out = s_out;
@@ -302,7 +313,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
     s_out = out;
     s_outlen = outlen;
 
-    state = __keccakf1600_ref1(state);
+    state = _keccakf1600_ref1(state);
 
     outlen = s_outlen;
     out = s_out;

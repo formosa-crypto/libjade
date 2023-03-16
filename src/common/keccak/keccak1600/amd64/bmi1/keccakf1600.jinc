@@ -1,0 +1,178 @@
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
+
+// C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+inline fn __theta_sum_bmi1(reg ptr u64[25] a) -> reg u64[5]
+{
+  inline int x y;
+  reg u64[5] c;
+
+  // C[x] = A[x, 0]
+  for x=0 to 5
+  { c[x] = a[x + 0]; }
+
+  // C[x] ^= A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+  for y=1 to 5
+  { for x=0 to 5
+    { c[x] ^= a[x + y*5]; }
+  }
+
+  return c;
+}
+
+
+// D[x] = C[x-1] ^ ROT(C[x+1], 1) 
+inline fn __theta_rol_bmi1(reg u64[5] c) -> reg u64[5]
+{
+  inline int x;
+  reg u64[5] d;
+
+  for x = 0 to 5
+  { // D[x] = C[x + 1]
+    d[x] = c[(x + 1) % 5];
+
+    // D[x] = ROT(D[x], 1)
+    _, _, d[x] = #ROL_64(d[x], 1);
+
+    // D[x] ^= C[x-1]
+    d[x] ^= c[(x - 1 + 5) % 5];
+  }
+
+  return d;
+}
+
+
+// B[x] = ROT( (A[x',y'] ^ D[x']), r[x',y'] ) with (x',y') = M^-1 (x,y)
+//
+// M = (0 1)  M^-1 = (1 3)  x' = 1x + 3y
+//     (2 3)         (1 0)  y' = 1x + 0y
+//
+inline fn __rol_sum_bmi1(
+  reg ptr u64[25] a,
+  reg u64[5] d,
+  inline int y
+) -> reg u64[5]
+{
+  inline int r x x_ y_;
+  reg u64[5] b;
+
+  for x = 0 to 5
+  {
+    x_ = (x + 3*y) % 5;
+    y_ = x;
+    r = __rhotates_spec(x_, y_);
+
+    // B[x] = A[x',y']
+    b[x] = a[x_ + y_*5];
+
+    // B[x] ^= D[x'];
+    b[x] ^= d[x_];
+
+    // B[x] = ROT( B[x], r[x',y'] );
+    if(r != 0)
+    { _, _, b[x] = #ROL_64(b[x], r); }
+
+  }
+
+  return b;
+}
+
+
+// E[x, y] = B[x] ^ ( (!B[x+1]) & B[x+2] )
+// -- when x and y are 0: E[0,0] ^= RC[i];
+inline fn __set_row_bmi1(
+  reg ptr u64[25] e,
+  reg u64[5] b,
+  inline int y,
+  stack u64 s_rc
+) -> reg ptr u64[25]
+{
+  inline int x x1 x2;
+  reg u64 t;
+
+  for x=0 to 5
+  { 
+    x1 = (x + 1) % 5;
+    x2 = (x + 2) % 5;
+
+    t  = !b[x1] & b[x2];
+
+    t ^= b[x];
+    if( x==0 && y==0 ){ t ^= s_rc; }
+    e[x + y*5] = t;
+  }
+
+  return e;
+}
+
+
+inline fn __round_bmi1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25]
+{
+  inline int y;
+  reg u64[5] b c d;
+
+  c = __theta_sum_bmi1(a);
+  d = __theta_rol_bmi1(c);
+
+  for y = 0 to 5
+  { b = __rol_sum_bmi1(a, d, y);
+    e = __set_row_bmi1(e, b, y, s_rc);
+  }
+
+  return e;
+}
+
+
+inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  reg ptr u64[24] RC;
+  stack ptr u64[24] s_RC;
+  stack u64[25] s_e;
+  reg ptr u64[25] e;
+  reg u64 c rc;
+  stack u64 s_c s_rc;
+
+  RC = KECCAK1600_RC;
+  s_RC = RC;
+  e = s_e;
+
+  c = 0;
+  while
+  {
+    s_c = c;
+
+    RC = s_RC;
+    rc = RC[(int) c];
+    s_rc = rc;
+    e = __round_bmi1(e, a, s_rc);
+
+    RC = s_RC;
+    rc = RC[(int) c + 1];
+    s_rc = rc;
+    a = __round_bmi1(a, e, s_rc);
+
+    c = s_c;
+    c += 2;
+  } (c < KECCAK_ROUNDS - 1)
+
+  return a;
+}
+
+
+#[returnaddress="stack"]
+fn _keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = __keccakf1600_bmi1(a);
+  return a;
+}
+
+
+inline fn _keccakf1600_bmi1_(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = a;
+  a = _keccakf1600_bmi1(a);
+  a = a;
+  return a;
+}
+
+

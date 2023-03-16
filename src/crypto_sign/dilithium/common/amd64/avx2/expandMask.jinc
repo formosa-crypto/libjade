@@ -1,7 +1,7 @@
 require "../fips202.jinc"
 require "../packing.jinc"
 require "../params.jinc"
-require "keccakf1600_4x.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
 
 u256 CONST_0123 = (4u64) [3, 2, 1, 0];
 
@@ -122,7 +122,7 @@ fn expandMask_poly_gamma1_217_4x(
 	output_squeeze_counter = 0;
 	total_blocks = Li2_pack_zlen_gamma1_217 / SHAKE256_RATE + 1;
 	while (output_squeeze_counter < total_blocks) {
-		xof = _KeccakF1600_StatePermute4x(xof);
+		xof = _keccakf1600_4x_avx2(xof);
 
 		?{}, i = #set0_64();
 		while (i < SHAKE256_RATE) {
@@ -199,7 +199,7 @@ fn expandMask_poly_gamma1_219_4x(
 	output_squeeze_counter = 0;
 	total_blocks = Li2_pack_zlen_gamma1_219 / SHAKE256_RATE + 1;
 	while (output_squeeze_counter < total_blocks) {
-		xof = _KeccakF1600_StatePermute4x(xof);
+		xof = _keccakf1600_4x_avx2(xof);
 
 		?{}, i = #set0_64();
 		while (i < SHAKE256_RATE) {

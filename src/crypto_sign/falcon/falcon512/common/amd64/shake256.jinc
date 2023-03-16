@@ -1,6 +1,5 @@
 
 from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
-from Jade require "common/keccak/keccak1600/amd64/ref1/keccakf1600.jinc"
 
 param int SHAKE256_RATE = 136;
 
@@ -16,9 +15,9 @@ fn __shake256_absorb(stack u64[25] state, reg u64 in inlen) -> stack u64[25] {
     s_trail_byte = trail_byte;
     rate = SHAKE256_RATE;
 
-    state = __keccak_init_ref1();
-
     state_ptr = state;
+    state_ptr = __keccak_init_ref1(state_ptr);
+
     state_ptr, rate = __absorb_ref1(state_ptr, in, inlen, s_trail_byte, rate);
     state = state_ptr;
 

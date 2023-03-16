@@ -1,0 +1,243 @@
+param int KECCAK_ROUNDS=24;
+
+require "keccakf1600.jinc"
+
+
+inline fn __keccak_init_bmi1(reg ptr u64[25] state) -> reg ptr u64[25]
+{
+  inline int i;
+  reg u64 t;
+
+  // TODO: CHECKMELATER: go back to while loop and use annotations for safety checking?
+  ?{}, t = #set0();
+  for i=0 to 25
+  { state[i] = t; }
+
+  return state;
+}
+
+
+
+inline fn __add_full_block_bmi1(
+  reg ptr u64[25] state,
+  reg u64 in inlen,
+  reg u64 rate
+) -> reg ptr u64[25], reg u64, reg u64
+{
+  reg u64 i t rate64;
+
+  rate64 = rate;
+  rate64 >>= 3;
+  i = 0;
+  while( i < rate64)
+  {
+    t = [in + 8*i];
+    state[(int)i] ^= t;
+    i+=1;
+  }
+
+  in += rate;
+  inlen -= rate;
+
+  return state, in, inlen;
+}
+
+
+// obs: @pre: inlen < rate_in_bytes
+inline fn __add_final_block_bmi1(
+  reg ptr u64[25] state,
+  reg     u64 in inlen,
+  reg     u8  trail_byte,
+  reg     u64 rate
+) -> reg ptr u64[25]
+{
+  reg u64 i t inlen8;
+  reg u8 c;
+
+  inlen8 = inlen;
+  inlen8 >>= 3;
+  i = 0;
+  while ( i < inlen8 )
+  {
+    t = [in + 8*i];
+    state[(int)i] ^= t;
+    i += 1;
+  }
+
+  i <<= 3;
+  while ( i < inlen )
+  {
+    c = (u8)[in + i];
+    state[u8 (int)i] ^= c;
+    i += 1;
+  }
+
+  state[u8 (int)i] ^= trail_byte;
+
+  i = rate;
+  i -= 1;
+  state[u8 (int)i] ^= 0x80;
+
+  return state;
+}
+
+
+inline fn __absorb_bmi1(
+  reg ptr u64[25] state,
+  reg   u64 in inlen,
+  stack u8  s_trail_byte,
+  reg   u64 rate // rate already in bytes -- it is returned bc of spills
+) -> reg ptr u64[25], reg u64
+{
+  stack u64 s_in s_inlen s_rate;
+  reg u8 trail_byte;
+  reg u64 t;
+
+  // intermediate blocks
+  while ( inlen >= rate )
+  {
+    state, in, inlen = __add_full_block_bmi1(state, in, inlen, rate);
+
+    s_in = in;
+    s_inlen = inlen; 
+    s_rate = rate;
+
+    state = _keccakf1600_bmi1(state);
+
+    in = s_in;
+    inlen = s_inlen;
+    rate = s_rate;
+  }
+
+  // final block
+  trail_byte = s_trail_byte;
+
+  state = __add_final_block_bmi1(state, in, inlen, trail_byte, rate);
+
+  return state, rate;
+}
+
+
+inline fn __xtr_full_block_bmi1(
+  reg ptr u64[25] state,
+  reg u64 out outlen,
+  reg u64 rate
+) -> reg u64, reg u64
+{
+  reg u64 i t rate64;
+
+  rate64 = rate;
+  rate64 >>= 3;
+  i = 0;
+  while ( i < rate64 )
+  {
+    t = state[(int)i];
+    [out + 8*i] = t;
+    i += 1;
+  }
+
+  out += rate;
+  outlen -= rate;
+
+  return out, outlen;
+}
+
+
+inline fn __xtr_bytes_bmi1(
+  reg ptr u64[25] state,
+  reg u64 out outlen
+) -> reg u64
+{
+  reg u64 i t outlen8;
+  reg u8 c;
+
+  outlen8 = outlen;
+  outlen8 >>= 3;
+  i = 0;
+  while ( i < outlen8 )
+  {
+    t = state[(int)i];
+    [out + 8*i] = t;
+    i += 1;
+  }
+  i <<= 3;
+
+  while ( i < outlen )
+  {
+    c = state[u8 (int)i];
+    (u8)[out + i] = c;
+    i += 1;
+  }
+
+  out += outlen;
+  return out;
+}
+
+
+inline fn __squeeze_bmi1(
+  reg mut ptr u64[25] state,
+  stack   u64 s_out,
+  reg     u64 outlen,
+  reg     u64 rate
+)
+{
+  reg u64 out;
+  stack u64 s_outlen s_rate;
+
+  // intermediate blocks
+  while ( outlen > rate )
+  {
+    s_outlen = outlen;
+    s_rate = rate;
+
+    state = _keccakf1600_bmi1(state);
+
+    out = s_out;
+    outlen = s_outlen;
+    rate = s_rate;
+
+    out, outlen = __xtr_full_block_bmi1(state, out, outlen, rate);
+    s_out = out;
+  }
+
+  s_outlen = outlen;
+
+  state = _keccakf1600_bmi1(state);
+
+  out = s_out;
+  outlen = s_outlen;
+
+  out = __xtr_bytes_bmi1(state, out, outlen);
+}
+
+
+inline fn __keccak1600_bmi1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+{
+  stack u64[25] _state;
+  reg ptr u64[25] state;
+  stack u64 s_out s_outlen;
+  stack u8 s_trail_byte;
+
+  s_out = out;
+  s_outlen = outlen;
+  s_trail_byte = trail_byte;
+
+  state = _state;
+  state = __keccak_init_bmi1(state);
+
+  // absorb
+  state, rate = __absorb_bmi1(state, in, inlen, s_trail_byte, rate);
+
+  // squeeze
+  outlen = s_outlen;
+  __squeeze_bmi1(state, s_out, outlen, rate);
+}
+
+
+#[returnaddress="stack"]
+fn _keccak1600_bmi1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+{
+  __keccak1600_bmi1(out, outlen, in, inlen, trail_byte, rate);
+}
+
+
