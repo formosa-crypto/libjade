@@ -25,48 +25,7 @@ inline fn __load_add(reg u64[3] h, reg u64 in) -> reg u64[3]
 }
 
 
-// @pre: 0 <= len <= 15
-inline fn __load_last_add_mask(reg u64 len) -> reg u64[2], reg u64[2]
-{
-  reg bool cf;
-  reg u64 s0 s1 s2 nb b m;
-  reg u64[2] m1 m2;
-
-  _,_,_,_,_,s0 = #set0();
-  s1  = len;
-  s1 &= 7;
-  s1 <<= 3; // [0,8,...,56]
-
-  // if 4th bit is set (>=8) then m = 0 else m = 0xffff..
-  b   = len;
-  b >>= 3;
-  nb  = b;
-  nb ^= 1;
-  m   = b;
-  m  -= 1;
-
-  // swap if < 8
-  s2  = s1;
-  s2 &= m; 
-  s0 ^= s2;
-  s1 ^= s2;
-
-  m1[0] = nb;
-  m1[1] =  b;
-  m1[0] <<= s0;
-  s0 = s1; //rcx
-  m1[1] <<= s0;
-
-  m2 = #copy(m1);
-
-  cf, m2[0] -= 1;
-   _, m2[1] -= 0 - cf;
-
-  return m2, m1;
-}
-
-
-inline fn __load_last_add(reg u64[3] h, reg u64 in, reg u64 len) -> reg u64[3]
+inline fn __load_last_add(reg u64[3] h, reg u64 in len) -> reg u64[3]
 {
   reg bool cf;
   reg   u64    j;
@@ -88,9 +47,9 @@ inline fn __load_last_add(reg u64[3] h, reg u64 in, reg u64 len) -> reg u64[3]
   cf, h[0] += s[0];
   cf, h[1] += s[1] + cf;
    _, h[2] +=    0 + cf;
- 
+
   return h;
-} 
+}
 
 
 inline fn __store2(reg u64 p, reg u64[2] x)
@@ -163,7 +122,7 @@ inline fn __mulmod(reg u64[3] h r) -> reg u64[3]
   _ , h[2] += rdx + cf;  // (* h[2] = mulhi h[0] r[1] + h[2] + CF *)
 
   h[0] = 0xfffffffffffffffc;
-    t2 = h[2]; 
+    t2 = h[2];
     t2 >>= 2;
   h[0] &= h[2];
 
@@ -272,7 +231,7 @@ inline fn __poly1305_r_ref(reg u64 in inlen k) -> reg u64[2]
   h, r, k = __poly1305_setup_ref(k);
   in, inlen, h = __poly1305_update_ref(in, inlen, h, r);
   h2 = __poly1305_last_ref(in, inlen, k, h, r);
-  
+
   return h2;
 }
 
