@@ -7,6 +7,7 @@ inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
   reg u64 r tag ct;
   stack u64 c_s tag_s m_s mlen_s ad_s adlen_s nonce_s key_s;
   stack u64[4] otk;
+  reg u32 counter;
 
   tag_s = c;
   ct   = #LEA(c + 16);
@@ -16,7 +17,9 @@ inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
   mlen_s = mlen;
   nonce_s = nonce;
   key_s = key;
-  __chacha_xor_ref_1(ct, m, mlen, nonce, key);
+
+  counter = 1;
+  _chacha_xor_ref_ic_(ct, m, mlen, nonce, counter, key);
   
   nonce = nonce_s;
   key = key_s;
@@ -42,6 +45,7 @@ inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> re
   reg u64 r tag ct ctl;
   stack u64 c_s tag_s m_s clen_s ad_s adlen_s nonce_s key_s;
   stack u64[4] otk;
+  reg u32 counter;
 
   r = -1;
   
@@ -72,7 +76,8 @@ inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> re
       clen = clen_s;
       nonce = nonce_s;
       key  = key_s;
-       __chacha_xor_ref_1(m, c, clen, nonce, key);
+      counter = 1;
+       _chacha_xor_ref_ic_(m, c, clen, nonce, counter, key);
        r = 0;
     }
   }

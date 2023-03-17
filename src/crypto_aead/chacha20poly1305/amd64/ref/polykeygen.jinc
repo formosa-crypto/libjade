@@ -1,0 +1,21 @@
+inline fn __poly1305_key_gen(stack u64[4] out, reg u64 nonce key) -> stack u64[4]
+{
+  stack u32[16] st;
+  reg u32[16] k;  // the full state is in k[0..14] and k15;
+  stack u32 k15;
+  inline int i;
+  reg u32 counter;
+
+  ?{}, counter = #set0_32();
+  st = __init_ref(nonce, counter, key);
+
+  k, k15 = __copy_state_ref(st);
+  k, k15 = __rounds_inline_ref(k, k15);
+  k, k15 = __sum_states_ref(k, k15, st);
+
+  for i = 0 to 8 {
+    out[u32 i] = k[i];
+  }
+  return out;
+  
+}
