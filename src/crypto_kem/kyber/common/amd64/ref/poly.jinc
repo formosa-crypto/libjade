@@ -553,6 +553,7 @@ fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf
 }
 
 
+#[returnaddress=stack]
 fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
 {
   stack ptr u16[KYBER_N] s_rp;
