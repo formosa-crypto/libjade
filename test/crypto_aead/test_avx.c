@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "api.h"
+#include "api_avx.h"
 void HexDumpBuffer(void *Buffer,unsigned int Count);
 
 void HexDumpBuffer(void *Buffer,unsigned int Count)
@@ -46,7 +46,7 @@ int main(void) {
   };
     
   	
-  jade_aead_chacha20poly1305_amd64_ref(
+  jade_aead_chacha20poly1305_amd64_avx(
        ciphertext,
        adata_plaintext,
        adata_length,
@@ -70,7 +70,7 @@ int main(void) {
 0x61, 0x16};
   uint64_t ciphertext_length = 16+114;
 
-  uint64_t r = jade_aead_chacha20poly1305_amd64_ref_open(
+  uint64_t r = jade_aead_chacha20poly1305_amd64_avx_open(
    recovered,
    adata_ciphertext,
    adata_length,

@@ -1,4 +1,4 @@
-inline fn __poly1305_key_gen(stack u64[4] out, reg u64 nonce key) -> stack u64[4]
+inline fn __poly1305_key_gen_ref(stack u64[4] out, reg u64 nonce key) -> stack u64[4]
 {
   stack u32[16] st;
   reg u32[16] k;  // the full state is in k[0..14] and k15;

@@ -1,4 +1,3 @@
-param int CHACHA_ROUNDS=20;
 require "chacha20poly1305.jinc"
 
 export fn jade_aead_chacha20poly1305_amd64_ref(reg u64 ciphertext adata_plaintext adata_length plaintext_length nonce key) -> reg u64

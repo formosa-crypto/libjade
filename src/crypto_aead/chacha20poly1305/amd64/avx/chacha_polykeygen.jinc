@@ -1,0 +1,17 @@
+param int CHACHA_ROUNDS=20;
+
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/ref/chacha_state.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/ref/chacha_core.jinc"
+from Jade require "crypto_aead/chacha20poly1305/amd64/ref/polykeygen.jinc"
+
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_state.jinc"
+
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_h.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_h.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_entry_h.jinc"
+
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_v.jinc"
+from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_v.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_entry_v.jinc"
+
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/_chacha.jinc"

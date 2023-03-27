@@ -2,7 +2,7 @@
 require "chacha_polykeygen.jinc"
 require "poly1305_incremental.jinc"
 
-inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
+inline fn __chacha20poly1305_avx(reg u64 c ad adlen m mlen nonce key) -> reg u64
 {
   reg u64 r tag ct;
   stack u64 c_s tag_s m_s mlen_s ad_s adlen_s nonce_s key_s;
@@ -19,7 +19,7 @@ inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
   key_s = key;
 
   counter = 1;
-  _chacha_xor_ref_ic_(ct, m, mlen, nonce, counter, key);
+  __chacha_xor_avx_ic(ct, m, mlen, nonce, counter, key);
   
   nonce = nonce_s;
   key = key_s;
@@ -32,7 +32,7 @@ inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
   adlen = adlen_s;
   mlen = mlen_s;
   
-  __poly1305_ad_ref(tag, ad, adlen, c, mlen, otk);
+  __poly1305_ad_avx(tag, ad, adlen, c, mlen, otk);
  
   r = 0;
 
@@ -40,7 +40,7 @@ inline fn __chacha20poly1305_ref(reg u64 c ad adlen m mlen nonce key) -> reg u64
 } 
 
 
-inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> reg u64
+inline fn __chacha20poly1305_avx_open(reg u64 m ad adlen c clen nonce key) -> reg u64
 {
   reg u64 r tag ct ctl;
   stack u64 c_s tag_s m_s clen_s ad_s adlen_s nonce_s key_s;
@@ -69,7 +69,7 @@ inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> re
     c = c_s;
     clen = clen_s;
   
-    r = __poly1305_ad_verify_ref(tag,ad,adlen,c,clen,otk);
+    r = __poly1305_ad_verify_avx(tag,ad,adlen,c,clen,otk);
     if (r==0) {
       m = m_s;
       c= c_s;
@@ -77,7 +77,7 @@ inline fn __chacha20poly1305_ref_open(reg u64 m ad adlen c clen nonce key) -> re
       nonce = nonce_s;
       key  = key_s;
       counter = 1;
-       _chacha_xor_ref_ic_(m, c, clen, nonce, counter, key);
+       __chacha_xor_avx_ic(m, c, clen, nonce, counter, key);
        r = 0;
     }
   }

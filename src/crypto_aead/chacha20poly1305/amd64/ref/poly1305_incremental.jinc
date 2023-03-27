@@ -1,7 +1,7 @@
-from Jade require "crypto_verify/16/amd64/common/crypto_verify_16.jinc"
 from Jade require "crypto_onetimeauth/poly1305/amd64/ref/poly1305.jinc"
+from Jade require "crypto_verify/16/amd64/common/crypto_verify_16.jinc"
 
-inline fn __clamp_stack(stack u64[4] k) -> reg u64[3]
+inline fn __clamp_stack_ref(stack u64[4] k) -> reg u64[3]
 {
   reg u64[3] r;
 
@@ -22,12 +22,12 @@ inline fn __poly1305_setup_ref_stack(stack u64[4] k) -> reg u64[3], reg u64[3], 
   reg u64[3] h r;
 
   for i=0 to 3 { h[i] = 0; }
-  r = __clamp_stack(k);
+  r = __clamp_stack_ref(k);
 
   return h, r, k;
 }
 
-inline fn __load_last_add_pad16(reg u64[3] h, reg u64 in len) -> reg u64[3]
+inline fn __load_last_add_pad16_ref(reg u64[3] h, reg u64 in len) -> reg u64[3]
 {
  reg bool cf;
   reg   u64    j;
@@ -62,7 +62,7 @@ inline fn __poly1305_update_noclamp_ref(reg u64 in inlen, reg u64[3] h r) -> reg
   }
 
   if(inlen > 0)
-  { h = __load_last_add_pad16(h, in, inlen);
+  { h = __load_last_add_pad16_ref(h, in, inlen);
     h = __mulmod(h, r);
   }
 
@@ -70,7 +70,7 @@ inline fn __poly1305_update_noclamp_ref(reg u64 in inlen, reg u64[3] h r) -> reg
   return h;
 }
 
-inline fn __poly1305_last_lengths(reg u64 adlen inlen, stack u64[4] k, reg u64[3] h r) -> reg u64[2]
+inline fn __poly1305_last_lengths_ref(reg u64 adlen inlen, stack u64[4] k, reg u64[3] h r) -> reg u64[2]
 {
   reg u64[2] m s h2;
   reg bool cf;
@@ -93,7 +93,7 @@ inline fn __poly1305_last_lengths(reg u64 adlen inlen, stack u64[4] k, reg u64[3
 }
 
 
-inline fn __poly1305_ad_r_ref(reg u64 tag ad adlen in inlen, stack u64[4] k) -> reg u64[2]
+inline fn __poly1305_ad_r_ref(reg u64 ad adlen in inlen, stack u64[4] k) -> reg u64[2]
 {
   reg u64[3] h r;
   reg u64[2] h2;
@@ -112,7 +112,7 @@ inline fn __poly1305_ad_r_ref(reg u64 tag ad adlen in inlen, stack u64[4] k) -> 
 
   adlen = adlen_s;
   inlen = inlen_s;
-  h2 = __poly1305_last_lengths(adlen, inlen, k, h, r);
+  h2 = __poly1305_last_lengths_ref(adlen, inlen, k, h, r);
 
   return h2;
 
@@ -121,7 +121,7 @@ inline fn __poly1305_ad_r_ref(reg u64 tag ad adlen in inlen, stack u64[4] k) -> 
 inline fn __poly1305_ad_ref(reg u64 tag ad adlen in inlen, stack u64[4] k)
 {
   reg u64[2] h2;
-  h2 = __poly1305_ad_r_ref(tag,ad,adlen,in,inlen,k);
+  h2 = __poly1305_ad_r_ref(ad,adlen,in,inlen,k);
   __store2(tag,h2);
 }
 
@@ -130,7 +130,7 @@ inline fn __poly1305_ad_verify_ref(reg u64 tag ad adlen in inlen, stack u64[4] k
   reg u64[2] tagn;
   reg u64 r;
 
-  tagn = __poly1305_ad_r_ref(tag,ad,adlen,in,inlen,k);
+  tagn = __poly1305_ad_r_ref(ad,adlen,in,inlen,k);
   r = __crypto_verify_p_u8x16_r_u64x2(tag, tagn);
   return r;
 }

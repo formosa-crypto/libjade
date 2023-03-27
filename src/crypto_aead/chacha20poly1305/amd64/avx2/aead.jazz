@@ -1,0 +1,21 @@
+param int CHACHA_ROUNDS=20;
+require "chacha20poly1305.jinc"
+
+export fn jade_aead_chacha20poly1305_amd64_avx2(reg u64 ciphertext adata_plaintext adata_length plaintext_length nonce key) -> reg u64
+{
+  reg u64 r,m;
+  m = adata_plaintext;
+  m += adata_length;
+  r = __chacha20poly1305_avx2(ciphertext, adata_plaintext, adata_length, m, plaintext_length, nonce, key);
+  return r;
+}
+
+
+export fn jade_aead_chacha20poly1305_amd64_avx2_open(reg u64 plaintext adata_ciphertext adata_length ciphertext_length nonce key) -> reg u64
+{
+  reg u64 r,c;
+  c = adata_ciphertext;
+  c += adata_length;  
+  r = __chacha20poly1305_avx2_open(plaintext, adata_ciphertext, adata_length, c, ciphertext_length, nonce, key);
+  return r;
+}
