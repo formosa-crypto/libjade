@@ -368,6 +368,18 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
          rewrite modz_dvd; last by smt().
          by rewrite expz_div 1,2:/#; apply dvdz_exp2l; smt().
 
++ unroll {1} 2.
+  rcondt {1} 2.  move => *; auto => /> &1 ??????.
+  rewrite !uleE !ultE.
+  rewrite to_uintB. rewrite uleE /=; 1: by
+    rewrite to_uint_truncateu32 /=;  smt(W64.to_uint_cmp).
+  rewrite !to_uint_truncateu32 /= /#.
+  seq 5 11 : #post; last first.
+  + while {1} (#pre) (1).
+    move => *; exfalso.
+    move => *. admit.
+    by auto => />.
+
     admit.
     admit.
   
