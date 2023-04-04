@@ -1,10 +1,9 @@
 require "avx2/verify.jinc"
 
 inline
-fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
+fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, stack u8[2*KYBER_SYMBYTES] coins)
 {
   stack u8[32] h_pk;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u64 s_skp s_pkp;
   reg u64 t64;
   inline int i;
@@ -12,7 +11,7 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
   s_pkp = pkp;
   s_skp = skp;
 
-  __indcpa_keypair(pkp, skp);
+  __indcpa_keypair_derand(pkp, skp, coins[0:32]);
 
   skp = s_skp;
   skp += KYBER_POLYVECBYTES;
@@ -38,11 +37,9 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
     skp += 8;
   }
 
-  rb = #randombytes(rb);
-
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = rb[u64 i];
+    t64 = coins[u64 i+KYBER_SYMBYTES/8];
     (u64)[skp] = t64;
     skp += 8;
   }

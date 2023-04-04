@@ -4,10 +4,9 @@ from Jade require "crypto_kem/kyber/common/amd64/ref/polyvec.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair(reg u64 pkp, reg u64 skp)
+fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, stack u8[KYBER_SYMBYTES] coins)
 {
   stack u64 spkp sskp;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u16[KYBER_K * KYBER_VECN] a;
   stack u16[KYBER_VECN] e pkpv skpv;
   stack u8[64] buf;
@@ -22,12 +21,10 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp)
   spkp = pkp;
   sskp = skp;
 
-  rb = #randombytes(rb);
-
   i = 0;
   while (i < KYBER_SYMBYTES)
   {
-    c = rb[(int) i];
+    c = coins[(int) i];
     inbuf[(int) i] = c;
     i += 1;
   }
