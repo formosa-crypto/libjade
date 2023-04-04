@@ -62,6 +62,7 @@ fn _chacha_xor_h_x2_avx2_ic(reg u64 output input len nonce, reg u32 counter, reg
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, counter, key);
 
+/* Not needed in benjamin's version
   while(len >= 256)
   {
     k1, k2 = __copy_state_h_x2_avx2(st);
@@ -71,6 +72,7 @@ fn _chacha_xor_h_x2_avx2_ic(reg u64 output input len nonce, reg u32 counter, reg
     output, input, len = __store_xor_h_x2_avx2(output, input, len, k1, k2);
     st = __increment_counter0404_h_avx2(st);
   }
+*/
 
   if(len > 128)
   { k1, k2 = __copy_state_h_x2_avx2(st);
@@ -177,6 +179,7 @@ fn _chacha_h_x2_avx2_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
   r8  = CHACHA_R8_AVX2;
   st = __init_h_avx2(nonce, counter, key);
 
+/* not needed in Benjamin's version
   while(len >= 256)
   {
     k1, k2 = __copy_state_h_x2_avx2(st);
@@ -186,6 +189,7 @@ fn _chacha_h_x2_avx2_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
     output, len = __store_h_x2_avx2(output, len, k1, k2);
     st = __increment_counter0404_h_avx2(st);
   }
+*/
 
   if(len > 128)
   { k1, k2 = __copy_state_h_x2_avx2(st);

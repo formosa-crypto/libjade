@@ -4,135 +4,394 @@ from Jasmin require import JModel.
 
 require import  Array2 Array4 Array16 WArray256.
 
-(*
-require import Array8 Array16 WArray64.
-
-equiv store_last : ChaCha20_savx2.M.store_last ~ M.__store_xor_last_ref :
-   to_uint arg{1}.`3 < 64 /\
-   arg{1}.`1 = arg{2}.`1 /\ 
-   arg{1}.`2 = arg{2}.`2 /\ 
-   to_uint arg{1}.`3 = to_uint arg{2}.`3 /\ 
-   arg{1}.`4 = arg{2}.`4 /\ 
-   arg{1}.`5 = arg{2}.`5 /\ ={Glob.mem} ==> ={Glob.mem}.
-proc => /=.
-seq 10 10 : (#pre /\ ={s_k,u,output} /\
-   plain{1} = input{2} /\ 
-   to_uint len{1} = to_uint len{2} /\
-   to_uint len8{1} = to_uint len8{2} /\
-   to_uint len8{1} = to_uint len{2} %/ 8).
-  wp;while(0<= i{1}<=15 /\ ={i,s_k,k}); auto => />. 
-  + by smt().
-  + by move => *; rewrite /(`>>`) !to_uint_shr //= /#.
-  
-
-wp; while(={j,Glob.mem,output,s_k} /\ 
-          to_uint len{1} = to_uint len{2} /\
-          plain{1} = input{2}).
-+ auto => /> &1 &2; rewrite  !ultE to_uint_truncateu32 /= => ???; do split;
-  rewrite !to_uintD /= to_uint_truncateu32 /=  !to_uintD /=;
-      smt(W64.to_uint_cmp W32.to_uint_cmp pow2_32).
-
-seq 2 2 : (#pre /\ ={j} /\
-          j{2} =  len8{2}).
-
-wp; while(={j,Glob.mem,output,s_k} /\ 
-          to_uint len{1} = to_uint len{2} /\
-          to_uint len8{1} = to_uint len8{2} /\
-          plain{1} = input{2} /\
-          to_uint j{2} <= to_uint len8{2}); last first.
-
-+ auto => /> &1 &2 => ?????;  rewrite !ultE /= !to_uint_truncateu32 /= /(`<<`) /(`>>`) /=.
-  split; 1: by move => *; smt(W64.to_uint_cmp W32.to_uint_cmp pow2_32).
-move => jr; rewrite !ultE !to_uint_truncateu32 //=.
-      smt(W64.to_uint_cmp W32.to_uint_cmp pow2_32 @W64).
-
-+ auto => /> &1 &2; rewrite  !ultE to_uint_truncateu32 /= => ?????; 
- rewrite !to_uintD /= to_uint_truncateu32 /=  !to_uintD /=;
-      smt(W64.to_uint_cmp W32.to_uint_cmp pow2_32).
-
- auto => /> &1 &2; rewrite !ultE to_uint_truncateu32 /= => ?????;
-  rewrite /(`<<`) !to_uint_shl //=;smt(W64.to_uint_cmp W32.to_uint_cmp pow2_32).
-qed.
-
-equiv sum_states : ChaCha20_sref.M.sum_states ~ M.__sum_states_ref : ={arg} ==> ={res} by sim.
-
-equiv rounds : ChaCha20_sref.M.rounds ~ M.__rounds_inline_ref : ={arg} ==> ={res}.
-proc.
-swap {2} 1 1. inline {2} 4. 
-swap {2} 6 2. swap {2} 3 14.
-seq 1 5 : (#pre /\ ={c} /\ k{1} = k0{2}).
-+ auto => /> &2. 
-  rewrite tP => kk kkb.
-  case (kk <> 14).
-  + move => Hkk; rewrite set_neqiE /#.
-  move => Hkk; rewrite set_eqiE /#.
-
-seq 1 1 :  (k15{1} = k15{2} /\ ={c} /\ k{1} = k0{2});  conseq />. inline *.  sim.
-swap {2} 1 1.
-
-seq 2 3 : (#pre /\ k14{1} = k140{2}); 1: by auto => /> &2. 
-seq 1 1 :  (k15{1} = k15{2} /\ ={c} /\ k{1} = k0{2}  /\ k14{1} = k140{2}); 1: by conseq />;  sim.
-seq 1 1 :  (k15{1} = k15{2} /\ ={c} /\ k{1} = k0{2}  /\ k14{1} = k140{2}); 1: by conseq />;  sim.
-seq 2 2 : (={c} /\ k{1} = k0{2}   /\ k14{1} = k140{2} /\ k15{1} = k150{2}); 1:  by auto => /> /#. 
-
-seq 1 1 :  (={c} /\ k{1} = k0{2}   /\ k14{1} = k140{2} /\ k15{1} = k150{2}); 1: by conseq />;  sim.
-
-wp; while(k{1} = k{2} /\ ={k15,c} /\ (W32.zero \ult c{1} <=> !zf{1}) /\ k14{2} = k{2}.[14]); last first. 
-+ auto => /> &2;do split; first 4  by
-    rewrite !ultE /DEC_32 /= /rflags_of_aluop_nocf /rflags_of_aluop_nocf_w /= /ZF_of /= => ?; smt(@W32).
-  + move => *;rewrite tP => kk kkb.
-    case (kk <> 14).
-    + move => Hkk; rewrite set_neqiE /#.
-      move => Hkk; rewrite set_eqiE /#.
-inline{2} 2; sp; wp 8 8 => /=; conseq  (: _ ==>  ={c} /\ k{1} = k1{2} /\ k15{1} = k151{2}); 1: by
-  auto => /> &1 &2 ?; rewrite !ultE /DEC_32 /= /rflags_of_aluop_nocf /rflags_of_aluop_nocf_w /= /ZF_of /= => ? ?;
-    do split;smt(@W32 pow2_32). 
-sim.
-+ auto => /> *;rewrite tP => kk kkb.
-    case (kk <> 14).
-    + move => Hkk; rewrite set_neqiE /#.
-      move => Hkk; rewrite set_eqiE /#.
-qed.
-
-equiv init : ChaCha20_sref.M.init ~ M.__init_ref : 
-     ={Glob.mem} /\  
-     arg{1}.`1 = arg{2}.`3 /\
-     arg{1}.`2 = arg{2}.`1 /\
-     arg{1}.`3 = arg{2}.`2
- ==> ={res,Glob.mem}. 
-proc => /=; conseq />. 
-unroll for {1} 12.
-unroll for {2} 10.
-seq 9 7 : (#pre /\ ={st}). 
-+ conseq />.
-  while (0 <= i{1} <= 8 /\ #pre /\ ={st,i}); last by auto => />.
-  auto => /> &1 &2 ???; split; 1: by smt().
-  by congr;rewrite set_eqiE 1,2:/#.
-by auto => />. 
-qed.
-
-equiv increment : ChaCha20_sref.M.increment_counter ~ M.__increment_counter_ref : ={arg} ==> ={res} by proc;auto => /> &2;congr;ring. 
-
-equiv sum_store :  ChaCha20_sref.M.sum_states_store ~ M.__sum_states_store_xor_ref :
-  ={Glob.mem} /\ 64 <= to_uint arg{1}.`3 /\
-  arg{1}.`1 = arg{2}.`1 /\
-  arg{1}.`2 = arg{2}.`2 /\
-  to_uint arg{1}.`3 = to_uint arg{2}.`3 /\
-  arg{1}.`4 = arg{2}.`4 /\
-  arg{1}.`5 = arg{2}.`5 /\
-  arg{1}.`6 = arg{2}.`6 
-   ==> ={Glob.mem} /\ res{1}.`1 = res{2}.`1 /\ res{1}.`2 = res{2}.`2 /\ to_uint res{1}.`3 = to_uint res{2}.`3.
-proc; inline *; wp; conseq (: _ ==>  ={Glob.mem,output,kk} /\ plain{1} = input{2} /\ to_uint s_len{1} = to_uint s_len{2}); 1: by  auto => /> &1 &2 H H0; rewrite !to_uintB ?uleE /= /#. 
-while (#post /\ ={i,k,k15,st} /\ 0<=i{1}<=8);last by auto => />.
-if; 1: by smt(). 
-+ auto => /> &1 &2 ?????;do split; last 2 by smt().
-by auto => /> /#.
-qed.
-*)
 
 op valid_disjoint_ptr (p1 p2 l1 l2 : int) = p1 + l1 < W64.modulus && 
                                             p2 + l2 < W64.modulus && 
                                            (p1 + l1 <= p2 || p2 + l2 <= p1).
+
+lemma xor_bits8( w1 w2 : W64.t) : (w1 `^` w2) \bits8 0 = (w1 \bits8 0) `^` (w2 \bits8 0).
+apply W8.wordP => k kb.
+by rewrite bits8iE 1:kb !xorwE !bits8iE 1,2:kb.
+qed.
+
+lemma shr0 (w:W64.t) : w `>>` W8.zero = w.
+proof. rewrite /(`>>`) wordP /=/#. qed.
+
+equiv store_x2_last_corr : 
+  ChaCha20_savx2.M.store_x2_last ~  M.__store_xor_last_h_avx2 :
+  (={Glob.mem} /\
+   ={k} /\
+   to_uint len{1} < 257 /\
+   output{1} = output{2} /\
+   valid_disjoint_ptr (to_uint output{1}) (to_uint plain{1}) (to_uint len{1}) (to_uint len{1}) /\
+   plain{1} = input{2} /\ to_uint len{1} = to_uint len{2}) /\
+  to_uint len{1} <= 128
+  ==> 
+ ={Glob.mem}.
+proc => /=.
+   inline *.
+   seq 3 0 : (#pre /\
+             r{1}.[0] = k{2}.[0] /\ 
+             r{1}.[1] = k{2}.[1]); 1: by auto => />.
+
+   seq 1 1 : (#{/~k{1}=k{2}}pre /\ to_uint len{1} <= 64). 
+  + if; 1: by move => ?;rewrite !uleE /=; smt().
+    unroll for {2} 2.
+    auto => /> &1 &2; rewrite !uleE /= => *; do split; last 6 first.
+      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
+      +  rewrite !to_uintB /=; 1: by rewrite ?uleE /#. 
+         by rewrite to_uintD_small /= /#.
+      +  rewrite !to_uintB /=; 1: by rewrite ?uleE /#. 
+         by rewrite !to_uintD_small /= /#.
+      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
+      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
+      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
+
+    congr; 1: by smt().
+    congr;rewrite /loadW256.
+    congr; apply W32u8.Pack.ext_eq => x xb.
+    rewrite !initiE 1,2:/# /=.
+    rewrite get_storeW256E /=.
+    rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+    done.
+
+   by auto => /> &1 &2 ????????; rewrite uleE /= /#.
+
+  seq 7 1 : 
+    ( ={Glob.mem} /\ to_uint len1{1} <= 32 /\
+     valid_disjoint_ptr (to_uint output1{1})
+               (to_uint plain1{1}) (to_uint len1{1}) (to_uint len1{1}) /\
+     output1{1} = output{2} /\
+     plain1{1} = input{2} /\
+     to_uint len1{1} = to_uint len{2} /\
+     r0{1}  = k{2}.[0]).
+  + sp 6 0; if; 1: by move => ?;rewrite !uleE /=; smt().
+    auto => /> &1 &2; rewrite !uleE /= => *; do split; last 2 first.
+       + rewrite !to_uintB /=; 1: rewrite ?uleE /#. 
+      by rewrite !to_uintD_small /= /#.
+       + by rewrite !to_uintB /=;  rewrite ?uleE /#. 
+    by smt().
+       + by rewrite !to_uintB /=;  rewrite ?uleE /#. 
+        + rewrite !to_uintB /=; 1: rewrite ?uleE /#. 
+      by rewrite !to_uintD_small /= /#.
+   by auto => /> &1 &2 ?????????; rewrite uleE /= /#.
+
+  seq 2 2 : 
+    ( ={Glob.mem} /\ to_uint len1{1} <= 16 /\
+       valid_disjoint_ptr (to_uint output1{1})
+        (to_uint plain1{1}) (to_uint len1{1}) (to_uint len1{1}) /\
+     output1{1} = output{2} /\
+     plain1{1} = input{2} /\
+     to_uint len1{1} = to_uint len{2} /\
+     r1{1}  = r0{2}). 
+  + auto => /> &1 &2; rewrite !uleE /= => ?????;
+      rewrite /VEXTRACTI128 /b2i /= /truncateu128  bits128_div //.
+    do split; last by smt().
+    + move => ?; rewrite !to_uintB /=; rewrite ?uleE; 1,2:smt(). 
+      by rewrite !to_uintD_small /= /#.
+
+  seq 1 0 : (#pre /\ forall k, 0<=k<16 => s0{1}.[k] = 
+              (W16u8.unpack8 r0{2}).[k]).
+  by auto => /> &1 &2 ????? k kbl kbh; 
+    rewrite /unpack8 !initiE 1,2:/# /= ifT 1:/#.  
+
+  splitwhile {1} 2 : ((of_int 8)%W32 \ule  len1 /\ 
+                     (truncateu32 j) \ult (W32.of_int 8)).
+
+  seq 2 2 : 
+    ( ={Glob.mem} /\ to_uint len{2} <= 8 /\
+     to_uint j{1} = 
+        (if 8 <= to_uint len1{1} then 8 else 0) /\
+     valid_disjoint_ptr (to_uint output1{1})
+               (to_uint plain1{1}) (to_uint len1{1}) (to_uint len1{1}) /\
+     to_uint output1{1} + to_uint j{1} = to_uint output{2} /\
+     to_uint plain1{1} + to_uint j{1} = to_uint input{2} /\
+     to_uint len1{1} - to_uint j{1} = to_uint len{2} /\
+     forall (k : int), 0 <= k && k < 8 => 
+        s0{1}.[to_uint j{1} + k] = (unpack8 r1{2}).[k]). 
+     + sp 0 1; if{2}; last first.
+       + while {1} (#pre /\ j{1} = W64.zero /\
+                    ! ((of_int 8)%W64 \ule len{2})) (to_uint len1{1} - to_uint j{1}).
+         + move =>  &2 ?;exfalso => />. 
+           by move => &1; rewrite !ultE !uleE /= !to_uint_truncateu32 /= /#.
+         auto => /> &1 &2 ;  rewrite  !uleE /=.
+         move=> ?????H?; do split; 1: smt(W32.to_uint_cmp).
+         move => ?; do split; 1,2: by smt().
+         move => k kb kbh; rewrite /VPEXTR_64 /= H 1:/#.
+         rewrite !get_unpack8 1,2:/#.  
+         rewrite !bits8_div /= 1,2:/#. 
+         rewrite bits64_div /= 1:/# of_uintK.
+         rewrite W8.to_uint_eq !of_uintK.
+          rewrite dvdz_mod_div //.
+             smt(gt0_pow2).
+             apply dvdz_exp2l; 1: smt().
+         rewrite modz_dvd; last by smt().
+         by rewrite expz_div 1,2:/#; apply dvdz_exp2l; smt().
+
++ do 8!(unroll {1} ^while).
+  rcondt {1} 2.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 6.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 10.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 14.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 18.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 22.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 26.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  rcondt {1} 30.
+  + move => *; auto => /> &1 ??????.
+    by rewrite !uleE !ultE /=!to_uint_truncateu32 /= /#.
+  while {1} (#post /\ to_uint j{1} = 8) (8 - to_uint j{1}).
+  + by move => &1 ?; auto => /> /#. 
+  auto => /> &1 &2 ????? H0; rewrite uleE /= => H; do split; first last.
+  + rewrite to_uintB /=; rewrite ?uleE /=; smt(W64.to_uint_cmp). 
+  + by smt().
+  + rewrite to_uintD_small /= /#. 
+  + rewrite to_uintD_small /= /#. 
+  + rewrite to_uintB /=;  rewrite ?uleE /=; smt(W64.to_uint_cmp). 
+  + move => k kbl kbh;  rewrite /unpack8 initiE 1:/# /= /VPEXTR_64 /= H0 1:/#.  
+    rewrite get_unpack8 1:/#.  
+    rewrite !bits8_div /= 1,2:/#. 
+    rewrite !bits64_div /= 1:/# of_uintK.
+    rewrite W8.to_uint_eq !of_uintK.
+     rewrite !dvdz_mod_div //; 1: by 
+        smt(gt0_pow2).
+        apply dvdz_exp2l; 1: smt().
+    rewrite !modz_dvd.
+    by rewrite expz_div 1,2:/#; apply dvdz_exp2l; smt().
+    rewrite mulrDr /= exprD_nneg 1,2:/# -divzMl /=; by smt(gt0_pow2). 
+  + by smt().
+  + apply mem_eq_ext => add.
+    case (!(to_uint output{2} <= add && add < to_uint output{2} + 8)).
+    + move => outrange; rewrite /storeW8 /storeW64. 
+      rewrite get_storesE /= ifF 1:/#.
+      by rewrite !get_set_neqE_s; rewrite ?to_uintD_small /#.
+    move => inrange; rewrite /storeW8 /storeW64 /loadW8. 
+    rewrite get_storesE /= ifT 1:/#.
+    case (add - to_uint output{2} = 0). 
+    + move => pos0; do 7!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by smt().
+      rewrite W8.WRing.addrC xor_bits8. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      by rewrite /loadW8 /loadW64 pack8bE 1:/# /=. 
+    case (add - to_uint output{2} = 1). 
+    + move => pos1 npos0; rewrite ifT 1:/# /=; do 6!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#.
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      by rewrite  /loadW64 pack8bE 1:/# /=  to_uintD_small /#.
+    case (add - to_uint output{2} = 2). 
+    + move => pos2 pos1 npos0; rewrite ifF 1:/# ifT 1:/# /=; do 5!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 2!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+     case (add - to_uint output{2} = 3). 
+    + move => pos3 pos2 pos1 npos0; rewrite ifF 1:/# ifF 1:/# ifT 1:/# /=; 
+        do 4!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 3!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+     case (add - to_uint output{2} = 4). 
+    + move => pos4 pos3 pos2 pos1 npos0; do 3!(rewrite ifF 1:/#); rewrite ifT 1:/# /=; 
+        do 3!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 4!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+     case (add - to_uint output{2} = 5). 
+    + move => pos5 pos4 pos3 pos2 pos1 npos0; do 4!(rewrite ifF 1:/#); rewrite ifT 1:/# /=; 
+        do 2!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 5!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+     case (add - to_uint output{2} = 6). 
+    + move => pos6 pos5 pos4 pos3 pos2 pos1 npos0; do 5!(rewrite ifF 1:/#); rewrite ifT 1:/# /=; 
+        do 1!(rewrite get_set_neqE_s; 1: by rewrite to_uintD_small /#).
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 6!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+     case (add - to_uint output{2} = 7). 
+    + move => pos7 pos6 pos5 pos4 pos3 pos2 pos1 npos0; do 6!(rewrite ifF 1:/#); rewrite ifT 1:/# /=; 
+      rewrite get_set_eqE_s; 1: by rewrite to_uintD_small /#.
+      do 7!(rewrite get_set_neqE_s; 1: by rewrite !to_uintD_small /#).
+      rewrite W8.WRing.addrC. congr.
+      + rewrite /VPEXTR_64 /= H0 1:/#.
+        by rewrite !get_unpack8 1,2:/#. 
+      rewrite  /loadW64 pack8bE 1:/# /=  !to_uintD_small /#.
+    by smt().
+
+  while (={Glob.mem} /\ to_uint j{1} <= to_uint len1{1} /\ to_uint len{2} <= 8 /\
+         valid_disjoint_ptr (to_uint output1{1}) (to_uint plain1{1}) (to_uint len1{1}) (to_uint len1{1}) /\
+         to_uint output1{1} + to_uint j{1} = to_uint output{2} /\
+         to_uint plain1{1} + to_uint j{1} = to_uint input{2} /\
+         to_uint len1{1} - to_uint j{1} = to_uint len{2} /\
+         forall k, 0<= k < to_uint len1{1} - to_uint j{1} =>
+           s0{1}.[to_uint j{1} + k] = truncateu8 (r1{2} `>>` W8.of_int (8*k))
+
+  ); last first.
+   + auto => /> &1 &2 ????????H; do split.  
+    + by smt(W64.to_uint_cmp).
+    + by move => k kbl kbh; rewrite (H k _) 1:/# /unpack8 initiE 1:/# /= to_uint_eq to_uint_truncateu8 bits8_div 1:/# /= /(`>>`) to_uint_shr /= /#.
+    + by rewrite !ultE /= to_uint_truncateu32; smt(W64.to_uint_cmp).
+    + by rewrite !ultE /= to_uint_truncateu32; smt(W64.to_uint_cmp).
+
+  auto => /> &1 &2 ???????? HH; rewrite !ultE /= !to_uint_truncateu32 /= => H H0;do split.  
+    + by rewrite (HH 0 _) 1:/#  /= W8.WRing.addrC !to_uintD_small /= 1,2: /# shr0 /#.
+    + rewrite  !to_uintD_small /=; smt(W64.to_uint_cmp).
+    + rewrite  !to_uintB /=; by  rewrite ?uleE /= ;smt(W64.to_uint_cmp).     
+    + rewrite  !to_uintD_small /=; smt(W64.to_uint_cmp). 
+    + rewrite  !to_uintD_small /=; smt(W64.to_uint_cmp). 
+    + rewrite  !to_uintB /=; 1: by  rewrite uleE /= ;smt(W64.to_uint_cmp).    rewrite  !to_uintD_small /=; smt(W64.to_uint_cmp).   
+    + rewrite  to_uintD_small /=; 1: by smt(W64.to_uint_cmp). 
+      move => k kbl kbh; move : (HH (1+k) _); 1:by smt().
+     rewrite /(`>>`) shrw_add //= 1:/#. 
+     rewrite !(modz_small _ 256); smt( StdOrder.IntOrder.ger0_norm W64.to_uint_cmp pow2_64 W32.to_uint_cmp pow2_32). 
+    + rewrite  !to_uintB /=; 1: by  rewrite uleE /= ;smt(W64.to_uint_cmp).    rewrite  !to_uintD_small /=;1: smt( W64.to_uint_cmp). 
+      rewrite modz_small in H. 
+       rewrite StdOrder.IntOrder.ger0_norm //;  smt(W64.to_uint_cmp W32.to_uint_cmp pow2_64 pow2_32).
+        smt(W64.to_uint_cmp W32.to_uint_cmp pow2_64 pow2_32).
+    +  rewrite  !to_uintB /=; 1: by  rewrite uleE /= ;smt(W64.to_uint_cmp).    rewrite  !to_uintD_small /=;1: smt( W64.to_uint_cmp). 
+      rewrite modz_small in H. 
+       rewrite StdOrder.IntOrder.ger0_norm //;  smt(W64.to_uint_cmp W32.to_uint_cmp pow2_64 pow2_32).
+        smt(W64.to_uint_cmp W32.to_uint_cmp pow2_64 pow2_32).
+qed.
+
+equiv line_x8 : ChaCha20_savx2.M.line_x8 ~  M.__line_h_avx2 : 
+   ={k,r16,r8,r} /\ 
+   a{1} %/4 = a{2} /\
+   b{1} %/4 = b{2} /\
+   c{1} %/4 = c{2}  ==> ={res} by proc; inline *; auto => />.
+
+equiv column_round : ChaCha20_savx2.M.column_round_x2 ~ M.__column_round_h_avx2 :
+  ={arg} ==> ={res}.
+proc; call(_: true); last by auto.
+by do 4!(call line_x8); auto => />.
+qed.
+
+equiv diagonal_round : ChaCha20_savx2.M.diagonal_round_x2 ~ M.__diagonal_round_h_avx2 :
+  ={arg} ==> ={res}.
+proc. 
+seq 1 1: #pre; 1: by sim.
+seq 1 1: #pre; last by sim.
+call(_: true); last by auto.
+by do 4!(call line_x8); auto => />.
+qed.
+
+equiv diagonal_roundx4 : 
+  ChaCha20_savx2.M.diagonal_round_x4 ~  M.__diagonal_round_h_x2_avx2 :
+   ={arg} ==> ={res}.
+proc. 
+seq 1 1 : #pre; 1: by sim.
+seq 1 1 : #pre; 2: by sim.
+call(_: true); last by auto.
+inline {1} 2; inline {1} 1.
+by inline *; auto => />.
+qed.
+
+equiv column_roundx4 : 
+  ChaCha20_savx2.M.column_round_x4 ~  M.__column_round_h_x2_avx2 :
+   ={arg} ==> ={res}.
+proc. 
+call(_: true); last by auto.
+by inline *; auto => />.
+qed.
+
+equiv column_roundx8 : 
+  ChaCha20_savx2.M.column_round_x8 ~ M.__column_round_v_1_avx2  : ={arg} ==> ={res} by sim.                          
+
+equiv diagonal_roundx8 : 
+   ChaCha20_savx2.M.diagonal_round_x8 ~ M.__diagonal_round_v_1_avx2 : ={arg} ==> ={res} by sim.                                                         
+
+equiv rounds_x8 :
+  ChaCha20_savx2.M.rounds_x8 ~ M.__rounds_v_avx2 :
+   ={arg} ==> ={res}.
+proc. 
+sp 1 1; swap {1} 1 2; swap {2} 1 1.
+inline {2} 1; sp.
+wp; conseq (: _ ==> ={k,k15}); 1: by smt().
+while(#post /\ s_r16{1} = r16{2} /\ s_r8{1} = r8{2} /\
+       to_uint c{1} = to_uint c{2} /\ 
+       zf{1} = (to_uint c{2} = 0)).
++ wp;inline {2} 1;wp; call(diagonal_roundx8);call(column_roundx8); auto => /> &1 &2 ??; rewrite !ultE /= => ?.
+  rewrite /DEC_32 /DEC_64 /rflags_of_aluop_nocf_w /= /ZF_of /=.
+  rewrite !to_uintB; 1,2: rewrite ?uleE /= /#.
+  do split. 
+  + smt().
+  + rewrite to_uint_eq !to_uintB; rewrite ?uleE /= /#.
+  + rewrite to_uint_eq !to_uintB; rewrite ?uleE /= /#.
+  + rewrite to_uint_eq !to_uintB; rewrite ?uleE /= /#.
+
+wp; call(diagonal_roundx8);call(column_roundx8); auto => />. 
+rewrite /DEC_32 /DEC_64 /rflags_of_aluop_nocf_w /= /ZF_of /=.
+  + rewrite to_uint_eq /#.
+qed.
+
+equiv store_x8_last : 
+  ChaCha20_savx2.M.store_x8_last ~ M.__store_xor_last_v_avx2 :
+   ={Glob.mem} /\ 
+   arg{1}.`1 = arg{2}.`1 /\
+   arg{1}.`2 = arg{2}.`2 /\
+   to_uint arg{1}.`3 = to_uint arg{2}.`3 /\
+   arg{1}.`4 = arg{2}.`4 ==>
+    ={Glob.mem}.
+proc => /=. 
+seq 6 7 : (#pre /\ ={k0_7, s_k8_15}); 1: by conseq />;sim.
+sp; seq 1 1 : #pre; 1: by conseq />;sim.
+inline {1} 1; inline {2} 1.
+admit. 
+qed.
+
+equiv store_x8 : 
+  ChaCha20_savx2.M.store_x8 ~  M.__store_xor_v_avx2 :
+   ={Glob.mem} /\ 512 <= to_uint len{1} /\
+   arg{1}.`1 = arg{2}.`1 /\
+   arg{1}.`2 = arg{2}.`2 /\
+   to_uint arg{1}.`3 = to_uint arg{2}.`3 /\
+   arg{1}.`4 = arg{2}.`4 ==>
+    ={Glob.mem} /\
+   res{1}.`1 = res{2}.`1 /\
+   res{1}.`2 = res{2}.`2 /\
+   to_uint res{1}.`3 = to_uint res{2}.`3.
+proc. 
+seq 3 3 :( #pre /\ ={k0_7,s_k8_15}); 1: by conseq />;sim.
+seq 1 1 :( #pre); 1: by conseq />;sim.
+seq 1 1 :( #pre).
++ by inline {1} 1; inline {2} 1; conseq />; sim.
+seq 1 1 :( #pre /\ ={k8_15}); 1: by conseq />;sim.
+seq 1 1 :( #pre); last first .  
++ conseq />; inline *; auto => />.
+  move => &1 &2 ??; rewrite !to_uintB /=; rewrite ?uleE /= /#.
+by conseq />; inline *; sim.
+qed.
 
 lemma top _m _c _l : 
    valid_disjoint_ptr _m _c _l _l => 
@@ -192,7 +451,7 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
           rewrite /DEC_32 /rflags_of_aluop_nocf_w !ultE /=.
           rewrite to_uintB  /=;1: by rewrite uleE /= /#.  
           by rewrite to_uintD_small  /=; smt(W64.to_uint_cmp). 
-        by admit. (* too slow clear Hptr _m _c _l; seq 1 1 : #pre; inline *;auto => />. *)
+        by call(diagonal_roundx4);call(column_roundx4); auto => />.
 
   inline {2} 6.
   wp; sp;conseq (_: 
@@ -204,8 +463,8 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
     rewrite to_uintB  /=. rewrite uleE /=; 1: by smt(W32.to_uintK W32.of_uintK pow2_32).
      rewrite !to_uintD_small  /=; 1: by  smt(W64.to_uint0). 
      split; 1:  by smt(W32.to_uintK W32.of_uintK pow2_32 W64.to_uint0). 
-     by move => ????; rewrite !ultE /#. 
-     by admit. (* too slow clear Hptr _m _c _l; seq 1 1 : #pre; inline *;auto => />. *)
+     by move => ????; rewrite !ultE /#.        
+     by call(diagonal_roundx4);call(column_roundx4); auto => />.
 
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
@@ -258,140 +517,39 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
       rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
       done.
 
-   inline *.
-   seq 7 4 : (#pre /\ ={k} /\ 
-             output1{1} = output3{2} /\ 
-             to_uint len1{1} <= 128 /\
-             plain1{1} = input3{2} /\  
-             valid_disjoint_ptr (to_uint output1{1})
-               (to_uint plain1{1}) (to_uint len1{1}) (to_uint len1{1}) /\
-             to_uint len1{1} = to_uint len3{2} /\
-             r{1}.[0] = k{2}.[0] /\ 
-             r{1}.[1] = k{2}.[1]); 1: by auto => />.
+    by call(store_x2_last_corr);   auto => />.
+ 
+(************)
 
-   seq 1 1 : (#{/~k{1}=k{2}}pre /\ to_uint len1{1} <= 64). 
-  + if; 1: by move => ?;rewrite !uleE /=; smt().
-    unroll for {2} 2.
-    auto => /> &1 &2; rewrite !uleE /= => *; do split; last 5 first.
-      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
-      +  rewrite !to_uintB /=; 1: by rewrite ?uleE /#. 
-         by rewrite to_uintD_small /= /#.
-      +  rewrite !to_uintB /=; 1: by rewrite ?uleE /#. 
-         by rewrite !to_uintD_small /= /#.
-      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
-      +  rewrite !to_uintB /=; by rewrite ?uleE /#. 
 
-    congr; 1: by smt().
-    congr;rewrite /loadW256.
-    congr; apply W32u8.Pack.ext_eq => x xb.
-    rewrite !initiE 1,2:/# /=.
-    rewrite get_storeW256E /=.
-    rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-    done.
-
-   by auto => /> &1 &2 ?????????????; rewrite uleE /= /#.
-
-  seq 7 1 : 
-    ( ={Glob.mem} /\ to_uint len3{1} <= 32 /\
-     valid_disjoint_ptr (to_uint output3{1})
-               (to_uint plain3{1}) (to_uint len3{1}) (to_uint len3{1}) /\
-     output3{1} = output3{2} /\
-     plain3{1} = input3{2} /\
-     to_uint len3{1} = to_uint len3{2} /\
-     r0{1}  = k{2}.[0]).
-  + sp 6 0; if; 1: by move => ?;rewrite !uleE /=; smt().
-    auto => /> &1 &2; rewrite !uleE /= => *; do split; last 2 first.
-       + rewrite !to_uintB /=; 1: rewrite ?uleE /#. 
-      by rewrite !to_uintD_small /= /#.
-       + by rewrite !to_uintB /=;  rewrite ?uleE /#. 
-    by smt().
-       + by rewrite !to_uintB /=;  rewrite ?uleE /#. 
-        + rewrite !to_uintB /=; 1: rewrite ?uleE /#. 
-      by rewrite !to_uintD_small /= /#.
-   by auto => /> &1 &2 ?????????????; rewrite uleE /= /#.
-
-  seq 2 2 : 
-    ( ={Glob.mem} /\ to_uint len3{1} <= 16 /\
-       valid_disjoint_ptr (to_uint output3{1})
-        (to_uint plain3{1}) (to_uint len3{1}) (to_uint len3{1}) /\
-     output3{1} = output3{2} /\
-     plain3{1} = input3{2} /\
-     to_uint len3{1} = to_uint len3{2} /\
-     r1{1}  = r0{2}). 
-  + auto => /> &1 &2; rewrite !uleE /= => ?????;
-      rewrite /VEXTRACTI128 /b2i /= /truncateu128  bits128_div //.
-    do split; last by smt().
-    + move => ?; rewrite !to_uintB /=; rewrite ?uleE; 1,2:smt(). 
-      by rewrite !to_uintD_small /= /#.
-
-  splitwhile {1} 3 : ((of_int 8)%W32 \ule  (len3 - truncateu32 j)).
-  seq 1 0 : (#pre /\ forall k, 0<=k<16 => s0{1}.[k] = 
-              (W16u8.unpack8 r0{2}).[k]).
-  by auto => /> &1 &2 ????? k kbl kbh; 
-    rewrite /unpack8 !initiE 1,2:/# /= ifT 1:/#.  
-
-  seq 2 2 : 
-    ( ={Glob.mem} /\ to_uint len3{1} <= 16 /\
-     to_uint j{1} = 
-        (if 8 <= to_uint len3{1} then to_uint len3{1}  - 8 else 0) /\
-     valid_disjoint_ptr (to_uint output3{1})
-               (to_uint plain3{1}) (to_uint len3{1}) (to_uint len3{1}) /\
-     to_uint output3{1} + to_uint j{1} = to_uint output3{2} /\
-     to_uint plain3{1} + to_uint j{1} = to_uint input3{2} /\
-     to_uint len3{1} + to_uint j{1} = to_uint len3{2} /\
-     forall (k : int), 0 <= k && k < 8 => 
-        s0{1}.[to_uint j{1} + k] = (unpack8 r1{2}).[k]). 
-     + sp 0 1; if{2}; last first.
-       + while {1} (#pre /\ to_uint len3{1} <= 16 /\
-               valid_disjoint_ptr (to_uint output3{1})
-               (to_uint plain3{1}) (to_uint len3{1}) (to_uint len3{1}) /\
-                    truncateu32 j{1} \ule len3{1} /\ j{1} = W64.zero /\
-                    ! ((of_int 8)%W64 \ule len3{2})) (to_uint len3{1} - to_uint j{1}).
-         + move =>  &2 ?;exfalso => />. 
-           move => &1; rewrite !ultE !uleE /= !to_uint_truncateu32 /=.
-           have : (! 8 <= to_uint len3{1}) => to_uint j{1} %% 4294967296 <= to_uint len3{1} =>  (!8 <= to_uint (len3{1} - truncateu32 j{1})); last by smt().
-           by move => ?; rewrite to_uintD /= to_uintN /= to_uint_truncateu32 /= /#. 
-         auto => /> &1 &2 ;  rewrite  !uleE /= !to_uint_truncateu32 /=.
-         move=> ?????H?; do split; 1: smt(W32.to_uint_cmp).
-         + rewrite !ultE /= !to_uint_truncateu32 /= => ??.
-           by rewrite !to_uintB /=; by rewrite ?uleE /= to_uint_truncateu32 /= /#. 
-         + rewrite !ultE /= !to_uint_truncateu32 /= => ??.
-           do split; 1: smt(). 
-          move => k kb kbh; rewrite /VPEXTR_64 /= H 1:/#.
-         rewrite !get_unpack8 1,2:/#.  
-         rewrite !bits8_div /= 1,2:/#. 
-         rewrite bits64_div /= 1:/# of_uintK.
-         rewrite W8.to_uint_eq !of_uintK.
-          rewrite dvdz_mod_div //.
-             smt(gt0_pow2).
-             apply dvdz_exp2l; 1: smt().
-         rewrite modz_dvd; last by smt().
-         by rewrite expz_div 1,2:/#; apply dvdz_exp2l; smt().
-
-+ unroll {1} 2.
-  rcondt {1} 2.  move => *; auto => /> &1 ??????.
-  rewrite !uleE !ultE.
-  rewrite to_uintB. rewrite uleE /=; 1: by
-    rewrite to_uint_truncateu32 /=;  smt(W64.to_uint_cmp).
-  rewrite !to_uint_truncateu32 /= /#.
-  seq 5 11 : #post; last first.
-  + while {1} (#pre) (1).
-    move => *; exfalso.
-    move => *. admit.
-    by auto => />.
-
-    admit.
-    admit.
-  
-        
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
-  seq 1 1 : #pre. inline *.  
-  + wp;conseq />;unroll {1} ^while.
+  seq 1 1 : #pre.
+  + inline {1} 1; inline {2} 1.  
+    wp;conseq />;unroll {1} ^while.
     rcondt {1} 5; 1: by move => &m; auto => />.
-    admit.    
+    while(={k} /\ to_uint c{1} = 10 - to_uint c{2} /\ 1<=to_uint c{1} <= 10 /\ r16{1} = r160{2} /\ r8{1} = r80{2}).
+    + inline {2} 1.
+      wp; call(diagonal_round).
+      wp; call(column_round).
+      auto => /> &1 &2 ???; rewrite /DEC_32 !ultE /rflags_of_aluop_nocf_w /= => ??.
+      rewrite  to_uintB; 1: rewrite ?uleE /= /#. 
+      by rewrite !to_uintD_small /= /#.
+    + inline {2} 5.
+      wp; call(diagonal_round).
+      wp; call(column_round).
+      by auto => />.
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
-  inline *. admit. (* reusable from above *)
+
+  by call(store_x2_last_corr);   auto => />;
+     move => &1 &2; rewrite  !ultE /= /#.
+
+(*********)
+(*********)
+(*********)
+(*********)
+(*********)
+(*********)
 
 inline {1} 1; inline {2} 1; inline {2} 7;  inline {2} 19.
 swap {2} [27..28] -26; sp 0 2.
@@ -402,20 +560,92 @@ seq 9 28 : (#pre /\ ={k,st} /\
             to_uint len{1} = to_uint len2{2} /\  
             to_uint len0{1} = to_uint len2{2} /\ 
             output0{1} = output2{2} /\ plain0{1} = input2{2} /\ 
-            counter{2} = W32.zero); 1: by inline *; auto => />.
-  seq 1 1 : #pre. admit. 
-(* 
-  conseq />; inline *; auto => /> &1 &2; rewrite !ultE /= => *.
-  have -> : VPBROADCAST_2u128 g_sigma = CHACHA_SIGMA_H_AVX2.
-  + rewrite /VPBROADCAST_2u128 -iotaredE /= -(unpack128K CHACHA_SIGMA_H_AVX2).
-    congr;rewrite /unpack128 /of_list packP => i ib; rewrite !initiE //=. 
-    rewrite (of_int_bits128_div_red _ _ ib _) 1:/# /=.
-    case (i = 0); 1: by auto. 
-    case (i = 1); 1: by auto.
-    by smt().
-  by congr; rewrite /VPBROADCAST_2u128 /VINSERTI128 /= -iotaredE /=.
-*)
+            counter{2} = W32.zero /\
+            s_r16{1} = r16{2} /\
+            s_r8{1} = r8{2}); 1: by inline *; auto => />.
+  seq 1 1 : #pre. 
+  + conseq />; inline *.
+    do 2!( unroll for {1} ^while).
+    do 3!( unroll for {2} ^while). print CHACHA_SIGMA_V_AVX2.
+    auto =>  &1 &2; pose xx := CHACHA_SIGMA_V_AVX2; rewrite !ultE => /> *.
+    do 13!(congr).
+    congr; last first.
+    + rewrite /VPBROADCAST_8u32 -iotaredE /= -(unpack32K xx.[3]).
+      congr;rewrite /unpack32 /of_list packP => i ib; rewrite !initiE //=. 
+      rewrite (of_int_bits32_div_red _ _ ib _) 1:/# /=.
+      case (i = 0); 1: by auto. 
+      case (i = 1); 1: by auto.
+      case (i = 2); 1: by auto.
+      case (i = 3); 1: by auto.
+      case (i = 4); 1: by auto.
+      case (i = 5); 1: by auto.
+      case (i = 6); 1: by auto.
+      case (i = 7); 1: by auto.
+      by smt().
+    congr; last first.
+    + rewrite /VPBROADCAST_8u32 -iotaredE /= -(unpack32K xx.[2]).
+      congr;rewrite /unpack32 /of_list packP => i ib; rewrite !initiE //=. 
+      rewrite (of_int_bits32_div_red _ _ ib _) 1:/# /=.
+      case (i = 0); 1: by auto. 
+      case (i = 1); 1: by auto.
+      case (i = 2); 1: by auto.
+      case (i = 3); 1: by auto.
+      case (i = 4); 1: by auto.
+      case (i = 5); 1: by auto.
+      case (i = 6); 1: by auto.
+      case (i = 7); 1: by auto.
+      by smt().
+     congr; last first.
+    + rewrite /VPBROADCAST_8u32 -iotaredE /= -(unpack32K xx.[1]).
+      congr;rewrite /unpack32 /of_list packP => i ib; rewrite !initiE //=. 
+      rewrite (of_int_bits32_div_red _ _ ib _) 1:/# /=.
+      case (i = 0); 1: by auto. 
+      case (i = 1); 1: by auto.
+      case (i = 2); 1: by auto.
+      case (i = 3); 1: by auto.
+      case (i = 4); 1: by auto.
+      case (i = 5); 1: by auto.
+      case (i = 6); 1: by auto.
+      case (i = 7); 1: by auto.
+      by smt().
+     congr.
+    + rewrite /VPBROADCAST_8u32 -iotaredE /= -(unpack32K xx.[0]).
+      congr;rewrite /unpack32 /of_list packP => i ib; rewrite !initiE //=. 
+      rewrite (of_int_bits32_div_red _ _ ib _) 1:/# /=.
+      case (i = 0); 1: by auto. 
+      case (i = 1); 1: by auto.
+      case (i = 2); 1: by auto.
+      case (i = 3); 1: by auto.
+      case (i = 4); 1: by auto.
+      case (i = 5); 1: by auto.
+      case (i = 6); 1: by auto.
+      case (i = 7); 1: by auto.
+      by smt().
+   
+seq 1 1 : (#{/~! (len{1} \ult (W32.of_int 257))}
+          {~to_uint len{1} = to_uint len{2}}
+        {~to_uint len{1} = to_uint len2{2}}pre); last first.
+if; 1: by move => &1 &2; rewrite !ultE /= /#.
++ seq 1 1 : #pre; 1: by conseq />; inline *; sim.
+  seq 1 1 : #pre;1 : by  call(rounds_x8); auto => />.
+  seq 1 1 : #pre; 1: by conseq />; inline *; sim.
+  by call(store_x8_last); auto => />.
+by auto => />.
 
-admit.
+while(#{/~! (len{1} \ult (W32.of_int 257))}
+        {~to_uint len{1} = to_uint len{2}}
+        {~to_uint len{1} = to_uint len2{2}}pre).
++ seq 1 1 : #pre; 1: by conseq />; inline *; sim.
+  seq 1 1 : #pre;1 : by  call(rounds_x8); auto => />.
+  seq 1 1 : #pre; 1: by conseq />; inline *; sim.
+  seq 1 1 : #post. 
+  +  call(store_x8).
+      auto => /> &1 &2 ??????; rewrite !uleE /= => ??; split; 1: by smt().
+     move => ???; rewrite !uleE /= /#.
+   by conseq />; inline *; sim.
+  
+  auto => />.
+  move => &1 &2; rewrite !uleE !ultE /= =>  ?????????; split; 1: by smt().
+   by smt().
 
 qed.
