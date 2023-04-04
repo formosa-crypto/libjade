@@ -46,10 +46,9 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, stack u8[2*KYBER_S
 }
 
 inline
-fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
+fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, stack u8[KYBER_SYMBYTES] coins)
 {
   stack u8[KYBER_SYMBYTES * 2] buf kr;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
   inline int i;
@@ -58,11 +57,9 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
   s_ctp = ctp;
   s_shkp = shkp;
 
-  rb = #randombytes(rb);
-
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = rb[u64 i];
+    t64 = coins[u64 i];
     kr[u64 i] = t64;
   }
   
