@@ -10,9 +10,9 @@
 #define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ENCCOINBYTES      32
 #define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_BYTES             32
 
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ALGNAME         "Kyber768"
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ARCH            "amd64"
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_IMPL            "avx2"
+#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ALGNAME           "Kyber768"
+#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ARCH              "amd64"
+#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_IMPL              "avx2"
 
 int jade_kem_kyber_kyber768_amd64_avx2_keypair_derand(
   uint8_t *public_key,
