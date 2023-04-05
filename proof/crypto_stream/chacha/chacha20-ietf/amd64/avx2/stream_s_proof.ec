@@ -2,7 +2,7 @@ require import AllCore IntDiv List.
 require import ChaCha20_savx2_proof ChaCha20_savx2 Stream_s.
 from Jasmin require import JModel.
 
-require import  Array2 Array4 Array16 WArray256.
+require import  Array2 Array4 Array8 Array16 WArray256.
 
 
 op valid_disjoint_ptr (p1 p2 l1 l2 : int) = p1 + l1 < W64.modulus && 
@@ -16,6 +16,60 @@ qed.
 
 lemma shr0 (w:W64.t) : w `>>` W8.zero = w.
 proof. rewrite /(`>>`) wordP /=/#. qed.
+
+equiv store_x2: ChaCha20_savx2.M.store_x2 ~    M.__store_xor_h_avx2: 
+   ={Glob.mem,k} /\ 
+   to_uint len{1} < 257 /\
+   output{1} = output{2} /\ 
+   valid_disjoint_ptr (to_uint output{1})
+               (to_uint plain{1}) (to_uint len{1}) (to_uint len{1}) /\
+             plain{1} = input{2} /\ to_uint len{1} = to_uint len{2} /\ 
+            128 <= to_uint len{1} ==> 
+    ={Glob.mem} /\ res{1}.`1 = res{2}.`1 /\ res{1}.`2 = res{2}.`2 /\ 
+        valid_disjoint_ptr (to_uint res{1}.`1)
+               (to_uint res{1}.`2) (to_uint res{1}.`3) (to_uint res{1}.`3) /\
+        to_uint res{1}.`3 = to_uint res{2}.`3 /\ 
+     to_uint res{1}.`3 <= 128.
+proc. 
+inline *; do 2!(unroll for {1} ^while); unroll for {2} ^while.
+auto => /> &1 &2 ??????; do split;  last 4 first.
+ + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
+   by rewrite to_uintD_small /=; smt(). 
+ + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
+   by rewrite !to_uintD_small /=; smt(). 
+ +  rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
+   by rewrite uleE /#. 
+ + by smt().
+ + by rewrite !to_uintB  /=;rewrite ?uleE /=   /#.
+
+ congr;last first.
+ + congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+qed.
 
 equiv store_x2_last_corr : 
   ChaCha20_savx2.M.store_x2_last ~  M.__store_xor_last_h_avx2 :
@@ -314,7 +368,7 @@ seq 1 1 : #pre; 1: by sim.
 seq 1 1 : #pre; 2: by sim.
 call(_: true); last by auto.
 inline {1} 2; inline {1} 1.
-by inline *; auto => />.
+by inline *; auto => />. 
 qed.
 
 equiv column_roundx4 : 
@@ -322,7 +376,7 @@ equiv column_roundx4 :
    ={arg} ==> ={res}.
 proc. 
 call(_: true); last by auto.
-by inline *; auto => />.
+by inline *; auto => />. 
 qed.
 
 equiv column_roundx8 : 
@@ -355,19 +409,174 @@ rewrite /DEC_32 /DEC_64 /rflags_of_aluop_nocf_w /= /ZF_of /=.
   + rewrite to_uint_eq /#.
 qed.
 
+op interleave_rel(i07: W256.t Array8.t,  k03 k47 : W256.t Array4.t) : bool =
+    i07.[0] = k03.[0] /\
+    i07.[1] = k03.[1] /\
+    i07.[2] = k03.[2] /\
+    i07.[3] = k03.[3] /\
+    i07.[4] = k47.[0] /\
+    i07.[5] = k47.[1] /\
+    i07.[6] = k47.[2] /\
+    i07.[7] = k47.[3].
+
+equiv interleave :
+  ChaCha20_savx2.M.interleave_0 ~ M.__interleave_avx2 :
+     ={arg} ==> interleave_rel res{1} res{2}.`1 res{2}.`2.
+proc; unroll for {1} ^while; auto => />.
+qed.
+
 equiv store_x8_last : 
   ChaCha20_savx2.M.store_x8_last ~ M.__store_xor_last_v_avx2 :
+   to_uint len{1} < 512 /\
    ={Glob.mem} /\ 
    arg{1}.`1 = arg{2}.`1 /\
    arg{1}.`2 = arg{2}.`2 /\
    to_uint arg{1}.`3 = to_uint arg{2}.`3 /\
-   arg{1}.`4 = arg{2}.`4 ==>
+   arg{1}.`4 = arg{2}.`4 /\
+   valid_disjoint_ptr (to_uint output{1})
+               (to_uint plain{1}) (to_uint len{1}) (to_uint len{1}) /\
+             plain{1} = input{2}
+   ==>
     ={Glob.mem}.
 proc => /=. 
-seq 6 7 : (#pre /\ ={k0_7, s_k8_15}); 1: by conseq />;sim.
-sp; seq 1 1 : #pre; 1: by conseq />;sim.
+seq 6 7 : (#pre /\ ={k0_7, s_k8_15,s_k0_7}); 1: by conseq />;sim.
+seq 2 2 : (#pre /\ ={k8_15}); 1: by conseq />;sim.
+seq 1 1 : (#pre /\ interleave_rel i0_7{1} k0_3{2} k4_7{2}); 1: by call(interleave); auto => />.
+seq 1 1 : (#pre /\ to_uint len{1}  <= 256); last first.
++ inline{1} 1; inline {2} 1.
+  seq 7 5 : (#pre /\ ={output0} /\ r{1}= k1{2} /\
+          interleave_rel k0{1} k1{2} k2{2} /\
+            plain0{1} = input0{2} /\
+      to_uint len0{1} = to_uint len0{2} /\
+      valid_disjoint_ptr (to_uint output0{1}) (to_uint plain0{1}) (to_uint len0{1}) (to_uint len0{1}) /\
+      to_uint len0{1} <= 256).
+  + unroll for {1} 7; auto => /> *; rewrite tP => k kb.
+    smt(Array4.set_eqiE Array4.set_neqiE Array8.set_eqiE Array8.set_neqiE).
+  seq 1 1 : (#{/~interleave_rel k0{1} k1{2} k2{2}}pre /\ to_uint len0{1} <= 128 /\ r{1} = k1{2} 
+   /\ k0{1}.[4] = k2{2}.[0]
+   /\ k0{1}.[5] = k2{2}.[1]
+   /\ k0{1}.[6] = k2{2}.[2]
+   /\ k0{1}.[7] = k2{2}.[3]); 
+     last by call(store_x2_last_corr); auto => /> /#.
+  if; 1,3: by auto => /> &1 &2; rewrite !uleE /= /#.
+  seq 1 1 : #{/~r{1}}post; 1: by 
+  call(store_x2); auto => /> &1 &2 ???????????????????????????; rewrite !uleE /= => ?;do split;  smt(). 
+  unroll for {1} 2. auto => /> &1 &2 ????????????????????????; rewrite /copy_256 /=; do split;1,2:
+    smt(Array4.tP Array4.set_eqiE Array4.set_neqiE Array8.set_eqiE Array8.set_neqiE).
+
+if; last first ;1, 2: by  auto => />; rewrite ?uleE /= /#.
+call(interleave).
 inline {1} 1; inline {2} 1.
-admit. 
+inline *; do 2!(unroll for {1} ^while); do 2!(unroll for {2} ^while).
+auto => /> &1 &2; rewrite !uleE /= => ????????????????????????; do split;  last 4 first.
+ + rewrite !to_uintB  /=; rewrite ?uleE /=   /#.
+ + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
+   by rewrite to_uintD_small /=; smt(). 
+ + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
+   by rewrite !to_uintD_small /=; smt(). 
+ + by rewrite !to_uintB  /=;rewrite ?uleE /=   /#.
+ + by rewrite !to_uintB  /=;rewrite ?uleE /=   /#.
+
+ congr;last first.
+ + have -> : i0_7{1}.[7] = k4_7{2}.[3] by smt().
+   congr; rewrite /loadW256.
+   congr;apply W32u8.Pack.ext_eq => x xb.   
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[6] = k4_7{2}.[2] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[5] = k4_7{2}.[1] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[4] = k4_7{2}.[0] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[3] = k0_3{2}.[3] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[2] = k0_3{2}.[2] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+congr; last first.
+ + have -> : i0_7{1}.[1] = k0_3{2}.[1] by smt().
+   congr; rewrite /loadW256.
+   congr; apply W32u8.Pack.ext_eq => x xb.
+   rewrite !initiE 1,2:/# /=.
+   rewrite get_storeW256E /=.
+   rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
+   done.
+have -> : i0_7{1}.[0] = k0_3{2}.[0] by smt().
+smt().
 qed.
 
 equiv store_x8 : 
@@ -376,11 +585,14 @@ equiv store_x8 :
    arg{1}.`1 = arg{2}.`1 /\
    arg{1}.`2 = arg{2}.`2 /\
    to_uint arg{1}.`3 = to_uint arg{2}.`3 /\
-   arg{1}.`4 = arg{2}.`4 ==>
+   arg{1}.`4 = arg{2}.`4 /\
+   valid_disjoint_ptr (to_uint arg{1}.`1) (to_uint arg{1}.`2) (to_uint arg{1}.`3) (to_uint arg{1}.`3)
+   ==>
     ={Glob.mem} /\
    res{1}.`1 = res{2}.`1 /\
    res{1}.`2 = res{2}.`2 /\
-   to_uint res{1}.`3 = to_uint res{2}.`3.
+   to_uint res{1}.`3 = to_uint res{2}.`3 /\
+   valid_disjoint_ptr (to_uint res{1}.`1) (to_uint res{1}.`2) (to_uint res{1}.`3) (to_uint res{1}.`3).
 proc. 
 seq 3 3 :( #pre /\ ={k0_7,s_k8_15}); 1: by conseq />;sim.
 seq 1 1 :( #pre); 1: by conseq />;sim.
@@ -389,7 +601,9 @@ seq 1 1 :( #pre).
 seq 1 1 :( #pre /\ ={k8_15}); 1: by conseq />;sim.
 seq 1 1 :( #pre); last first .  
 + conseq />; inline *; auto => />.
-  move => &1 &2 ??; rewrite !to_uintB /=; rewrite ?uleE /= /#.
+  move => &1 &2 ?????; rewrite !to_uintB /=; rewrite ?uleE /=; 1,2:smt().
+  split; 1: by smt().
+  rewrite !to_uintD_small /= /#. 
 by conseq />; inline *; sim.
 qed.
 
@@ -435,7 +649,7 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
   by congr; rewrite /VPBROADCAST_2u128 /VINSERTI128 /= -iotaredE /=.
 
   if; 1:by auto => /> *; rewrite !ultE /= /#. 
-  + seq 1 1 : #pre; 1: by inline *;auto=> />.
+  + seq 1 1 : #pre; 1: by inline *;conseq />;sim.
     seq 1 1 : #pre.
     + inline {1} 1; inline {2} 1; wp; conseq />.
       unroll {1} 6; rcondt {1} 6; 1: by auto => />.
@@ -475,49 +689,10 @@ if;1:by auto => /> *; rewrite !ultE /= /#.
                (to_uint plain0{1}) (to_uint len0{1}) (to_uint len0{1}) /\
              plain0{1} = input2{2} /\ to_uint len0{1} = to_uint len2{2} /\ 
             128 < to_uint len0{1} ==> ={Glob.mem}); 1:
-              by  move => &1 &2 />; rewrite !ultE /=.  
+              by  move => &1 &2 />; rewrite !ultE /=. 
   seq 1 1 : (#{/~k1{1}}{~128 < to_uint len0{1}}pre /\ to_uint len0{1} <= 128). 
-  + inline *; do 2!(unroll for {1} ^while); unroll for {2} ^while.
-    auto => /> &1 &2 ??????; do split;  last 5 first. 
-    + by rewrite !to_uintB  /=; rewrite ?uleE /=   /#.
-    + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
-      by rewrite to_uintD_small /=; smt(). 
-    + rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
-      by rewrite !to_uintD_small /=; smt(). 
-    +  rewrite !to_uintB  /=;1: rewrite ?uleE /=   /#.
-      by rewrite uleE /#. 
-    + by smt().
-    + by rewrite !to_uintB  /=;rewrite ?uleE /=   /#.
-
-    congr;last first.
-    + congr; rewrite /loadW256.
-      congr; apply W32u8.Pack.ext_eq => x xb.
-      rewrite !initiE 1,2:/# /=.
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      done.
-   congr; last first.
-    + congr; rewrite /loadW256.
-      congr; apply W32u8.Pack.ext_eq => x xb.
-      rewrite !initiE 1,2:/# /=.
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      done.
-   congr; last first.
-    + congr; rewrite /loadW256.
-      congr; apply W32u8.Pack.ext_eq => x xb.
-      rewrite !initiE 1,2:/# /=.
-      rewrite get_storeW256E /=.
-      rewrite ifF; 1: by rewrite !to_uintD_small /= /#. 
-      done.
-
-    by call(store_x2_last_corr);   auto => />.
+  + by call(store_x2); auto => /> /#.
+  by call(store_x2_last_corr);   auto => />.
  
 (************)
 
@@ -560,9 +735,11 @@ seq 9 28 : (#pre /\ ={k,st} /\
             to_uint len{1} = to_uint len2{2} /\  
             to_uint len0{1} = to_uint len2{2} /\ 
             output0{1} = output2{2} /\ plain0{1} = input2{2} /\ 
+            valid_disjoint_ptr (to_uint output0{1}) (to_uint plain0{1}) (to_uint len0{1}) (to_uint len0{1}) /\
             counter{2} = W32.zero /\
             s_r16{1} = r16{2} /\
-            s_r8{1} = r8{2}); 1: by inline *; auto => />.
+            s_r8{1} = r8{2}); 1: by
+  inline *; auto => /> &1 &2; rewrite !ultE /=; smt(pow2_64).
   seq 1 1 : #pre. 
   + conseq />; inline *.
     do 2!( unroll for {1} ^while).
@@ -624,13 +801,14 @@ seq 9 28 : (#pre /\ ={k,st} /\
    
 seq 1 1 : (#{/~! (len{1} \ult (W32.of_int 257))}
           {~to_uint len{1} = to_uint len{2}}
-        {~to_uint len{1} = to_uint len2{2}}pre); last first.
+        {~to_uint len{1} = to_uint len2{2}}pre /\ 
+        valid_disjoint_ptr (to_uint output0{1}) (to_uint plain0{1}) (to_uint len0{1}) (to_uint len0{1}) /\
+        to_uint len0{1} < 512); last first.
 if; 1: by move => &1 &2; rewrite !ultE /= /#.
 + seq 1 1 : #pre; 1: by conseq />; inline *; sim.
   seq 1 1 : #pre;1 : by  call(rounds_x8); auto => />.
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
-  by call(store_x8_last); auto => />.
-by auto => />.
+  call(store_x8_last); auto => /> &1 &2; rewrite ultE /= => ????????. by auto => />.
 
 while(#{/~! (len{1} \ult (W32.of_int 257))}
         {~to_uint len{1} = to_uint len{2}}
@@ -640,12 +818,11 @@ while(#{/~! (len{1} \ult (W32.of_int 257))}
   seq 1 1 : #pre; 1: by conseq />; inline *; sim.
   seq 1 1 : #post. 
   +  call(store_x8).
-      auto => /> &1 &2 ??????; rewrite !uleE /= => ??; split; 1: by smt().
-     move => ???; rewrite !uleE /= /#.
+      auto => /> &1 &2 ?????????; rewrite !uleE /= => ??; split; 1: by smt().
+     move => ???; rewrite !uleE /= => ??????; split;  smt().
    by conseq />; inline *; sim.
   
   auto => />.
-  move => &1 &2; rewrite !uleE !ultE /= =>  ?????????; split; 1: by smt().
-   by smt().
-
+  move => &1 &2; rewrite !uleE !ultE /= =>  ????????????; split; 1: by smt().
+   move => ????;rewrite !uleE  /= =>  ??????; smt().
 qed.
