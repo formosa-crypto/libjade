@@ -33,19 +33,10 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER
   skp = s_skp;
   coins = s_coins;
 
-  for i=0 to 4
-  {
-    t64 = h_pk[u64 i];
-    (u64)[skp] = t64;
-    skp += 8;
-  }
-
-  for i=0 to KYBER_SYMBYTES/8
-  {
-    t64 = coins[u64 i+KYBER_SYMBYTES/8];
-    (u64)[skp] = t64;
-    skp += 8;
-  }
+  __fromstack32u8(skp, h_pk);
+    skp += 32;
+  
+  __fromstack32u8(skp, coins[32:32]);
 }
 
 #[returnaddress="stack"]
@@ -60,13 +51,7 @@ fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
   s_ctp = ctp;
   s_shkp = shkp;
 
-  for i=0 to KYBER_SYMBYTES/8
-  {
-    t64 = coins[u64 i];
-    kr[u64 i] = t64;
-  }
-  
-  buf[0:32] = _isha3_256_32(buf[0:32], kr[0:KYBER_SYMBYTES]);
+  buf[0:32] = _isha3_256_32(buf[0:32], coins);
 
   pkp = s_pkp;
 
