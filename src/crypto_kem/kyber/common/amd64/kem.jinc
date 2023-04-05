@@ -1,13 +1,15 @@
 require "avx2/verify.jinc"
 
-inline
-fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, stack u8[2*KYBER_SYMBYTES] coins)
+#[returnaddress="stack"]
+fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER_SYMBYTES] coins)
 {
   stack u8[32] h_pk;
   stack u64 s_skp s_pkp;
+  stack ptr u8[2*KYBER_SYMBYTES] s_coins;
   reg u64 t64;
   inline int i;
 
+  s_coins = coins;
   s_pkp = pkp;
   s_skp = skp;
 
@@ -29,6 +31,7 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, stack u8[2*KYBER_S
   t64 = KYBER_INDCPA_PUBLICKEYBYTES;
   h_pk = _isha3_256(h_pk, pkp, t64);
   skp = s_skp;
+  coins = s_coins;
 
   for i=0 to 4
   {
@@ -45,8 +48,8 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, stack u8[2*KYBER_S
   }
 }
 
-inline
-fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, stack u8[KYBER_SYMBYTES] coins)
+#[returnaddress="stack"]
+fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] coins)
 {
   stack u8[KYBER_SYMBYTES * 2] buf kr;
   stack u64 s_pkp s_ctp s_shkp;
