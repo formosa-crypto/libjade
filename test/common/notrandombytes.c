@@ -2,7 +2,7 @@
 
 #include <inttypes.h>
 #include <string.h>
-#include "notrandombytes.h"
+#include "randombytes.h"
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -215,4 +215,11 @@ void randombytes1(uint8_t* x, uint64_t xlen)
   randombytes_internal(x,xlen,g1,r1,&pos1);
 }
 
+// ////////
+
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen)
+{
+  randombytes(x, xlen);
+  return x;
+}
 

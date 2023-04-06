@@ -1,13 +1,18 @@
-// this is a 'fake' entry point for randombytes.h to test /*/functest.c (which is part of the distribution, which uses ext/*randombytes.h
-
-#ifndef JASMIN_RANDOMBYTES_H
-#define JASMIN_RANDOMBYTES_H
+#ifndef RANDOMBYTES_H
+#define RANDOMBYTES_H
 
 #include <stdint.h>
 
-#include "jasmin_notrandombytes.h"
+void resetrandombytes(void);
+void randombytes(uint8_t* x, uint64_t xlen);
 
-void randombytes(uint8_t* _x, uint64_t xlen);
+void resetrandombytes1(void);
+void randombytes1(uint8_t* x, uint64_t xlen);
+
+//
+
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* _x, uint64_t xlen) __asm__("__jasmin_syscall_randombytes__");
+
 
 #endif
 
