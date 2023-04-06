@@ -134,10 +134,16 @@ jobs:
 
 
 
-  dist:
+  dist-amd64:
     needs: [compile]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile amd64
+        run: make -j$JOBS -C src/ CI=1 default
+
       - name: dist amd64
         run: ./scripts/ci/releaser/jdist-src amd64
 
