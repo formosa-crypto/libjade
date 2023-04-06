@@ -42,6 +42,10 @@ int main(int argc, char**argv)
   char *op1_str[] = {xstr(crypto_scalarmult_base,.csv),
                      xstr(crypto_scalarmult,.csv)};
 
+  char *op1_str_short[] =
+                    { "scalarmult     ",
+                      "scalarmult_base"};
+
   uint8_t *_m, *m; // CRYPTO_SCALARBYTES
   uint8_t *_n, *n; // CRYPTO_SCALARBYTES
   uint8_t *_p, *p; // CRYPTO_BYTES
@@ -88,7 +92,7 @@ _st_while_b
 
 _st_while_e
 
-_st_print_1(argc, sd_runs, mean_runs, median_runs, op1_str)
+_st_print_1(argc, sd_runs, mean_runs, median_runs, op1_str, op1_str_short)
 
   free(_m);
   free(_n);

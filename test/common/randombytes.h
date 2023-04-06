@@ -1,5 +1,5 @@
-#ifndef RANDOMBYTES_H
-#define RANDOMBYTES_H
+#ifndef NOTRANDOMBYTES_H
+#define NOTRANDOMBYTES_H
 
 #include <stdint.h>
 
