@@ -6,15 +6,12 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
   reg u16 val1 val2;
   reg u16 t;
   reg u64 pos ctr;
-  reg u64 cnd0 cnd1 exit;
 
 
   ctr = offset;
   pos = 0;
-  exit = 0;
 
-  while(exit == 0)
-  {
+  while {
     val1 = (16u)buf[(int)pos];
     pos += 1;
     t   = (16u)buf[(int)pos];
@@ -32,8 +29,10 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
 
     if(val1 < KYBER_Q)
     {
-      rp[(int)ctr] = val1;
-      ctr += 1;
+        if(ctr < KYBER_N) {
+            rp[(int)ctr] = val1;
+            ctr += 1;
+        }
     }
 
     if(val2 < KYBER_Q)
@@ -45,16 +44,8 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
       }
     }
 
-    // Check if we should exit the loop
-    cnd0  = KYBER_N;
-    cnd0 -= ctr;
-    cnd0 -= 1;
-    cnd1  = SHAKE128_RATE;
-    cnd1 -= pos;
-    cnd1 -= 3; //TODO: (potentially) wasting 2 'good' bytes
-    exit  = cnd0 | cnd1;
-    exit >>= 63;
-  }
+  //TODO: (potentially) wasting 2 'good' bytes
+  } (pos < SHAKE128_RATE - 2)
 
   return ctr, rp;
 }
@@ -99,19 +90,29 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
         extseed[KYBER_SYMBYTES+1] = j;
       }
 
-      state = __shake128_absorb34(state, extseed);
+      state = __shake128_absorb34(state, extseed); // TODO: hakyber: local(ha) vs inline (libjade)
+
+      // Initialize the poly array
+      ctr = 0;
+      #bounded
+      while (ctr < KYBER_N / 4) {
+        poly[u64 (int) ctr] = ctr;
+        ctr += 1;
+      }
 
       ctr = 0;
+      #no_termination_check
       while (ctr < KYBER_N)
       {
         sctr = ctr;
-        state, buf = __shake128_squeezeblock(state, buf);
+        state, buf = __shake128_squeezeblock(state, buf); // TODO: hakyber: local(ha) vs inline (libjade)
         ctr = sctr;
         ctr, poly  = __rej_uniform(poly, ctr, buf);
       }
 
       k = 0;
       l = i * KYBER_VECN + j * KYBER_N;
+      #bounded
       while (k < KYBER_N)
       {
         t = poly[(int) k];
