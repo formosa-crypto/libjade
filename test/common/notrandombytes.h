@@ -6,4 +6,8 @@
 void resetrandombytes(void);
 void randombytes(uint8_t* x, uint64_t xlen);
 
+void resetrandombytes1(void);
+void randombytes1(uint8_t* x, uint64_t xlen);
+
+
 #endif
