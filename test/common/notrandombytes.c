@@ -165,9 +165,14 @@ static int crypto_rng(
 // ////////////////////////////////////////////////////////////////////////////
 
 
-static uint8_t  g0[KEYBYTES], g1[KEYBYTES];
-static uint8_t  r0[OUTPUTBYTES], r1[OUTPUTBYTES];
-static uint64_t pos0 = OUTPUTBYTES, pos1 = OUTPUTBYTES;
+static uint8_t g0[KEYBYTES];
+static uint8_t g1[KEYBYTES];
+
+static uint8_t r0[OUTPUTBYTES];
+static uint8_t r1[OUTPUTBYTES];
+
+static uint64_t pos0 = OUTPUTBYTES;
+static uint64_t pos1 = OUTPUTBYTES;
 
 static void randombytes_internal(
   uint8_t *x, uint64_t xlen,
@@ -177,7 +182,7 @@ static void randombytes_internal(
 {
   while (xlen > 0)
   {
-    if (*pos == OUTPUTBYTES)
+    if ((*pos) == OUTPUTBYTES)
     { crypto_rng(r,g,g);
       *pos = 0;
     }
