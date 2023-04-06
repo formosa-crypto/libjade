@@ -1,10 +1,19 @@
 #ifndef STABILITY_C
 #define STABILITY_C
 
+#if defined(NOTRANDOMBYTES_H)
+  #define _st_internal_reset_randombytes resetrandombytes(); resetrandombytes1();
+  #define _st_randombytes0(a,b) randombytes(a,b)
+  #define _st_randombytes1(a,b) randombytes1(a,b)
+#else
+  #define _st_internal_reset_randombytes
+  #define _st_randombytes0(a,b) randombytes(a,b)
+  #define _st_randombytes1(a,b) randombytes(a,b)
+#endif
+
 #if defined(ST_ON)
 
-// checks
-
+// RUNS must be > 1
 #if (RUNS <= 1)
 #error "error: stability.c : RUNS should be greater or equal than 2"
 #endif
@@ -14,7 +23,6 @@
 void check_uint64_t_ulong(void){ _st_static_check(sizeof(uint64_t) == sizeof(unsigned long)); }
 
 // includes
-
 #include "config.h"
 #include "cpucycles.c" // cmp_uint64
 #include <gsl/gsl_statistics_ulong.h> // gsl_stats_ulong_{mean,sd}
@@ -23,10 +31,8 @@ void check_uint64_t_ulong(void){ _st_static_check(sizeof(uint64_t) == sizeof(uns
 
 #define _st_while_b int _st_ok = 0, _st_it = ST_MAX; while(_st_it > 0 && _st_ok == 0){
 #define _st_while_e _st_it--; }
-#define _st_reset_randombytes resetrandombytes();
+#define _st_reset_randombytes _st_internal_reset_randombytes
 #define _st_ifnotst(a)
-
-extern void resetrandombytes();
 
 static uint64_t st_median(uint64_t *r, size_t length)
 {
@@ -43,7 +49,7 @@ static uint64_t st_median(uint64_t *r, size_t length)
 
  #define _st_store_1(median_r, run, median_l) st_store_1(median_r, run, median_l);
  #define _st_check_1(sd_r, mean_r, median_r) if(st_check_1(sd_r, mean_r, median_r) == 1){ _st_ok = 1; }
- #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str) st_print_1(argc, _st_it, _st_ok, sd_r, mean_r, median_r, op1_str);
+ #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str, op1_str_short) st_print_1(argc, _st_it, _st_ok, sd_r, mean_r, median_r, op1_str, op1_str_short);
 
  static void st_store_1(uint64_t median_runs[OP1][RUNS], int run, uint64_t median_loops[OP1][LOOPS])
  {
@@ -77,7 +83,15 @@ static uint64_t st_median(uint64_t *r, size_t length)
    return ok;
  }
 
- static void st_print_1(int argc, int _st_it, int _st_ok, double sd_runs[OP1], double mean_runs[OP1], uint64_t median_runs[OP1][RUNS], char *op_str[])
+ static void st_print_1(
+  int argc,
+  int _st_it,
+  int _st_ok,
+  double sd_runs[OP1],
+  double mean_runs[OP1],
+  uint64_t median_runs[OP1][RUNS],
+  char *op_str[],
+  char *op_str_short[])
  {
    size_t op, run;
    FILE *f;
@@ -86,6 +100,7 @@ static uint64_t st_median(uint64_t *r, size_t length)
    f = stdout;
    for (op = 0; op < OP1; op++)
    { if(argc == 1) { f = fopen(op_str[op], "a"); }
+     else          { fprintf(f, "%s, ", op_str_short[op]); }
      fprintf(f, "%d, %d", (ST_MAX-_st_it), _st_ok);
      fprintf(f, ", %.2lf, %.2lf, %" PRIu64 "", sd_runs[op], mean_runs[op], st_median(&(median_runs[op][0]), RUNS));
 
@@ -353,7 +368,7 @@ static uint64_t st_median(uint64_t *r, size_t length)
 
  #define _st_store_1(median_r, run, median_loops)
  #define _st_check_1(sd_r, mean_r, median_r)
- #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str)
+ #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str, op1_str_short)
 
  #define _st_alloc_2(r,x)
  #define _st_d_alloc_2(r,x)

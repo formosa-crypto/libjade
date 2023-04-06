@@ -1,5 +1,5 @@
 # example:
-# $ make bin/crypto_sign/falcon/falcon512/amd64/avx2/bench DEFINE='-DTIMINGS=500 -DMININBYTES=128 -DMAXINBYTES=128 -DRUNS=5 -DST_ON -DST_MAX=2 -DST_PER=1' RANDLIB='../test/common/jasmin_notrandombytes.c ../test/common/notrandombytes.c'
+# $ make bin/crypto_sign/falcon/falcon512/amd64/avx2/bench DEFINE='-DTIMINGS=500 -DMININBYTES=128 -DMAXINBYTES=128 -DRUNS=5 -DST_ON -DST_MAX=2 -DST_PER=1' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c'
 # $ ./bin/crypto_sign/falcon/falcon512/amd64/avx2/bench - 
 
 EXTERNAL_PATH    = $(subst $(BIN),external,$(@D))

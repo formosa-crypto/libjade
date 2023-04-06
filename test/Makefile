@@ -64,7 +64,7 @@ SRC      := ../src
 COMMON   := common
 
 EXT      := ../ext
-RANDSRC  := $(COMMON)/notrandombytes.c $(COMMON)/jasmin_notrandombytes.c
+RANDSRC  := $(COMMON)/notrandombytes.c
 
 FILTER   ?= $(SRC)/crypto_%
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))

@@ -66,7 +66,7 @@ make_err    bench/ "" "bench1"
 (
 echo "#start: bench2";
 make -j1 -C bench/ clean    CI=1;
-make -j1 -C bench/ run      CI=1 DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDLIB='../test/common/notrandombytes.c ../test/common/jasmin_notrandombytes.c';
+make -j1 -C bench/ run      CI=1 DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
 make     -C bench/ reporter CI=1;
 ) >> $LLOG
 make_err    bench/ "" "bench2"

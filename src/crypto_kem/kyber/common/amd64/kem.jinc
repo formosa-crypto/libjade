@@ -1,18 +1,19 @@
 require "avx2/verify.jinc"
 
-inline
-fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
+#[returnaddress="stack"]
+fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER_SYMBYTES] coins)
 {
   stack u8[32] h_pk;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u64 s_skp s_pkp;
+  stack ptr u8[2*KYBER_SYMBYTES] s_coins;
   reg u64 t64;
   inline int i;
 
+  s_coins = coins;
   s_pkp = pkp;
   s_skp = skp;
 
-  __indcpa_keypair(pkp, skp);
+  __indcpa_keypair_derand(pkp, skp, coins[0:32]);
 
   skp = s_skp;
   skp += KYBER_POLYVECBYTES;
@@ -30,29 +31,18 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp)
   t64 = KYBER_INDCPA_PUBLICKEYBYTES;
   h_pk = _isha3_256(h_pk, pkp, t64);
   skp = s_skp;
+  coins = s_coins;
 
-  for i=0 to 4
-  {
-    t64 = h_pk[u64 i];
-    (u64)[skp] = t64;
-    skp += 8;
-  }
-
-  rb = #randombytes(rb);
-
-  for i=0 to KYBER_SYMBYTES/8
-  {
-    t64 = rb[u64 i];
-    (u64)[skp] = t64;
-    skp += 8;
-  }
+  __fromstack32u8(skp, h_pk);
+    skp += 32;
+  
+  __fromstack32u8(skp, coins[32:32]);
 }
 
-inline
-fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
+#[returnaddress="stack"]
+fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] coins)
 {
   stack u8[KYBER_SYMBYTES * 2] buf kr;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
   inline int i;
@@ -61,15 +51,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp)
   s_ctp = ctp;
   s_shkp = shkp;
 
-  rb = #randombytes(rb);
-
-  for i=0 to KYBER_SYMBYTES/8
-  {
-    t64 = rb[u64 i];
-    kr[u64 i] = t64;
-  }
-  
-  buf[0:32] = _isha3_256_32(buf[0:32], kr[0:KYBER_SYMBYTES]);
+  buf[0:32] = _isha3_256_32(buf[0:32], coins);
 
   pkp = s_pkp;
 

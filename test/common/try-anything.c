@@ -160,7 +160,7 @@ void input_prepare(uint8_t *x2, uint8_t *x, uint64_t xlen)
 
 void input_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const char *fun)
 {
-  if (memcmp(x2 - CANARY_LENGTH, x - CANARY_LENGTH, xlen + 32))
+  if (memcmp(x2 - CANARY_LENGTH, x - CANARY_LENGTH, xlen + (2*CANARY_LENGTH)))
   { fprintf(stderr,"%s overwrites input\n",fun);
     exit(111);
   }

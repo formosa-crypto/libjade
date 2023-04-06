@@ -49,6 +49,9 @@ int main(int argc, char**argv)
   char *op_str_sign_open[] = { xstr(crypto_sign,.csv),
                                xstr(crypto_sign_open,.csv) };
 
+  char *op_str_keypair_short[] =
+                             { "keypair" };
+
   uint8_t  *_pks,    *pks,    *pk;    // CRYPTO_PUBLICKEYBYTES
   uint8_t  *_sks,    *sks,    *sk;    // CRYPTO_SECRETKEYBYTES
   uint8_t  *_ms,     *ms,     *m;     // MAXINBYTES
@@ -122,7 +125,7 @@ _st_while_b
         median_loops_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
-    _st_ifnotst(pb_print_1(argc, median_loops_keypair, op_str_keypair))
+    _st_ifnotst(pb_print_1(argc, median_loops_keypair, op_str_keypair, op_str_keypair_short))
     _st_ifnotst(pb_print_2(argc, median_loops_sign_open, op_str_sign_open))
 
     _st_store_1(median_runs1, run, median_loops_keypair)
@@ -136,7 +139,7 @@ _st_while_b
 
 _st_while_e
 
-_st_print_1(argc, sd_runs1, mean_runs1, median_runs1, op_str_keypair)
+_st_print_1(argc, sd_runs1, mean_runs1, median_runs1, op_str_keypair, op_str_keypair_short)
 _st_print_2(argc, sd_runs2, mean_runs2, median_runs2, op_str_sign_open)
 
   pb_free_2(median_loops_sign_open);

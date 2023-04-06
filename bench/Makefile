@@ -6,7 +6,7 @@
 #    input, 11 (default 1) x 10000 times (default = 10000), while printing std
 #    dev (-DST_ON; requires RUNS > 1; also requires notrandombytes):
 #
-#   $ make bin/crypto_xof/shake256/amd64/ref/bench DEFINE='-DMINOUTBYTES=32 -DMAXOUTBYTES=32 -DMININBYTES=16384 -DMAXINBTYES=16384 -DRUNS=11 -DST_ON' RANDLIB='../test/common/jasmin_notrandombytes.c ../test/common/notrandombytes.c'
+#   $ make bin/crypto_xof/shake256/amd64/ref/bench DEFINE='-DMINOUTBYTES=32 -DMAXOUTBYTES=32 -DMININBYTES=16384 -DMAXINBTYES=16384 -DRUNS=11 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c'
 #   $ ./bin/crypto_xof/shake256/amd64/ref/bench -
 #
 # --------------------------------------------------------------------
