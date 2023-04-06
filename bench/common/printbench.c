@@ -23,7 +23,11 @@ static void pb_init_1(int argc, char *op_str[])
   }
 }
 
-static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
+static void pb_print_1(
+  int argc,
+  uint64_t results[OP1][LOOPS],
+  char *op_str[],
+  char *op_str_short[])
 {
   int op, loop;
   FILE *f;
@@ -34,6 +38,7 @@ static void pb_print_1(int argc, uint64_t results[OP1][LOOPS], char *op_str[])
   f = stdout;
   for (op = 0; op < OP1; op++)
   { if(argc == 1) { f = fopen(op_str[op], "a"); }
+    else          { fprintf(f, "%s, ", op_str_short[op]); }
     loop = 0;
     fprintf(f, "%" PRIu64 "\n", results[op][loop]);
     if(argc == 1) { fclose(f); }

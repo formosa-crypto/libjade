@@ -82,7 +82,7 @@ _st_while_b
       median_loops[0][loop] = cpucycles_median(cycles, TIMINGS);
     }
 
-    _st_ifnotst(pb_print_1(argc, median_loops, op1_str))
+    _st_ifnotst(pb_print_1(argc, median_loops, op1_str, op1_str_short))
     _st_store_1(median_runs, run, median_loops)
   }
 

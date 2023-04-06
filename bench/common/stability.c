@@ -368,7 +368,7 @@ static uint64_t st_median(uint64_t *r, size_t length)
 
  #define _st_store_1(median_r, run, median_loops)
  #define _st_check_1(sd_r, mean_r, median_r)
- #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str)
+ #define _st_print_1(argc, sd_r, mean_r, median_r, op1_str, op1_str_short)
 
  #define _st_alloc_2(r,x)
  #define _st_d_alloc_2(r,x)

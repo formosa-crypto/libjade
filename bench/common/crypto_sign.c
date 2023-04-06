@@ -125,7 +125,7 @@ _st_while_b
         median_loops_sign_open[1][loop][r] = cpucycles_median(cycles, TIMINGS);
       }
     }
-    _st_ifnotst(pb_print_1(argc, median_loops_keypair, op_str_keypair))
+    _st_ifnotst(pb_print_1(argc, median_loops_keypair, op_str_keypair, op_str_keypair_short))
     _st_ifnotst(pb_print_2(argc, median_loops_sign_open, op_str_sign_open))
 
     _st_store_1(median_runs1, run, median_loops_keypair)
