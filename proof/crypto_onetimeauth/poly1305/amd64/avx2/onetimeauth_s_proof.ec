@@ -67,16 +67,16 @@ qed.
 (* ****************************************************)
 (* Getting Hoare and LL for reg based simplementation *)
 (* ****************************************************)
-
+print onetimeauth_s_r_equiv.
 
 lemma Onetimeauth_s__poly1305_r_avx2_corr_h mem rr ss mm inn inl kk :
   hoare [ Onetimeauth_s.M.__poly1305_r_avx2 : 
            Glob.mem = mem /\
            in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr (to_uint kk) (to_uint inn) (next_multiple inl) /\
-           poly1305_pre rr ss mm mem inn inl kk ==> 
+           inv_ptr (to_uint kk) (to_uint inn) (to_uint inl) /\
+            poly1305_pre rr ss mm mem inn inl kk ==> 
            poly1305_post rr ss mm res mem Glob.mem ].
-conseq onetimeauth_s_r_equiv (avx2_corr_h mem rr ss mm inn inl kk).
+conseq (onetimeauth_s_r_equiv (to_uint inn) (to_uint inl)) (avx2_corr_h mem rr ss mm inn inl kk).
 move => &1 [#] /= ????; rewrite /poly1305_pre /inv_ptr /= => [#] *.
 exists mem (in_0{1},inlen{1},k{1}) => /=.
 split; last first; do split; smt(W64.to_uint_cmp). 
@@ -87,10 +87,10 @@ lemma Onetimeauth_s__poly1305_r_avx2_ll mem rr ss mm inn inl kk :
   phoare [ Onetimeauth_s.M.__poly1305_r_avx2 : 
            Glob.mem = mem /\
            in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr (to_uint kk) (to_uint inn) (next_multiple inl) /\
+           inv_ptr (to_uint kk) (to_uint inn) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==>  
            true] = 1%r.
-conseq onetimeauth_s_r_equiv (avx2_ll mem rr ss mm inn inl kk).
+conseq (onetimeauth_s_r_equiv (to_uint inn) (to_uint inl)) (avx2_ll mem rr ss mm inn inl kk).
 move => &1 [#] /= ????; rewrite /poly1305_pre /inv_ptr /= => [#] *.
 exists mem (in_0{1},inlen{1},k{1}) => /=.
 split; last first; do split; smt(W64.to_uint_cmp).
@@ -101,7 +101,7 @@ lemma Onetimeauth_s__poly1305_avx2__r_corr mem rr ss mm inn inl kk :
   phoare [ Onetimeauth_s.M.__poly1305_r_avx2 : 
            Glob.mem = mem /\
            in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr (to_uint kk) (to_uint inn) (next_multiple inl) /\
+           inv_ptr (to_uint kk) (to_uint inn) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
            poly1305_post rr ss mm res mem Glob.mem ] = 1%r
  by conseq (Onetimeauth_s__poly1305_r_avx2_ll mem rr ss mm inn inl kk) 
@@ -111,10 +111,10 @@ lemma Onetimeauth_s__poly1305_avx2__r_corr mem rr ss mm inn inl kk :
 (* Proving entry point for MAC computation is correct *)
 (* ****************************************************)
 
-
 op inv_ptr_mem (k in_0 out len : int) : bool = good_ptr k 32 /\ 
                                                      good_ptr in_0 len /\ 
                                                      good_ptr out 16.
+
 op poly1305_post_mem (r : Zp.Zp.zp) (s : int) (m : Zp_msg) (outt : int) (memO memN : global_mem_t) :
   bool = memN = storeW128 memO outt (W128.of_int (poly1305_ref r s m)).
 
@@ -122,7 +122,7 @@ lemma Onetimeauth_s__poly1305_avx2_corr_h mem rr ss mm outt inn inl kk :
   hoare [ Onetimeauth_s.M.__poly1305_avx2 : 
            Glob.mem = mem /\
            out = outt /\ in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
            poly1305_post_mem rr ss mm (to_uint outt) mem Glob.mem ].
 proof. 
@@ -138,7 +138,7 @@ lemma Onetimeauth_s__poly1305_avx2_ll mem rr ss mm outt inn inl kk :
   phoare [ Onetimeauth_s.M.__poly1305_avx2 : 
            Glob.mem = mem /\
            out = outt /\ in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
            true ] = 1%r.
 proof. 
@@ -151,7 +151,7 @@ lemma Onetimeauth_s__poly1305_avx2_corr mem rr ss mm outt inn inl kk :
   phoare [ Onetimeauth_s.M.__poly1305_avx2 : 
            Glob.mem = mem /\
            out = outt /\ in_0 = inn /\ inlen = inl /\ k = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
            poly1305_post_mem rr ss mm (to_uint outt) mem Glob.mem ] = 1%r by
  conseq (Onetimeauth_s__poly1305_avx2_ll mem rr ss mm outt inn inl kk) 
@@ -191,7 +191,7 @@ lemma jade_onetimeauth_poly1305_amd64_avx2 mem rr ss mm outt inn inl kk :
   phoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_avx2 : 
            Glob.mem = mem /\
            mac = outt /\ input = inn /\ input_length = inl /\ key = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
            poly1305_post_mem rr ss mm (to_uint outt) mem Glob.mem /\ res = W64.zero] = 1%r by
  proc => //; wp;sp => /=;
@@ -260,7 +260,7 @@ lemma jade_onetimeauth_poly1305_amd64_avx2_verify_h mem hh rr ss mm hhp inn inl 
   hoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_avx2_verify : 
            Glob.mem = mem /\
            mac = hhp /\ input = inn /\ input_length = inl /\ key = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (to_uint inl) /\
            poly1305_pre_verif rr hh ss mm mem hhp inn inl kk ==> 
            poly1305_post_verif rr hh ss mm  (res = W64.zero) mem Glob.mem].
  proc => /=.
@@ -306,7 +306,7 @@ lemma jade_onetimeauth_poly1305_amd64_avx2_verify_ll mem hh rr ss mm hhp inn inl
   phoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_avx2_verify : 
            Glob.mem = mem /\
            mac = hhp /\ input = inn /\ input_length = inl /\ key = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (to_uint inl) /\
            poly1305_pre_verif rr hh ss mm mem hhp inn inl kk ==> 
            true] = 1%r.
  proc => /=.
@@ -357,7 +357,7 @@ lemma jade_onetimeauth_poly1305_amd64_avx2_verify mem hh rr ss mm hhp inn inl kk
   phoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_avx2_verify : 
            Glob.mem = mem /\
            mac = hhp /\ input = inn /\ input_length = inl /\ key = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (next_multiple inl) /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (to_uint inl) /\
            poly1305_pre_verif rr hh ss mm mem hhp inn inl kk ==> 
            poly1305_post_verif rr hh ss mm  (res = W64.zero) mem Glob.mem] = 1%r
   by conseq (jade_onetimeauth_poly1305_amd64_avx2_verify_ll mem hh rr ss mm hhp inn inl kk)

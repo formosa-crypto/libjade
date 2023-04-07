@@ -16,15 +16,12 @@ have := IntOrder.ler_weexpn2l x _ (n-1) (n) _ => //=;1..2:smt().
 by smt(IntOrder.ieexprIn).
 qed.
 
-op next_multiple(p : W64.t) = if to_uint p %% 16 = 0 
-                              then to_uint p 
-                              else (to_uint p %/ 16 + 1) * 16.
 
 (* EQUIVALENCE BETWEEN REG BASED AND MEMORY OUTPUT *)
 equiv onetimeauth_s_r_mem_equiv mem outt :
     M.__poly1305_r_avx2 ~ M.__poly1305_avx2 :
     Glob.mem{1} = mem /\ ={Glob.mem} /\ 
-    good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\
+    good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\
     good_ptr (to_uint out{2}) 16 /\ out{2} = outt /\
     ={in_0,inlen,k} ==> 
      Glob.mem{1} = mem /\
@@ -45,25 +42,30 @@ qed.
 
 equiv update_e :  M.__poly1305_update_ref ~ Poly1305_savx2.M.poly1305_ref3_update : ={Glob.mem,arg} ==> ={res}  by sim.
 
-hoare update_h : M.__poly1305_update_ref :
-    good_ptr (to_uint in_0) (next_multiple inlen) ==> 
-    to_uint res.`2 < 16 /\ (0< to_uint res.`2 => good_ptr (to_uint res.`1) 16).
+hoare update_h in0 inl : M.__poly1305_update_ref :
+    to_uint in_0 = in0 /\ to_uint inlen = inl /\
+    good_ptr (to_uint in_0) (to_uint inlen) ==> 
+    to_uint res.`2 < 16 /\ (good_ptr (to_uint res.`1) (to_uint res.`2)).
 proc. 
-while (good_ptr (to_uint in_0) (next_multiple inlen)); last by 
-  auto => /> &m ?? in_0 inlen; 
-  rewrite uleE /next_multiple /=; smt(W64.to_uint_cmp).
+while (good_ptr (to_uint in_0) (to_uint inlen) /\ (inl - to_uint inlen) %% 16 = 0 /\
+       to_uint in_0 + to_uint inlen = in0 + inl); last first. 
+  auto => /> &m ?? in_0 inlen. 
+  rewrite uleE /= => ?????;  smt(W64.to_uint_cmp).
+
 inline 2; wp => /=; conseq />.
 inline *; auto => />.
-auto => /= ???; rewrite uleE /next_multiple /= => ?. 
-rewrite to_uintD_small /=; 1:  smt(W64.to_uint_cmp).
+auto => /= ???; rewrite uleE /= => ???. 
+rewrite to_uintD_small /=; 1:  smt(W64.to_uint_cmp pow2_64).
 rewrite to_uintB /=; 1: by rewrite uleE; smt(W64.to_uint_cmp).
 by smt(W64.to_uint_cmp).
 qed.
 
-equiv update :  M.__poly1305_update_ref ~ Poly1305_savx2.M.poly1305_ref3_update : 
-   good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\ ={Glob.mem,arg} ==> 
+equiv update in0 inl :  M.__poly1305_update_ref ~ Poly1305_savx2.M.poly1305_ref3_update : 
+    to_uint in_0{1} = in0 /\ to_uint inlen{1} = inl /\
+   good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\ ={Glob.mem,arg} ==> 
    ={res} /\ to_uint res{1}.`2 < 16 /\ 
-   (0 < to_uint res{1}.`2 => good_ptr (to_uint res{1}.`1) 16) by conseq update_e update_h.
+   (good_ptr (to_uint res{1}.`1) (to_uint res{1}.`2))
+  by conseq update_e (update_h in0 inl) => /#.
 
 equiv update_avx2_e :  M.__poly1305_avx2_update ~ Poly1305_savx2.M.poly1305_avx2_update : ={Glob.mem,arg} ==> ={res}.
 proc.
@@ -86,49 +88,52 @@ wp;call(_: ={Glob.mem}).
   by auto => />.
 qed.
 
-lemma update_avx2_h : 
+lemma update_avx2_h in0 inl : 
   hoare [ M.__poly1305_avx2_update :
+    to_uint in_0 = in0 /\ to_uint inlen = inl /\
     256 <= to_uint inlen /\
-    good_ptr (to_uint in_0) (next_multiple inlen) ==> 
-    (0< to_uint res.`2 => good_ptr (to_uint res.`1) (next_multiple res.`2))].
+    good_ptr (to_uint in_0) (to_uint inlen) ==> 
+    (0< to_uint res.`2 => good_ptr (to_uint res.`1) (to_uint res.`2))].
 proc => /=. 
 call(_: true); 1: by auto => />.
 call(_: true); 1: by auto => />.
 wp; conseq />;1:smt().
-while (64 <= to_uint inlen /\ good_ptr (to_uint in_0) (next_multiple (inlen - W64.of_int 64))); last first. 
+while (64 <= to_uint inlen /\ good_ptr (to_uint in_0) (to_uint inlen - 64)); last first. 
 + unroll for 5; inline *; auto => /> &hr;rewrite /next_multiple /= => H H0 H1;  do split.
   + smt(). 
   + rewrite to_uintD_small /=; smt(W64.to_uint_cmp).
   rewrite to_uintD_small /=; 1: smt(W64.to_uint_cmp).
-  by  rewrite to_uintB /=; 1: rewrite uleE /=; smt(W64.to_uint_cmp uleE).
+ smt(W64.to_uint_cmp).
+  by  move => in1 inl0; rewrite uleE => *; rewrite to_uintB /=; 1: rewrite uleE /=; smt(W64.to_uint_cmp uleE).
 
 inline 1; wp; conseq />; auto => />.
 rewrite uleE /next_multiple /= => &hr H H0 H1 H2.
 move : H0 H1. 
  rewrite !to_uintB /=; 1: by rewrite uleE /=; smt(W64.to_uint_cmp uleE).
-  rewrite uleE  !to_uintB /=; 1: by rewrite uleE /=; smt(W64.to_uint_cmp uleE).
-  by smt().
- by  rewrite uleE /=; smt(W64.to_uint_cmp).
-
-move => ??; rewrite to_uintD_small /=;smt(W64.to_uint_cmp). 
+  move => ??; split; 1: smt().
+  do split. 
+    + rewrite to_uintD_small /=; smt(W64.to_uint_cmp).
+  + rewrite to_uintD_small /=; smt(W64.to_uint_cmp).
 qed.
 
-lemma update_avx2 : 
+lemma update_avx2 in0 inl : 
  equiv[  M.__poly1305_avx2_update ~ Poly1305_savx2.M.poly1305_avx2_update : 
+    to_uint in_0{1} = in0 /\ to_uint inlen{1} = inl /\
    256 <= to_uint inlen{1} /\
-   good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\ ={Glob.mem,arg} ==> 
-   ={res} /\ (0< to_uint res{1}.`2 => good_ptr (to_uint res{1}.`1) (next_multiple res{1}.`2))] by 
-  conseq update_avx2_e update_avx2_h  => /#.
+   good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\ ={Glob.mem,arg} ==> 
+   ={res} /\ (good_ptr (to_uint res{1}.`1) (to_uint res{1}.`2))].  
+  conseq update_avx2_e (update_avx2_h in0 inl); 1: by auto.
+auto => /> &1 &2; smt(W64.to_uint_cmp pow2_64).  
+qed. 
 
 equiv load_last :
   M.__load_last_add ~ Poly1305_savx2.M.load_last_add :
-  good_ptr  (to_uint in_0{2}) 16 /\
-  to_uint len{1} < 16 /\
   ={arg,Glob.mem} ==> ={res,Glob.mem} by sim.
 
-equiv onetimeauth_s_r_equiv :
+equiv onetimeauth_s_r_equiv in0 inl :
     M.__poly1305_r_avx2 ~ Poly1305_savx2.M.poly1305_avx2 :
-    good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\
+    to_uint in_0{1} = in0 /\ to_uint inlen{1} = inl /\
+    good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\
     ={Glob.mem} /\ ={arg} ==> ={res,Glob.mem}.
 proc => /=.
 seq 7 1 : #pre; 1: by auto.
@@ -141,13 +146,13 @@ rcondf{1} 1.
   wp;call(_: ={Glob.mem}); 1: by sim.
   wp;call(_: ={Glob.mem}); 1: by sim.
   conseq />.
-  seq 15 15 : (#post /\ ={Glob.mem,in_01,inlen1} /\ r1{1} = r0{2} /\ (0 < to_uint inlen1{2} => good_ptr (to_uint in_01{2}) 16) /\ to_uint inlen1{2} < 16); last first.
+  seq 15 15 : (#post /\ ={Glob.mem,in_01,inlen1} /\ r1{1} = r0{2} /\ (good_ptr (to_uint in_01{2}) (to_uint inlen1{1})) /\ to_uint inlen1{2} < 16); last first.
   + if; first by auto.
     wp;call(_: ={Glob.mem}); 1: by sim.
-    conseq />.
-    call load_last;  auto => />; smt(W64.to_uint_cmp).
+    conseq />. 
+    call load_last; 1: by auto => />.
     by auto => />.
-  wp;call update.
+  wp;call (update in0 inl).
   wp;call(_: ={Glob.mem}); 1: by sim.
   by auto => />.  
 
@@ -159,23 +164,28 @@ wp;call(_: ={Glob.mem}); 1: by sim.
 wp;call(_: ={Glob.mem}); 1: by sim.
 wp;call(_: ={Glob.mem}); 1: by sim.
 conseq />.
-seq 11 21 : (#post /\ ={Glob.mem} /\ inlen0{1} = inlen1{2} /\ in_00{1} = in_01{2} /\ r0{1} = r0{2}  /\ (0<to_uint inlen1{2} => good_ptr (to_uint in_01{2}) 16) /\ to_uint inlen1{2} < 16); last first.
+
+seq 11 21 : (#post /\ ={Glob.mem} /\ inlen0{1} = inlen1{2} /\ in_00{1} = in_01{2} /\ r0{1} = r0{2}  /\ (good_ptr (to_uint in_01{2}) (to_uint inlen1{2})) /\ to_uint inlen1{2} < 16); last first.
 + if; first by auto.
   wp;call(_: ={Glob.mem}); 1: by sim.
   conseq />. 
-    call load_last;  auto => />; smt(W64.to_uint_cmp).
+    call load_last;  auto => />. 
   by auto => />.
+wp; conseq />.
 
-wp;call update.
-wp;call update_avx2.
+wp;ecall (update (to_uint in_0{1}) (to_uint inlen{1})).
+wp;ecall (update_avx2  (to_uint in_0{1}) (to_uint inlen{1})).
+swap {2} 10 -7; sp 0 4; conseq />; 1: smt().
 
 wp;call(_: ={Glob.mem}).
 + wp;call(_: ={Glob.mem}); 1: by sim.
   wp;call(_: ={Glob.mem}); 1: by sim.
   do 2!(unroll for {1} ^while).
   do 2!(unroll for {2} ^while).
+
   inline {1} M.__unpack_avx2.
   conseq />.
+
   seq 35 31 : (#pre /\ ={rt,r1234,r1234x5,r4444,r4444x5,i}); 1: by auto.
   seq 2 2: #pre. 
   + call(_:true); 1:  by sim. 
@@ -190,16 +200,10 @@ wp;call(_: ={Glob.mem}).
     by auto => />.
   by auto => />.
 
-wp; call(_: ={Glob.mem}); 1: by sim.
+call(_: ={Glob.mem}); 1: by sim.
+
 auto => /> &1??.
-rewrite ultE /= => ?; do split; 1: by smt(). 
-move => ? rr ?.
-case ( 0 < to_uint rr.`2); 1: by smt().
-move => *. 
-have : (to_uint rr.`2) = 0 by smt(W64.to_uint_cmp).
-move => Hrr.
-rewrite /next_multiple /= Hrr /=.
-by smt(W64.to_uint_cmp pow2_64).
+rewrite ultE /= /#.
 qed.
 
 (* Equivalence to memory based *)
@@ -207,7 +211,7 @@ qed.
 equiv onetimeauth_s_equiv mem outt :
     Poly1305_savx2.M.poly1305_avx2 ~ M.__poly1305_avx2 :
     Glob.mem{1} = mem /\ ={Glob.mem} /\ 
-    good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\
+    good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\
     good_ptr (to_uint out{2}) 16 /\ out{2} = outt /\
     ={in_0,inlen,k} ==> 
      Glob.mem{1} = mem /\
@@ -216,18 +220,18 @@ equiv onetimeauth_s_equiv mem outt :
 proof. 
 transitivity M.__poly1305_r_avx2 
     (={Glob.mem, in_0, inlen, k} /\ 
-    good_ptr (to_uint in_0{1}) (next_multiple inlen{1})
+    good_ptr (to_uint in_0{1}) (to_uint inlen{1})
       ==> ={res,Glob.mem})
     (Glob.mem{1} = mem /\ ={Glob.mem} /\ 
-    good_ptr (to_uint in_0{1}) (next_multiple inlen{1}) /\
+    good_ptr (to_uint in_0{1}) (to_uint inlen{1}) /\
     good_ptr (to_uint out{2}) 16 /\ out{2} = outt /\
     ={in_0,inlen,k} ==> 
      Glob.mem{1} = mem /\
      Glob.mem{2} = storeW128 mem (W64.to_uint outt)
        (W2u64.pack2 [res{1}.[0];res{1}.[1]])).
-+ move => /> &1 &2 => *; rewrite /inv_ptr /=. 
++ move => /> &1 &2 => *. 
   exists mem arg{1} => //=; do split; smt(W64.to_uint_cmp).
 + smt().
-+ by symmetry;proc*;call onetimeauth_s_r_equiv; auto => />.
++ by symmetry;proc*;ecall (onetimeauth_s_r_equiv (to_uint in_0{1}) (to_uint inlen{1})); auto => />.
 by proc*; call (onetimeauth_s_r_mem_equiv mem outt); auto => />.
 qed.
