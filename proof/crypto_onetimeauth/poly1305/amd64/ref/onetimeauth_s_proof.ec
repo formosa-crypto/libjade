@@ -4,7 +4,7 @@ from Jasmin require import JModel.
 require import Array2 Array3 Array4 Array5.
 require import WArray16 WArray24 WArray64 WArray96 WArray128 WArray160.
 
-require import Poly1305_spec Poly1305_savx2 Rep3Limb W64limbs Zp.
+require import Poly1305_spec Poly1305_savx2 Rep3Limb W64limbs Zp EClib W64limbs.
 require import Onetimeauth_s.
 
 import Zp.
@@ -156,44 +156,44 @@ byphoare (_:
    conseq add2_e  (add2_spec hh ss) => // /#.
 qed.
 
-op next_multiple(p : W64.t) = if to_uint p %% 16 = 0 
-                              then to_uint p 
-                              else (to_uint p %/ 16 + 1) * 16.
-
-op inv_ptr_mem (k in_0 out len : int) : bool = good_ptr k 32 /\ 
-                                                     good_ptr in_0 len /\ 
-                                                     good_ptr out 16.
-op poly1305_post_mem (r : Zp.zp) (s : int) (m : Zp_msg) (outt : int) (memO memN : global_mem_t) :
-  bool = memN = storeW128 memO outt (W128.of_int (poly1305_ref r s m)).
-
-
-lemma jade_onetimeauth_poly1305_amd64_ref mem rr ss mm outt inn inl kk :
-  hoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_ref : 
+lemma jade_onetimeauth_poly1305_amd64_ref_reg mem rr ss mm inn inl kk :
+  hoare [ Onetimeauth_s.M.__poly1305_r_ref : 
            Glob.mem = mem /\
-           mac = outt /\ input = inn /\ input_length = inl /\ key = kk /\
-           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
+           in_0 = inn /\ inlen = inl /\ k = kk /\
+           inv_ptr (to_uint kk) (to_uint inn) (to_uint inl) /\
            poly1305_pre rr ss mm mem inn inl kk ==> 
-           poly1305_post_mem rr ss mm (to_uint outt) mem Glob.mem /\ res = W64.zero].
+           poly1305_post rr ss mm res mem Glob.mem].
 proc => /=. 
-inline 5. inline 10. inline 18. inline 17. inline 16.
-seq 37 : (#pre /\ k1 = kk + W64.of_int 16  /\ out = outt /\ ubW64 4 h0.[2] /\ let n = size mm in repres3  h0 = poly1305_loop rr mm n); last first.
-+ wp; ecall (store2_spec_ref_h Glob.mem out h2).
-  wp; ecall (add2_spec_ref_h h21 s).
-  wp; ecall (load2_spec_ref_h Glob.mem k1).
+inline 6. inline 5. inline 4.
+seq 25 : (#{/~ k = kk}{~in_0 = inn}{~inlen=inl}pre /\ k0 = kk + W64.of_int 16  /\ ubW64 4 h0.[2] /\ let n = size mm in repres3  h0 = poly1305_loop rr mm n); last first.
++ wp; ecall (add2_spec_ref_h h20 s).
+  wp; ecall (load2_spec_ref_h Glob.mem k0).
   wp; ecall (freeze_spec_ref_h h0).
-  rewrite /poly1305_pre_mem /poly1305_post_mem /poly1305_ref /load_clamp /set0_64_; auto => /> &hr ????????bh <- r1 ->; do split; 1, 3:  smt(W64.to_uint_cmp). 
+  rewrite /poly1305_pre /poly1305_post /poly1305_ref /load_clamp /set0_64_; auto => /> &hr ???????<- r1 ->; do split; 1:  smt(W64.to_uint_cmp). 
   by rewrite !to_uintD_small; smt(W64.to_uint_cmp). 
+  
+  move => ?? rr0 Hr0 rr1 H; rewrite tP => k kb. 
+  case (k = 0). 
+  + move => k0; rewrite k0 initiE 1:/# /= -Hr0 to_uint_eq /= of_uintK /=; smt( divz_eq W64.to_uint_cmp pow2_64).  
+  case (k = 1). 
+  + move => k1 kn0; rewrite k1 initiE 1:/# /= -Hr0 to_uint_eq /= of_uintK /=; smt( divz_eq W64.to_uint_cmp pow2_64). 
+  by smt(). 
 
-sp 8; conseq />.
 
 rewrite /poly1305_loop /poly1305_pre. 
-seq 28 : (#pre /\ k1 = kk + W64.of_int 16 /\ to_uint in_01 = to_uint inn + to_uint inl %/ 16 * 16  /\ to_uint inlen1 = to_uint inl - to_uint inl %/ 16 * 16 /\ ubW64 4 h0.[2] /\ Rep3r_ok r1 /\ repres3r r1{hr} = load_clamp mem kk /\ let n =  to_uint inl %/ 16 in repres3  h0 = poly1305_loop rr mm n); last first.
-if; last by auto => /> &hr ????????????; rewrite ultE /= => ?; smt( divz_eq W64.to_uint_cmp pow2_64).
+seq 24 : (#{/~ k = kk}{~in_0 = inn}{~inlen=inl}pre /\
+           k0 = kk + W64.of_int 16 /\ 
+           to_uint in_00 = to_uint inn + to_uint inl %/ 16 * 16  /\ 
+           to_uint inlen0 = to_uint inl - to_uint inl %/ 16 * 16 /\ 
+           ubW64 4 h0.[2] /\ 
+           Rep3r_ok r0 /\ 
+           repres3r r0{hr} = load_clamp mem kk /\ 
+           let n =  to_uint inl %/ 16 in repres3  h0 = poly1305_loop rr mm n); last first.
+if; last by auto => /> &hr ????????????; rewrite ultE /= => ?; smt( divz_eq W64.to_uint_cmp pow2_64). 
 
-print mulmod_spec_ref_h.
-ecall(mulmod_spec_ref_h h0 r1).
-ecall(load_last_add_spec_ref_h Glob.mem h0 in_01 inlen1).
-auto => /> &hr ?????? sz mmv????????r1v r3old;  rewrite !ultE /= => ?; split; 1: by smt(W64.to_uint_cmp).
+ecall(mulmod_spec_ref_h h0 r0).
+ecall(load_last_add_spec_ref_h Glob.mem h0 in_00 inlen0).
+auto => /> &hr ???? sz mmv????????r1v r3old;  rewrite !ultE /= => ?; split;  1: by smt(W64.to_uint_cmp).
 move => ??? rr1 ? rr1val rr2 ? rr2val. 
 have -> : (size mm = to_uint inl %/ 16 + 1) by smt( divz_eq W64.to_uint_cmp pow2_64).
 rewrite rr2val rr1val.
@@ -203,68 +203,65 @@ rewrite /load_lblock /=.
 rewrite (onth_nth witness); 1: by smt(size_mkseq).
 rewrite oget_some nth_mkseq /= 1:/# ifF; 1: by smt( divz_eq W64.to_uint_cmp pow2_64).
 
-have -> : W64.to_uint (inl - (W64.of_int (to_uint inl %/ 16 * 16)))= to_uint inlen1{hr}.
+have -> : W64.to_uint (inl - (W64.of_int (to_uint inl %/ 16 * 16)))= to_uint inlen0{hr}.
 + rewrite to_uintB /=; 1:  rewrite uleE /=; smt(@W64 pow2_64).
 congr;congr;congr;congr;congr;rewrite fun_ext => x.
-have -> : W64.to_uint (inn + (W64.of_int (to_uint inl %/ 16 * 16)))= to_uint in_01{hr}; last by done.
+have -> : W64.to_uint (inn + (W64.of_int (to_uint inl %/ 16 * 16)))= to_uint in_00{hr}; last by done.
 by  rewrite to_uintD_small /=;  smt(@W64 pow2_64).
 
-wp;conseq />.
-
-seq 19 : 
- (#pre /\ 
- good_ptr (to_uint in_02) (to_uint inlen2) /\
- k0 = key + (of_int 16)%W64 /\
-  to_uint in_02 = to_uint input /\
-  to_uint inlen2 = to_uint input_length  /\
-  ubW64 4 h1.[2] /\ r2 = r0 /\
-  (ubW64 1152921504606846975 r2.[0] /\
-   (ubW64 1152921504606846975 r2.[0] =>
-    ubW64 1152921504606846972 r2.[1] /\
-    (ubW64 1152921504606846972 r2.[1] =>
-     4 %| to_uint r2.[1] /\
-     (4 %| to_uint r2.[1] =>
-      to_uint r2.[2] = 5 * (to_uint r2.[1] %/ 4) /\
-      (to_uint r2.[2] = 5 * (to_uint r2.[1] %/ 4) => ubW64 1441151880758558715 r2.[2]))))) /\
-  repres3r r2 = load_clamp Glob.mem key /\
-  repres3 h1 = poly1305_loop (load_clamp Glob.mem key) mm 0).
-+ unroll for ^while; wp; ecall (clamp_spec_ref_h Glob.mem k2).
-  auto => /> ????????; split;1:smt().
+seq 15 : 
+ (#{/~ k = kk}pre /\ good_ptr (to_uint in_01) (to_uint inlen1) /\
+ k = kk + (of_int 16)%W64 /\
+  inlen1 = inlen /\
+  in_01 = in_0 /\
+  ubW64 4 h1.[2] /\ r1 = r /\
+  (ubW64 1152921504606846975 r1.[0] /\
+   (ubW64 1152921504606846975 r1.[0] =>
+    ubW64 1152921504606846972 r1.[1] /\
+    (ubW64 1152921504606846972 r1.[1] =>
+     4 %| to_uint r1.[1] /\
+     (4 %| to_uint r1.[1] =>
+      to_uint r1.[2] = 5 * (to_uint r1.[1] %/ 4) /\
+      (to_uint r1.[2] = 5 * (to_uint r1.[1] %/ 4) => ubW64 1441151880758558715 r1.[2]))))) /\
+  repres3r r1 = load_clamp Glob.mem kk /\
+  repres3 h1 = poly1305_loop (load_clamp Glob.mem kk) mm 0).
++ unroll for ^while; wp; ecall (clamp_spec_ref_h Glob.mem k1).
+  auto => /> ??????; split; 1: smt().
   by move => ?? rr1 ??????; rewrite repres3E valRep3E /=.
 
-conseq />.
+wp; conseq />.
 
 while (
   Glob.mem = mem /\
-  to_uint input = to_uint inn /\
-  to_uint input_length = to_uint inl /\
-  size mm = (if to_uint input_length %% 16 = 0 then to_uint input_length %/ 16 else to_uint input_length %/ 16 + 1) /\
+  to_uint in_0 = to_uint inn /\
+  to_uint inlen = to_uint inl /\
+  size mm = (if to_uint inlen %% 16 = 0 then to_uint inlen %/ 16 else to_uint inlen %/ 16 + 1) /\
   mm =
   mkseq
     (fun (i0 : int) =>
        let offset = (of_int (i0 * 16))%W64 in
        (if i0 < size mm - 1 then load_block mem (inn + offset) else load_lblock mem (inl - offset) (inn + offset)))
     (size mm) /\
-  repres3r r2 = load_clamp Glob.mem key /\
-  (ubW64 1152921504606846975 r2.[0] /\
-   (ubW64 1152921504606846975 r2.[0] =>
-    ubW64 1152921504606846972 r2.[1] /\
-    (ubW64 1152921504606846972 r2.[1] =>
-     4 %| to_uint r2.[1] /\
-     (4 %| to_uint r2.[1] =>
-      to_uint r2.[2] = 5 * (to_uint r2.[1] %/ 4) /\
-      (to_uint r2.[2] = 5 * (to_uint r2.[1] %/ 4) => ubW64 1441151880758558715 r2.[2]))))) /\
+  repres3r r1 = load_clamp Glob.mem kk /\
+  (ubW64 1152921504606846975 r1.[0] /\
+   (ubW64 1152921504606846975 r1.[0] =>
+    ubW64 1152921504606846972 r1.[1] /\
+    (ubW64 1152921504606846972 r1.[1] =>
+     4 %| to_uint r1.[1] /\
+     (4 %| to_uint r1.[1] =>
+      to_uint r1.[2] = 5 * (to_uint r1.[1] %/ 4) /\
+      (to_uint r1.[2] = 5 * (to_uint r1.[1] %/ 4) => ubW64 1441151880758558715 r1.[2]))))) /\
   good_ptr (to_uint inn) (to_uint inl) /\
-  good_ptr (to_uint in_02) (to_uint inlen2) /\
-  (to_uint input_length - to_uint inlen2) %% 16 = 0 /\
-  to_uint input_length %% 16 <= to_uint inlen2 <= to_uint input_length /\
-  let _i = (to_uint input_length - to_uint inlen2) %/ 16 in
-  to_uint in_02 = to_uint input + _i * 16 /\
-  to_uint inlen2 = to_uint input_length - _i * 16 /\
-  ubW64 4 h1.[2] /\ repres3 h1 = poly1305_loop (load_clamp Glob.mem key) mm (_i)
+  good_ptr (to_uint in_01) (to_uint inlen1) /\
+  (to_uint inlen - to_uint inlen1) %% 16 = 0 /\
+  to_uint inlen %% 16 <= to_uint inlen1 <= to_uint inlen /\
+  let _i = (to_uint inlen - to_uint inlen1) %/ 16 in
+  to_uint in_01 = to_uint in_0 + _i * 16 /\
+  to_uint inlen1 = to_uint inlen - _i * 16 /\
+  ubW64 4 h1.[2] /\ repres3 h1 = poly1305_loop (load_clamp Glob.mem kk) mm (_i)
 ).
-wp;ecall(mulmod_spec_ref_h h1 r2).
-ecall(load_add_spec_ref_h Glob.mem h1 in_02).
+wp;ecall(mulmod_spec_ref_h h1 r1).
+ecall(load_add_spec_ref_h Glob.mem h1 in_01).
 auto => /> &hr ? mms mmv r2v????????????????rrov;rewrite uleE /= => ?; do split; 1,2: smt().
 move => ?? rr1 ? rr1v ?????rr0 ? rr0val;do split. 
 + rewrite to_uintB /=; 1: rewrite uleE /=; smt(W64.to_uint_cmp pow2_64).
@@ -279,8 +276,8 @@ move => ?? rr1 ? rr1v ?????rr0 ? rr0val;do split.
   smt(W64.to_uint_cmp pow2_64).
 
 rewrite rr0val rr1v rrov r2v.
-have -> : ((to_uint input_length{hr} - to_uint (inlen2{hr} - (of_int 16)%W64)) %/ 16) =
-          ((((to_uint input_length{hr} - to_uint inlen2{hr}) %/ 16)) + 1). 
+have -> : ((to_uint inlen{hr} - to_uint (inlen1{hr} - (of_int 16)%W64)) %/ 16) =
+          ((((to_uint inlen{hr} - to_uint inlen1{hr}) %/ 16)) + 1). 
 + rewrite to_uintB /=;  rewrite ?uleE /= /#.
 
 rewrite /poly1305_loop mmv. 
@@ -290,9 +287,9 @@ rewrite (onth_nth witness).
 + rewrite size_mkseq /max /=; 1:   by smt(W64.to_uint_cmp pow2_64).
 rewrite oget_some  nth_mkseq /=; 1:   by smt(W64.to_uint_cmp pow2_64).
 rewrite /load_block /load_lblock /=.
-pose ms := (if to_uint input_length{hr} %% 16 = 0 then to_uint input_length{hr} %/ 16 else to_uint input_length{hr} %/ 16 + 1).
+pose ms := (if to_uint inlen{hr} %% 16 = 0 then to_uint inlen{hr} %/ 16 else to_uint inlen{hr} %/ 16 + 1).
 
-case ((to_uint input_length{hr} - to_uint inlen2{hr}) %/ 16 < ms - 1).
+case ((to_uint inlen{hr} - to_uint inlen1{hr}) %/ 16 < ms - 1).
 + move => *.
   congr;congr;congr;congr;congr;rewrite fun_ext => x.
   rewrite to_uintD_small /= of_uintK /= !modz_small ;by smt(W64.to_uint_cmp pow2_64).
@@ -302,17 +299,81 @@ case ((to_uint input_length{hr} - to_uint inlen2{hr}) %/ 16 < ms - 1).
   rewrite to_uintB /=.  rewrite uleE /=  of_uintK /=. smt(W64.to_uint_cmp pow2_64).
   rewrite !to_uintD_small /= of_uintK /=. smt(W64.to_uint_cmp pow2_64). 
   smt(W64.to_uint_cmp pow2_64).
-  have -> :  to_uint (inl - (of_int ((to_uint input_length{hr} - to_uint inlen2{hr}) %/ 16 * 16))%W64) = 16; last by auto.
+  have -> :  to_uint (inl - (of_int ((to_uint inlen{hr} - to_uint inlen1{hr}) %/ 16 * 16))%W64) = 16; last by auto.
   rewrite to_uintB /=.  rewrite uleE /=  of_uintK /=. smt(W64.to_uint_cmp pow2_64).
   rewrite of_uintK /=. smt(W64.to_uint_cmp pow2_64). 
 
 
-auto => /> &hr ????????????????????;do  split; 1..2:smt(). 
-+ by smt(W64.to_uint_cmp pow2_64).
-+ by have ->  /=: ((to_uint inl - to_uint inlen2{hr}) %/ 16) = 0 by smt().
-+ by smt(W64.to_uint_cmp pow2_64).
-+ by have ->  /=: ((to_uint inl - to_uint inlen2{hr}) %/ 16) = 0 by smt().
+auto => /> &hr ????????????????;do  split; 1: smt().  
+move => h10 in020 inlen20; rewrite uleE /= => ??????????; do split; smt().
 
-move => h10 in020 inlen20; rewrite uleE /= => ????????;smt().
+qed.
+
+
+op inv_ptr_mem (k in_0 out len : int) : bool = good_ptr k 32 /\ 
+                                                     good_ptr in_0 len /\ 
+                                                     good_ptr out 16.
+op poly1305_post_mem (r : Zp.zp) (s : int) (m : Zp_msg) (outt : int) (memO memN : global_mem_t) :
+  bool = memN = storeW128 memO outt (W128.of_int (poly1305_ref r s m)).
+
+lemma jade_onetimeauth_poly1305_amd64_ref mem rr ss mm outt inn inl kk :
+  hoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_ref : 
+           Glob.mem = mem /\
+           mac = outt /\ input = inn /\ input_length = inl /\ key = kk /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint outt) (to_uint inl) /\
+           poly1305_pre rr ss mm mem inn inl kk ==> 
+           poly1305_post_mem rr ss mm (to_uint outt) mem Glob.mem /\ res = W64.zero].
+proc => /=. 
+inline 5.
+wp; ecall (store2_spec_ref_h Glob.mem out h2). print poly1305_ref.
+ecall(jade_onetimeauth_poly1305_amd64_ref_reg Glob.mem rr ss mm in_0 inlen k).
+auto => /> ????????????;rewrite /poly1305_post_mem; congr.
+rewrite !of_uintK /=; congr. 
+by smt(divz_eq W128.to_uint_cmp pow2_128).
+qed.
+
+
+require import Crypto_verify_16_s. 
+require import Crypto_verify_16_s_proof. 
+
+equiv verify_eq : Onetimeauth_s.M.__crypto_verify_p_u8x16_r_u64x2 ~
+                  Crypto_verify_16_s.M.__crypto_verify_p_u8x16_r_u64x2  : ={Glob.mem,arg} ==> ={Glob.mem,res}  by sim.
+
+lemma verify_h (hold : int) (hnew : W64.t Array2.t) (hhp : W64.t) (mem : global_mem_t):
+      hoare[ Onetimeauth_s.M.__crypto_verify_p_u8x16_r_u64x2 :
+              (good_ptr (to_uint hhp) 16)%Crypto_verify_16_s_proof /\
+              _h = hhp /\ hold = to_uint (loadW128 mem (to_uint hhp)) /\ h = hnew /\ Glob.mem = mem ==>
+              Glob.mem = mem /\
+              (res = Crypto_verify_16_s_proof.zero_u64) =
+              (hnew = (init (fun (i : int) => (of_int (hold %/ if i = 0 then 1 else 18446744073709551616))%W64))%Array2)].
+conseq verify_eq (Crypto_verify_16_s_proof.verify_h hold hnew hhp mem).
+move => &1 [#] /> ??; exists Glob.mem{1} arg{1} => //=.
+smt().
+qed.
+
+lemma jade_onetimeauth_poly1305_amd64_ref_verify_h mem hh rr ss mm hhp inn inl kk :
+  hoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_ref_verify : 
+           Glob.mem = mem /\
+           mac = hhp /\ input = inn /\ input_length = inl /\ key = kk /\
+           inv_ptr_mem (to_uint kk) (to_uint inn) (to_uint hhp) (to_uint inl) /\
+           poly1305_pre_verif rr hh ss mm mem hhp inn inl kk ==> 
+           poly1305_post_verif rr hh ss mm  (res = W64.zero) mem Glob.mem].
+proc. 
+inline 5. 
+wp; ecall (verify_h hh hc hhp mem).
+ecall(jade_onetimeauth_poly1305_amd64_ref_reg Glob.mem rr ss mm in_0 inlen k).
+auto => /> ????????????;rewrite /poly1305_post_mem /poly1305_ref_verif  /= => rres ->. 
+rewrite eq_iff; split; last first.
++ move => <-. done.
+
+rewrite tP => H.
+have := H 0 _ => //; rewrite initiE 1:/# /=.
+have := H 1 _ => //; rewrite initiE 1:/# /=.
+
+pose a := poly1305_ref (load_clamp mem kk) (to_uint (loadW128 mem (to_uint (kk + (of_int 16)%W64)))) mm.
+pose b := (loadW128 mem (to_uint hhp)).
+rewrite !to_uint_eq /= !of_uintK /=.
+
+by smt(divz_eq W128.to_uint_cmp pow2_128).
 
 qed.

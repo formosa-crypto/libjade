@@ -866,3 +866,15 @@ lemma xxx x0 x1 x2 y0 y1 z:
  (mul_limbs64 [x0;x1;x2] [y0;y1]) = z.
 simplify.
 *)
+
+(* FIXME: MOVE TO WORD *)
+lemma or0(w0 w1 : W64.t) : (w0 `|` w1 = W64.zero) <=> (w0 = W64.zero /\ w1 = W64.zero).
+split; last by move => [-> ->]; rewrite or0w /=.
+rewrite !wordP => H.
+case (w0 = zero_u64).
++ move => -> /= k kb.
+  by move : (H k kb) => /= /#.
+move => *; have Hk : exists k, 0 <= k < 64 /\ w0.[k]; last by
+  elim Hk => k [kb kval]; move : (H k kb); rewrite orwE kval /=. 
+by move : (W64.wordP w0 W64.zero); smt(W64.zerowE W64.get_out).
+qed.

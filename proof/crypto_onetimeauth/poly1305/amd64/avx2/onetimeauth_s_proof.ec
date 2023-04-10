@@ -201,60 +201,23 @@ lemma jade_onetimeauth_poly1305_amd64_avx2 mem rr ss mm outt inn inl kk :
 (* Proving entry point for MAC verification is correct *)
 (* ****************************************************)
 
-(* FIXME: MOVE TO WORD *)
-lemma or0(w0 w1 : W64.t) : (w0 `|` w1 = W64.zero) <=> (w0 = W64.zero /\ w1 = W64.zero).
-split; last by move => [-> ->]; rewrite or0w /=.
-rewrite !wordP => H.
-case (w0 = Poly1305_savx2_vec.zero_u64).
-+ move => -> /= k kb.
-  by move : (H k kb) => /= /#.
-move => *; have Hk : exists k, 0 <= k < 64 /\ w0.[k]; last by
-  elim Hk => k [kb kval]; move : (H k kb); rewrite orwE kval /=. 
-by move : (W64.wordP w0 W64.zero); smt(W64.zerowE W64.get_out).
-qed.
+require import Crypto_verify_16_s. 
+require import Crypto_verify_16_s_proof. 
 
-hoare verify hold hnew hhp mem :  
-   Onetimeauth_s.M.__crypto_verify_p_u8x16_r_u64x2 :
-     good_ptr (W64.to_uint hhp) 16 /\ _h = hhp /\
-     hold = to_uint (loadW128 mem (W64.to_uint hhp)) /\ h = hnew /\ Glob.mem = mem ==> Glob.mem = mem /\
-     (res = W64.zero) = (hnew = Array2.init (fun (i : int) => (W64.of_int (hold %/ if i = 0 then 1 else 18446744073709551616)))).
-proc => /=.
-seq 2 : (#pre /\ (r = W64.zero) = (loadW64 Glob.mem (to_uint (_h + Poly1305_savx2_vec.zero_u64)) = h.[0])); 1: by auto => /> &hr; rewrite W64.WRing.subr_eq0 /= /#.
-seq 2 : (#pre /\ (t = W64.zero) = (loadW64 Glob.mem (to_uint (_h + W64.of_int 8)) = h.[1])); 1: by auto => /> &hr; rewrite W64.WRing.subr_eq0 /= /#.
-seq 1 : (#{/~r}pre /\ 
-        (r = Poly1305_savx2_vec.zero_u64) = ((loadW64 Glob.mem (to_uint (_h + Poly1305_savx2_vec.zero_u64)) = h.[0]) /\ (loadW64 Glob.mem (to_uint (_h + (of_int 8)%W64)) = h.[1]))); 
-  1: by auto => /> &hr ?? <- <- /=; rewrite eq_iff;  smt(or0).
-swap 2 -1.
-seq 1 : (#{/~r}{/~t}pre /\ 
-        cf = ((loadW64 Glob.mem (to_uint (_h + Poly1305_savx2_vec.zero_u64)) = h.[0]) /\ (loadW64 Glob.mem (to_uint (_h + (of_int 8)%W64)) = h.[1]))); 1: by 
-  auto => /> &hr ?? <- <-;rewrite /subc /borrow_sub /= /b2i  to_uint_eq /=;smt(W64.to_uint_cmp).
-seq 2 : (#{/~t}pre /\ 
-        (t = W64.one) = ((loadW64 Glob.mem (to_uint (_h + Poly1305_savx2_vec.zero_u64)) = h.[0]) /\ (loadW64 Glob.mem (to_uint (_h + (of_int 8)%W64)) = h.[1]))); 1: by 
-  auto => /> &hr; rewrite /set0_64_ /= /addc /=/ b2i to_uint_eq /= of_uintK /=;smt(W64.to_uint_cmp).
-auto => /> &hr.
-have -> : (t{hr} = W64.one) <=> (t{hr} - W64.one = W64.zero);1: by split;  smt(@W64).
-move => ??->.
-rewrite -load2u64 eq_iff tP.
-split; last first.
-move => H;move : (H 0 _) => //=; move : (H 1 _) => //= -> -> /=.
-rewrite !to_uint2u64 /=.
-have -> /= : to_uint (hhp + (W64.of_int 8)) = to_uint hhp + 1*8 
-   by rewrite to_uintD_small /= /#. 
-split.
-+ rewrite to_uint_eq of_uintK /= mulrC modzMDr; smt(W64.to_uint_cmp pow2_64). 
-rewrite to_uint_eq of_uintK /= mulrC divzMDr; smt(W64.to_uint_cmp pow2_64). 
-move => [#] H0 H1 i ib.
-rewrite initiE //= !to_uint2u64 /=.
-case (i = 0).
-+ move => -> /=; rewrite -H0;rewrite to_uint_eq of_uintK /= mulrC modzMDr; smt(W64.to_uint_cmp pow2_64). 
-case (i = 1).
-+ move => -> /=; rewrite -H1;rewrite to_uint_eq of_uintK /= mulrC divzMDr; 1: smt(). 
-rewrite modz_small /=; 1: smt(W64.to_uint_cmp pow2_64). 
-rewrite divz_small /=; 1: smt(W64.to_uint_cmp pow2_64). 
-rewrite to_uintD_small /=; smt(W64.to_uint_cmp pow2_64). 
-by smt().
-qed.
+equiv verify_eq : Onetimeauth_s.M.__crypto_verify_p_u8x16_r_u64x2 ~
+                  Crypto_verify_16_s.M.__crypto_verify_p_u8x16_r_u64x2  : ={Glob.mem,arg} ==> ={Glob.mem,res}  by sim.
 
+lemma verify_h (hold : int) (hnew : W64.t Array2.t) (hhp : W64.t) (mem : global_mem_t):
+      hoare[ Onetimeauth_s.M.__crypto_verify_p_u8x16_r_u64x2 :
+              (good_ptr (to_uint hhp) 16)%Crypto_verify_16_s_proof /\
+              _h = hhp /\ hold = to_uint (loadW128 mem (to_uint hhp)) /\ h = hnew /\ Glob.mem = mem ==>
+              Glob.mem = mem /\
+              (res = Crypto_verify_16_s_proof.zero_u64) =
+              (hnew = (init (fun (i : int) => (of_int (hold %/ if i = 0 then 1 else 18446744073709551616))%W64))%Array2)].
+conseq verify_eq (Crypto_verify_16_s_proof.verify_h hold hnew hhp mem).
+move => &1 [#] /> ??; exists Glob.mem{1} arg{1} => //=.
+smt().
+qed.
 
 lemma jade_onetimeauth_poly1305_amd64_avx2_verify_h mem hh rr ss mm hhp inn inl kk :
   hoare [ Onetimeauth_s.M.jade_onetimeauth_poly1305_amd64_avx2_verify : 
@@ -265,12 +228,12 @@ lemma jade_onetimeauth_poly1305_amd64_avx2_verify_h mem hh rr ss mm hhp inn inl 
            poly1305_post_verif rr hh ss mm  (res = W64.zero) mem Glob.mem].
  proc => /=.
  inline 5.
- seq 10 : (good_ptr (W64.to_uint hhp) 16 /\ h = hhp /\
+ seq 10 : (Poly1305_spec.good_ptr (W64.to_uint hhp) 16 /\ h = hhp /\
          poly1305_post rr ss mm hc mem Glob.mem /\
          hh = to_uint (loadW128 mem (to_uint hhp))); 1: by 
   call(Onetimeauth_s__poly1305_r_avx2_corr_h mem rr ss mm inn inl kk); auto => />. 
  wp; rewrite  /poly1305_post /poly1305_post_verif /= /poly1305_ref_verif /=; conseq />.
- ecall (verify hh hc hhp mem).
+ ecall (verify_h hh hc hhp mem).
 auto => /> ??  rres ->.
 pose a := (loadW128 mem (to_uint hhp)).
 pose b :=poly1305_ref _ _ _.
