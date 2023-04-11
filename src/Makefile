@@ -28,9 +28,6 @@ ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
 
-d:
-	echo $(JAZZ)
-
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 .PHONY: backward_compatibility
