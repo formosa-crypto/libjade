@@ -1,5 +1,5 @@
-from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
 require "fips202_params.jinc"
+from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
 
 #[returnaddress="stack"]
 fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
@@ -78,7 +78,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
 }
 
 #[returnaddress="stack"]
-fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 {
   stack ptr u8[64] s_out;
   stack u64[25] _state;
@@ -109,8 +109,8 @@ fn _isha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
   return out;
 }
 
-inline
-fn __shake128_absorb34(stack u64[25] state, reg const ptr u8[34] in) -> stack u64[25]
+#[returnaddress="stack"]
+fn _shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> stack u64[25]
 {
   reg u8 c;
   inline int i;
@@ -127,8 +127,8 @@ fn __shake128_absorb34(stack u64[25] state, reg const ptr u8[34] in) -> stack u6
   return state;
 }
 
-inline
-fn __shake128_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE128_RATE] out) -> stack u64[25], reg ptr u8[SHAKE128_RATE]
+#[returnaddress="stack"]
+fn _shake128_squeezeblock(reg ptr u64[25] state, reg ptr u8[SHAKE128_RATE] out) -> stack u64[25], reg ptr u8[SHAKE128_RATE]
 {
   stack ptr u8[SHAKE128_RATE] s_out;
   reg u8 c;
@@ -149,7 +149,7 @@ fn __shake128_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE128_RATE] out) -
 }
 
 #[returnaddress="stack"]
-fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
+fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
@@ -199,7 +199,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 }
 
 #[returnaddress="stack"]
-fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
+fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
@@ -235,7 +235,7 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u
 }
 
 #[returnaddress="stack"]
-fn _isha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
+fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 {
   stack u64[25] _state;
   reg ptr u64[25] state;

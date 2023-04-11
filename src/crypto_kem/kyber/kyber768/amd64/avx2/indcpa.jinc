@@ -18,7 +18,7 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
   spkp = pkp;
   sskp = skp;
 
-  buf = _isha3_512_32(buf, coins);
+  buf = _sha3_512_32(buf, coins);
 
   for i=0 to KYBER_SYMBYTES/8
   {

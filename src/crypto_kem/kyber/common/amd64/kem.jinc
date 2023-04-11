@@ -1,3 +1,4 @@
+// TODO: hakyber: CHECKME: avx2 is not common enough for ref vs avx2
 require "avx2/verify.jinc"
 
 #[returnaddress="stack"]
@@ -29,7 +30,7 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER
   s_skp = skp;
   pkp = s_pkp;
   t64 = KYBER_INDCPA_PUBLICKEYBYTES;
-  h_pk = _isha3_256(h_pk, pkp, t64);
+  h_pk = _sha3_256(h_pk, pkp, t64);
   skp = s_skp;
   coins = s_coins;
 
@@ -51,14 +52,14 @@ fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
   s_ctp = ctp;
   s_shkp = shkp;
 
-  buf[0:32] = _isha3_256_32(buf[0:32], coins);
+  buf[0:32] = _sha3_256_32(buf[0:32], coins);
 
   pkp = s_pkp;
 
   t64 = KYBER_PUBLICKEYBYTES;
-  buf[KYBER_SYMBYTES:32] = _isha3_256(buf[KYBER_SYMBYTES:32], pkp, t64);
+  buf[KYBER_SYMBYTES:32] = _sha3_256(buf[KYBER_SYMBYTES:32], pkp, t64);
 
-  kr = _isha3_512_64(kr, buf);
+  kr = _sha3_512_64(kr, buf);
 
   pkp = s_pkp;
 
@@ -66,7 +67,7 @@ fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 
   ctp = s_ctp;
   t64 = KYBER_INDCPA_BYTES;
-  kr[KYBER_SYMBYTES:32] = _isha3_256(kr[KYBER_SYMBYTES:32], ctp, t64);
+  kr[KYBER_SYMBYTES:32] = _sha3_256(kr[KYBER_SYMBYTES:32], ctp, t64);
 
   shkp = s_shkp;
   t64 = KYBER_SSBYTES;
@@ -98,7 +99,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   s_skp = skp;
 
-  kr = _isha3_512_64(kr, buf);
+  kr = _sha3_512_64(kr, buf);
 
   pkp = s_skp;
   pkp += 12 * KYBER_K * KYBER_N>>3;
@@ -114,7 +115,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   kr[0:KYBER_SYMBYTES] = __cmov(kr[0:KYBER_SYMBYTES], zp, cnd);
 
   t64 = KYBER_INDCPA_BYTES;
-  kr[KYBER_SYMBYTES:32] = _isha3_256(kr[KYBER_SYMBYTES:32], ctp, t64);
+  kr[KYBER_SYMBYTES:32] = _sha3_256(kr[KYBER_SYMBYTES:32], ctp, t64);
 
   shkp = s_shkp;
   t64 = KYBER_SSBYTES;

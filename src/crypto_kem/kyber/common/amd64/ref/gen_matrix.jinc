@@ -90,7 +90,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
         extseed[KYBER_SYMBYTES+1] = j;
       }
 
-      state = __shake128_absorb34(state, extseed); // TODO: hakyber: local(ha) vs inline (libjade)
+      state = _shake128_absorb34(state, extseed);
 
       // Initialize the poly array
       ctr = 0;
@@ -105,7 +105,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       while (ctr < KYBER_N)
       {
         sctr = ctr;
-        state, buf = __shake128_squeezeblock(state, buf); // TODO: hakyber: local(ha) vs inline (libjade)
+        state, buf = _shake128_squeezeblock(state, buf);
         ctr = sctr;
         ctr, poly  = __rej_uniform(poly, ctr, buf);
       }
