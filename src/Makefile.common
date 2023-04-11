@@ -80,12 +80,12 @@ $(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
 # --------------------------------------------------------------------
 SAFETY_TIMEOUT ?= 1440m
 SAFETY_FLAGS_FILE = $(TDIR)/safetyflags.out
-SAFETY_FLAGS = $(shell cat $(SAFETY_FLAGS_FILE))
+SAFETY_FLAGS_ALL = $(SAFETY_FLAGS) $(shell cat $(SAFETY_FLAGS_FILE))
 
 %.safety : %.$(JEXT)
 %.safety : %.$(JEXT) $(SAFETY_FLAGS_FILE) $(DEPSDIR)/%.safety.d  | $(DEPSDIR) $(CIDIR)
 	@$(DEPS)
-	(time timeout -v $(SAFETY_TIMEOUT) $(JASMINC) -checksafety $(SAFETY_FLAGS) $< 2> $@) $(CIT)
+	(time timeout -v $(SAFETY_TIMEOUT) $(JASMINC) -checksafety $(SAFETY_FLAGS_ALL) $< 2> $@) $(CIT)
 
 $(SAFETY_FLAGS_FILE):
 	$(MAKE) -C $(TEST) bin/$(RDIR)/$(@F)

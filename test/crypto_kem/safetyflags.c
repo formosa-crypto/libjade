@@ -54,7 +54,7 @@ int main(void)
   printf("|%s>ciphertext,shared_secret,public_key;%zu,%zu,%zu",
     f[1],(size_t)JADE_KEM_CIPHERTEXTBYTES,(size_t)JADE_KEM_BYTES,(size_t)JADE_KEM_PUBLICKEYBYTES);
 
-  printf("|%s>shared_secret,ciphertext,secret_key;%zu,%zu,%zu\"",
+  printf("|%s>shared_secret,ciphertext,secret_key;%zu,%zu,%zu",
     f[2],(size_t)JADE_KEM_BYTES,(size_t)JADE_KEM_CIPHERTEXTBYTES,(size_t)JADE_KEM_SECRETKEYBYTES);
 
   //
@@ -62,7 +62,7 @@ int main(void)
   printf("|%s>public_key,secret_key,coins;%zu,%zu,%zu",
     f[3],(size_t)JADE_KEM_PUBLICKEYBYTES,(size_t)JADE_KEM_SECRETKEYBYTES,(size_t)JADE_KEM_KEYPAIRCOINBYTES);
 
-  printf("|%s>ciphertext,shared_secret,public_key,coins;%zu,%zu,%zu,%zu",
+  printf("|%s>ciphertext,shared_secret,public_key,coins;%zu,%zu,%zu,%zu\"",
     f[4],(size_t)JADE_KEM_CIPHERTEXTBYTES,(size_t)JADE_KEM_BYTES,(size_t)JADE_KEM_PUBLICKEYBYTES,(size_t)JADE_KEM_ENCCOINBYTES);
 
   fflush(stdout);
