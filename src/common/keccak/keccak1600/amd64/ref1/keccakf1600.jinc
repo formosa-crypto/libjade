@@ -138,7 +138,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
   e = s_e;
 
   c = 0;
-  while
+  while (c < KECCAK_ROUNDS - 1)
   {
     s_c = c;
 
@@ -154,7 +154,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 
     c = s_c;
     c += 2;
-  } (c < KECCAK_ROUNDS - 1)
+  }
 
   return a;
 }

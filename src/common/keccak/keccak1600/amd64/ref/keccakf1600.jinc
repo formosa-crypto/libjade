@@ -134,7 +134,7 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
   RC = KECCAK1600_RC;
 
   c = 0;
-  while
+  while (c < KECCAK_ROUNDS - 1)
   {
     rc = RC[(int) c];
     e = __round_ref(a, rc);
@@ -143,7 +143,7 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
     a = __round_ref(e, rc);
 
     c += 2;
-  } (c < KECCAK_ROUNDS - 1)
+  }
 
   return a;
 }
