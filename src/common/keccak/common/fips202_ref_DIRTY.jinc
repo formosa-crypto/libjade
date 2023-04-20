@@ -167,7 +167,6 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   r8 = SHA3_256_RATE;
   ilen = inlen;
 
-  // TODO: hakyber
   #bounded
   while(ilen >= r8)
   {
