@@ -1,6 +1,9 @@
-require "params.jinc" // TODO: hakyber: when hakyber 768 avx2
+
+// from Jade require "crypto_kem/kyber/kyber768/common/params.jinc" // TODO: when hakyber avx2
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/params.jinc"
+
 require "indcpa.jinc"
-require "verify.jinc" // TODO: hakyber: KYBER_CT_LEN vs KYBER_INDCPA_BYTES: when hakyber 512
+require "verify.jinc"
 
 #[returnaddress="stack"]
 fn _crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES*2] randomnessp)

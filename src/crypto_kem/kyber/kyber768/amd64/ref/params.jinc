@@ -1,3 +1,8 @@
+// Note1: This file was imported from hakyber, to ensure that the parameters that are defined
+// accordingly to their usage in the correctness proof. An alternative version of this file exists
+// in crypto_kem/kyber/kyber768/common/params.jinc and these will be merged once hakyber avx2 is
+// integrated into libjade.
+
 param int KYBER_Q = 3329;
 param int KYBER_N = 256;
 param int KYBER_K = 3;

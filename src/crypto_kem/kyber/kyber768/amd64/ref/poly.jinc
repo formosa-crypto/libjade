@@ -1,7 +1,19 @@
-require "params.jinc" // TODO: hakyber: when hakyber 768 avx2, include from common
-from Jade require "crypto_kem/kyber/common/amd64/ref/reduce.jinc" // hakyber: OK
-from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc" // hakyber: not to be replaced
-from Jade require "crypto_kem/kyber/common/amd64/ref/zetas.jinc" // hakyber: OK
+// Note1: the previous kyber768/amd64/ref libjade implementation used the generic version of this
+// file, defined in crypto_kem/kyber/common/amd64/ref/poly.jinc. This file was imported from
+// hakyber and the main differences are: 1) the usage of KYBER_INDCPA_MSGBYTES (this file does
+// not); 2) get_noise;
+
+// Note2: although the standard practice in libjade is to require files within the same folder as
+// `require "file"`, the following `require` statement does not follow that rule to make explicit
+// the fact that we are including a `params.jinc` file that is not under a `common` folder. Other
+// instances of such cases exist in this folder.
+
+// from Jade require "crypto_kem/kyber/kyber768/common/params.jinc" // TODO: when hakyber avx2
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/params.jinc"
+
+from Jade require "crypto_kem/kyber/common/amd64/ref/reduce.jinc"
+from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/ref/zetas.jinc"
 
 fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> stack u16[KYBER_N]
 {

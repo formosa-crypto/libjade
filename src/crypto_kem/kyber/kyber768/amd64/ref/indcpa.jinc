@@ -1,11 +1,14 @@
-require "params.jinc" // TODO: hakyber: when hakyber 768 avx2, include from common
-require "poly.jinc" // TODO: hakyber: requires proof refactor to include from 'common' (handling 'eta')
-require "polyvec.jinc" // TODO: hakyber: requires 'de'unroll for KYBER_K (proof refactor)
-from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc" // hakyber: not to be replaced
+
+// from Jade require "crypto_kem/kyber/kyber768/common/params.jinc" // TODO: when hakyber avx2
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/params.jinc"
+
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/poly.jinc"
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc"
+from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] randomnessp) // TODO: hakyber: this 'was' 'coins'
+fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] randomnessp)
 {
   stack u16[KYBER_K * KYBER_VECN] a;
   stack u16[KYBER_VECN] e pkpv skpv;

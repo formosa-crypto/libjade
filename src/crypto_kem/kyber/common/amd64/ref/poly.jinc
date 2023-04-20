@@ -1,5 +1,3 @@
-// TODO: hakyber: this file is no longer imported by kyber768/amd64/ref indcpa; this implementation now requires a 'local' version of poly.jinc : TODO: do the same for kyber512 and remove from this file non-code parts (and remove from poly local files common parts that will be placed here).
-
 from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc"
 require "zetas.jinc"
 require "reduce.jinc"

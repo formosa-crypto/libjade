@@ -1,4 +1,7 @@
-require "params.jinc"
+// Note1: KYBER_INDCPA_BYTES vs KYBER_CT_LEN
+
+// from Jade require "crypto_kem/kyber/kyber768/common/params.jinc" // TODO: when hakyber avx2
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/params.jinc"
 
 inline 
 fn __verify(reg u64 ctp, reg ptr u8[KYBER_CT_LEN] ctpc) -> reg u64
