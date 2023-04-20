@@ -150,7 +150,7 @@ fn shuffle2(reg u256 r0 r1)
 	//      [zen3]    mul p03, srl p0,  dup p12, blend p0123
 
 	reg u256 r2 r3;
-	r2 = #VMOVSLDUP_8u32(r1);
+	r2 = #VMOVSLDUP_256(r1);
 	r2 = #VPBLEND_8u32(r0, r2, 0xAA);
 	r0 = #VPSRL_4u64(r0, 32);
 	r3 = #VPBLEND_8u32(r0, r1, 0xAA);
@@ -184,7 +184,7 @@ fn ntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 	// Count the number of shuffle instructions compared to other
 	// instructions in the NTT to get a coarse idea.
 
-	ymm12 = #VMOVSHDUP_8u32(h);
+	ymm12 = #VMOVSHDUP_256(h);
 
 	ymm13 = #VPMUL_256(h, zl0);   // (*)
 	ymm13 = #VPMUL_256(ymm13, q); // (*)	
@@ -195,13 +195,13 @@ fn ntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 	h = #VPMUL_256(h, zh0);
 	ymm12 = #VPMUL_256(ymm12, zh1);
 
-	h = #VMOVSHDUP_8u32(h);
+	h = #VMOVSHDUP_256(h);
 	h = #VPBLEND_8u32(h, ymm12, 0xAA);
 
 	ymm12 = #VPSUB_8u32(l, h);
 	l = #VPADD_8u32(l, h);
 
-	ymm13 = #VMOVSHDUP_8u32(ymm13);
+	ymm13 = #VMOVSHDUP_256(ymm13);
 	ymm13 = #VPBLEND_8u32(ymm13, ymm14, 0xAA);
 
 	h = #VPADD_8u32(ymm12, ymm13);
@@ -327,7 +327,7 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	// NOTE: [electricdusk] Double-check whether the table would still fit
 	// in L1 cache (and whether that matters).
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 
 	poly5, poly1 = ntt_butterfly(poly5, poly1, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 	poly4, poly0 = ntt_butterfly(poly4, poly0, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
@@ -338,7 +338,7 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[12 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[12 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 
 	poly5, poly3 = ntt_butterfly(poly5, poly3, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 	poly4, poly2 = ntt_butterfly(poly4, poly2, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
@@ -346,7 +346,7 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[16 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[16 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 
 	poly1, polyx = ntt_butterfly(poly1, polyx, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 	poly0, poly7 = ntt_butterfly(poly0, poly7, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
@@ -358,25 +358,25 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[20 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[20 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly5, poly4 = ntt_butterfly(poly5, poly4, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[24 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[24 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly3, poly2 = ntt_butterfly(poly3, poly2, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[28 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[28 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly1, poly0 = ntt_butterfly(poly1, poly0, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
 	zeta_qinv0 = #VMOVDQU_256(level3t7_zetas_qinv[32 + offset]);
 	zeta0 = #VMOVDQU_256(level3t7_zetas[32 + offset]);
 	zeta_qinv1 = #VPSRL_4u64(zeta_qinv0, 32);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	polyx, poly7 = ntt_butterfly(polyx, poly7, zeta_qinv0, zeta_qinv1, zeta0, zeta1, q);
 
 	#VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]) = poly5;
@@ -418,7 +418,7 @@ fn invntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 	l = #VPADD_8u32(l, h);
 
 	ymm13 = #VPMUL_256(ymm12, zl0);
-	h = #VMOVSHDUP_8u32(ymm12);
+	h = #VMOVSHDUP_256(ymm12);
 	ymm14 = #VPMUL_256(h, zl1);
 
 	ymm12 = #VPMUL_256(ymm12, zh0);
@@ -430,7 +430,7 @@ fn invntt_butterfly(reg u256 l h zl0 zl1 zh0 zh1 q)
 	ymm12 = #VPSUB_8u32(ymm12, ymm13);
 	h = #VPSUB_8u32(h, ymm14);
 
-	ymm12 = #VMOVSHDUP_8u32(ymm12);
+	ymm12 = #VMOVSHDUP_256(ymm12);
 	h = #VPBLEND_8u32(ymm12, h, 0xAA);
 
 	return l, h;
@@ -455,48 +455,48 @@ fn invntt_levels0t5(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	// Consider storing the already-permuted tables in memory.
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[35 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[35 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly0, poly1 = invntt_butterfly(poly0, poly1, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[31 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[31 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly2, poly3 = invntt_butterfly(poly2, poly3, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 	
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[27 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[27 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly4, poly5 = invntt_butterfly(poly4, poly5, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[23 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[23 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly6, poly7 = invntt_butterfly(poly6, poly7, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 
 	// Level 1
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[19 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[19 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly0, poly2 = invntt_butterfly(poly0, poly2, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 	poly1, poly3 = invntt_butterfly(poly1, poly3, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[15 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[15 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly4, poly6 = invntt_butterfly(poly4, poly6, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 	poly5, poly7 = invntt_butterfly(poly5, poly7, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 
 	// Level 2
 	zeta_qinv0 = #VPERMQ(level3t7_zetas_qinv[11 - offset], 0x1B);
 	zeta0 = #VPERMQ(level3t7_zetas[11 - offset], 0x1B);
-	zeta_qinv1 = #VMOVSHDUP_8u32(zeta_qinv0);
-	zeta1 = #VMOVSHDUP_8u32(zeta0);
+	zeta_qinv1 = #VMOVSHDUP_256(zeta_qinv0);
+	zeta1 = #VMOVSHDUP_256(zeta0);
 	poly0, poly4 = invntt_butterfly(poly0, poly4, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 	poly1, poly5 = invntt_butterfly(poly1, poly5, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
 	poly2, poly6 = invntt_butterfly(poly2, poly6, zeta_qinv1, zeta_qinv0, zeta1, zeta0, q);
@@ -601,8 +601,8 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 
 	ymm12 = #VPMUL_256(poly0, div_qinv);
 	ymm13 = #VPMUL_256(poly1, div_qinv);
-	poly4 = #VMOVSHDUP_8u32(poly0);
-	poly5 = #VMOVSHDUP_8u32(poly1);
+	poly4 = #VMOVSHDUP_256(poly0);
+	poly5 = #VMOVSHDUP_256(poly1);
 	ymm14 = #VPMUL_256(poly4, div_qinv);
 	ymm15 = #VPMUL_256(poly5, div_qinv);
 	poly0 = #VPMUL_256(poly0, div);
@@ -617,14 +617,14 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	poly1 = #VPSUB_8u32(poly1, ymm13);
 	poly4 = #VPSUB_8u32(poly4, ymm14);
 	poly5 = #VPSUB_8u32(poly5, ymm15);
-	poly0 = #VMOVSHDUP_8u32(poly0);
-	poly1 = #VMOVSHDUP_8u32(poly1);
+	poly0 = #VMOVSHDUP_256(poly0);
+	poly1 = #VMOVSHDUP_256(poly1);
 	poly0 = #VPBLEND_8u32(poly0, poly4, 0xAA);
 	poly1 = #VPBLEND_8u32(poly1, poly5, 0xAA);
 	ymm12 = #VPMUL_256(poly2, div_qinv);
 	ymm13 = #VPMUL_256(poly3, div_qinv);
-	poly4 = #VMOVSHDUP_8u32(poly2);
-	poly5 = #VMOVSHDUP_8u32(poly3);
+	poly4 = #VMOVSHDUP_256(poly2);
+	poly5 = #VMOVSHDUP_256(poly3);
 	ymm14 = #VPMUL_256(poly4, div_qinv);
 	ymm15 = #VPMUL_256(poly5, div_qinv);
 	poly2 = #VPMUL_256(poly2, div);
@@ -639,8 +639,8 @@ fn invntt_levels6t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset) ->
 	poly3 = #VPSUB_8u32(poly3, ymm13);
 	poly4 = #VPSUB_8u32(poly4, ymm14);
 	poly5 = #VPSUB_8u32(poly5, ymm15);
-	poly2 = #VMOVSHDUP_8u32(poly2);
-	poly3 = #VMOVSHDUP_8u32(poly3);
+	poly2 = #VMOVSHDUP_256(poly2);
+	poly3 = #VMOVSHDUP_256(poly3);
 	poly2 = #VPBLEND_8u32(poly2, poly4, 0xAA);
 	poly3 = #VPBLEND_8u32(poly3, poly5, 0xAA);
 

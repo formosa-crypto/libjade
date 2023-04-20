@@ -20,7 +20,7 @@ inline
 fn __shuffle2(reg u256 a b) -> reg u256, reg u256
 {
   reg u256 t0 t1;
-  t0 = #VMOVSLDUP_8u32(b);
+  t0 = #VMOVSLDUP_256(b);
   t0 = #VPBLEND_8u32(a, t0, 0xAA);
   a = #VPSRL_4u64(a,32);
   t1 = #VPBLEND_8u32(a, b, 0xAA);
