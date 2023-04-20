@@ -1,5 +1,4 @@
 // TODO: hakyber: CHECKME: avx2 is not common enough for ref vs avx2
-require "avx2/verify.jinc"
 
 #[returnaddress="stack"]
 fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER_SYMBYTES] coins)

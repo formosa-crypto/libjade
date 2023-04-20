@@ -1,5 +1,6 @@
 require "indcpa.jinc"
 from Jade require "common/tofromstack.jinc"
+from Jade require "crypto_kem/kyber/common/amd64/ref/verify.jinc"
 from Jade require "crypto_kem/kyber/common/amd64/kem.jinc"
 
 export fn jade_kem_kyber_kyber512_amd64_ref_keypair_derand(reg u64 public_key secret_key coins) -> reg u64
