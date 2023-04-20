@@ -19,7 +19,8 @@ LOGS    := libjade-logs-src.tar.gz
 EXCLUDE ?=
 SRC     := .
 
-JAZZ    ?= $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
+FILTER  ?= $(SRC)/crypto_%
+JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 SAFETY  ?= $(addsuffix safety, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
