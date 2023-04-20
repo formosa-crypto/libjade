@@ -436,6 +436,7 @@ fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBE
   return rp;
 }
 
+#[returnaddress=stack]
 fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
 {
   stack u8[33] extseed;   /* 33 = KYBER_SYMBYTES +1 */
