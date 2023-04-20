@@ -113,8 +113,8 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 	while (offset < 4 * Li2_polydeg) {
 		f_lo = #VMOVDQU_256(fft_f.[u256 (int) offset]);
 		g_lo = #VMOVDQU_256(fft_g.[u256 (int) offset]);
-		f_hi = #VMOVSHDUP_8u32(f_lo);
-		g_hi = #VMOVSHDUP_8u32(g_lo);
+		f_hi = #VMOVSHDUP_256(f_lo);
+		g_hi = #VMOVSHDUP_256(g_lo);
 
 		// Multiply
 		prod_lo = #VPMUL_256(f_lo, g_lo);
@@ -128,7 +128,7 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 		prod_lo = #VPSUB_4u64(prod_lo, t_lo);
 		prod_hi = #VPSUB_4u64(prod_hi, t_hi);
 
-		prod_lo = #VMOVSHDUP_8u32(prod_lo);
+		prod_lo = #VMOVSHDUP_256(prod_lo);
 		prod_lo = #VPBLEND_8u32(prod_lo, prod_hi, 0xAA);
 		#VMOVDQU_256(fft_prod.[u256 (int) offset]) = prod_lo;
 
