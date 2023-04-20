@@ -223,7 +223,7 @@ void test(unsigned char *checksum_state, state *_s)
 
 #include "try-anything.c"
 
-int main()
+int main(void)
 {
   return try_anything_main();
 }
