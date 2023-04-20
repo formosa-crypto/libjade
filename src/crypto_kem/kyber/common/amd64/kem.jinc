@@ -1,4 +1,9 @@
-// TODO: hakyber: CHECKME: avx2 is not common enough for ref vs avx2
+// Note1: before this file is required, it is necessary to require the correspondent 'verify.jinc':
+//        - for 'ref' implementations: crypto_kem/kyber/common/amd64/ref/verify.jinc
+//        - for 'avx2' implementations: crypto_kem/kyber/common/amd64/avx2/verify.jinc
+//
+// Note2: due to the integration of hakyber implementations into libjade, this file is no longer
+//        required by kyber768/amd64/ref/
 
 #[returnaddress="stack"]
 fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER_SYMBYTES] coins)
