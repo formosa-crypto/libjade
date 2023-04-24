@@ -102,7 +102,7 @@ fn __modq_decode_8_unrolled(stack u16[8] out, reg u64 in)
 
         if(acc_len >= 14) {
             acc_len -= 14;
-            w = acc; w >>= acc_len; w &= 0x3fff;
+            w = acc; w >>= (acc_len & 31); w &= 0x3fff;
 
             if(w >= 12289){
                 is_zero = 1;
