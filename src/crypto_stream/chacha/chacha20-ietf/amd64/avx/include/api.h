@@ -1,12 +1,12 @@
-#ifndef JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_API_H
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_API_H
+#ifndef JADE_STREAM_chacha_chacha20_ietf_amd64_avx_API_H
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_API_H
 
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_KEYBYTES 32
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_NONCEBYTES 12
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_KEYBYTES 32
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_NONCEBYTES 12
 
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_ALGNAME "ChaCha20-ietf"
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_ARCH    "amd64"
-#define JADE_STREAM_CHACHA_CHACHA20_IETF_AMD64_AVX_IMPL    "avx"
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_ALGNAME "ChaCha20-ietf"
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_ARCH    "amd64"
+#define JADE_STREAM_chacha_chacha20_ietf_amd64_avx_IMPL    "avx"
 
 #include <stdint.h>
 

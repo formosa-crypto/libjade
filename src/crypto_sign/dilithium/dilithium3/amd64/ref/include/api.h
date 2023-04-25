@@ -1,14 +1,14 @@
-#ifndef JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_API_H
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_API_H
+#ifndef JADE_SIGN_dilithium_dilithium3_amd64_ref_API_H
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_API_H
 
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_PUBLICKEYBYTES  1952
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_SECRETKEYBYTES  4016
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_BYTES           3293
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_DETERMINISTIC   1
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_PUBLICKEYBYTES  1952
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_SECRETKEYBYTES  4016
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_BYTES           3293
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_DETERMINISTIC   1
 
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_ALGNAME         "Dilithium3"
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_ARCH            "amd64"
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_REF_IMPL            "ref"
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_ALGNAME         "Dilithium3"
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_ARCH            "amd64"
+#define JADE_SIGN_dilithium_dilithium3_amd64_ref_IMPL            "ref"
 
 #include <stdint.h>
 

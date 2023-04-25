@@ -1,11 +1,11 @@
-#ifndef JADE_HASH_SHA3_512_AMD64_BMI1_API_H
-#define JADE_HASH_SHA3_512_AMD64_BMI1_API_H
+#ifndef JADE_HASH_sha3_512_amd64_bmi1_API_H
+#define JADE_HASH_sha3_512_amd64_bmi1_API_H
 
-#define JADE_HASH_SHA3_512_AMD64_BMI1_BYTES 64
+#define JADE_HASH_sha3_512_amd64_bmi1_BYTES 64
 
-#define JADE_HASH_SHA3_512_AMD64_BMI1_ALGNAME "SHA3-512"
-#define JADE_HASH_SHA3_512_AMD64_BMI1_ARCH    "amd64"
-#define JADE_HASH_SHA3_512_AMD64_BMI1_IMPL    "bmi1"
+#define JADE_HASH_sha3_512_amd64_bmi1_ALGNAME "SHA3-512"
+#define JADE_HASH_sha3_512_amd64_bmi1_ARCH    "amd64"
+#define JADE_HASH_sha3_512_amd64_bmi1_IMPL    "bmi1"
 
 #include <stdint.h>
 

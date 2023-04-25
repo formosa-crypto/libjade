@@ -1,12 +1,12 @@
-#ifndef JADE_STREAM_XSALSA20_AMD64_REF_API_H
-#define JADE_STREAM_XSALSA20_AMD64_REF_API_H
+#ifndef JADE_STREAM_xsalsa20_amd64_ref_API_H
+#define JADE_STREAM_xsalsa20_amd64_ref_API_H
 
-#define JADE_STREAM_XSALSA20_AMD64_REF_KEYBYTES 32
-#define JADE_STREAM_XSALSA20_AMD64_REF_NONCEBYTES 24
+#define JADE_STREAM_xsalsa20_amd64_ref_KEYBYTES 32
+#define JADE_STREAM_xsalsa20_amd64_ref_NONCEBYTES 24
 
-#define JADE_STREAM_XSALSA20_AMD64_REF_ALGNAME "XSalsa20/20"
-#define JADE_STREAM_XSALSA20_AMD64_REF_ARCH    "amd64"
-#define JADE_STREAM_XSALSA20_AMD64_REF_IMPL    "ref"
+#define JADE_STREAM_xsalsa20_amd64_ref_ALGNAME "XSalsa20/20"
+#define JADE_STREAM_xsalsa20_amd64_ref_ARCH    "amd64"
+#define JADE_STREAM_xsalsa20_amd64_ref_IMPL    "ref"
 
 #include <stdint.h>
 

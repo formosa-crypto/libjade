@@ -1,9 +1,9 @@
-#ifndef JADE_XOF_SHAKE128_AMD64_BMI1_API_H
-#define JADE_XOF_SHAKE128_AMD64_BMI1_API_H
+#ifndef JADE_XOF_shake128_amd64_bmi1_API_H
+#define JADE_XOF_shake128_amd64_bmi1_API_H
 
-#define JADE_XOF_SHAKE128_AMD64_BMI1_ALGNAME "SHAKE128"
-#define JADE_XOF_SHAKE128_AMD64_BMI1_ARCH    "amd64"
-#define JADE_XOF_SHAKE128_AMD64_BMI1_IMPL    "bmi1"
+#define JADE_XOF_shake128_amd64_bmi1_ALGNAME "SHAKE128"
+#define JADE_XOF_shake128_amd64_bmi1_ARCH    "amd64"
+#define JADE_XOF_shake128_amd64_bmi1_IMPL    "bmi1"
 
 #include <stdint.h>
 

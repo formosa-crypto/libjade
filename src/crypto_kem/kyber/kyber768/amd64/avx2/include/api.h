@@ -1,18 +1,18 @@
-#ifndef JADE_KEM_KYBER_KYBER768_AMD64_AVX2_API_H
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_API_H
+#ifndef JADE_KEM_kyber_kyber768_amd64_avx2_API_H
+#define JADE_KEM_kyber_kyber768_amd64_avx2_API_H
 
 #include <stdint.h>
 
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_SECRETKEYBYTES    2400
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_PUBLICKEYBYTES    1184
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_CIPHERTEXTBYTES   1088
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_KEYPAIRCOINBYTES  64
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ENCCOINBYTES      32
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_BYTES             32
+#define JADE_KEM_kyber_kyber768_amd64_avx2_SECRETKEYBYTES    2400
+#define JADE_KEM_kyber_kyber768_amd64_avx2_PUBLICKEYBYTES    1184
+#define JADE_KEM_kyber_kyber768_amd64_avx2_CIPHERTEXTBYTES   1088
+#define JADE_KEM_kyber_kyber768_amd64_avx2_KEYPAIRCOINBYTES  64
+#define JADE_KEM_kyber_kyber768_amd64_avx2_ENCCOINBYTES      32
+#define JADE_KEM_kyber_kyber768_amd64_avx2_BYTES             32
 
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ALGNAME           "Kyber768"
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_ARCH              "amd64"
-#define JADE_KEM_KYBER_KYBER768_AMD64_AVX2_IMPL              "avx2"
+#define JADE_KEM_kyber_kyber768_amd64_avx2_ALGNAME           "Kyber768"
+#define JADE_KEM_kyber_kyber768_amd64_avx2_ARCH              "amd64"
+#define JADE_KEM_kyber_kyber768_amd64_avx2_IMPL              "avx2"
 
 int jade_kem_kyber_kyber768_amd64_avx2_keypair_derand(
   uint8_t *public_key,
