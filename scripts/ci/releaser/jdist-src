@@ -173,7 +173,8 @@ fi
       target=${target/crypto_/jade_}
       target_list="$target_list $target"
       namespace_lc=$(tr '-' '_' <<< $target)
-      namespace=$(tr 'a-z' 'A-Z' <<< $namespace_lc)
+      namespace=${namespace_lc/$jop/}
+      namespace=$(tr 'a-z' 'A-Z' <<< $jop)$namespace
 
 cat <<END >> $makefile
 $target: $(basename $cfile) $relative/libjade/$base.s \$(DEPENDENCIES)
