@@ -70,14 +70,20 @@ FILTER   ?= $(SRC)/crypto_%
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
-CHECKSUMSMALL := $(addsuffix checksumsmall, $(TESTDIR))
-CHECKSUMBIG   := $(addsuffix checksumbig,   $(TESTDIR))
-PRINTPARAMS   := $(addsuffix printparams,   $(TESTDIR))
-FUNCTEST      := $(addsuffix functest,      $(TESTDIR))
-SAFETYFLAGS   := $(addsuffix safetyflags,   $(TESTDIR))
+CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
+CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
+PRINTPARAMS       := $(addsuffix printparams,   $(TESTDIR))
+FUNCTEST          := $(addsuffix functest,      $(TESTDIR))
+SAFETYPARAMS      := $(addsuffix safetyparams,  $(TESTDIR))
 
-EXEC          := $(CHECKSUMSMALL) $(CHECKSUMBIG) $(PRINTPARAMS) $(FUNCTEST) $(SAFETYFLAGS)
-OUT           := $(addsuffix .out, $(EXEC))
+CHECKSUMSMALL_OUT := $(addsuffix .out, $(CHECKSUMSMALL))
+CHECKSUMBIG_OUT   := $(addsuffix .out, $(CHECKSUMBIG))
+PRINTPARAMS_OUT   := $(addsuffix .out, $(PRINTPARAMS))
+FUNCTEST_OUT      := $(addsuffix .out, $(FUNCTEST))
+SAFETYPARAMS_OUT  := $(addsuffix .out, $(SAFETYPARAMS))
+
+EXEC          := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)
+OUT           := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT)
 
 # --------------------------------------------------------------------
 
@@ -93,6 +99,7 @@ DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
 PRINT       = common/print.c
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
+COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
 
 # --------------------------------------------------------------------
 .PHONY: __phony default
@@ -115,34 +122,37 @@ include Makefile.partial_implementations
 	$(COMPILE) || true
 
 %/printparams: __phony | %/ %/$(CID)
-	$(MAKE) -C $(IDIR) || true
 	$(CIC)
-	$(COMPILE) || true
+	$(COMPILE_P) || true
 
 %/functest: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
 
-%/safetyflags: __phony | %/ %/$(CID)
-	$(MAKE) -C $(IDIR) || true
+%/safetyparams: __phony | %/ %/$(CID)
 	$(CIC)
-	$(COMPILE) || true
+	$(COMPILE_P) || true
 
 $(OUT):
 %.out: %
 	$(CIC)
-	./$* > $@ $(CIL) || true
+	(cd $(dir $*) && ./$(notdir $*) > $(notdir $*).out) $(CIL) || true
 
 # --------------------------------------------------------------------
-checksumsmall-all: $(CHECKSUMSMALL)
-checksumbig-all:   $(CHECKSUMBIG)
-printparams-all:   $(PRINTPARAMS)
-functest-all:      $(FUNCTEST)
-safetyflags-all:   $(SAFETYFLAGS)
+checksumsmall-all:     $(CHECKSUMSMALL)
+checksumbig-all:       $(CHECKSUMBIG)
+printparams-all:       $(PRINTPARAMS)
+functest-all:          $(FUNCTEST)
+safetyparams-all:      $(SAFETYPARAMS)
+
+checksumsmall-out-all: $(CHECKSUMSMALL_OUT)
+checksumbig-out-all:   $(CHECKSUMBIG_OUT)
+printparams-out-all:   $(PRINTPARAMS_OUT)
+functest-out-all:      $(FUNCTEST_OUT)
+safetyparams-out-all:  $(SAFETYPARAMS_OUT)
 
 # --------------------------------------------------------------------
-
 $(TESTDIR): ; @mkdir -p $@
 ifeq ($(CI),1)
 .PRECIOUS: %/$(CID)
@@ -161,12 +171,12 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	@for type in checksumsmall checksumbig printparams functest safetyflags; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams; do \
 	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
-	@for type in checksumsmall checksumbig printparams functest safetyflags; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams; do \
 	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 

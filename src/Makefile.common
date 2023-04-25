@@ -7,21 +7,27 @@ PROOF = $(TOP)/proof/
 
 CDIR  = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
 RDIR  = $(subst $(SRC),,$(CDIR))
-TDIR  = $(TEST)/bin/$(RDIR)
-PDIR  = $(PROOF)/$(RDIR)
+TDIR  = $(TEST)bin/$(RDIR)
+PDIR  = $(PROOF)$(RDIR)
 
-OPERATION = $(word 1, $(subst /, ,$(RDIR)))
+# OPERATION: kem, hash, ...; OP is a shorthand for OPERATION
+OPERATION = $(word 2, $(subst _, , $(word 1, $(subst /, ,$(RDIR)))))
+OP        = $(OPERATION)
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
-CIDIR =
+
+include $(SRC)/Makefile.functions
+
+# --------------------------------------------------------------------
+CI_DIR =
 CIT =
 ifeq ($(CI),1)
-CIDIR := .ci
-CIT = 2> $(CIDIR)/$(@F).log && rm -f $(CIDIR)/$(@F).error || \
-     (echo $$? > $(CIDIR)/$(@F).error && \
-      cat $(CIDIR)/$(@F).log >> $(CIDIR)/$(@F).error && \
-      rm $(CIDIR)/$(@F).log && \
+CI_DIR := .ci
+CIT = 2> $(CI_DIR)/$(@F).log && rm -f $(CI_DIR)/$(@F).error || \
+     (echo $$? > $(CI_DIR)/$(@F).error && \
+      cat $(CI_DIR)/$(@F).log >> $(CI_DIR)/$(@F).error && \
+      rm $(CI_DIR)/$(@F).log && \
       exit 127)
 endif
 
@@ -34,16 +40,20 @@ JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
 # --------------------------------------------------------------------
-include $(SRC)/$(OPERATION)/EcFlags.mk
+include $(SRC)/crypto_$(OPERATION)/EcFlags.mk
 
-ECDIR     := $(PDIR)
+EC_DIR     := $(PDIR)
 ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT_S  = (cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
-EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
+EXTRACT_S  = (cd $(EC_DIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
+EXTRACT_CT = (cd $(EC_DIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
 # --------------------------------------------------------------------
-DEPSDIR := .deps
-DEPS = ((printf "$@: "; printf "$(basename $(abspath $*)).$(JEXT) "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
+CHECKS_DIR := checks
+
+# --------------------------------------------------------------------
+DEPS_DIR := .deps
+DEPS = ((printf "$@: "; printf "$< "; $(JASMINC) -print-dependencies $<) > $(DEPS_DIR)/$(@F).d) $(CIT)
+DEPFILES :=
 
 # --------------------------------------------------------------------
 compile: $(SRCS:%.$(JEXT)=%.s)
@@ -52,56 +62,43 @@ compile: $(SRCS:%.$(JEXT)=%.s)
 extract: extract_s extract_ct
 	@true
 
-extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
+extract_s: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_s.ec)
 	@true
 
-extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
-	@true
-
-safety: $(SRCS:%.$(JEXT)=%.safety)
+extract_ct: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_ct.ec)
 	@true
 
 # --------------------------------------------------------------------
-%.s : %.$(JEXT)
-%.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
+%.s : %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
 	@$(DEPS)
 	@$(COMPILE)
 
-$(ECDIR)/%_s.ec : %.$(JEXT)
-$(ECDIR)/%_s.ec : %.$(JEXT) $(DEPSDIR)/%_s.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
+$(EC_DIR)/%_s.ec : %.$(JEXT) $(DEPS_DIR)/%_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
 	@$(DEPS)
 	@$(EXTRACT_S)
 
-$(ECDIR)/%_ct.ec : %.$(JEXT)
-$(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
+$(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
 	@$(DEPS)
 	@$(EXTRACT_CT)
 
 # --------------------------------------------------------------------
-SAFETY_TIMEOUT ?= 1440m
-SAFETY_FLAGS_FILE = $(TDIR)/safetyflags.out
-SAFETY_FLAGS_ALL = $(SAFETY_FLAGS) $(shell cat $(SAFETY_FLAGS_FILE))
 
-%.safety : %.$(JEXT)
-%.safety : %.$(JEXT) $(SAFETY_FLAGS_FILE) $(DEPSDIR)/%.safety.d  | $(DEPSDIR) $(CIDIR)
-	@$(DEPS)
-	(time timeout -v $(SAFETY_TIMEOUT) $(JASMINC) -checksafety $(SAFETY_FLAGS_ALL) $< 2> $@) $(CIT)
-
-$(SAFETY_FLAGS_FILE):
-	$(MAKE) -C $(TEST) bin/$(RDIR)/$(@F)
+include $(SRC)/Makefile.checksafety
 
 # --------------------------------------------------------------------
-$(DEPSDIR): ; @mkdir -p $@
-$(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
+$(CHECKSDIR): ; @mkdir -p $@
+$(DEPS_DIR): ; @mkdir -p $@
+$(EC_DIR): ; @mkdir -p $@; touch $@/.gitkeep
 ifeq ($(CI),1)
-$(CIDIR): ; @mkdir -p $@
+$(CI_DIR): ; @mkdir -p $@
 endif
 
 DEPFILES := \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_s.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_ct.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.safety.d)
+ $(DEPFILES) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.s.d) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_s.ec.d) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_ct.ec.d) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.safety_all.d)
 
 $(DEPFILES):
 
@@ -116,8 +113,8 @@ include $(wildcard $(DEPFILES))
 .PHONY: clean
 
 clean:
-	@rm -fr $(DEPSDIR) *.s *.safety *.o *.a .jflags
+	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.o *.a .jflags *.out
 ifeq ($(CI),1)
-	@rm -fr $(CIDIR)
+	@rm -fr $(CI_DIR)
 endif
 
