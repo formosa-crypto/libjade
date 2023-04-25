@@ -1,14 +1,14 @@
-#ifndef JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_API_H
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_API_H
+#ifndef JADE_SIGN_dilithium_dilithium3_amd64_avx2_API_H
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_API_H
 
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_PUBLICKEYBYTES  1952
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_SECRETKEYBYTES  4016
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_BYTES           3293
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_DETERMINISTIC   1
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_PUBLICKEYBYTES  1952
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_SECRETKEYBYTES  4016
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_BYTES           3293
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_DETERMINISTIC   1
 
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_ALGNAME         "Dilithium3"
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_ARCH            "amd64"
-#define JADE_SIGN_DILITHIUM_DILITHIUM3_AMD64_AVX2_IMPL            "avx2"
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_ALGNAME         "Dilithium3"
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_ARCH            "amd64"
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_IMPL            "avx2"
 
 #include <stdint.h>
 

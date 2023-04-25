@@ -68,9 +68,13 @@ OUT      := $(addsuffix .out, $(EXEC))
 # --------------------------------------------------------------------
 
 RDIR        = $(subst $(BIN)/,,$(@D))
+
 OPERATION   = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
-NAMESPACE   = $(subst crypto_,jade_,$(subst -,_,$(subst /,_,$(RDIR))))
-NAMESPACE1  = $(shell echo $(NAMESPACE) | tr a-z A-Z)
+OPERATION1  = $(shell echo $(OPERATION) | tr a-z A-Z)
+NAMESPACE0  = $(subst $(OPERATION)_,,$(subst crypto_,,$(subst -,_,$(subst /,_,$(RDIR)))))
+NAMESPACE   = jade_$(OPERATION)_$(NAMESPACE0)
+NAMESPACE1  = JADE_$(OPERATION1)_$(NAMESPACE0)
+
 IDIR        = $(subst $(BIN),$(SRC),$(@D))
 ASM         = $(IDIR)/$(OPERATION).s
 

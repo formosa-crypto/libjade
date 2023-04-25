@@ -1,11 +1,11 @@
-#ifndef JADE_HASH_SHA3_512_AMD64_REF_API_H
-#define JADE_HASH_SHA3_512_AMD64_REF_API_H
+#ifndef JADE_HASH_sha3_512_amd64_ref_API_H
+#define JADE_HASH_sha3_512_amd64_ref_API_H
 
-#define JADE_HASH_SHA3_512_AMD64_REF_BYTES 64
+#define JADE_HASH_sha3_512_amd64_ref_BYTES 64
 
-#define JADE_HASH_SHA3_512_AMD64_REF_ALGNAME "SHA3-512"
-#define JADE_HASH_SHA3_512_AMD64_REF_ARCH    "amd64"
-#define JADE_HASH_SHA3_512_AMD64_REF_IMPL    "ref"
+#define JADE_HASH_sha3_512_amd64_ref_ALGNAME "SHA3-512"
+#define JADE_HASH_sha3_512_amd64_ref_ARCH    "amd64"
+#define JADE_HASH_sha3_512_amd64_ref_IMPL    "ref"
 
 #include <stdint.h>
 

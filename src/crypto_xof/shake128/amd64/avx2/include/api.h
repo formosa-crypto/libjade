@@ -1,9 +1,9 @@
-#ifndef JADE_XOF_SHAKE128_AMD64_AVX2_API_H
-#define JADE_XOF_SHAKE128_AMD64_AVX2_API_H
+#ifndef JADE_XOF_shake128_amd64_avx2_API_H
+#define JADE_XOF_shake128_amd64_avx2_API_H
 
-#define JADE_XOF_SHAKE128_AMD64_AVX2_ALGNAME "SHAKE128"
-#define JADE_XOF_SHAKE128_AMD64_AVX2_ARCH    "amd64"
-#define JADE_XOF_SHAKE128_AMD64_AVX2_IMPL    "avx2"
+#define JADE_XOF_shake128_amd64_avx2_ALGNAME "SHAKE128"
+#define JADE_XOF_shake128_amd64_avx2_ARCH    "amd64"
+#define JADE_XOF_shake128_amd64_avx2_IMPL    "avx2"
 
 #include <stdint.h>
 

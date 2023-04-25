@@ -1,9 +1,9 @@
-#ifndef JADE_XOF_SHAKE256_AMD64_REF1_API_H
-#define JADE_XOF_SHAKE256_AMD64_REF1_API_H
+#ifndef JADE_XOF_shake256_amd64_ref1_API_H
+#define JADE_XOF_shake256_amd64_ref1_API_H
 
-#define JADE_XOF_SHAKE256_AMD64_REF1_ALGNAME "SHAKE256"
-#define JADE_XOF_SHAKE256_AMD64_REF1_ARCH    "amd64"
-#define JADE_XOF_SHAKE256_AMD64_REF1_IMPL    "ref1"
+#define JADE_XOF_shake256_amd64_ref1_ALGNAME "SHAKE256"
+#define JADE_XOF_shake256_amd64_ref1_ARCH    "amd64"
+#define JADE_XOF_shake256_amd64_ref1_IMPL    "ref1"
 
 #include <stdint.h>
 
