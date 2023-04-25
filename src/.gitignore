@@ -1,5 +1,6 @@
 *.s
 *.safety
+*.safety_*
 *.o
 *.a
 _build/
