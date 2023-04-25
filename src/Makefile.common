@@ -10,9 +10,9 @@ RDIR  = $(subst $(SRC),,$(CDIR))
 TDIR  = $(TEST)bin/$(RDIR)
 PDIR  = $(PROOF)$(RDIR)
 
-# OPERATION: kem, hash, ...; OP is a shorthand for OPERATION
-OPERATION = $(word 2, $(subst _, , $(word 1, $(subst /, ,$(RDIR)))))
-OP        = $(OPERATION)
+# OPERATION: crypto_kem, crypto_hash, ..., common; OP is a shorthand for OPERATION
+OPERATION = $(word 1, $(subst /, ,$(RDIR)))
+OP        = $(word 2, $(subst _, , $(OPERATION)_))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
 # --------------------------------------------------------------------
@@ -40,7 +40,7 @@ JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
 # --------------------------------------------------------------------
-include $(SRC)/crypto_$(OPERATION)/EcFlags.mk
+include $(SRC)/$(OPERATION)/EcFlags.mk
 
 EC_DIR     := $(PDIR)
 ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
@@ -59,7 +59,23 @@ DEPFILES :=
 compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
 
-extract: extract_s extract_ct
+# --------------------------------------------------------------------
+# Note: by using a single-file extraction, only one Jasmin file can be processed (the first from SRCS)
+
+extract: $(EC_DIR)/extracted_s.ec $(EC_DIR)/extracted_ct.ec
+	@true
+
+$(EC_DIR)/extracted_s.ec : $(SRCS) $(DEPS_DIR)/extracted_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_S)
+
+$(EC_DIR)/extracted_ct.ec : $(SRCS) $(DEPS_DIR)/extracted_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_CT)
+
+# --------------------------------------------------------------------
+
+extract0: extract_s extract_ct
 	@true
 
 extract_s: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_s.ec)
@@ -68,18 +84,17 @@ extract_s: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_s.ec)
 extract_ct: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_ct.ec)
 	@true
 
-# --------------------------------------------------------------------
 %.s : %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
-	@$(DEPS)
-	@$(COMPILE)
+	$(DEPS)
+	$(COMPILE)
 
 $(EC_DIR)/%_s.ec : %.$(JEXT) $(DEPS_DIR)/%_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
-	@$(DEPS)
-	@$(EXTRACT_S)
+	$(DEPS)
+	$(EXTRACT_S)
 
 $(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
-	@$(DEPS)
-	@$(EXTRACT_CT)
+	$(DEPS)
+	$(EXTRACT_CT)
 
 # --------------------------------------------------------------------
 
@@ -98,7 +113,8 @@ DEPFILES := \
  $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.s.d) \
  $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_s.ec.d) \
  $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_ct.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.safety_all.d)
+ $(DEPS_DIR)/extracted_s.ec.d \
+ $(DEPS_DIR)/extracted_ct.ec.d
 
 $(DEPFILES):
 
