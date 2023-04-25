@@ -3,6 +3,8 @@
 #   functions
 # - it is meant to be included by Makefile.common, right before the 'generic' safety targets
 
+ifneq ($(OP),)
+
 SAFETY_FLAGS   ?=
 SAFETY_TIMEOUT ?= 4320m
 SAFETY_DIR     := .safety
@@ -31,4 +33,6 @@ $(SAFETY_DIR)/$(OP).safetyparam: $(SAFETY_DIR)
 	(cd $(SAFETY_DIR) && $(TDIR)/safetyparams)
 
 $(SAFETY_DIR): ; @mkdir -p $@
+
+endif
 
