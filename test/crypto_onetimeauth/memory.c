@@ -33,8 +33,9 @@ int main(void)
   uint8_t *key;
 
   mac = malloc(sizeof(uint8_t) * JADE_ONETIMEAUTH_BYTES);
+  
   key = malloc(sizeof(uint8_t) * JADE_ONETIMEAUTH_KEYBYTES);
-
+  __jasmin_syscall_randombytes__(key, JADE_ONETIMEAUTH_KEYBYTES);
 
   // verify: OK
   for (input_length = MININBYTES; input_length <= MAXINBYTES; input_length++)
