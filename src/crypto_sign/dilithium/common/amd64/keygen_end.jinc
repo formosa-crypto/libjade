@@ -108,7 +108,7 @@ fn keygen_inner(reg ptr u8[32] random_zeta)
 	return pk, sk;
 }
 
-//zeta is 32 bytes
+/*
 inline
 fn keygen(reg u64 pk_ptr sk_ptr)
 {
@@ -143,6 +143,7 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 		i += 1;
 	}
 }
+*/
 
 fn keygen_derand(reg u64 pk_ptr sk_ptr, reg ptr u8[32] coins)
 {
