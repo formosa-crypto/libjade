@@ -14,7 +14,6 @@
 # --
 dist_arch=$1
 
-
 # -- 
 dist_name=libjade-dist-src-$dist_arch
 
@@ -214,4 +213,10 @@ END
     fi
   done
 done
+
+# -----------------------------------------------------------------------------
+# compress
+find $dist -type f -name ".*" -exec rm {} \;
+(cd $libjade/ && tar -zcvf $dist_name.tar.gz $dist_name/)
+rm -fr $dist_name/
 

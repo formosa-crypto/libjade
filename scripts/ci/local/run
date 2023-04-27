@@ -39,10 +39,10 @@ make_err src/ "" "compile"
 
 # dist-source
 echo "#start: dist-source"                                >> $LLOG
-env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-v0 amd64      >> $LLOG || \
- echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-v0 amd64 "      >> $SLOG
-env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-test-v0 amd64 >> $LLOG || \
- echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-test-v0 amd64 " >> $SLOG
+env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-v1 amd64      >> $LLOG || \
+ echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-v1 amd64 "      >> $SLOG
+env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-test-v1 amd64 >> $LLOG || \
+ echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-test-v1 amd64 " >> $SLOG
 
 # test
 (
