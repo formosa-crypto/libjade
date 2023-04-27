@@ -1,12 +1,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "print.h"
-
-#include "api.h"
-#include "jade_onetimeauth.h"
 #include "randombytes.h"
+#include "api.h"
+
+#include "jade_onetimeauth.h"
+#include "print.h"
 
 /*
 int jade_onetimeauth(
@@ -40,12 +42,10 @@ int main(void)
   r = jade_onetimeauth_verify(mac, input, sizeof(input), key);
     assert(r == 0);
 
-  #ifndef NOPRINT
   print_info(JADE_ONETIMEAUTH_ALGNAME, JADE_ONETIMEAUTH_ARCH, JADE_ONETIMEAUTH_IMPL);
   print_str_u8("input", input, sizeof(input));
   print_str_u8("key", key, JADE_ONETIMEAUTH_KEYBYTES);
   print_str_u8("mac", mac, JADE_ONETIMEAUTH_BYTES);
-  #endif
 
   //flip one bit of input so the verification fails
   input[0] ^= 0x1;
