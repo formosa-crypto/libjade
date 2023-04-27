@@ -5,7 +5,7 @@ require "params.jinc"
 from Jade require "common/tofromstack.jinc"
 
 from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jinc"
-from Jade require "crypto_sign/dilithium/common/amd64/sign_end.jinc"
+from Jade require "crypto_sign/dilithium/common/amd64/ref/sign_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jinc"
 
 from Jade require "crypto_sign/dilithium/common/amd64/sign.jinc"
