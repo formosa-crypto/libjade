@@ -2,23 +2,40 @@ require "common.jinc"
 require "packing.jinc"
 require "params.jinc"
 
+from Jade require "common/tofromstack.jinc"
+
 from Jade require "crypto_sign/dilithium/common/amd64/keygen_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/avx2/sign_end.jinc"
 from Jade require "crypto_sign/dilithium/common/amd64/verify_end.jinc"
 
 from Jade require "crypto_sign/dilithium/common/amd64/sign.jinc"
 
-export fn jade_sign_dilithium_dilithium3_amd64_avx2_keypair(
-  reg u64 public_key
-          secret_key
-  ) -> reg u64
+export fn jade_sign_dilithium_dilithium3_amd64_avx2_keypair_derand( reg u64 public_key secret_key coins) -> reg u64
 {
   reg u64 r;
-  keygen(public_key, secret_key);
+  stack u8[32] stack_coins;
+
+  public_key = public_key;
+  secret_key = secret_key;
+  stack_coins = __tostack32u8(stack_coins, coins);
+  keygen_derand(public_key, secret_key, stack_coins);
   ?{}, r = #set0();
   return r;
 }
 
+
+export fn jade_sign_dilithium_dilithium3_amd64_avx2_keypair( reg u64 public_key secret_key) -> reg u64
+{
+  reg u64 r;
+  stack u8[32] stack_coins;
+
+  public_key = public_key;
+  secret_key = secret_key;
+  stack_coins = #randombytes(stack_coins);
+  keygen_derand(public_key, secret_key, stack_coins);
+  ?{}, r = #set0();
+  return r;
+}
 
 export fn jade_sign_dilithium_dilithium3_amd64_avx2(
   reg u64 signed_message
@@ -48,5 +65,4 @@ export fn jade_sign_dilithium_dilithium3_amd64_avx2_open(
              signed_message, signed_message_length, public_key);
   return r;
 }
-
 
