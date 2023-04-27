@@ -75,15 +75,17 @@ CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
 PRINTPARAMS       := $(addsuffix printparams,   $(TESTDIR))
 FUNCTEST          := $(addsuffix functest,      $(TESTDIR))
 SAFETYPARAMS      := $(addsuffix safetyparams,  $(TESTDIR))
+MEMORY            := $(addsuffix memory,  $(TESTDIR))
 
 CHECKSUMSMALL_OUT := $(addsuffix .out, $(CHECKSUMSMALL))
 CHECKSUMBIG_OUT   := $(addsuffix .out, $(CHECKSUMBIG))
 PRINTPARAMS_OUT   := $(addsuffix .out, $(PRINTPARAMS))
 FUNCTEST_OUT      := $(addsuffix .out, $(FUNCTEST))
 SAFETYPARAMS_OUT  := $(addsuffix .out, $(SAFETYPARAMS))
+MEMORY_OUT        := $(addsuffix .out, $(MEMORY))
 
-EXEC          := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)
-OUT           := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT)
+EXEC          := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
+OUT           := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
 
 # --------------------------------------------------------------------
 
@@ -138,7 +140,16 @@ include Makefile.partial_implementations
 	$(CIC)
 	$(COMPILE_P) || true
 
+%/memory: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(COMPILE) || true
+
 $(OUT):
+
+%memory.out: %memory
+	(valgrind --leak-check=full --error-exitcode=1 --log-file=$@ ./$*memory) $(CIL) || true
+
 %.out: %
 	$(CIC)
 	(cd $(dir $*) && ./$(notdir $*) > $(notdir $*).out) $(CIL) || true
@@ -149,12 +160,14 @@ checksumbig-all:       $(CHECKSUMBIG)
 printparams-all:       $(PRINTPARAMS)
 functest-all:          $(FUNCTEST)
 safetyparams-all:      $(SAFETYPARAMS)
+memory-all:            $(MEMORY)
 
 checksumsmall-out-all: $(CHECKSUMSMALL_OUT)
 checksumbig-out-all:   $(CHECKSUMBIG_OUT)
 printparams-out-all:   $(PRINTPARAMS_OUT)
 functest-out-all:      $(FUNCTEST_OUT)
 safetyparams-out-all:  $(SAFETYPARAMS_OUT)
+memory-out-all:        $(MEMORY_OUT)
 
 # --------------------------------------------------------------------
 $(TESTDIR): ; @mkdir -p $@
@@ -175,12 +188,12 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	@for type in checksumsmall checksumbig printparams functest safetyparams; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
 	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
-	@for type in checksumsmall checksumbig printparams functest safetyparams; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
 	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 
