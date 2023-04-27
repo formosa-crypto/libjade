@@ -1,16 +1,15 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-
 #include <stdio.h>
-
-#include "print.h"
+#include <inttypes.h>
 
 #include "api.h"
+
 #include "jade_sign.h"
+#include "print.h"
 
 /*
-
 int jade_sign_keypair(
   uint8_t *public_key,
   uint8_t *secret_key
@@ -31,8 +30,6 @@ int jade_sign_open(
   uint64_t signed_message_length,
   const uint8_t *public_key
 );
-
-
 */
 
 int main(void)
@@ -64,20 +61,12 @@ int main(void)
     for(int i=0; i<MESSAGE_LENGTH; i++)
     { assert(message_1[i] == message_2[i]); }
 
-  #ifndef NOPRINT
+
   print_info(JADE_SIGN_ALGNAME, JADE_SIGN_ARCH, JADE_SIGN_IMPL);
   print_str_u8("public_key", public_key, JADE_SIGN_PUBLICKEYBYTES);
   print_str_u8("secret_key", secret_key, JADE_SIGN_SECRETKEYBYTES);
   print_str_u8("message", message_1, MESSAGE_LENGTH);
   print_str_u8("signed_message", signed_message, signed_message_length);
-  #endif
-
-  #if 0
-  //flip one bit of the signed message so the verification fails
-  signed_message[JADE_SIGN_BYTES] ^= 0x1;
-  r = jade_sign_open(message_2, &message_length, signed_message, signed_message_length, public_key); 
-    assert(r == -1);
-  #endif
 
   return 0;
 }

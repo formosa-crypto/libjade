@@ -1,20 +1,20 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-
-#include "print.h"
+#include <stdio.h>
+#include <inttypes.h>
 
 #include "api.h"
+
 #include "jade_hash.h"
+#include "print.h"
 
 /*
-
 int jade_hash(
  uint8_t *hash,
  const uint8_t *input,
  uint64_t input_length
 );
-
 */
 
 int main(void)
@@ -27,11 +27,9 @@ int main(void)
   r = jade_hash(hash, input, sizeof(input));
     assert(r == 0);
 
-  #ifndef NOPRINT
   print_info(JADE_HASH_ALGNAME, JADE_HASH_ARCH, JADE_HASH_IMPL);
   print_str_u8("input", input, sizeof(input));
   print_str_u8("hash", hash, JADE_HASH_BYTES);
-  #endif
 
   return 0;
 }

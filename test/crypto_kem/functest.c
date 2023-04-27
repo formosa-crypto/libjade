@@ -1,15 +1,16 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "print.h"
 #include "randombytes.h"
-
 #include "api.h"
+
 #include "jade_kem.h"
+#include "print.h"
 
 /*
-
 int jade_kem_keypair(
   uint8_t *public_key,
   uint8_t *secret_key
@@ -27,8 +28,6 @@ int jade_kem_dec(
   const uint8_t *secret_key
 );
 
-//
-
 int jade_kem_keypair_derand(
   uint8_t *public_key,
   uint8_t *secret_key,
@@ -41,7 +40,6 @@ int jade_kem_enc_derand(
   const uint8_t *public_key,
   const uint8_t *coins
 );
-
 */
 
 int main(void)
@@ -57,9 +55,6 @@ int main(void)
   uint8_t keypair_coins[JADE_KEM_KEYPAIRCOINBYTES];
   uint8_t enc_coins[JADE_KEM_ENCCOINBYTES];
 
-
-
-  // ////////////////
   // create key pair
   r = jade_kem_keypair(public_key, secret_key);
     assert(r == 0);
@@ -73,17 +68,12 @@ int main(void)
     assert(r == 0);
     assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
 
-  #ifndef NOPRINT
   print_info(JADE_KEM_ALGNAME, JADE_KEM_ARCH, JADE_KEM_IMPL);
   print_str_u8("public_key", public_key, JADE_KEM_PUBLICKEYBYTES);
   print_str_u8("secret_key", secret_key, JADE_KEM_SECRETKEYBYTES);
   print_str_u8("shared_secret", shared_secret_a, JADE_KEM_BYTES);
   print_str_u8("ciphertext", ciphertext, JADE_KEM_CIPHERTEXTBYTES);
-  #endif
 
-
-
-  // ////////////////
   // create key pair using derand function (random coins are given as input)
   randombytes(keypair_coins, JADE_KEM_KEYPAIRCOINBYTES);
   r = jade_kem_keypair_derand(public_key, secret_key, keypair_coins);
@@ -99,7 +89,6 @@ int main(void)
     assert(r == 0);
     assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
 
-  #ifndef NOPRINT
   print_info(JADE_KEM_ALGNAME, JADE_KEM_ARCH, JADE_KEM_IMPL);
   print_str_u8("public_key_coins", public_key, JADE_KEM_PUBLICKEYBYTES);
   print_str_u8("secret_key_coins", secret_key, JADE_KEM_SECRETKEYBYTES);
@@ -108,8 +97,6 @@ int main(void)
   print_str_u8("shared_secret_coins", shared_secret_a, JADE_KEM_BYTES);
   print_str_u8("ciphertext_coins", ciphertext, JADE_KEM_CIPHERTEXTBYTES);
   print_str_u8("enc_coins", enc_coins, JADE_KEM_ENCCOINBYTES);
-
-  #endif
 
   return 0;
 }

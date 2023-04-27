@@ -1,12 +1,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "print.h"
-
-#include "api.h"
-#include "jade_secretbox.h"
 #include "randombytes.h"
+#include "api.h"
+
+#include "jade_secretbox.h"
+#include "print.h"
 
 /*
 int jade_secretbox(
@@ -64,7 +66,7 @@ int main(void)
     for(int i=0; i<PLAINTEXT_LENGTH; i++)
     { assert(plaintext[i] == plaintext_2[JADE_SECRETBOX_ZEROBYTES + i]); }
 
-  #ifndef NOPRINT
+
   print_info(JADE_SECRETBOX_ALGNAME, JADE_SECRETBOX_ARCH, JADE_SECRETBOX_IMPL);
   print_str_u8("plaintext", plaintext, PLAINTEXT_LENGTH);
   print_str_u8("prepared_plaintext", plaintext_1, length);
@@ -72,9 +74,8 @@ int main(void)
   print_str_u8("key", key, JADE_SECRETBOX_KEYBYTES);
   print_str_u8("ciphertext", ciphertext, length);
   print_str_u8("decrypted_plaintext", plaintext_2, length);
-  #endif
 
-  //flip one bit of ciphertext so the verification fails
+  // flip one bit of ciphertext so the verification fails
   ciphertext[JADE_SECRETBOX_ZEROBYTES] ^= 1;
   r = jade_secretbox_open(plaintext_2, ciphertext, length, nonce, key);
     assert(r == -1);
