@@ -186,7 +186,7 @@ fn shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr 
 
 // Dilithium keygen inputs 32 bytes to SHAKE256
 inline
-fn shake256_absorb32(stack u8[32] in) -> stack u64[25]
+fn shake256_absorb32(reg ptr u8[32] in) -> stack u64[25]
 {
   reg u8 c;
   inline int i;

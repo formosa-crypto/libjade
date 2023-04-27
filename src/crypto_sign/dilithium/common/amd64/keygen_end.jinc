@@ -117,17 +117,46 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 	stack u8[Li2_PK_LEN] pk;
 	stack u8[Li2_SK_LEN] sk;
 	stack u8[32] random_zeta;
-  reg ptr u8[32] random_zeta_p;
 	reg u8 c;
 	reg u64 i;
 
   pk_ptr_s = pk_ptr;
   sk_ptr_s = sk_ptr;
 
-  random_zeta_p = random_zeta;
-  random_zeta_p = #randombytes(random_zeta_p);
+  random_zeta = #randombytes(random_zeta);
 
-	pk, sk = keygen_inner(random_zeta_p);
+	pk, sk = keygen_inner(random_zeta);
+
+  pk_ptr = pk_ptr_s;
+	i = 0;
+	while(i < Li2_PK_LEN) {
+		c = pk[(int) i];
+		(u8)[pk_ptr + i] = c;
+		i += 1;
+	}
+
+  sk_ptr = sk_ptr_s;
+	i = 0;
+	while(i < Li2_SK_LEN) {
+		c = sk[(int) i];
+		(u8)[sk_ptr + i] = c;
+		i += 1;
+	}
+}
+
+fn keygen_derand(reg u64 pk_ptr sk_ptr, reg ptr u8[32] coins)
+{
+  stack u64 pk_ptr_s sk_ptr_s;
+
+	stack u8[Li2_PK_LEN] pk;
+	stack u8[Li2_SK_LEN] sk;
+	reg u8 c;
+	reg u64 i;
+
+  pk_ptr_s = pk_ptr;
+  sk_ptr_s = sk_ptr;
+
+	pk, sk = keygen_inner(coins);
 
   pk_ptr = pk_ptr_s;
 	i = 0;
