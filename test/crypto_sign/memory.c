@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "api.h"
 #include "namespace.h"
@@ -34,6 +35,7 @@ int jade_sign_open(
 
 int main(void)
 {
+  int r;
   uint8_t *public_key;
   uint8_t *secret_key;
   uint8_t *signed_message;
@@ -52,8 +54,11 @@ int main(void)
     memset(message, 0, message_length);
     signed_message = malloc(sizeof(uint8_t) * (message_length + JADE_SIGN_BYTES));
 
-    jade_sign(signed_message, &signed_message_length, message, message_length, secret_key);
-    jade_sign_open(message, &message_length, signed_message, signed_message_length, public_key);
+    r = jade_sign(signed_message, &signed_message_length, message, message_length, secret_key);
+    assert(r == 0);
+
+    r = jade_sign_open(message, &message_length, signed_message, signed_message_length, public_key);
+    assert(r == 0);
 
     free(message);
     free(signed_message);

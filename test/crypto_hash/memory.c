@@ -23,7 +23,6 @@ int main(void)
   uint8_t *input;
   uint64_t input_length;
 
-
   hash = malloc(sizeof(uint8_t) * JADE_HASH_BYTES);
 
   for (input_length = MININBYTES; input_length <= MAXINBYTES; input_length++)

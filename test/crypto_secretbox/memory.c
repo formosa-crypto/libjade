@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "api.h"
 #include "namespace.h"
@@ -29,9 +30,11 @@ int jade_secretbox_open(
 
 int main(void)
 {
+  int r;
   uint8_t *ciphertext;
   uint8_t *plaintext;
   uint64_t plaintext_length;
+  uint64_t ciphertext_length;
   uint8_t *nonce;
   uint8_t *key;
 
@@ -42,14 +45,17 @@ int main(void)
   __jasmin_syscall_randombytes__(key, JADE_SECRETBOX_KEYBYTES);
 
   // open: OK
-  for (plaintext_length = MININBYTES; plaintext_length <= MAXINBYTES; plaintext_length++)
+  for (plaintext_length = JADE_SECRETBOX_ZEROBYTES + MININBYTES; plaintext_length <= JADE_SECRETBOX_ZEROBYTES + MAXINBYTES; plaintext_length++)
   {
-    ciphertext = malloc(sizeof(uint8_t) * (JADE_SECRETBOX_ZEROBYTES + plaintext_length));
-    plaintext = malloc(sizeof(uint8_t) * (JADE_SECRETBOX_ZEROBYTES + plaintext_length));
+    ciphertext = malloc(sizeof(uint8_t) * plaintext_length);
+    plaintext = malloc(sizeof(uint8_t) * plaintext_length);
     memset(plaintext, 0, sizeof(uint8_t) * plaintext_length);
     
-    jade_secretbox(ciphertext, plaintext, plaintext_length, nonce, key);
-    jade_secretbox_open(plaintext, ciphertext, plaintext_length, nonce, key);
+    r = jade_secretbox(ciphertext, plaintext, plaintext_length, nonce, key);
+    assert(r == 0);
+
+    r = jade_secretbox_open(plaintext, ciphertext, plaintext_length, nonce, key);
+    assert(r == 0);
 
     free(ciphertext);
     free(plaintext);
@@ -58,13 +64,14 @@ int main(void)
   }
 
   // open: !OK
-  for (plaintext_length = MININBYTES; plaintext_length <= MAXINBYTES; plaintext_length++)
+  for (ciphertext_length = JADE_SECRETBOX_ZEROBYTES + MININBYTES; ciphertext_length <= JADE_SECRETBOX_ZEROBYTES + MAXINBYTES; ciphertext_length++)
   {
-    ciphertext = malloc(sizeof(uint8_t) * (JADE_SECRETBOX_ZEROBYTES + plaintext_length));
-    memset(ciphertext, 0, sizeof(uint8_t) * plaintext_length);
-    plaintext = malloc(sizeof(uint8_t) * (JADE_SECRETBOX_ZEROBYTES + plaintext_length));
+    ciphertext = malloc(sizeof(uint8_t) * ciphertext_length);
+    plaintext = malloc(sizeof(uint8_t) * ciphertext_length);
+    memset(ciphertext, 0, sizeof(uint8_t) * ciphertext_length);
     
-    jade_secretbox_open(plaintext, ciphertext, plaintext_length, nonce, key);
+    r = jade_secretbox_open(plaintext, ciphertext, ciphertext_length, nonce, key);
+    assert(r == -1);
 
     free(ciphertext);
     free(plaintext);
