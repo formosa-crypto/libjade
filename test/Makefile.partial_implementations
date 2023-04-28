@@ -35,6 +35,12 @@ bin/crypto_sign/falcon/falcon512/amd64/avx2/safetyflags: __phony | bin/crypto_si
 	$(MAKE) -C $(EXTERNAL_PATH)
 	$(EXTERNAL_COMPILE) || true
 
+bin/crypto_sign/falcon/falcon512/amd64/avx2/memory: __phony | bin/crypto_sign/falcon/falcon512/amd64/avx2/ bin/crypto_sign/falcon/falcon512/amd64/avx2/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(MAKE) -C $(EXTERNAL_PATH)
+	$(EXTERNAL_COMPILE) || true
+
 #-- clean
 clean-external:
 	$(MAKE) -C external/crypto_sign/falcon/falcon512/amd64/avx2 clean
