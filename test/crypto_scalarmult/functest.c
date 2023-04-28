@@ -1,12 +1,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "print.h"
-
-#include "api.h"
-#include "jade_scalarmult.h"
 #include "randombytes.h"
+#include "api.h"
+
+#include "jade_scalarmult.h"
+#include "print.h"
 
 /*
 int jade_scalarmult(
@@ -52,7 +54,6 @@ int main(void)
     assert(r == 0);
     assert(memcmp(secret_a, secret_b, JADE_SCALARMULT_BYTES) == 0);
 
-  #ifndef NOPRINT
   print_info(JADE_SCALARMULT_ALGNAME, JADE_SCALARMULT_ARCH, JADE_SCALARMULT_IMPL);
   print_str_u8("secret_key_a", secret_key_a, JADE_SCALARMULT_SCALARBYTES);
   print_str_u8("public_key_a", public_key_a, JADE_SCALARMULT_BYTES);
@@ -60,7 +61,6 @@ int main(void)
   print_str_u8("secret_key_b", secret_key_b, JADE_SCALARMULT_SCALARBYTES);
   print_str_u8("public_key_b", public_key_b, JADE_SCALARMULT_BYTES);
   print_str_u8("secret_b",     secret_b,     JADE_SCALARMULT_BYTES);
-  #endif
 
   return 0;
 }

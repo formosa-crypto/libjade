@@ -314,8 +314,10 @@ fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 {
   inline int i;
   reg u256 f q shufbidx mask shift;
+  reg u128 h;
   reg ptr u16[16] x16p;
   reg ptr u8[32] x32p;
+  stack u128 sh;
 
   x16p = jqx16;
   q = x16p[u256 0];
@@ -328,7 +330,9 @@ fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 
   for i=0 to KYBER_N/16
   {
-    f = #VPBROADCAST_2u128((u128)[ap + 8*i]);
+    h = (128u)(u64)[ap + 8*i];
+    sh = h;
+    f = #VPBROADCAST_2u128(sh);
     f = #VPSHUFB_256(f, shufbidx);
     f = #VPAND_256(f, mask);
     f = #VPMULL_16u16(f, shift);

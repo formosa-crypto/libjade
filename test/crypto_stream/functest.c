@@ -1,12 +1,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
+#include <stdio.h>
+#include <inttypes.h>
 
-#include "print.h"
-
-#include "api.h"
-#include "jade_stream.h"
 #include "randombytes.h"
+#include "api.h"
+
+#include "jade_stream.h"
+#include "print.h"
 
 /*
 int jade_stream_xor(
@@ -60,14 +62,13 @@ int main(void)
       assert(ciphertext[i] == (plaintext_1[i] ^ stream[i]));
     }
 
-  #ifndef NOPRINT
+
   print_info(JADE_STREAM_ALGNAME, JADE_STREAM_ARCH, JADE_STREAM_IMPL);
   print_str_u8("plaintext", plaintext_1, length);
   print_str_u8("nonce", nonce, JADE_STREAM_NONCEBYTES);
   print_str_u8("key", key, JADE_STREAM_KEYBYTES);
   print_str_u8("stream", stream, length);
   print_str_u8("ciphertext", ciphertext, length);
-  #endif
 
   return 0;
 }
