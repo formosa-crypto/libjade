@@ -4,7 +4,7 @@
 #define JADE_SIGN_falcon_falcon512_amd64_avx2_SECRETKEYBYTES   1281
 #define JADE_SIGN_falcon_falcon512_amd64_avx2_PUBLICKEYBYTES   897
 #define JADE_SIGN_falcon_falcon512_amd64_avx2_BYTES            690
-#define JADE_SIGN_falcon_falcon512_amd64_avx2_KEYPAIRCOINBYTES 481
+#define JADE_SIGN_falcon_falcon512_amd64_avx2_KEYPAIRCOINBYTES 48
 #define JADE_SIGN_falcon_falcon512_amd64_avx2_DETERMINISTIC    0
 
 #define JADE_SIGN_falcon_falcon512_amd64_avx2_ALGNAME          "Falcon-512"
