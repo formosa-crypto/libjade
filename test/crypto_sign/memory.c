@@ -11,6 +11,12 @@
 #include "config.h"
 
 /*
+int jade_sign_keypair_derand(
+  uint8_t *public_key,
+  uint8_t *secret_key,
+  const uint8_t *coins
+);
+
 int jade_sign_keypair(
   uint8_t *public_key,
   uint8_t *secret_key
@@ -38,6 +44,7 @@ int main(void)
   int r;
   uint8_t *public_key;
   uint8_t *secret_key;
+  uint8_t *coins;
   uint8_t *signed_message;
   uint64_t signed_message_length;
   uint8_t *message;
@@ -66,8 +73,13 @@ int main(void)
     signed_message = NULL;
   }
 
+  coins = malloc(sizeof(uint8_t) * JADE_SIGN_KEYPAIRCOINBYTES);
+  __jasmin_syscall_randombytes__(coins, JADE_SIGN_KEYPAIRCOINBYTES);
+  jade_sign_keypair_derand(public_key, secret_key, coins);
+
   free(public_key);
   free(secret_key);
+  free(coins);
 
   return 0;
 }
