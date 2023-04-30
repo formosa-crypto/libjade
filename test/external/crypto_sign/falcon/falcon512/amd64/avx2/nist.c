@@ -11,6 +11,7 @@
 
 #define NONCELEN   40
 
+#define crypto_sign_keypair_derand jade_sign_falcon_falcon512_amd64_avx2_keypair_derand
 #define crypto_sign_keypair jade_sign_falcon_falcon512_amd64_avx2_keypair
 #define crypto_sign jade_sign_falcon_falcon512_amd64_avx2
 //define crypto_sign_open jade_sign_falcon_falcon512_amd64_avx2_open
@@ -28,6 +29,71 @@ void randombytes_init(unsigned char *entropy_input,
 	unsigned char *personalization_string,
 	int security_strength);
 int randombytes(unsigned char *x, unsigned long long xlen);
+
+int
+crypto_sign_keypair_derand(unsigned char *pk, unsigned char *sk, unsigned char *seed /**48**/)
+{
+	TEMPALLOC union {
+		uint8_t b[FALCON_KEYGEN_TEMP_9];
+		uint64_t dummy_u64;
+		fpr dummy_fpr;
+	} tmp;
+	TEMPALLOC int8_t f[512], g[512], F[512];
+	TEMPALLOC uint16_t h[512];
+	TEMPALLOC inner_shake256_context rng;
+	size_t u, v;
+	unsigned savcw;
+
+	savcw = set_fpu_cw(2);
+
+	/*
+	 * Generate key pair.
+	 */
+	inner_shake256_init(&rng);
+	inner_shake256_inject(&rng, seed, 48);
+	inner_shake256_flip(&rng);
+	Zf(keygen)(&rng, f, g, F, NULL, h, 9, tmp.b);
+
+	set_fpu_cw(savcw);
+
+	/*
+	 * Encode private key.
+	 */
+	sk[0] = 0x50 + 9;
+	u = 1;
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		f, 9, Zf(max_fg_bits)[9]);
+	if (v == 0) {
+		return -1;
+	}
+	u += v;
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		g, 9, Zf(max_fg_bits)[9]);
+	if (v == 0) {
+		return -1;
+	}
+	u += v;
+	v = Zf(trim_i8_encode)(sk + u, CRYPTO_SECRETKEYBYTES - u,
+		F, 9, Zf(max_FG_bits)[9]);
+	if (v == 0) {
+		return -1;
+	}
+	u += v;
+	if (u != CRYPTO_SECRETKEYBYTES) {
+		return -1;
+	}
+
+	/*
+	 * Encode public key.
+	 */
+	pk[0] = 0x00 + 9;
+	v = Zf(modq_encode)(pk + 1, CRYPTO_PUBLICKEYBYTES - 1, h, 9);
+	if (v != CRYPTO_PUBLICKEYBYTES - 1) {
+		return -1;
+	}
+
+	return 0;
+}
 
 int
 crypto_sign_keypair(unsigned char *pk, unsigned char *sk)

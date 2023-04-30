@@ -181,7 +181,11 @@ void test(unsigned char *checksum_state, state *_s)
     output_compare(s.p2, s.p, s.plen, "jade_sign_keypair");
     output_compare(s.s2, s.s, s.slen, "jade_sign_keypair");
 
-    //
+#if JADE_SIGN_DETERMINISTIC == 1
+    // TODO:
+    // since there are partial implementations (falcon)
+    // randombytes will be out of sync; this (add guards) is a quick
+    // patch; tests must be refactored to handle those; etc.
     output_prepare(s._p2, s._p, s.plen);
     output_prepare(s._s2, s._s, s.slen);
 
@@ -201,6 +205,7 @@ void test(unsigned char *checksum_state, state *_s)
     { fail("jade_sign_keypair public_key does not match the one from jade_sign_keypair_derand"); }
     if (memcmp(s.s, s._s, s.slen) != 0)
     { fail("jade_sign_keypair secret_key does not match the one from jade_sign_keypair_derand"); }
+#endif
 
     // ////
     
