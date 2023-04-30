@@ -9,6 +9,8 @@
 #include <stdint.h>
 
 #include "try-anything.h"
+#include "randombytes.h"
+
 #include "api.h"
 #include "jade_sign.h"
 
@@ -27,12 +29,23 @@ typedef struct state {
   uint8_t *m2;
   uint8_t *c2;
   uint8_t *t2;
+
+  uint8_t *_p;
+  uint8_t *_s;
+  uint8_t *_kc;
+  uint8_t *_p2;
+  uint8_t *_s2;
+  uint8_t *_kc2;
+
   uint64_t plen;
   uint64_t slen;
   uint64_t mlen;
   uint64_t clen;
   uint64_t tlen;
-  void* free[10];
+  uint64_t kclen;
+
+  void* free[16];
+
 } state;
 
 state* preallocate(void);
@@ -71,19 +84,29 @@ void allocate(state *s)
   if (alloclen < MAXTEST_BYTES + JADE_SIGN_BYTES) alloclen = MAXTEST_BYTES + JADE_SIGN_BYTES;
   if (alloclen < JADE_SIGN_PUBLICKEYBYTES) alloclen = JADE_SIGN_PUBLICKEYBYTES;
   if (alloclen < JADE_SIGN_SECRETKEYBYTES) alloclen = JADE_SIGN_SECRETKEYBYTES;
+  if (alloclen < JADE_SIGN_KEYPAIRCOINBYTES) alloclen = JADE_SIGN_KEYPAIRCOINBYTES;
 
-  s->p  = alignedcalloc(&(s->free[0]), alloclen);
-  s->s  = alignedcalloc(&(s->free[1]), alloclen);
-  s->m  = alignedcalloc(&(s->free[2]), alloclen);
-  s->c  = alignedcalloc(&(s->free[3]), alloclen);
-  s->t  = alignedcalloc(&(s->free[4]), alloclen);
-  s->p2 = alignedcalloc(&(s->free[5]), alloclen);
-  s->s2 = alignedcalloc(&(s->free[6]), alloclen);
-  s->m2 = alignedcalloc(&(s->free[7]), alloclen);
-  s->c2 = alignedcalloc(&(s->free[8]), alloclen);
-  s->t2 = alignedcalloc(&(s->free[9]), alloclen);
-  s->plen = JADE_SIGN_PUBLICKEYBYTES;
-  s->slen = JADE_SIGN_SECRETKEYBYTES;
+  s->p  = alignedcalloc(&(s->free[0]),  alloclen);
+  s->s  = alignedcalloc(&(s->free[1]),  alloclen);
+  s->m  = alignedcalloc(&(s->free[2]),  alloclen);
+  s->c  = alignedcalloc(&(s->free[3]),  alloclen);
+  s->t  = alignedcalloc(&(s->free[4]),  alloclen);
+  s->p2 = alignedcalloc(&(s->free[5]),  alloclen);
+  s->s2 = alignedcalloc(&(s->free[6]),  alloclen);
+  s->m2 = alignedcalloc(&(s->free[7]),  alloclen);
+  s->c2 = alignedcalloc(&(s->free[8]),  alloclen);
+  s->t2 = alignedcalloc(&(s->free[9]),  alloclen);
+
+  s->_p   = alignedcalloc(&(s->free[10]), alloclen);
+  s->_s   = alignedcalloc(&(s->free[11]), alloclen);
+  s->_kc  = alignedcalloc(&(s->free[12]), alloclen);
+  s->_p2  = alignedcalloc(&(s->free[13]), alloclen);
+  s->_s2  = alignedcalloc(&(s->free[14]), alloclen);
+  s->_kc2 = alignedcalloc(&(s->free[15]), alloclen);
+
+  s->plen  = JADE_SIGN_PUBLICKEYBYTES;
+  s->slen  = JADE_SIGN_SECRETKEYBYTES;
+  s->kclen = JADE_SIGN_KEYPAIRCOINBYTES;
 }
 
 void deallocate(state **_s)
@@ -91,7 +114,7 @@ void deallocate(state **_s)
   int i;
   state *s = *_s;
 
-  for(i=0; i<10; i++)
+  for(i=0; i<16; i++)
   { free(s->free[i]); }
   free(s);
   *_s = NULL;
@@ -109,6 +132,13 @@ void unalign(state *s)
   ++(s->m2);
   ++(s->c2);
   ++(s->t2);
+
+  ++(s->_p);
+  ++(s->_s);
+  ++(s->_kc);
+  ++(s->_p2);
+  ++(s->_s2);
+  ++(s->_kc2);
 }
 
 void realign(state *s)
@@ -123,6 +153,13 @@ void realign(state *s)
   --(s->m2);
   --(s->c2);
   --(s->t2);
+
+  --(s->_p);
+  --(s->_s);
+  --(s->_kc);
+  --(s->_p2);
+  --(s->_s2);
+  --(s->_kc2);
 }
 
 void test(unsigned char *checksum_state, state *_s)
@@ -134,6 +171,7 @@ void test(unsigned char *checksum_state, state *_s)
   for (loop = 0;loop < LOOPS;++loop) {
     s.mlen = myrandom() % (MAXTEST_BYTES + 1);
     
+    // ////
     output_prepare(s.p2, s.p, s.plen);
     output_prepare(s.s2, s.s, s.slen);
     result = jade_sign_keypair(s.p, s.s);
@@ -142,6 +180,29 @@ void test(unsigned char *checksum_state, state *_s)
     checksum(checksum_state, s.s, s.slen);
     output_compare(s.p2, s.p, s.plen, "jade_sign_keypair");
     output_compare(s.s2, s.s, s.slen, "jade_sign_keypair");
+
+    //
+    output_prepare(s._p2, s._p, s.plen);
+    output_prepare(s._s2, s._s, s.slen);
+
+    randombytes1(s._kc, s.kclen);
+    memcpy(s._kc2, s._kc, s.kclen);
+    double_canary(s._kc2, s._kc, s.kclen);
+
+    result = jade_sign_keypair_derand(s._p, s._s, s._kc);
+    if (result != 0) fail("jade_sign_keypair_derand returns nonzero");
+
+    output_compare(s._p2, s._p,  s.plen,  "jade_sign_keypair_derand - public key");
+    output_compare(s._s2, s._s,  s.slen,  "jade_sign_keypair_derand - secret key");
+    input_compare(s._kc2, s._kc, s.kclen, "jade_sign_keypair_derand - coins");
+
+    // check that 'rand' and 'derand' produce the same keys (randomness is the same for both)
+    if (memcmp(s.p, s._p, s.plen) != 0)
+    { fail("jade_sign_keypair public_key does not match the one from jade_sign_keypair_derand"); }
+    if (memcmp(s.s, s._s, s.slen) != 0)
+    { fail("jade_sign_keypair secret_key does not match the one from jade_sign_keypair_derand"); }
+
+    // ////
     
     s.clen = s.mlen + JADE_SIGN_BYTES;
     output_prepare(s.c2, s.c, s.clen);
