@@ -2,7 +2,7 @@
 #define JADE_SIGN_dilithium_dilithium3_amd64_avx2_API_H
 
 #define JADE_SIGN_dilithium_dilithium3_amd64_avx2_PUBLICKEYBYTES   1952
-#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_SECRETKEYBYTES   4016
+#define JADE_SIGN_dilithium_dilithium3_amd64_avx2_SECRETKEYBYTES   4000
 #define JADE_SIGN_dilithium_dilithium3_amd64_avx2_BYTES            3293
 #define JADE_SIGN_dilithium_dilithium3_amd64_avx2_KEYPAIRCOINBYTES 32
 #define JADE_SIGN_dilithium_dilithium3_amd64_avx2_DETERMINISTIC    1
