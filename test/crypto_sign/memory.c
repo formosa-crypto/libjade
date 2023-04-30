@@ -52,6 +52,7 @@ int main(void)
 
   public_key = malloc(sizeof(uint8_t) * JADE_SIGN_PUBLICKEYBYTES);
   secret_key = malloc(sizeof(uint8_t) * JADE_SIGN_SECRETKEYBYTES);
+  coins = malloc(sizeof(uint8_t) * JADE_SIGN_KEYPAIRCOINBYTES);
 
   jade_sign_keypair(public_key, secret_key);
 
@@ -73,7 +74,6 @@ int main(void)
     signed_message = NULL;
   }
 
-  coins = malloc(sizeof(uint8_t) * JADE_SIGN_KEYPAIRCOINBYTES);
   __jasmin_syscall_randombytes__(coins, JADE_SIGN_KEYPAIRCOINBYTES);
   jade_sign_keypair_derand(public_key, secret_key, coins);
 
