@@ -311,8 +311,54 @@ contain the output from the `stderr` and the return code of the job that failed.
 
 
 #### Running select tests
-<!-- TODO: write this -->
 
+Even though running all the tests might be helpful occasionally, a developer frequently wants to
+focus on a specific family of implementations (or just one). For instance, consider the scenario
+where the developer wants to produce the `checksumsmall` corresponding to the reference
+implementation of Kyber768 (to verify that it passes through all the tests and actually outputs a
+checksum):
+
+```
+$ make bin/crypto_kem/kyber/kyber768/amd64/ref/checksumsmall.stdout
+456bb24a767160dcca466adde267b87f359de6e827d31b5b23512d227d8bbfaa
+```
+
+While typing the target, the developer can use 'TAB' for completion, given that all targets are
+declared (not extensively, but instead by using variables to keep the Makefile short and easy to
+maintain). As another example, to run Valgrind for a specific implementation:
+```
+$ make bin/crypto_kem/kyber/kyber768/amd64/ref/memory.stdout
+(...)
+==XXXXX== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
+```
+
+Another helpful feature is to use the `FILTER` variable. For instance, to run all tests (the same 4
+rules previously discussed) just for all Kyber768 implementations, the developer can run the
+following:
+```
+$ make FILTER=../src/crypto_kem/kyber/kyber768/%
+(...)
+Checksums status:
+OK, 0, crypto_kem/kyber/kyber768/amd64/avx2/.ci/checksumbig.ok.log
+OK, 0, crypto_kem/kyber/kyber768/amd64/avx2/.ci/checksumsmall.ok.log
+OK, 0, crypto_kem/kyber/kyber768/amd64/ref/.ci/checksumbig.ok.log
+OK, 0, crypto_kem/kyber/kyber768/amd64/ref/.ci/checksumsmall.ok.log
+```
+
+Regarding the previous example, the default value for `FILTER`is `../src/crypto_%`. The `%´ is
+important and should not be missed: `FILTER` is given to the text function `filter` (see Text
+Functions section in GNU Makefile documentation for more information), and `%` corresponds to the
+pattern.
+
+To clean artifacts produced under `test/`:
+```
+$ make clean
+```
+
+And to remove also assembly files under `src/`:
+```
+$ make distclean
+```
 
 ### Reproducing functional-correctness proofs
 

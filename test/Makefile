@@ -88,6 +88,7 @@ MEMORY_OUT        := $(addsuffix .out, $(MEMORY))
 
 TESTS             := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
 OUT               := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
+STDOUT            := $(subst .out,.stdout, $(OUT))
 
 # --------------------------------------------------------------------
 
@@ -162,6 +163,15 @@ $(OUT):
 %.out: %
 	$(CIC)
 	(cd $(dir $*) && ./$(notdir $*) > $(notdir $*).out) $(CIL) || true
+
+$(STDOUT):
+%memory.stdout: %memory
+	(valgrind --leak-check=full --error-exitcode=1 ./$*memory) $(CIL) || true
+
+%.stdout: %
+	$(CIC)
+	(cd $(dir $*) && ./$(notdir $*) && echo) $(CIL) || true
+
 
 # --------------------------------------------------------------------
 checksumsmall-all:     $(CHECKSUMSMALL)
