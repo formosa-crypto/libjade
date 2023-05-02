@@ -373,7 +373,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 32);
   fl1 = #SETcc(cf || zf);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
+  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
   fl2 = #SETcc(cf || zf);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -449,7 +449,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     fl1 = #SETcc(cf || zf);
 
     pos += 48;
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
+    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
     fl2 = #SETcc(cf || zf);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -458,7 +458,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
   fl1 = #SETcc(cf || zf);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
+  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
   fl2 = #SETcc(cf || zf);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -490,7 +490,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
     fl1 = #SETcc(cf || zf);
 
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
+    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
     fl2 = #SETcc(cf || zf);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
