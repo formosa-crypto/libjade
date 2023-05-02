@@ -181,7 +181,7 @@ cat <<END >> $makefile
 default: disclaimer
 
 disclaimer:
-	@echo "$dest_base_name.s does not define all API functions; As such, there are not example code in this folder."
+	@echo "$dest_base_name.s does not define all API functions; As such, there is no example code in this folder."
 
 # --------------------------------------------------------------------
 END
