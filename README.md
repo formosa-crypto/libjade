@@ -345,7 +345,7 @@ OK, 0, crypto_kem/kyber/kyber768/amd64/ref/.ci/checksumbig.ok.log
 OK, 0, crypto_kem/kyber/kyber768/amd64/ref/.ci/checksumsmall.ok.log
 ```
 
-Regarding the previous example, the default value for `FILTER`is `../src/crypto_%`. The `%´ is
+Regarding the previous example, the default value for `FILTER`is `../src/crypto_%`. The `%` is
 important and should not be missed: `FILTER` is given to the text function `filter` (see Text
 Functions section in GNU Makefile documentation for more information), and `%` corresponds to the
 pattern.
