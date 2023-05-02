@@ -205,7 +205,16 @@ This will only build
 
 
 ### Running tests
-<!-- TODO: summarize prerequesites for running tests -->
+<!-- Summary of prerequesites for running tests -->
+
+The current prerequisites for running tests in Libjade are:
+* Jasmin compiler (`jasminc`) in your `PATH`;
+* C compiler (gcc or clang);
+* GNU make;
+* Valgrind;
+* Bash
+
+Note: our tests are run under Linux-based OS (Debian). We are currently updating it to be macOS-compatible.
 
 #### Tests in Libjade
 <!-- TODO: explain what tests there are and what they do -->
