@@ -1,7 +1,7 @@
 name: Dilithium2
 type: sign
 checksumsmall: 4797f974ea6e9e7fd018abbaf70efe2f1d10f6c2e6b172c55f371f0793ec3929
-checksumbig: 640685e7cb128c2c14057138cf0217ade007b19a99c037634b8a8fdfa55eb74c
+checksumbig: af8d681c38c8e87509d97b304f7141fdd6ada77941d77c5b6e2057b24dd33d6e
 claimed-nist-level: 3
 implementations:
     - name: amd64/ref

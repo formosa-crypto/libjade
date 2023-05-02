@@ -1,7 +1,7 @@
 name: Dilithium3
 type: sign
-checksumsmall: b9541847294ba0b1f721468d44890d155f3a62e3bf752ceea6e9f136902654d9
-checksumbig: 31b34edde2d0b1151e2c662d94c773a48432fbb9e32f22f0b29e861f32a70bc8
+checksumsmall: 8fed102356f42bb67b7985054fba3b4e3df57b5af642315f7287150e57fa5f2c
+checksumbig: cfb61892e871497fe67395031e8376fbabd2468ff8046e28abab71fa0fd5ba34
 claimed-nist-level: 3
 implementations:
     - name: amd64/ref
