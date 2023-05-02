@@ -217,7 +217,21 @@ The current prerequisites for running tests in Libjade are:
 Note: our tests are run under Linux-based OS (Debian). We are currently updating it to be macOS-compatible.
 
 #### Tests in Libjade
-<!-- TODO: explain what tests there are and what they do -->
+
+<!-- Explanation about what tests there are and what they do -->
+
+Running `make` under `libjade/test/` performs the following actions (in no particular order) for all implementations:
+
+* `checksums`: implements SUPERCOP tests, which, for instance, checks out-of-bounds writes, pointers overlaps, tests functionally (for instance, decryption after encryption recovers the original plaintext), and computes a checksum based on the pseudo-random inputs that were provied to the functions being tested. The expected values for the checksums can be found on `META.yml` files under the source (`src`) directory. We use the same checksum values that can be found (or computed if they are not available) with the SUPERCOP framework;
+
+* `functest`: defines a simple sequence of calls to the specified functions that demonstrates how these can be used. Code from `functest.c` files is included in the release as `example.c`. For instance, in the case of Kyber, a primitive under the operation `kem` (Key Encapsulation Mechanism), functest.c first calls `keypair`, to create a public and a secret key, and then `enc`apsulate and `dec`apsulate to show how to obtain/recover a shared secret;
+
+* `printparams`: tests if the expected macros for a given API are well defined in their correspondent `api.h` file and can be used;
+
+* `memory`: the code for this test is meant to be run with Valgrind mainly to detect out-of-bounds reads on the input pointers (and even some out-of-bounds writes that `checksums` isn't able to identify given that, for practical reasons, the size of canaries must be kept reasonably small). For primitives which process data of arbitrary length, for instance, a stream cipher whose length of the input is only known during execution time, we test for messages from length 0 until length N, where N is currently defined as 4096 (this value will likely increase once we deploy more hardware for the continuous integration system).
+
+The source code for each test can be found under `libjade/test/crypto_***/`. For instance, under `libjade/test/crypto_kem/`, the following files are present: `checksums.c`, `functest.c`, `memory.c`, and `printparams.c`. A deterministic version or `randombytes` (necessary for nondeterministic functions to compute the same checksum) can be found under `libjade/test/common`. Under this same directory, there are also some files with utility code to, for example, handle printing and opening files.
+
 
 #### Running all tests for all implementations in Libjade
 <!-- TODO: write this -->
