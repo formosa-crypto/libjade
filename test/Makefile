@@ -24,7 +24,7 @@
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= clang
-CFLAGS  ?= -O2 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
 	         -fstrict-aliasing -fno-common -pipe -g
 JASMIN  ?= jasminc
@@ -67,6 +67,8 @@ EXT      := ../ext
 RANDSRC  := $(COMMON)/notrandombytes.c
 
 FILTER   ?= $(SRC)/crypto_%
+export FILTER
+
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
@@ -75,7 +77,7 @@ CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
 PRINTPARAMS       := $(addsuffix printparams,   $(TESTDIR))
 FUNCTEST          := $(addsuffix functest,      $(TESTDIR))
 SAFETYPARAMS      := $(addsuffix safetyparams,  $(TESTDIR))
-MEMORY            := $(addsuffix memory,  $(TESTDIR))
+MEMORY            := $(addsuffix memory,        $(TESTDIR))
 
 CHECKSUMSMALL_OUT := $(addsuffix .out, $(CHECKSUMSMALL))
 CHECKSUMBIG_OUT   := $(addsuffix .out, $(CHECKSUMBIG))
@@ -84,8 +86,8 @@ FUNCTEST_OUT      := $(addsuffix .out, $(FUNCTEST))
 SAFETYPARAMS_OUT  := $(addsuffix .out, $(SAFETYPARAMS))
 MEMORY_OUT        := $(addsuffix .out, $(MEMORY))
 
-EXEC          := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
-OUT           := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
+TESTS             := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
+OUT               := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
 
 # --------------------------------------------------------------------
 
@@ -108,15 +110,20 @@ COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
 
 # --------------------------------------------------------------------
-.PHONY: __phony default
+.PHONY: __phony default main
 
-default: $(OUT)
-$(EXEC):
+default: main
+
+main:
+	$(MAKE) CI=1 all
+	$(MAKE) CI=1 reporter
+	$(MAKE) CI=1 err
 
 # --------------------------------------------------------------------
+$(TESTS):
+
 include Makefile.partial_implementations
 
-# --------------------------------------------------------------------
 %/checksumsmall: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)
@@ -145,6 +152,7 @@ include Makefile.partial_implementations
 	$(CIC)
 	$(COMPILE) || true
 
+# --------------------------------------------------------------------
 $(OUT):
 
 %memory.out: %memory
@@ -168,6 +176,8 @@ printparams-out-all:   $(PRINTPARAMS_OUT)
 functest-out-all:      $(FUNCTEST_OUT)
 safetyparams-out-all:  $(SAFETYPARAMS_OUT)
 memory-out-all:        $(MEMORY_OUT)
+
+all:                   $(OUT)
 
 # --------------------------------------------------------------------
 $(TESTDIR): ; @mkdir -p $@
