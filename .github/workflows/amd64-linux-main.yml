@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - release/2023.03.0
   pull_request:
 
 jobs:
@@ -12,7 +12,7 @@ jobs:
 
 
   compile:
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -35,7 +35,7 @@ jobs:
 
   test:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -58,7 +58,7 @@ jobs:
 
   bench1:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -81,7 +81,7 @@ jobs:
 
   bench2:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -104,7 +104,7 @@ jobs:
 
   proof-extracted:
     needs: [test]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -136,7 +136,7 @@ jobs:
 
   dist-amd64:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
         uses: actions/checkout@v3
