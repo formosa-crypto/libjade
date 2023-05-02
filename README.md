@@ -215,23 +215,26 @@ The current prerequisites for running tests in Libjade are:
 * Bash.
 
 Note 1: our tests are run under Linux-based OS (Debian). We are currently updating them to be macOS-compatible.
-Note 2: some implementations require specific CPU flags such as `bmi1` or `avx2`. Whenever such features are not available, some tests will fail. As such, there is the requirement that to run all tests successfully, the CPU must support all flags. We plan to integrate run-time detection of CPU features and CPU families in our building system. This will likely happen when implementations for architectures different than `amd64` are developed and integrated into Libjade.
+
+Note 2: some Libjade AMD64 implementations require specific CPU extensions, such as BMI1 or AVX2. Whenever such extensions are not available, some tests will fail. As such, and to run all tests successfully, there is the requirement that the CPU must support all extensions used throughout Libjade. Any modern Intel CPU supports those. Some AMD CPUs do not. We plan to integrate run-time detection of CPU extensions in our building system to improve on this. We also plan to make available a list of required CPU extensions for each implementation. This will likely happen when implementations for architectures different than AMD64 are developed/integrated into Libjade.
 
 #### Tests in Libjade
 
 <!-- Explanation about what tests there are and what they do -->
 
-Running `cd test/ && make` performs the following actions, in no particular order, for all implementations:
+Running `cd test/ && make` performs the following tests, in no particular order, for all implementations:
 
-* `checksums`: implements SUPERCOP tests, which, for instance, checks out-of-bounds writes, pointers overlaps, tests functionality (for example, decryption after encryption recovers the original plaintext), and computes a checksum based on the pseudo-random inputs that were provided to the functions being tested. As in SUPERCOP, there are two checksum values: `checksumsmall` and `checksumbig`. The difference between the two is the number of test iterations (`checksumbig` runs more tests and takes more time). The expected checksum values are on `META.yml` files under the source (`src/`) directory. We use values that can be found (or computed if they are not available) with the SUPERCOP framework;
+* `checksums`: implements SUPERCOP tests, which, briefly: 1) check for out-of-bounds memory writes; 2) how the implementation behaves when pointers overlap (e.g., input pointer is equal to output pointer); 3) functionality (e.g., decryption after encryption recovers the original plaintext); 4) check if the function produces the same outputs given the same inputs; and 5) `~`correctness: computes a checksum of the functions' outputs to be compared with the expected checksum. In these tests, pseudo-random inputs are given to the functions as arguments, and `randombytes` is replaced by a deterministic function. We also consider two checksum values: `checksumsmall` and `checksumbig`. The difference is the number of test iterations (`checksumbig` has more test iterations and, consequently, takes more CPU time). The original idea is to avoid running `checksumbig` if `checksumsmall` fails. On our deployment, there is no dependency between `checksumsmall` and `checksumbig`, and both are evaluated (for `make all` kind of targets) given that it simplifies day-to-day development tasks and the Makefile design (developer does need to wait for `checksumsmall` to finish if it only intends to run `checksumbig`. The expected checksum values are on META.yml files under the source (src/) directory. We use values that can be found (or computed, if not available) with the SUPERCOP framework;
 
-* `functest`: defines a simple sequence of calls to the functions of a given cryptographic operation that demonstrate how these can be used. Code from `functest.c` files is included in the release as `example.c`. For instance, in the case of Kyber, a primitive under the operation `crypto_kem`, the corresponding `functest.c` first calls `keypair`, to create a public and a secret key, and then `enc`(apsulate) and `dec`(apsulate) to show how to obtain/recover a shared secret;
+* `memory`: these tests are meant to be run with Valgrind, mainly to detect out-of-bounds reads on the input pointers (and even some out-of-bounds writes that `checksums` isn't able to identify given that, for practical reasons, the size of canaries must be kept reasonably small). For primitives which process data of arbitrary length, for instance, a stream cipher whose length of the input is only known during execution time, we test for messages from length 0 until length N, where N is currently defined as 4096 (this value will likely increase once we deploy more hardware for the continuous integration system);
 
-* `printparams`: tests if the expected macros for a given API are well defined in their correspondent `api.h` file and can be used;
+* `memory`: the executables produced in the context of these tests are mainly valuable to run with Valgrind, primarily to detect out-of-bounds reads on the argument pointers (and even some out-of-bound writes that checksum is not able to identify given that, and for practical reasons, the size of canaries must be kept reasonably small -- in this context, a canary is a small pattern copied before and after a memory region to detect out-of-bound memory writes). For operations which process data of arbitrary length, for instance, a stream cipher whose plaintext length is only known during runtime, we test for lengths from 0 to 4096 (this value is easily adjusted).
 
-* `memory`: these tests are meant to be run with Valgrind, mainly to detect out-of-bounds reads on the input pointers (and even some out-of-bounds writes that `checksums` isn't able to identify given that, for practical reasons, the size of canaries must be kept reasonably small). For primitives which process data of arbitrary length, for instance, a stream cipher whose length of the input is only known during execution time, we test for messages from length 0 until length N, where N is currently defined as 4096 (this value will likely increase once we deploy more hardware for the continuous integration system).
+* `functest`: defines a simple sequence of calls to the functions of a given cryptographic operation to demonstrate how these can be used. Code from these test files is included in the release as `example.c`. For instance, in the case of Kyber, a primitive of the operation `crypto_kem`, first calls `keypair`, to create a public and a secret key and then `enc`(apsulate) and `dec`(apsulate) to show how to obtain/recover a shared secret;
 
-The source code for each test can be found under `libjade/test/crypto_*/`. For instance, under `libjade/test/crypto_kem/`, the following files are present: `checksums.c`, `functest.c`, `memory.c`, and `printparams.c`. A deterministic version or `randombytes` (necessary for nondeterministic functions to compute the same checksum on every execution) can be found under `libjade/test/common`. Under this same directory, there are also some files with utility code to, for example, handle printing and opening files.
+* `printparams`: tests if the expected macros for a given API are well defined in their correspondent `api.h` file.
+
+The source code for each test can be found under `libjade/test/crypto_*/`. For example, under `libjade/test/crypto_kem/`, the following files are present: `checksums.c`, `functest.c`, `memory.c`, and `printparams.c`. A deterministic version or `randombytes` (necessary for nondeterministic functions to compute the same checksum on every execution) can be found under `libjade/test/common`. Under this same directory, there are also some files with utility code to, for example, handle printing and opening files.
 
 #### Running all tests for all implementations in Libjade
 
@@ -244,15 +247,15 @@ make CI=1 reporter
 make CI=1 err
 ```
 
-`CI` is a variable that stands for Continuous Integration. Whenever `CI` is set to 1, all the compilation and execution outputs and return errors are recorded for later inspection. Some log files are under `.ci` (hidden) directories. Under this CI mode, if the compilation or execution of a given target returns an error (a segmentation fault to provide an example), `make` continues to execute until there are no more tasks. On a system with 8 cores available, running `make -j8` will use those cores as well as `make -j$(nproc)`. Running `make` should take 10 to 13 minutes on a reasonably recent CPU when using all available CPU power.
+`CI` is a variable that stands for Continuous Integration. When `CI` is set to 1, all the compilation and execution outputs and return errors are recorded for later inspection. Some log files are under `.ci/` (hidden) directories. Additionally, if the compilation or execution of a given target returns an error (a segmentation fault, for instance), `make` continues to execute until there are no more tasks. On a system with 8 cores available, running `make -j8` will use those cores as well as `make -j$(nproc)`. Running `make` should take 10 to 13 minutes on a reasonably recent CPU when using all the available CPU power.
 
-`make CI=1 -C ../src/ all` builds all assembly files under `src/`.
+* `make CI=1 -C ../src/ all` builds all assembly files under `src/`;
 
-`make CI=1 all` follows each `*.jazz` file under `src/` and it will compile and run the previously described tests (for instance, `checksumbig`, `checksumsmall`, or `memory`) using the same directory structure that exists in `src/` but under `test/bin`. After running `make CI=1 all` the binaries and outputs corresponding to, for instance, `src/crypto_kem/kyber/kyber768/amd64/ref/kem.jazz` will be built under `test/bin/crypto_kem/kyber/kyber768/amd64/ref/` and, under normal conditions, `cat test/bin/crypto_kem/kyber/kyber768/amd64/ref/checksumbig.out && echo` should show the `checksumbig` value that is present in `src/crypto_kem/kyber/kyber768/META.yml`.
+* `make CI=1 all` follows each `*.jazz` file under `src/` and compiles and runs the tests (for instance, `checksumbig`, `checksumsmall`, or `memory`) using the same directory structure that exists in `src/`, but under `test/bin`. After running `make CI=1 all` the binaries and outputs corresponding to, for instance, `src/crypto_kem/kyber/kyber768/amd64/ref/kem.jazz` will be built under `test/bin/crypto_kem/kyber/kyber768/amd64/ref/` and, under normal conditions, `cat test/bin/crypto_kem/kyber/kyber768/amd64/ref/checksumbig.out && echo` should show the `checksumbig` value that is present in `src/crypto_kem/kyber/kyber768/META.yml`;
 
-`make CI=1 reporter` prints information about the tests: compilation and execution. To check if the checksums match with the ones specified in `META.yml` files, the script `scripts/checksumsok` is used.
+* `make CI=1 reporter` prints information about the tests: compilation and execution. To check if the checksums match with the ones specified in `META.yml` files, the script `scripts/checksumsok` is used;
 
-`make CI=1 err` returns an error if there are any *.error files under `test/bin`. These files contain the stderr and return code of the job that failed.
+* `make CI=1 err` returns an error if there are any `*.error` files under `test/bin`. These files contain the output from the `stderr` and the return code of the job that failed.
 
 
 #### Running select tests
@@ -260,7 +263,6 @@ make CI=1 err
 
 
 ### Reproducing functional-correctness proofs
-
 
 <!-- 
 ### Reproducing security proofs
