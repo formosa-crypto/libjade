@@ -44,6 +44,8 @@ endif
 
 default: libjade.a libjade.h
 
+all: $(JAZZ)
+
 libjade.a: $(JAZZ)
 	$(MAKE) __libjade
 
