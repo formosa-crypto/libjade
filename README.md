@@ -135,20 +135,29 @@ Libjade is actively developed and there are multiple features we are currently w
 
 ### Branches, pull requests, and continuous-integration
 Libjade uses the following structure of branches:
-* The `release` branch contains only versions of Libjade that correspond to release packages.
-  The head of this branch corresponds to the latest release package. If you would like to 
-  [build libjade](#building-libjade) from the jasmin source for production use, 
-  [run tests](#running-tests), or
-  [reproduce proofs](#reproducing-proofs), we recommend to work with this branch. 
-  **Note that code in any other branch is not guaranteed to have the high-assurance guarantees that Libjade aims for**.
-  Before any code is merged into this branch, our continuous integration checks that
-  it builds with [the latest release of the jasmin compiler](https://github.com/jasmin-lang/jasmin/releases/latest), 
-  that all tests <!--TODO: uncomment once safety checking is part of CI
-  (including rather time-consuming safety checking)--> 
-  pass, and that all proofs of functional correctness are reproducible with 
+* For each release of Libjade we creat one `release` branch, named ``release/YYYY.MM, where
+  YYYY is replaced by the year and MM by the month of the release. 
+  Such branches is created from `main` (see below) and this branching
+  is a one-way street. After branching, we ensure that all code in the branch
+  builds with [the latest release of the jasmin compiler](https://github.com/jasmin-lang/jasmin/releases/latest), 
+  that all tests <!--TODO: uncomment once safety checking is part of CI (including rather time-consuming safety checking)--> pass,
+  and that all proofs of functional correctness are reproducible with 
   [the latest release of EasyCrypt](https://github.com/EasyCrypt/easycrypt/releases/latest).
-  Merging code from `main` (see below) into `release` is done by the
-  Libjade maintainers; i.e., we do not accept pull requests into the `release` branch.
+  We then assign a `release-YYYY.MM` tag and create
+  the release package (see above) from that tagged commit. 
+  The latest release of Libjade additionally gets a `latest` tag.
+  We do not accept any PRs from feature branches (see below) into 
+  release branches, but will apply relevant bugfixes (see below) through PRs. 
+  For every bugfix that is merged into a release branch, we add a
+  tag that additionally contains a counter, i.e., release-YYYY.MM-X,
+  for the X'th bugfix PR applied to release/YYYY.MM. For bugfixes
+  applied to the `latest` release, we move the `latest` tag to the
+  version that contains all bugfixes.
+  If you would like to [build libjade](#building-libjade) from the jasmin source for production use, 
+  or [run tests](#running-tests), 
+  <!--or [reproduce proofs](#reproducing-proofs), -->
+  we recommend to work with release branches, typically the `latest` release.
+  **Note that code in non-release branches is not guaranteed to have the high-assurance guarantees that Libjade aims for**.
 * The `main` branch is used to work towards the next release of Libjade. 
   Pull requests into this branch are checked by CI, but some particularly
   time-consuming CI tests may run only periodically and not with every
@@ -157,12 +166,17 @@ Libjade uses the following structure of branches:
   and all proofs are expected to be reproducible with the 
   ``main`` branch of [EasyCrypt](https://github.com/EasyCrypt/easycrypt).
   We accept and solicit pull requests into ``main``.
-* All other branches are feature branches. 
-  They should be appropriately named to reflect what feature they
-  are implementing. Once the feature is implemented and passed review
-  and CI tests, a pull request to ``main`` should be issuedi. 
-  Once the feature is merged into ``main``, 
-  the corresponding feature branch should be deleted.
+* All other branches are feature branches, bugfix branches,
+  or experimental branches named `feature/XXX`, `bugfix/YYY`, or
+  `experimental/ZZZ`, where `XXX`, `YYY`, and `ZZZ` are short descriptions
+  of the goal of the branch. Generally, `feature` branches are created
+  with the goal to be eventually merged into `main`; `bugfix` branches
+  are created with the goal to be merged into `main` and possibly relevant 
+  `release` branches and `experimental` branches are created to try something out
+  without the expectation that they will ever be merged into `main`.
+  Once a `feature` branch or a `bugfix` branch has been merged or
+  an `experimental` branch is no longer needed, these branches should
+  be deleted.
 
 ### Building Libjade
 
