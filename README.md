@@ -375,9 +375,9 @@ And to remove also assembly files under `src/`:
 $ make distclean
 ```
 
+<!-- 
 ### Reproducing functional-correctness proofs
 
-<!-- 
 ### Reproducing security proofs
 TODO: write this -->
 
