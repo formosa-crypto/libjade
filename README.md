@@ -119,7 +119,7 @@ Libjade is actively developed and there are multiple features we are currently w
 * Support using Libjade in code built to run under Microsoft Windows
 * Integrate jasmin's safety checker into continuous integration
 * Add reference implementation for Falcon signature verification
-* Support additional primitives, most notably SPHINCS+ signatures[^spx]
+* Support additional primitives, most notably Dilithium[^dilithium] and SPHINCS+[^spx] signatures
 * Use the jasmin security type system to guarantee absence of secret-dependent control flow
   and access to memory at secret-dependent locations on source level.
 * Use the jasmin security type system to enforce Spectre v1 protection[^sslh-paper] on source level
@@ -135,20 +135,29 @@ Libjade is actively developed and there are multiple features we are currently w
 
 ### Branches, pull requests, and continuous-integration
 Libjade uses the following structure of branches:
-* The `release` branch contains only versions of Libjade that correspond to release packages.
-  The head of this branch corresponds to the latest release package. If you would like to 
-  [build libjade](#building-libjade) from the jasmin source for production use, 
-  [run tests](#running-tests), or
-  [reproduce proofs](#reproducing-proofs), we recommend to work with this branch. 
-  **Note that code in any other branch is not guaranteed to have the high-assurance guarantees that Libjade aims for**.
-  Before any code is merged into this branch, our continuous integration checks that
-  it builds with [the latest release of the jasmin compiler](https://github.com/jasmin-lang/jasmin/releases/latest), 
-  that all tests <!--TODO: uncomment once safety checking is part of CI
-  (including rather time-consuming safety checking)--> 
-  pass, and that all proofs of functional correctness are reproducible with 
+* For each release of Libjade we creat one `release` branch, named ``release/YYYY.MM, where
+  YYYY is replaced by the year and MM by the month of the release. 
+  Such branches is created from `main` (see below) and this branching
+  is a one-way street. After branching, we ensure that all code in the branch
+  builds with [the latest release of the jasmin compiler](https://github.com/jasmin-lang/jasmin/releases/latest), 
+  that all tests <!--TODO: uncomment once safety checking is part of CI (including rather time-consuming safety checking)--> pass,
+  and that all proofs of functional correctness are reproducible with 
   [the latest release of EasyCrypt](https://github.com/EasyCrypt/easycrypt/releases/latest).
-  Merging code from `main` (see below) into `release` is done by the
-  Libjade maintainers; i.e., we do not accept pull requests into the `release` branch.
+  We then assign a `release-YYYY.MM` tag and create
+  the release package (see above) from that tagged commit. 
+  The latest release of Libjade additionally gets a `latest` tag.
+  We do not accept any PRs from feature branches (see below) into 
+  release branches, but will apply relevant bugfixes (see below) through PRs. 
+  For every bugfix that is merged into a release branch, we add a
+  tag that additionally contains a counter, i.e., release-YYYY.MM-X,
+  for the X'th bugfix PR applied to release/YYYY.MM. For bugfixes
+  applied to the `latest` release, we move the `latest` tag to the
+  version that contains all bugfixes.
+  If you would like to [build libjade](#building-libjade) from the jasmin source for production use, 
+  or [run tests](#running-tests), 
+  <!--or [reproduce proofs](#reproducing-proofs), -->
+  we recommend to work with release branches, typically the `latest` release.
+  **Note that code in non-release branches is not guaranteed to have the high-assurance guarantees that Libjade aims for**.
 * The `main` branch is used to work towards the next release of Libjade. 
   Pull requests into this branch are checked by CI, but some particularly
   time-consuming CI tests may run only periodically and not with every
@@ -157,12 +166,17 @@ Libjade uses the following structure of branches:
   and all proofs are expected to be reproducible with the 
   ``main`` branch of [EasyCrypt](https://github.com/EasyCrypt/easycrypt).
   We accept and solicit pull requests into ``main``.
-* All other branches are feature branches. 
-  They should be appropriately named to reflect what feature they
-  are implementing. Once the feature is implemented and passed review
-  and CI tests, a pull request to ``main`` should be issuedi. 
-  Once the feature is merged into ``main``, 
-  the corresponding feature branch should be deleted.
+* All other branches are feature branches, bugfix branches,
+  or experimental branches named `feature/XXX`, `bugfix/YYY`, or
+  `experimental/ZZZ`, where `XXX`, `YYY`, and `ZZZ` are short descriptions
+  of the goal of the branch. Generally, `feature` branches are created
+  with the goal to be eventually merged into `main`; `bugfix` branches
+  are created with the goal to be merged into `main` and possibly relevant 
+  `release` branches and `experimental` branches are created to try something out
+  without the expectation that they will ever be merged into `main`.
+  Once a `feature` branch or a `bugfix` branch has been merged or
+  an `experimental` branch is no longer needed, these branches should
+  be deleted.
 
 ### Building Libjade
 
@@ -214,10 +228,10 @@ The current prerequisites for running tests in Libjade are:
 * Valgrind;
 * Bash.
 
-Note 1: our tests are run under Linux-based OS (Debian). We are currently updating them to be
+**Note 1**: our tests are run under Linux-based OS (Debian). We are currently updating them to be
 macOS-compatible.
 
-Note 2: some Libjade AMD64 implementations require specific CPU extensions, such as BMI1 or AVX2.
+**Note 2**: some Libjade AMD64 implementations require specific CPU extensions, such as BMI1 or AVX2.
 Whenever such extensions are not available, some tests will fail. As such, and to run all tests
 successfully, there is the requirement that the CPU must support all extensions used throughout
 Libjade. Any modern Intel CPU supports those. Some AMD CPUs do not. We plan to integrate run-time
@@ -232,25 +246,27 @@ implementations for architectures different than AMD64 are developed/integrated 
 Running `cd test/ && make` performs the following tests, in no particular order, for all
 implementations:
 
-* `checksums`: implements SUPERCOP tests, which, briefly: 1) check for out-of-bounds memory writes;
-2) how the implementation behaves when pointers overlap (e.g., input pointer is equal to output
-pointer); 3) functionality (e.g., decryption after encryption recovers the original plaintext);
-4) check if the function produces the same outputs given the same inputs; and 5) `~`correctness:
-computes a checksum of the functions' outputs to be compared with the expected checksum. In these
-tests, pseudo-random inputs are given to the functions as arguments, and `randombytes` is replaced
+* `checksums`: implements tests that we adopted from SUPERCOP[^supercop]. 
+These tests, briefly: 
+1) check for out-of-bounds memory writes;
+2) how the implementation behaves when pointers overlap (e.g., input pointer is equal to output pointer); 
+3) functionality (e.g., decryption after encryption recovers the original plaintext);
+4) check if the function produces the same outputs given the same inputs; and 
+5) `~`correctness: computes a checksum of the functions' outputs to be compared with the expected checksum. 
+In these tests, pseudo-random inputs are given to the functions as arguments, and `randombytes` is replaced
 by a deterministic function. We also consider two checksum values: `checksumsmall` and `checksumbig`.
 The difference is the number of test iterations (`checksumbig` has more test iterations and,
 consequently, takes more CPU time). The original idea is to avoid running `checksumbig` if
 `checksumsmall` fails. On our deployment, there is no dependency between `checksumsmall` and
 `checksumbig`, and both are evaluated (for `make all` kind of targets) given that it simplifies
-day-to-day development tasks and the Makefile design (developer does need to wait for `checksumsmall`
+day-to-day development tasks and the Makefile design (developer does not need to wait for `checksumsmall`
 to finish if it only intends to run `checksumbig`. The expected checksum values are on META.yml
 files under the source (src/) directory. We use values that can be found (or computed, if not
 available) with the SUPERCOP framework;
 
 * `memory`: the executables produced in the context of these tests are mainly valuable to run with
 Valgrind, primarily to detect out-of-bounds reads on the argument pointers (and even some
-out-of-bound writes that checksum is not able to identify given that, and for practical reasons, the
+out-of-bound writes that `checksums` is not able to identify given that, for practical reasons, the
 size of canaries must be kept reasonably small -- in this context, a canary is a small pattern
 copied before and after a memory region to detect out-of-bound memory writes). For operations which
 process data of arbitrary length, for instance, a stream cipher whose plaintext length is only known
@@ -263,7 +279,7 @@ calls `keypair`, to create a public and a secret key and then `enc`(apsulate) an
 to show how to obtain/recover a shared secret;
 
 * `printparams`: tests if the expected macros for a given API are well defined in their
-correspondent `api.h` file.
+corresponding `api.h` file.
 
 The source code for each test can be found under `libjade/test/crypto_*/`. For example, under
 `libjade/test/crypto_kem/`, the following files are present: `checksums.c`, `functest.c`, `memory.c`,
@@ -274,7 +290,7 @@ printing and opening files.
 
 #### Running all tests for all implementations in Libjade
 
-As unveiled previously, running `cd test/ && make` runs all tests. More precisely, the `default`
+As explained above, running `cd test/ && make` runs all tests. More precisely, the `default`
 target is equivalent to running the following 4 commands:
 
 ```
@@ -312,9 +328,9 @@ contain the output from the `stderr` and the return code of the job that failed.
 
 #### Running select tests
 
-Even though running all the tests might be helpful occasionally, a developer frequently wants to
+Even though running all the tests might be helpful occasionally, as a developer you will often want to
 focus on a specific family of implementations (or just one). For instance, consider the scenario
-where the developer wants to produce the `checksumsmall` corresponding to the reference
+where the developer wants to produce the `checksumsmall` corresponding to the reference AMD64
 implementation of Kyber768 (to verify that it passes through all the tests and actually outputs a
 checksum):
 
@@ -333,8 +349,7 @@ $ make bin/crypto_kem/kyber/kyber768/amd64/ref/memory.stdout
 ```
 
 Another helpful feature is to use the `FILTER` variable. For instance, to run all tests (the same 4
-rules previously discussed) just for all Kyber768 implementations, the developer can run the
-following:
+rules previously discussed) just for all Kyber768 implementations, run the following:
 ```
 $ make FILTER=../src/crypto_kem/kyber/kyber768/%
 (...)
@@ -382,6 +397,8 @@ TODO: write this
 [^libsodium]: https://doc.libsodium.org
 [^nacl]: https://nacl.cr.yp.to
 [^kyber]: https://pq-crystals.org/kyber
+[^dilithium]: https://pq-crystals.org/dilithium
+[^supercop]: https://bench.cr.yp.to/supercop.html
 [^sslh-paper]: Basavesh Ammanaghatta Shivakumar, Gilles Barthe, Benjamin Grégoire, Vincent Laporte, Tiago Oliveira, Swarn Priya, Peter Schwabe, and Lucas Tabary-Maujean. 
   *Typing High-Speed Cryptography against Spectre v1*. IEEE S&P 2023. [IACR ePrint 2022/1270](https://eprint.iacr.org/2022/1270).
 [^spx]: https://sphincs.org
