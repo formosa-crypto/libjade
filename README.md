@@ -88,7 +88,7 @@ others through (ongoing) interactive proofs in the EasyCrypt proof assistant.
 #### Properties guaranteed by the jasmin compiler
 * The jasmin compiler is proven (in Coq) to preserve semantics of a program through compilation.
 * The jasmin compiler is proven (in Coq) to maintain secret-independence of control flow
-  and secret-independence of locations of memory access through compilation. 
+  and secret-independence of locations of memory access through compilation[^bglp20]. 
 <!-- TODO: uncomment once safety checking is covered by CI
 * The safety checker of the jasmin compiler statically ensures memory safety
   (as long as the caller respects the function's contract). 
@@ -401,6 +401,8 @@ TODO: write this
 [^supercop]: https://bench.cr.yp.to/supercop.html
 [^sslh-paper]: Basavesh Ammanaghatta Shivakumar, Gilles Barthe, Benjamin Grégoire, Vincent Laporte, Tiago Oliveira, Swarn Priya, Peter Schwabe, and Lucas Tabary-Maujean. 
   *Typing High-Speed Cryptography against Spectre v1*. IEEE S&P 2023. [IACR ePrint 2022/1270](https://eprint.iacr.org/2022/1270).
+[^bglp20]: Gilles Barthe, Benjamin Gregoire, Vincent Laporte, and Swarn Priya.
+  *Structured Leakage and Applications to Cryptographic Constant-Time and Cost*. ACM CCS 2020. [IACR ePrint 2021/650](https://eprint.iacr.org/2021/650)
 [^spx]: https://sphincs.org
 
 
