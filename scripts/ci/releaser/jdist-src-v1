@@ -24,6 +24,7 @@ libjade_test=$libjade/test
 dist=$libjade/$dist_name
 dist_src=$dist/libjade
 dist_ext=$dist/ext
+dist_doc=$dist/doc
 
 # -----------------------------------------------------------------------------
 replace_include()
@@ -44,11 +45,13 @@ replace_include()
 rm -fr $dist
 mkdir -p $dist_src
 mkdir -p $dist_ext
+mkdir -p $dist_doc
 
 # -----------------------------------------------------------------------------
-# copy license and README.md
+# copy license and README.md and doc/api.md
 cp $libjade/LICENSE $dist/LICENSE
 cp $libjade/README.md $dist/README.md
+cp $libjade/doc/api.md $dist_doc/api.md
 
 # -----------------------------------------------------------------------------
 # copy ext randombytes
