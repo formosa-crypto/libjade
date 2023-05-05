@@ -10,38 +10,6 @@
 #include "jade_kem.h"
 #include "print.h"
 
-/*
-int jade_kem_keypair(
-  uint8_t *public_key,
-  uint8_t *secret_key
-);
-
-int jade_kem_enc(
-  uint8_t *ciphertext,
-  uint8_t *shared_secret,
-  const uint8_t *public_key
-);
-
-int jade_kem_dec(
-  uint8_t *shared_secret,
-  const uint8_t *ciphertext,
-  const uint8_t *secret_key
-);
-
-int jade_kem_keypair_derand(
-  uint8_t *public_key,
-  uint8_t *secret_key,
-  const uint8_t *coins
-);
-
-int jade_kem_enc_derand(
-  uint8_t *ciphertext,
-  uint8_t *shared_secret,
-  const uint8_t *public_key,
-  const uint8_t *coins
-);
-*/
-
 int main(void)
 {
   int r;
