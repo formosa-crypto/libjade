@@ -26,8 +26,8 @@ int main(void)
   uint8_t* key = _key;
 
   //
-  nonce = __jasmin_syscall_randombytes__(nonce, JADE_STREAM_NONCEBYTES);
-  key = __jasmin_syscall_randombytes__(key, JADE_STREAM_KEYBYTES);
+  nonce = randombytes(nonce, JADE_STREAM_NONCEBYTES);
+  key = randombytes(key, JADE_STREAM_KEYBYTES);
 
   //
   r = jade_stream(stream, length, nonce, key);
