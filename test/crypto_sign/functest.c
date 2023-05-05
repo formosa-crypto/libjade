@@ -9,29 +9,6 @@
 #include "jade_sign.h"
 #include "print.h"
 
-/*
-int jade_sign_keypair(
-  uint8_t *public_key,
-  uint8_t *secret_key
-);
-
-int jade_sign_ref(
-  uint8_t *signed_message,
-  uint64_t *signed_message_length,
-  const uint8_t *message,
-  uint64_t message_length,
-  const uint8_t *secret_key
-);
-
-int jade_sign_open(
-  uint8_t *message,
-  uint64_t *message_length,
-  const uint8_t *signed_message,
-  uint64_t signed_message_length,
-  const uint8_t *public_key
-);
-*/
-
 int main(void)
 {
   int r;

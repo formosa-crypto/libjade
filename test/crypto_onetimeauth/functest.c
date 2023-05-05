@@ -10,22 +10,6 @@
 #include "jade_onetimeauth.h"
 #include "print.h"
 
-/*
-int jade_onetimeauth(
- uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-
-int jade_onetimeauth_verify(
- const uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-*/
-
 int main(void)
 {
   int r;
