@@ -37,10 +37,10 @@ int main(void)
     assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
 
   print_info(JADE_KEM_ALGNAME, JADE_KEM_ARCH, JADE_KEM_IMPL);
-  print_str_u8("public_key", public_key, JADE_KEM_PUBLICKEYBYTES);
   print_str_u8("secret_key", secret_key, JADE_KEM_SECRETKEYBYTES);
-  print_str_u8("shared_secret", shared_secret_a, JADE_KEM_BYTES);
+  print_str_u8("public_key", public_key, JADE_KEM_PUBLICKEYBYTES);
   print_str_u8("ciphertext", ciphertext, JADE_KEM_CIPHERTEXTBYTES);
+  print_str_u8("shared_secret", shared_secret_a, JADE_KEM_BYTES);
 
   // create key pair using derand function (random coins are given as input)
   randombytes(keypair_coins, JADE_KEM_KEYPAIRCOINBYTES);
@@ -58,13 +58,15 @@ int main(void)
     assert(memcmp(shared_secret_a, shared_secret_b, JADE_KEM_BYTES) == 0);
 
   print_info(JADE_KEM_ALGNAME, JADE_KEM_ARCH, JADE_KEM_IMPL);
-  print_str_u8("public_key_coins", public_key, JADE_KEM_PUBLICKEYBYTES);
-  print_str_u8("secret_key_coins", secret_key, JADE_KEM_SECRETKEYBYTES);
-  print_str_u8("keypair_coins", secret_key, JADE_KEM_KEYPAIRCOINBYTES);
+  print_str_u8("keypair_derand_coins", keypair_coins, JADE_KEM_KEYPAIRCOINBYTES);
+  print_str_u8("secret_key_derand", secret_key, JADE_KEM_SECRETKEYBYTES);
+  print_str_u8("public_key_derand", public_key, JADE_KEM_PUBLICKEYBYTES);
 
-  print_str_u8("shared_secret_coins", shared_secret_a, JADE_KEM_BYTES);
-  print_str_u8("ciphertext_coins", ciphertext, JADE_KEM_CIPHERTEXTBYTES);
-  print_str_u8("enc_coins", enc_coins, JADE_KEM_ENCCOINBYTES);
+  print_str_u8("enc_derand_coins", enc_coins, JADE_KEM_ENCCOINBYTES);
+  print_str_u8("ciphertext_derand", ciphertext, JADE_KEM_CIPHERTEXTBYTES);
+  print_str_u8("shared_secret_derand", shared_secret_a, JADE_KEM_BYTES);
+
+
 
   return 0;
 }
