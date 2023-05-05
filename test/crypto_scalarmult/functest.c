@@ -25,8 +25,8 @@ int main(void)
   uint8_t secret_b[JADE_SCALARMULT_BYTES];
 
   //
-  secret_key_a = randombytes(secret_key_a, JADE_SCALARMULT_SCALARBYTES);
-  secret_key_b = randombytes(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
+  randombytes(secret_key_a, JADE_SCALARMULT_SCALARBYTES);
+  randombytes(secret_key_b, JADE_SCALARMULT_SCALARBYTES);
 
   //
   r = jade_scalarmult_base(public_key_a, secret_key_a);

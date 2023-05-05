@@ -26,8 +26,8 @@ int main(void)
   uint8_t* key = _key;
 
   //
-  nonce = randombytes(nonce, JADE_SECRETBOX_NONCEBYTES);
-  key = randombytes(key, JADE_SECRETBOX_KEYBYTES);
+  randombytes(nonce, JADE_SECRETBOX_NONCEBYTES);
+  randombytes(key, JADE_SECRETBOX_KEYBYTES);
 
   memset(plaintext_1, 0, JADE_SECRETBOX_ZEROBYTES);
   memcpy(&(plaintext_1[JADE_SECRETBOX_ZEROBYTES]), plaintext, sizeof(plaintext));

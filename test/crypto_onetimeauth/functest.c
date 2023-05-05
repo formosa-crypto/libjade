@@ -18,7 +18,7 @@ int main(void)
   uint8_t _key[JADE_ONETIMEAUTH_KEYBYTES];
   uint8_t* key = _key;
 
-  key = randombytes(key, JADE_ONETIMEAUTH_KEYBYTES);
+  randombytes(key, JADE_ONETIMEAUTH_KEYBYTES);
 
   r = jade_onetimeauth(mac, input, sizeof(input), key);
     assert(r == 0);
