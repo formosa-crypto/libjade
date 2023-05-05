@@ -1,17 +1,11 @@
-void print_info(const char *algname, const char *arch, const char *impl);
-void print_u8(const uint8_t *a, size_t l);
-void print_str_u8(const char *str, const uint8_t *a, size_t l);
-
-//
-
-void print_info(const char *algname, const char *arch, const char *impl)
+static void print_info(const char *algname, const char *arch, const char *impl)
 {
   printf("// {\"%s\" : { architecture : \"%s\", implementation : \"%s\"} }",
          algname, arch, impl);
   printf("\n");
 }
 
-void print_u8(const uint8_t *a, size_t l)
+static void print_u8(const uint8_t *a, size_t l)
 {
   size_t i;
 
@@ -29,7 +23,7 @@ void print_u8(const uint8_t *a, size_t l)
   return;
 }
 
-void print_str_u8(const char *str, const uint8_t *a, size_t l)
+static void print_str_u8(const char *str, const uint8_t *a, size_t l)
 {
   if( l == 0 )
   { printf("uint8_t *%s = NULL;\n", str);
