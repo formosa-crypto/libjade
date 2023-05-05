@@ -149,6 +149,16 @@ then
     sed -i "1 i\#define JADE_NAMESPACE_LC $namespace_lc" $example_c
     sed -i "2 i\#define JADE_NAMESPACE $namespace_uc\n"  $example_c
 
+    # 1.2.7 - resolve defines directives
+    sed -i 's/#include/\/\/include/' $file # 'escape' include directives
+    sed -i 's/^\(\s\)*$/\/\//' $file # 'escape' white-lines
+    mv $example_c $example_c.p.c
+    clang -E -C -P $example_c.p.c -o $example_c # 'solve' define directives
+    rm $example_c.p.c
+    sed -i 's/\/\/include/#include/' $example_c # 'restore' includes
+    sed -i 's/^\/\/$//' $example_c # 'restore' white lines
+    sed -i '/^$/N;/^\n$/D' $example_c # remove multiple white-lines
+
 # ---------------------------------------------------------
 # 1.2.7 : begin : setup the Makefile with a rule to build example
 # - to improve: detect which implementations / functest are actually
