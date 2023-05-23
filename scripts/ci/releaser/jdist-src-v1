@@ -24,6 +24,7 @@ libjade_test=$libjade/test
 dist=$libjade/$dist_name
 dist_src=$dist/libjade
 dist_ext=$dist/ext
+dist_doc=$dist/doc
 
 # -----------------------------------------------------------------------------
 replace_include()
@@ -44,11 +45,13 @@ replace_include()
 rm -fr $dist
 mkdir -p $dist_src
 mkdir -p $dist_ext
+mkdir -p $dist_doc
 
 # -----------------------------------------------------------------------------
-# copy license and README.md
+# copy license and README.md and doc/api.md
 cp $libjade/LICENSE $dist/LICENSE
 cp $libjade/README.md $dist/README.md
+cp $libjade/doc/api.md $dist_doc/api.md
 
 # -----------------------------------------------------------------------------
 # copy ext randombytes
@@ -148,6 +151,16 @@ then
     # 1.2.6.4 - define the namespaces
     sed -i "1 i\#define JADE_NAMESPACE_LC $namespace_lc" $example_c
     sed -i "2 i\#define JADE_NAMESPACE $namespace_uc\n"  $example_c
+
+    # 1.2.7 - resolve defines directives
+    sed -i 's/#include/\/\/include/' $file # 'escape' include directives
+    sed -i 's/^\(\s\)*$/\/\//' $file # 'escape' white-lines
+    mv $example_c $example_c.p.c
+    clang -E -C -P $example_c.p.c -o $example_c # 'solve' define directives
+    rm $example_c.p.c
+    sed -i 's/\/\/include/#include/' $example_c # 'restore' includes
+    sed -i 's/^\/\/$//' $example_c # 'restore' white lines
+    sed -i '/^$/N;/^\n$/D' $example_c # remove multiple white-lines
 
 # ---------------------------------------------------------
 # 1.2.7 : begin : setup the Makefile with a rule to build example

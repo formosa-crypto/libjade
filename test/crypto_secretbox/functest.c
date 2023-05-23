@@ -10,24 +10,6 @@
 #include "jade_secretbox.h"
 #include "print.h"
 
-/*
-int jade_secretbox(
-  uint8_t *ciphertext,
-  const uint8_t *plaintext,
-  uint64_t plaintext_length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-
-int jade_secretbox_open(
-  uint8_t *plaintext,
-  const uint8_t *ciphertext,
-  uint64_t ciphertext_length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-*/
-
 int main(void)
 {
   #define PLAINTEXT_LENGTH 3
@@ -44,8 +26,8 @@ int main(void)
   uint8_t* key = _key;
 
   //
-  nonce = __jasmin_syscall_randombytes__(nonce, JADE_SECRETBOX_NONCEBYTES);
-  key = __jasmin_syscall_randombytes__(key, JADE_SECRETBOX_KEYBYTES);
+  randombytes(nonce, JADE_SECRETBOX_NONCEBYTES);
+  randombytes(key, JADE_SECRETBOX_KEYBYTES);
 
   memset(plaintext_1, 0, JADE_SECRETBOX_ZEROBYTES);
   memcpy(&(plaintext_1[JADE_SECRETBOX_ZEROBYTES]), plaintext, sizeof(plaintext));

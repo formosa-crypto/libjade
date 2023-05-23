@@ -10,22 +10,6 @@
 #include "jade_onetimeauth.h"
 #include "print.h"
 
-/*
-int jade_onetimeauth(
- uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-
-int jade_onetimeauth_verify(
- const uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-*/
-
 int main(void)
 {
   int r;
@@ -34,7 +18,7 @@ int main(void)
   uint8_t _key[JADE_ONETIMEAUTH_KEYBYTES];
   uint8_t* key = _key;
 
-  key = __jasmin_syscall_randombytes__(key, JADE_ONETIMEAUTH_KEYBYTES);
+  randombytes(key, JADE_ONETIMEAUTH_KEYBYTES);
 
   r = jade_onetimeauth(mac, input, sizeof(input), key);
     assert(r == 0);

@@ -9,15 +9,6 @@
 #include "jade_xof.h"
 #include "print.h"
 
-/*
-int jade_xof(
- uint8_t *output,
- uint64_t output_length,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
 int main(void)
 {
   int r;

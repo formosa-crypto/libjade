@@ -9,14 +9,6 @@
 #include "jade_hash.h"
 #include "print.h"
 
-/*
-int jade_hash(
- uint8_t *hash,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
 int main(void)
 {
   int r;
