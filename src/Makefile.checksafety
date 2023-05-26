@@ -13,7 +13,7 @@ CHECK_SAFETY    = (time timeout -v $(SAFETY_TIMEOUT) $(JASMINC)           -check
 
 SAFETY_TARGETS  = $(addsuffix .safety, $(FUNCTIONS))
 
-checksafety-all: $(SAFETY_TARGETS)
+safety: $(SAFETY_TARGETS)
 
 $(OP).safety : $(OP).jazz $(SAFETY_DIR)/$(OP).safetyparam $(DEPS_DIR)/$(OP).safety.d | $(SAFETY_DIR) $(DEPS_DIR) $(CI_DIR)
 	$(DEPS)

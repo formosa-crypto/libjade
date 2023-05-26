@@ -22,6 +22,7 @@ SRC     := .
 FILTER  ?= $(SRC)/crypto_%
 JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 SAFETY  ?= $(addsuffix safety, $(JAZZ))
+CT      ?= $(addsuffix ct, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -69,10 +70,19 @@ $(SAFETY):
 	$(MAKE) -C $(@D) $(@F) || true
 
 # --------------------------------------------------------------------
+
+.PHONY: ct
+ct: $(CT)
+
+$(CT):
+	$(MAKE) -C $(@D) $(@F) || true
+
+# --------------------------------------------------------------------
 ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
+	$(MAKE) reporter_ct
 	$(MAKE) $(LOGS)
 
 reporter_s:
@@ -81,6 +91,10 @@ reporter_s:
 
 reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
+	$(MAKE) $(LOGS)
+
+reporter_ct:
+	./../scripts/ci/reporter/jlog "Constant-time status" src/ *.ct $(CICL)
 	$(MAKE) $(LOGS)
 
 ERR := $(shell find $(BIN) -name '*.error')

@@ -101,6 +101,10 @@ $(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI
 include $(SRC)/Makefile.checksafety
 
 # --------------------------------------------------------------------
+
+include $(SRC)/Makefile.checkct
+
+# --------------------------------------------------------------------
 $(CHECKSDIR): ; @mkdir -p $@
 $(DEPS_DIR): ; @mkdir -p $@
 $(EC_DIR): ; @mkdir -p $@; touch $@/.gitkeep
@@ -129,7 +133,7 @@ include $(wildcard $(DEPFILES))
 .PHONY: clean
 
 clean:
-	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.o *.a .jflags *.out
+	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.ct* *.o *.a .jflags *.out
 ifeq ($(CI),1)
 	@rm -fr $(CI_DIR)
 endif

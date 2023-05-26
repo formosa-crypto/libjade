@@ -1,0 +1,33 @@
+# Notes:
+# - this file defines fine-grained targets that allow checking the constant-time of individual exported
+#   functions
+# - it is meant to be included by Makefile.common
+
+ifneq ($(OP),)
+
+CT_FLAGS   ?= -infer # TODO: REMOVE ME
+
+CHECK_CT_S  = ($(JASMINC) -slice $* -checkCT $(CT_FLAGS) $< > $@ 2>&1) $(CIT)
+CHECK_CT    = ($(JASMINC)           -checkCT $(CT_FLAGS) $< > $@ 2>&1) $(CIT)
+
+CT_TARGETS  = $(addsuffix .ct, $(FUNCTIONS))
+
+ct: $(CT_TARGETS)
+
+$(OP).ct : $(OP).jazz $(DEPS_DIR)/$(OP).ct.d | $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(CHECK_CT)
+
+$(CT_TARGETS):
+%.ct : $(OP).jazz $(DEPS_DIR)/%.ct.d | $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(CHECK_CT_S)
+
+DEPFILES := \
+ $(DEPFILES) \
+ $(addprefix $(DEPS_DIR)/, $(addsuffix .ct.d, $(FUNCTIONS) $(OP)))
+
+$(CT_DIR): ; @mkdir -p $@
+
+endif
+
