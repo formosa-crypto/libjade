@@ -1,0 +1,43 @@
+name: amd64-linux-main-safety
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/constant_time
+
+jobs:
+
+
+  # just to make sure that code still compiles after annotations (catch a missing comma, etc)
+  # note: only this yml is run for branch feature/constant_time; no errors are returned
+  compile:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile
+        run: make -j$JOBS -C src/ CI=1 default
+      - name: print logs
+        run: make         -C src/ CI=1 reporter
+
+  ct:
+  compile:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: ct
+        run: make -j$JOBS -C src/ CI=1 ct
+      - name: print logs
+        run: make         -C src/ CI=1 reporter_ct
+
+      - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
+
