@@ -23,7 +23,6 @@ jobs:
         run: make         -C src/ CI=1 reporter
 
   ct:
-  compile:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
