@@ -110,7 +110,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: extract and check
-        run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS check-extracted
+        run: make -j$JOBS -C proof/ CI=1 check-extracted
       - name: dist
         run: ./scripts/ci/releaser/jdist-proof
       - name: print logs

@@ -30,7 +30,7 @@ ifeq ($(CI),1)
 
 CID = $(@D)/.ci
 
-CIC = (rm -f $(CID)/$(@F).*)
+CIC = (mkdir -p $(CID); rm -f $(CID)/$(@F).*)
 
 CIL = 2> $(CID)/$(@F).log || \
       (echo $$? | cat - $(CID)/$(@F).log > $(CID)/$(@F).error && \
@@ -53,10 +53,16 @@ LOGS      := libjade-logs-proof.tar.gz
 
 SRC       := ../src
 PROOF     := .
+IDIR       = $(SRC)/$(@D)
+
 EXCLUDE   ?=
-SOURCES   ?= $(filter-out $(SRC)/ $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
-EXTRACTED := $(shell find $(PROOF) -name "*_s.ec" -o -name "*_ct.ec")
-OUT       := $(addsuffix .out, $(EXTRACTED))
+SOURCE_DIRS   ?= $(filter-out $(SRC)/ $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
+
+EXTRACTED_EC_FILES     := $(shell find $(PROOF) -name "*_s.ec" -o -name "*_ct.ec")
+EXTRACTED_EC_FILES_OUT := $(addsuffix .out, $(EXTRACTED_EC_FILES))
+
+ALL_EC_FILES           := $(shell find $(PROOF) -name "*.ec")
+ALL_EC_FILES_OUT       := $(addsuffix .out, $(ALL_EC_FILES))
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
@@ -69,59 +75,67 @@ backward_compatibility:
 endif
 
 # --------------------------------------------------------------------
-.PHONY: check extract $(SOURCES)
+.PHONY: default
 
-default: check
+default: check-all
 
-check: extract
-	$(EASYCRYPT) runtest $(ECCONF) $(CHECKS)
+# --------------------------------------------------------------------
+.PHONY: extract $(SOURCE_DIRS)
 
-extract: $(SOURCES)
-	@true
+extract: $(SOURCE_DIRS)
 
-$(SOURCES):
+$(SOURCE_DIRS):
 	$(MAKE) -C $@ extract || true
 
 # --------------------------------------------------------------------
-.PHONY: __phony check-extracted check-extracted-inner
+.PHONY: check-extracted check-extracted-inner check-all check-all-inner check-runtest
 
 check-extracted: extract
 	$(MAKE) check-extracted-inner
 
-check-extracted-inner: $(OUT)
+check-extracted-inner: $(EXTRACTED_EC_FILES_OUT)
 
-$(OUT):
-%.out: __phony
-ifeq ($(CI),1)
-	@mkdir -p $(CID)
-endif
+#--
+
+check-all: extract
+	$(MAKE) check-all-inner
+
+check-all-inner: $(ALL_EC_FILES_OUT)
+
+#--
+
+$(EXTRACTED_EC_FILES_OUT):
+$(ALL_EC_FILES_OUT):
+%.out:
+	$(MAKE) -C $(IDIR) extract || true
+	$(CIC)
 	$(EASYCRYPT) $* > $@ $(CIL) || true
+
+#--
+
+check-runtest: extract
+	$(EASYCRYPT) runtest $(ECCONF) $(CHECKS)
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
 reporter:
-	$(MAKE) reporter_s
-	$(MAKE) reporter_s_out
-	$(MAKE) reporter_ct
-	$(MAKE) reporter_ct_out
+	$(MAKE) reporter_extraction_s
+	$(MAKE) reporter_extraction_ct
+	$(MAKE) reporter_checking_all
 	$(MAKE) $(LOGS)
 
-reporter_s:
-	./../scripts/ci/reporter/jlog "Extraction - source - status" src/ *_s.ec $(CICL)
+reporter_extraction_s:
+	./../scripts/ci/reporter/jlog "Extraction (jasminc) - source - status" src/ *_s.ec $(CICL)
 
-reporter_s_out:
-	./../scripts/ci/reporter/jlog "Checking - source - status" proof/ *_s.ec.out $(CICL)
+reporter_extraction_ct:
+	./../scripts/ci/reporter/jlog "Extraction (jasminc) - constant-time - status" src/ *_ct.ec $(CICL)
 
-reporter_ct:
-	./../scripts/ci/reporter/jlog "Extraction - constant-time - status" src/ *_ct.ec $(CICL)
+reporter_checking_all:
+	./../scripts/ci/reporter/jlog "Checking (easycrypt) - all *.ec - status" proof/ *.ec.out $(CICL)
 
-reporter_ct_out:
-	./../scripts/ci/reporter/jlog "Checking - constant-time - status" proof/ *_ct.ec.out $(CICL)
-
-
-ERR := $(shell find $(SRC) -name '*.error')
-CIR := $(shell find $(SRC) -name '*.log') $(ERR)
+ERR := $(shell find $(SRC) -name '*.error') $(shell find $(PROOF) -name '*.error')
+CIR := $(shell find $(SRC) -name '*.log') $(shell find $(PROOF) -name '*.log') $(ERR)
 
 $(LOGS):
 	@$(JASMIN) -version > notes
