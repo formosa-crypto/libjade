@@ -109,12 +109,12 @@ $(ALL_EC_FILES_OUT):
 %.out:
 	$(MAKE) -C $(IDIR) extract || true
 	$(CIC)
-	$(EASYCRYPT) $* > $@ $(CIL) || true
+	$(EASYCRYPT) $(ECARGS) $* > $@ $(CIL) || true
 
 #--
-
+# export ECRJOBS=? to set number of jobs; check if there is another option to achieve this;
 check-runtest: extract
-	$(EASYCRYPT) runtest $(ECCONF) $(CHECKS)
+	$(EASYCRYPT) runtest $(ECARGS) $(ECCONF) $(CHECKS)
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
