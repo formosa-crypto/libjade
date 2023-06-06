@@ -63,12 +63,15 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: compile and run
+      - name: compile
         run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 default
+
+      - name: run
         run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 DEFINE='-DTIMINGS=10' run
 
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C bench/ CI=1 reporter
+
       - name: return error if there are any errors
         run: make -C bench/ CI=1 err
 
@@ -88,12 +91,15 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: compile and run
+      - name: compile
         run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 default
+
+      - name: run
         run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
 
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C bench/ CI=1 reporter
+
       - name: return error if there are any errors
         run: make -C bench/ CI=1 err
 
