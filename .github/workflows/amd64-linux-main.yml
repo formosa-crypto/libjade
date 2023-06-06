@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - main
+      - feature/deploy_new_ci
   pull_request:
 
 jobs:
@@ -12,15 +12,15 @@ jobs:
 
 
   compile:
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile
-        run: make -j$JOBS -C src/ CI=1 default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 default
       - name: print logs
-        run: make         -C src/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) make         -C src/ CI=1 reporter
       - name: return error if there are any errors
         run: make         -C src/ CI=1 err
 
@@ -35,15 +35,15 @@ jobs:
 
   test:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: make -j$JOBS -C test/ CI=1 default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 default
       - name: print logs
-        run: make         -C test/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) make         -C test/ CI=1 reporter
       - name: return error if there are any errors
         run: make         -C test/ CI=1 err
 
@@ -58,15 +58,15 @@ jobs:
 
   bench1:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10'
+        run: JASMIN=$(which_jasminc) make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10'
       - name: print logs
-        run: make     -C bench/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) make     -C bench/ CI=1 reporter
       - name: return error if there are any errors
         run: make     -C bench/ CI=1 err
 
@@ -81,15 +81,15 @@ jobs:
 
   bench2:
     needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
+        run: JASMIN=$(which_jasminc) make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
       - name: print logs
-        run: make     -C bench/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) make     -C bench/ CI=1 reporter
       - name: return error if there are any errors
         run: make     -C bench/ CI=1 err
 
@@ -104,17 +104,17 @@ jobs:
 
   proof-extracted:
     needs: [test]
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    runs-on: [self-hosted, linux, X64, main]
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: extract and check
-        run: make -j$JOBS -C proof/ CI=1 check-extracted
+        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make -j$JOBS -C proof/ CI=1 check-extracted
       - name: dist
         run: ./scripts/ci/releaser/jdist-proof
       - name: print logs
-        run: make         -C proof/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make         -C proof/ CI=1 reporter
       - name: return error if there are any errors
         run: make         -C proof/ CI=1 err
 
@@ -134,26 +134,26 @@ jobs:
 
 
 
-  dist-amd64:
-    needs: [compile]
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
+#  dist-amd64:
+#    needs: [compile]
+#    runs-on: [self-hosted, linux, X64, main]
+#    steps:
+#      - name: checkout
+#        uses: actions/checkout@v3
 
-      - name: compile amd64
-        run: make -j$JOBS -C src/ CI=1 default
+#      - name: compile amd64
+#        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make -j$JOBS -C src/ CI=1 default
 
-      - name: dist amd64
-        run: ./scripts/ci/releaser/jdist-src-v1 amd64
+#      - name: dist amd64
+#        run: ./scripts/ci/releaser/jdist-src-v1 amd64
 
-      - name: check dist amd64
-        run: ./scripts/ci/releaser/jdist-src-test-v1 amd64
+#      - name: check dist amd64
+#        run: ./scripts/ci/releaser/jdist-src-test-v1 amd64
 
-      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-dist-src-amd64.tar.gz
-          path: libjade-dist-src-amd64.tar.gz
+#      - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
+#        if: always()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: libjade-dist-src-amd64.tar.gz
+#          path: libjade-dist-src-amd64.tar.gz
 
