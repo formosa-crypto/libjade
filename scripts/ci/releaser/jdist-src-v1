@@ -228,7 +228,7 @@ fi
 cat <<END >> $makefile
 
 __$dest_base_name.s:
-	$(JASMIN) $jasminc_flags -nowarning $dest_base_name.jazz -o $dest_base_name.s
+	\$(JASMIN) $jasminc_flags -nowarning $dest_base_name.jazz -o $dest_base_name.s
 
 END
 # -------------------------------------------------------------------
