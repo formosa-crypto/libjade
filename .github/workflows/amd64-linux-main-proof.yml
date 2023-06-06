@@ -16,11 +16,11 @@ jobs:
         uses: actions/checkout@v3
 
       - name: extract and check
-        run: make -j$JOBS -C proof/ CI=1 default
+        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make -j$JOBS -C proof/ CI=1 default
       - name: dist
         run: ./scripts/ci/releaser/jdist-proof
       - name: print logs
-        run: make         -C proof/ CI=1 reporter
+        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make         -C proof/ CI=1 reporter
       - name: return error if there are any errors
         run: make         -C proof/ CI=1 err
 
