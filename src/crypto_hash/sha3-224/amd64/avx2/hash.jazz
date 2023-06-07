@@ -3,7 +3,11 @@ require "sha3-224.jinc"
 export fn jade_hash_sha3_224_amd64_avx2(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
-  __sha3_224_avx2(hash, input, input_length);
+  #msf reg u64 ms;
+  ms = #init_msf();
+
+  _ = __sha3_224_avx2(hash, input, input_length, ms);
+
   ?{}, r = #set0();
   return r;
 }
