@@ -396,7 +396,7 @@ inline fn __sha256_ref(reg u64 out in inlen)
 {
   reg u64 bits nblocks;
   stack u64 s_bits;
-  regx u64 s_out;
+  #mmx reg u64 s_out;
   stack u32[8] H;
   reg ptr u32[8] Hp;
   stack u32[32] sblocks;

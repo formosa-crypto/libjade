@@ -8,7 +8,7 @@ require "poly1305_kD.jinc"
 inline fn __xsalsa20poly1305_avx2(reg u64 c m mlen nonce key) -> reg u64
 {
   reg u64 r tag ct skey;
-  regx u64 c_s mlen_s;
+  #mmx reg u64 c_s mlen_s;
   reg u128 t;
 
   if(mlen >= 32)
@@ -45,7 +45,7 @@ inline fn __xsalsa20poly1305_avx2_open(reg u64 m c clen nonce key) -> reg u64
   stack u8[32] subkey;
   reg ptr u8[32] subkey_p;
   stack u64 nonce_s key_s;
-  regx u64 m_s c_s clen_s;
+  #mmx reg u64 m_s c_s clen_s;
   reg u256 t;
 
   if(clen >= 32)

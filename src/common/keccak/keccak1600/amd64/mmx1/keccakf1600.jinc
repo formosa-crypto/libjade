@@ -125,11 +125,11 @@ inline fn __round_mmx1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25], 
 inline fn __keccakf1600_mmx1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   reg ptr u64[24] RC;
-  regx ptr u64[24] x_RC;
+  #mmx reg ptr u64[24] x_RC;
   stack u64[25] s_e;
   reg ptr u64[25] e;
   reg u64 c rc;
-  regx u64 x_c x_rc;
+  #mmx reg u64 x_c x_rc;
   reg bool b;
 
   RC = KECCAK1600_RC;

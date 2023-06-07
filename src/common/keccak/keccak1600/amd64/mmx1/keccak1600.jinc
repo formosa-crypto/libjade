@@ -91,7 +91,7 @@ inline fn __absorb_mmx1(
   reg   u64 rate // rate already in bytes -- it is returned bc of spills
 ) -> stack u64[25], reg u64
 {
-  regx u64 x_in x_inlen x_rate;
+  #mmx reg u64 x_in x_inlen x_rate;
   reg u8 trail_byte;
   reg u64 t;
   reg bool b;
@@ -180,13 +180,13 @@ inline fn __xtr_bytes_mmx1(
 
 inline fn __squeeze_mmx1(
   stack u64[25] state,
-  regx u64 x_out,
+  #mmx reg u64 x_out,
   reg   u64 outlen,
   reg   u64 rate
 )
 {
   reg u64 out;
-  regx u64 x_outlen x_rate;
+  #mmx reg u64 x_outlen x_rate;
   reg bool b;
 
   // intermediate blocks
@@ -219,7 +219,7 @@ inline fn __squeeze_mmx1(
 inline fn __keccak1600_mmx1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
   stack u64[25] state;
-  regx u64 x_out x_outlen;
+  #mmx reg u64 x_out x_outlen;
   stack u8 s_trail_byte;
 
   x_out = out;

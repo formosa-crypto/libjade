@@ -137,7 +137,7 @@ inline fn __keccak1600_spec(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
 {
   stack u64[25] state;
   stack u64 s_in s_inlen s_rate;
-  regx u64 s_out s_outlen;
+  #mmx reg u64 s_out s_outlen;
   stack u8 s_trail_byte;
 
   s_out = out;
