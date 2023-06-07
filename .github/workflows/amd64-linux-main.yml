@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - feature/deploy_new_ci
+      - main
   pull_request:
 
 jobs:
