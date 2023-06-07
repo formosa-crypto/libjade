@@ -194,8 +194,8 @@ inline fn __keccakf1600_avx2(reg u256[7] state, #msf reg u64 ms) -> reg u256[7],
     iotas_o += 32;
 
     _,_,_,zf,r = #DEC_64(r);
-  }(!zf) {ms = #set_msf(!zf, ms); }
-  ms = #set_msf(!!zf, ms);
+  }(!zf) {ms = #update_msf(!zf, ms); }
+  ms = #update_msf(!!zf, ms);
 
   return state, ms;
 }

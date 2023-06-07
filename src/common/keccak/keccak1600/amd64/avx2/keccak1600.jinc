@@ -50,14 +50,14 @@ inline fn __add_full_block_avx2(
     b = j < rate8 ;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     t = [in + 8*j];
     l = a_jagged_p[(int) j];
     l = #protect(l, ms);
     s_state[(int) l] = t;
     j += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   //TODO: check & change to #VPBROADCAST_4u64
   t = s_state[0];
@@ -100,14 +100,14 @@ inline fn __add_final_block_avx2(
     b = j < inlen8;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     t = [in + 8*j];
     l = a_jagged_p[(int) j];
     l = #protect(l, ms);
     s_state[(int) l] = t;
     j += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
   l = a_jagged_p[(int) j];
   l = #protect(l, ms);
   l <<= 3;
@@ -117,13 +117,13 @@ inline fn __add_final_block_avx2(
     b = j < inlen;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     c = (u8)[in + j];
     s_state[u8 (int) l] = c;
     j += 1;
     l += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   s_state[u8 (int) l] = trail_byte;
 
@@ -175,14 +175,14 @@ inline fn __xtr_full_block_avx2(
     b =  j < len8;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     l = a_jagged_p[(int) j];
     l = #protect(l, ms);
     t = s_state[(int) l];
     [out + 8*j] = t;
     j += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   out += len;
 
@@ -215,14 +215,14 @@ inline fn __xtr_bytes_avx2(
     b = j < len8;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     l = a_jagged_p[(int) j];
     l = #protect(l, ms);
     t = s_state[(int) l];
     [out + 8*j] = t;
     j += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
   l = a_jagged_p[(int)j];
   l = #protect(l, ms);
   j <<= 3;
@@ -232,13 +232,13 @@ inline fn __xtr_bytes_avx2(
     b = j < len;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     c = s_state[u8 (int) l];
     (u8)[out + j] = c;
     j += 1;
     l += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   out += len;
 
@@ -266,11 +266,11 @@ inline fn __absorb_avx2(
     b = inlen >= rate;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     state, s_state, in, inlen, ms = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate, ms);
     state, ms = __keccakf1600_avx2(state, ms);
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   // final block
   state, ms = __add_final_block_avx2(state, s_state, a_jagged_p, in, inlen, trail_byte, rate, ms);
@@ -291,12 +291,12 @@ inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate, #msf reg u6
     b = outlen > rate;
   } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     state, ms = __keccakf1600_avx2(state, ms);
     out, ms = __xtr_full_block_avx2(state, a_jagged_p, out, rate, ms);
     outlen -= rate;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   state, ms = __keccakf1600_avx2(state, ms);
   out, ms = __xtr_bytes_avx2(state, a_jagged_p, out, outlen, ms);

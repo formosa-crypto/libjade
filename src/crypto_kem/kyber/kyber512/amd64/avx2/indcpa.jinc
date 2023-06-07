@@ -88,13 +88,13 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
   pkp += KYBER_POLYVECBYTES;
   while { b = i < KYBER_SYMBYTES/8; } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     #declassify t64 = (u64)[pkp];
     publicseed[u64 (int)i] = t64;
     pkp += 8;
     i += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   k = _poly_frommsg_1(k, msgp);
 
@@ -162,13 +162,13 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
   pkp += KYBER_POLYVECBYTES;
   while  { b = i < KYBER_SYMBYTES/8; } (b)
   {
-    ms = #set_msf(b, ms);
+    ms = #update_msf(b, ms);
     #declassify t64 = (u64)[pkp];
     publicseed[u64 (int)i] = t64;
     pkp += 8;
     i += 1;
   }
-  ms = #set_msf(!b, ms);
+  ms = #update_msf(!b, ms);
 
   k = _poly_frommsg_1(k, msgp);
 
