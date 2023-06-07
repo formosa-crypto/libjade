@@ -3,7 +3,11 @@ require "shake128.jinc"
 export fn jade_xof_shake128_amd64_avx2(reg u64 output output_length input input_length) -> reg u64
 {
   reg u64 r;
-  __shake128_avx2(output, output_length, input, input_length);
+  #msf reg u64 ms;
+  ms = #init_msf();
+
+  _ = __shake128_avx2(output, output_length, input, input_length, ms);
+
   ?{}, r = #set0();
   return r;
 }
