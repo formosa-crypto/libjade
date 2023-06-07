@@ -1,0 +1,35 @@
+name: amd64-linux-main-sslh
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/merge_main_into_sslh
+  pull_request:
+
+jobs:
+
+
+
+  compile:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 default
+
+      - name: print logs
+        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
+
+      - name: (does NOT) return error if there are any errors (to avoid spam)
+        run: (make -C src/ CI=1 err) || true
+
+      - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
+
