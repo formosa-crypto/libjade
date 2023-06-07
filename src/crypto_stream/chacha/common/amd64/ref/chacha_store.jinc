@@ -66,6 +66,7 @@ inline fn __sum_states_store_xor_ref(
   inline int i;
   reg u64[8] kk;
   reg u64 output input aux len;
+  stack u32 k14;
 
   // store                                        // sum states
   // i = 0 : 1 dead
@@ -86,6 +87,10 @@ inline fn __sum_states_store_xor_ref(
   aux = (64u)k[2];
   kk[1] ^= aux;
   kk[1] ^= (u64)[input + 8*1];
+
+  k14 = k[14];
+  len = s_len;
+
   output = s_output;
   (u64)[output + 8*0] = kk[0];
 
@@ -103,8 +108,6 @@ inline fn __sum_states_store_xor_ref(
   }
 
   (u64)[output + 8*7] = kk[7];
-
-  len = s_len;
 
   output, input, len = __update_ptr_xor_ref(output, input, len, 64);
 
