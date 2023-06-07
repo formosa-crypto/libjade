@@ -110,7 +110,16 @@ do
 
     # 1.2.5 setup the Makefile
     makefile=$dist_src/$operation/$dest_base_name/Makefile
-    cp $libjade/doc/release/examples/Makefile $makefile
+cat <<END >> $makefile
+# --------------------------------------------------------------------
+AS      ?= as
+CC      ?= clang
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
+	         -fstrict-aliasing -fno-common -pipe
+JASMIN  ?= jasminc
+# --------------------------------------------------------------------
+END
 
 # -----------------------------------------------------------------------------
 if [ ! -f $libjade_src/$operation/$dir_implementation/.partial ]
@@ -219,7 +228,7 @@ fi
 cat <<END >> $makefile
 
 __$dest_base_name.s:
-	jasminc $jasminc_flags -nowarning $dest_base_name.jazz -o $dest_base_name.s
+	\$(JASMIN) $jasminc_flags -nowarning $dest_base_name.jazz -o $dest_base_name.s
 
 END
 # -------------------------------------------------------------------

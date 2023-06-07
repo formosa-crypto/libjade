@@ -9,7 +9,7 @@ on:
 jobs:
 
   build0:
-    runs-on: [self-hosted, linux, X64, amd64-main-build-instructions]
+    runs-on: [self-hosted, linux, X64, amd64-instructions]
     steps:
       - name: checkout
         uses: actions/checkout@v3
@@ -18,7 +18,7 @@ jobs:
         run: sh scripts/ci/misc/jasmin-build-instructions0
 
   build1:
-    runs-on: [self-hosted, linux, X64, amd64-main-build-instructions]
+    runs-on: [self-hosted, linux, X64, amd64-instructions]
     steps:
       - name: checkout
         uses: actions/checkout@v3
