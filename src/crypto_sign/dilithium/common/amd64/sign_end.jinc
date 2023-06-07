@@ -1,0 +1,235 @@
+
+inline
+fn compute_mu(reg u64 ptr_m, reg u64 m_len, reg ptr u8[Li2_SK_LEN] sk)
+	-> stack u8[64]
+{
+	stack u8[64] mu;
+	mu = hash_tr_m(sk[64:32], m_len, ptr_m);
+	return mu;
+}
+
+inline
+fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
+	-> stack u8[64]
+{
+	stack u8[64] rho_prime;
+	reg u8 c;
+	reg u64 i;
+	stack u64[25] state;
+	reg u64 mu_loc;
+
+	state = st0(state);
+	?{}, i = #set0_64();
+	while(i < 32) {
+		c = k[(int) i];
+		state[u8 (int) i] = c;	
+		i += 1;
+	}
+	while(i < 96) {
+		mu_loc = i;
+		mu_loc -= 32;
+		c = mu[(int) mu_loc];
+		state[u8 (int) i] = c;
+		i += 1;
+	}
+
+	state[u8 96] ^= 0x1f;
+	state[u8 SHAKE256_RATE - 1] ^= 0x80;
+
+    state = __keccakf1600_ref(state);
+
+	?{}, i = #set0_64();
+	while(i < 64) {
+		c = state[u8 (int) i];
+		rho_prime[(int) i] = c;
+		i += 1;
+	}
+	return rho_prime;
+}
+
+inline
+fn sign_inner(reg u64 ptr_m,
+		reg u64 m_len,
+		reg ptr u8[Li2_SK_LEN] sk)
+		-> stack u8[Li2_SIGN_LEN], stack u32
+{
+	stack u8[Li2_SIGN_LEN] signature;
+
+	// parts of sk
+	stack u32[Li2_l * Li2_polydeg] s1;
+	stack u32[Li2_k * Li2_polydeg] s2;
+	stack u32[Li2_k * Li2_polydeg] t0;
+
+	// automatic variables in spec
+	stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
+	stack u8[64] mu;
+	// corresponds to kappa/l in spec
+	stack u16 nonce;
+	reg u16 reg_nonce;
+	stack u8[64] rho_prime;
+	stack u32[Li2_l * Li2_polydeg] z;
+	stack u32[Li2_k * Li2_polydeg] h;
+	// w probably isn't necessary - can use w1 wherever w appears?
+	stack u32[Li2_k * Li2_polydeg] w0 w1;
+	stack u8[Li2_pack_w1len] packed_w1;
+	stack u32[Li2_k * Li2_polydeg] r0;
+
+	// c-tilde unnecessary
+	// can just use signature[0:32]
+	// might need to redo pack_signature though
+	// not sure if pack_sig will go through otherwise
+	// with input and output overlapping
+	stack u8[32] c_tilde;
+
+	//from SampleInBall
+	stack u32[Li2_polydeg] challenge;
+
+	// while loop condition
+	stack u8 done;
+	// attempt: abort with error if we have tried too many times
+	stack u16 attempt;
+	// return status: ok == 0, err == -1
+	stack u32 status;
+	// temporary bools used for while loop condition
+	reg bool tmpbool;
+	reg bool zf;
+	reg u8 tmpboolu8;
+
+	// extra intermediate values
+	// not space-efficient...
+	// but this is reference impl so we're fine?
+	stack u32[Li2_l * Li2_polydeg] y;
+	stack u32[Li2_k * Li2_polydeg] w;
+	stack u32[Li2_l * Li2_polydeg] fft_y;
+	stack u32[Li2_l * Li2_polydeg] cs1;
+	stack u32[Li2_k * Li2_polydeg] cs2;
+	stack u32[Li2_k * Li2_polydeg] ct0;
+	stack u32[Li2_k * Li2_polydeg] r0_plus_ct0;
+
+	stack u32 hints_weight;
+	stack u8 normcheck_result;
+
+	s1, s2, t0 = unpack_sk(sk);
+	mu = compute_mu(ptr_m, m_len, sk);
+	rho_prime = compute_rho_prime(sk[32:32], mu);
+
+	fft_matA = expandA(sk[0:32]);
+
+	s1 = fft_vec(s1);
+	s2 = fft_veck(s2);
+	t0 = fft_veck(t0);
+
+	nonce = 0;
+	done = 0;
+	attempt = 1;
+	status = -1;
+	while {
+		// The probability of a single attempt failing is, according to
+		// Equation (5) from the spec approximate to
+		//
+		//   Pr[reject] = 1 - exp[ -256*beta * (l/gamma1 + k/gamma2) ]
+		//
+		// We can rewrite this equation in order to find the number of attempts
+		// for which the probability becomes so small that we should not
+		// expect that it ever happens:
+		//
+		//                       128
+		//   #attempts = - ---------------
+		//                 log2 Pr[reject]
+		//
+		// The resulting value for the maximum number of attempts is set in
+		// the Li2_max_attempts param.
+		tmpbool = attempt > Li2_max_attempts;
+		tmpboolu8 = #SETcc(tmpbool);
+		tmpboolu8 |= done;
+		_, _, _, _, zf = #TEST_8(tmpboolu8, tmpboolu8);
+	} (zf) {
+		attempt += 1;
+
+		reg_nonce = nonce;
+		y = expandMask(rho_prime, reg_nonce);
+
+		nonce += 1;
+		fft_y = deep_copy_vecl(y);
+		fft_y = fft_vec(fft_y);
+		w = mult_mat_vec(fft_matA, fft_y);
+		w = reduce32_veck(w);
+		w = ifft_to_mont_vec(w);
+
+		w = polyveck_caddq(w);
+		w0, w1 = decompose_vec(w);
+		packed_w1 = pack_w1(w1);
+
+		c_tilde = hash_mu_w1(mu, packed_w1);
+
+		challenge = sampleInBall(challenge, c_tilde);
+		challenge = fft(challenge);
+
+		cs1 = mult_scalar_vec(challenge, s1);
+		cs1 = ifft_to_mont_vecl(cs1);
+		z = sum_vecl(cs1, y);
+		z = reduce32_vecl(z);
+		normcheck_result = checknorm_vecl(z, (int) (Li2_gamma1 - Li2_beta));
+
+		if(normcheck_result == 0) {
+			cs2 = mult_scalar_veck(challenge, s2);
+			cs2 = ifft_to_mont_vec(cs2);
+			r0 = subtract_veck(w0, cs2);
+			w0 = reduce32_veck(w0);
+			normcheck_result = checknorm_veck(r0, (int) (Li2_gamma2 - Li2_beta));
+			if(normcheck_result == 0) {
+				ct0 = mult_scalar_veck(challenge, t0);
+				ct0 = ifft_to_mont_vec(ct0);
+				ct0 = reduce32_veck(ct0);
+				normcheck_result = checknorm_veck(ct0, Li2_gamma2);
+				if(normcheck_result == 0) {
+					r0_plus_ct0 = sum_vecs(r0, ct0);
+
+					hints_weight, h = polyveck_make_hint(r0_plus_ct0, w1);
+					if(hints_weight < Li2_omega) {
+						done = 1;
+						status = 0;
+					}
+				}
+			}
+		}
+	}
+
+	signature = pack_signature(c_tilde, z, h);
+	return signature, status;
+}
+
+inline
+fn sign(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) -> stack u32 {
+	stack u8[Li2_SK_LEN] sk;
+	reg u8 c;
+	stack u32 status;
+	reg u64 i;
+	stack u8[Li2_SIGN_LEN] signature;
+
+	stack u64 s_ptr_signature;
+	reg u64 sig_addr;
+
+	// spilling this
+	s_ptr_signature = ptr_signature;
+	
+	?{}, i = #set0_64();
+	while(i < Li2_SK_LEN) {
+		c = (u8)[ptr_sk + i];
+		sk[(int) i] = c;
+		i += 1;
+	}
+	
+	signature, status = sign_inner(ptr_m, m_len, sk);
+
+	sig_addr = s_ptr_signature;
+	
+	?{}, i = #set0_64();
+	while(i < Li2_SIGN_LEN) {
+		c = signature[(int) i];
+		(u8) [sig_addr + i] = c;
+		i += 1;
+	}
+
+	return status;
+}

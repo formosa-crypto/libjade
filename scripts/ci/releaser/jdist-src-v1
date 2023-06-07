@@ -1,0 +1,244 @@
+#!/usr/bin/env bash
+
+#set -x
+
+# the first argument corresponds to the architecture:
+# - currently, there are only amd64 implementations
+# - future architectures might be: armv7m riscv
+#
+# notes about future work: 
+# - it would also be nice to consider to distribute AT&T vs Intel syntax
+#   assembly
+# - windows -- different calling convention
+
+# --
+dist_arch=$1
+
+# -- 
+dist_name=libjade-dist-src-$dist_arch
+
+libjade=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+libjade_src=$libjade/src
+libjade_test=$libjade/test
+
+dist=$libjade/$dist_name
+dist_src=$dist/libjade
+dist_ext=$dist/ext
+dist_doc=$dist/doc
+
+# -----------------------------------------------------------------------------
+replace_include()
+{
+  include_pattern=$1
+  include_file=$2
+  file=$3
+
+  sed -i "/#include \"$include_pattern\"/r $include_file" \
+     $file
+
+  sed -i "/#include \"$include_pattern\"/d" \
+     $file
+}
+
+# # -----------------------------------------------------------------------------
+# create distribution directory: $libjade/$dist_name
+rm -fr $dist
+mkdir -p $dist_src
+mkdir -p $dist_ext
+mkdir -p $dist_doc
+
+# -----------------------------------------------------------------------------
+# copy license and README.md and doc/api.md
+cp $libjade/LICENSE $dist/LICENSE
+cp $libjade/README.md $dist/README.md
+cp $libjade/doc/api.md $dist_doc/api.md
+
+# -----------------------------------------------------------------------------
+# copy ext randombytes
+make -C $libjade/ext/randombytes/ clean 1> /dev/null
+cp -r $libjade/ext/randombytes $dist/ext/randombytes
+
+# -----------------------------------------------------------------------------
+# copy assembly, jasmin, and c files
+#
+# notes:
+# - creating a distribution happens after compiling the source code;
+# - if, for some reason, a given implementation does not compile:
+#   - a distribution is still created with the available assembly files
+#   - for this reason, we 'follow' the assembly files:
+#     - more concretely, all operations that contains at least one assembly file
+
+# 1. for each operation that contains at least one assembly file
+find $libjade_src -name *.s | sed "s#$libjade_src/##" | cut -d'/' -f1 | sort -u | \
+while read operation
+do
+  # 1.0 initialize 'short' operation variable:
+  # - if operation is 'crypto_kem'
+  # - short_operation is 'kem'
+  short_operation=${operation/crypto_/}
+
+  # 1.1 create the operation directory under the distribution directory
+  mkdir $dist_src/$operation
+
+  # 1.2 find all assembly files under this operation and get the relative path
+  find $libjade_src/$operation -name *.s | sed "s#$libjade_src/$operation/##" | \
+  while read assembly_implementation
+  do
+    # 1.2.0 initialize some variables
+    dir_implementation=$(dirname $assembly_implementation)
+
+    namespace_suffix=$(tr '/-' '__' <<< $dir_implementation)
+    namespace_lc=jade_${short_operation}_$namespace_suffix
+    namespace_uc=JADE_$(tr 'a-z' 'A-Z' <<< $short_operation)_$namespace_suffix
+
+    jasmin_implementation=${assembly_implementation/.s/.jazz}
+
+    # 1.2.1 setup the destination base name
+    dest_base_name=$(tr '/-' '__' <<< $(sed "s#$dist_arch/##" <<< $dir_implementation))
+
+    # 1.2.2 create the destination directory 
+    mkdir $dist_src/$operation/$dest_base_name
+
+    # 1.2.3 copy the assembly file
+    cp $libjade_src/$operation/$assembly_implementation \
+       $dist_src/$operation/$dest_base_name/$dest_base_name.s
+
+    # 1.2.4 copy the header file
+    header_file=$dir_implementation/include/api.h
+    cp $libjade_src/$operation/$header_file \
+       $dist_src/$operation/$dest_base_name/$dest_base_name.h
+
+    # 1.2.5 setup the Makefile
+    makefile=$dist_src/$operation/$dest_base_name/Makefile
+cat <<END >> $makefile
+# --------------------------------------------------------------------
+AS      ?= as
+CC      ?= clang
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
+	         -fstrict-aliasing -fno-common -pipe
+JASMIN  ?= jasminc
+# --------------------------------------------------------------------
+END
+
+# -----------------------------------------------------------------------------
+if [ ! -f $libjade_src/$operation/$dir_implementation/.partial ]
+then
+
+    # 1.2.6 copy the example.c file
+    example_c=$dist_src/$operation/$dest_base_name/example.c
+
+    cp $libjade_test/$operation/functest.c \
+       $example_c
+
+    # 1.2.6.1 - example.c (or functest.c) contains some calls to functions
+    # defined in common/print.c: print_info and print_str_u8;
+    # - Considering that we aim at distributing a single file as our example,
+    # we need to replace '#include "print.h"' with the contents of
+    # 'print_dist.c', which just defines the functions needed to functest.c
+    # files; the same pattern applies for steps:
+
+    replace_include "print.h" $libjade_test/common/print_dist.c $example_c
+
+    # 1.2.6.2 - functest.c includes jade_*.h which define macros to allow
+    # the example to use calls such as jade_kem_keypair instead of 
+    # jade_kem_kyber_kyber768_amd64_avx2_keypair
+
+    replace_include "jade_$short_operation.h" \
+                    $libjade_test/include/jade_$short_operation.h \
+                    $example_c
+
+    # 1.2.6.2.1
+    replace_include "namespace.h" \
+                    $libjade_test/include/namespace_dist.h \
+                    $example_c
+
+    # 1.2.6.3 - replace api.h in '#include "api.h"' by $dest_base_name.h
+    sed -i "s/#include \"api.h\"/#include \"$dest_base_name.h\"/" \
+       $example_c
+
+    # 1.2.6.4 - define the namespaces
+    sed -i "1 i\#define JADE_NAMESPACE_LC $namespace_lc" $example_c
+    sed -i "2 i\#define JADE_NAMESPACE $namespace_uc\n"  $example_c
+
+    # 1.2.7 - resolve defines directives
+    sed -i 's/#include/\/\/include/' $file # 'escape' include directives
+    sed -i 's/^\(\s\)*$/\/\//' $file # 'escape' white-lines
+    mv $example_c $example_c.p.c
+    clang -E -C -P $example_c.p.c -o $example_c # 'solve' define directives
+    rm $example_c.p.c
+    sed -i 's/\/\/include/#include/' $example_c # 'restore' includes
+    sed -i 's/^\/\/$//' $example_c # 'restore' white lines
+    sed -i '/^$/N;/^\n$/D' $example_c # remove multiple white-lines
+
+# ---------------------------------------------------------
+# 1.2.7 : begin : setup the Makefile with a rule to build example
+# - to improve: detect which implementations / functest are actually
+# using randombytes; for the moment, the rule is always included
+# on every Makefile;
+# - for simplicity, we do not include $dest_base_name as a dependency
+# of example
+relative_path=../../..
+cat <<END >> $makefile
+
+default: example
+
+example: example.c $dest_base_name.s $relative_path/ext/randombytes/randombytes.o
+	\$(CC) \$(CFLAGS) -I$relative_path/ext/randombytes/ -o \$@ \$^
+
+$relative_path/ext/randombytes/randombytes.o: $relative_path/ext/randombytes/randombytes.c
+	make -C $relative_path/ext/randombytes/
+
+clean:
+	rm -f example
+
+# --------------------------------------------------------------------
+END
+# 1.2.7 : end : makefile
+# -----------------------------------------------------------------------------
+else
+
+cat <<END >> $makefile
+
+default: disclaimer
+
+disclaimer:
+	@echo "$dest_base_name.s does not define all API functions; As such, there is no example code in this folder."
+
+# --------------------------------------------------------------------
+END
+
+fi
+# end if that checks if the implementation is partial
+# -----------------------------------------------------------------------------
+
+    # 1.2.8 copy the preprocessed jazz file (if jpp is available)
+    # and extend the Makefile rules with a indirect target (to
+    # avoid rebuilding the distributed .s by mistake)
+    if [ -x "$(command -v jpp)" ]
+    then
+      source_jazz=$dist_src/$operation/$dest_base_name/$dest_base_name.jazz
+      jpp -in $libjade_src/$operation/$jasmin_implementation -out $source_jazz -I Jade:$libjade_src
+
+      make -C $libjade_src/$operation/$dir_implementation .jflags 1> /dev/null
+
+      jasminc_flags=$(cat $libjade_src/$operation/$dir_implementation/.jflags)
+
+## -------------------------------------------------------------------
+cat <<END >> $makefile
+
+__$dest_base_name.s:
+	\$(JASMIN) $jasminc_flags -nowarning $dest_base_name.jazz -o $dest_base_name.s
+
+END
+# -------------------------------------------------------------------
+    fi
+  done
+done
+
+# -----------------------------------------------------------------------------
+# compress
+find $dist -type f -name ".*" -exec rm {} \;
+(cd $libjade/ && tar -zcvf $dist_name.tar.gz $dist_name/)
+rm -fr $dist_name/
+

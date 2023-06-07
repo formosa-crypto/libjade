@@ -10,7 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
-#include "namespace.h"
+#include "jade_xof.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -30,12 +30,6 @@ void deallocate(state**);
 void unalign(state*);
 void realign(state*);
 void test(unsigned char*,state *);
-
-// ////////////////////////////////////////////////////////////////////////////
-
-#define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
-
-#define crypto_xof JADE_NAMESPACE_LC
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -115,23 +109,23 @@ void test(unsigned char *checksum_state, state *_s)
       
       output_prepare(s.h2, s.h, s.hlen);
       input_prepare(s.m2, s.m, s.mlen);
-      result = crypto_xof(s.h, s.hlen, s.m, s.mlen);
-      if (result != 0) fail("crypto_xof returns nonzero");
+      result = jade_xof(s.h, s.hlen, s.m, s.mlen);
+      if (result != 0) fail("jade_xof returns nonzero");
       checksum(checksum_state, s.h, s.hlen);
-      output_compare(s.h2, s.h, s.hlen,"crypto_xof");
-      input_compare(s.m2, s.m, s.mlen,"crypto_xof");
+      output_compare(s.h2, s.h, s.hlen,"jade_xof");
+      input_compare(s.m2, s.m, s.mlen,"jade_xof");
       
       double_canary(s.h2, s.h, s.hlen);
       double_canary(s.m2, s.m, s.mlen);
-      result = crypto_xof(s.h2, s.hlen, s.m2, s.mlen);
-      if (result != 0) fail("crypto_xof returns nonzero");
-      if (memcmp(s.h2, s.h, s.hlen) != 0) fail("crypto_xof is nondeterministic");
+      result = jade_xof(s.h2, s.hlen, s.m2, s.mlen);
+      if (result != 0) fail("jade_xof returns nonzero");
+      if (memcmp(s.h2, s.h, s.hlen) != 0) fail("jade_xof is nondeterministic");
       
       double_canary(s.h2, s.h, s.hlen);
       double_canary(s.m2, s.m, s.mlen);
-      result = crypto_xof(s.m2, s.hlen, s.m2, s.mlen);
-      if (result != 0) fail("crypto_xof with m=h overlap returns nonzero");
-      if (memcmp(s.m2, s.h, s.hlen) != 0) fail("crypto_xof does not handle m=h overlap");
+      result = jade_xof(s.m2, s.hlen, s.m2, s.mlen);
+      if (result != 0) fail("jade_xof with m=h overlap returns nonzero");
+      if (memcmp(s.m2, s.h, s.hlen) != 0) fail("jade_xof does not handle m=h overlap");
       memcpy(s.m2, s.m, s.mlen);
     }
   }
@@ -139,7 +133,7 @@ void test(unsigned char *checksum_state, state *_s)
 
 #include "try-anything.c"
 
-int main()
+int main(void)
 {
   return try_anything_main();
 }

@@ -1,0 +1,29 @@
+name: amd64-linux-main-safety
+
+on:
+  workflow_run:
+    workflows: [amd64-linux-main]
+    types: [completed]
+
+jobs:
+
+  safety:
+    runs-on: [self-hosted, linux, X64, amd64-main-safety]
+    timeout-minutes: 4320
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile
+        run: (timeout 4300m make -j$JOBS -C src/ CI=1 SAFETY_TIMEOUT=2880m safety) || true
+
+      - name: print logs
+        run: make -C src/ CI=1 reporter_safety
+
+      - name: libjade-logs-safety.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-safety.tar.gz
+          path: src/libjade-logs-src.tar.gz
+

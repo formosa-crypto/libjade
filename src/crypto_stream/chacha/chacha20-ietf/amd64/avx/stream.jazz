@@ -1,28 +1,48 @@
 param int CHACHA_ROUNDS=20;
 
 from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_state.jinc"
+
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_h.jinc"
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_h.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_entry_h.jinc"
+
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_store_v.jinc"
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha_core_v.jinc"
-from Jade require "crypto_stream/chacha/common/amd64/avx/_chacha.jinc"
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/chacha_entry_v.jinc"
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx_xor(reg u64 output plain len nonce key) -> reg u64
+from Jade require "crypto_stream/chacha/chacha20-ietf/amd64/avx/_chacha.jinc"
+
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx_xor(reg u64 output input input_length nonce key) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __chacha_xor_avx(output, plain, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_xor_avx(output, input, input_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }
 
-export fn jade_stream_chacha_chacha20_ietf_amd64_avx(reg u64 output len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx(reg u64 stream stream_length nonce key) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __chacha_avx(output, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_avx(stream, stream_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }
+
+//
+
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx_xor_ic(reg u64 output input input_length nonce, reg u32 counter, reg u64 key) -> reg u64
+{
+  reg u64 r;
+  __chacha_xor_avx_ic(output, input, input_length, nonce, counter, key);
+  ?{}, r = #set0();
+  return r;
+}
+
+export fn jade_stream_chacha_chacha20_ietf_amd64_avx_ic(reg u64 stream stream_length nonce, reg u32 counter, reg u64 key) -> reg u64
+{
+  reg u64 r;
+  __chacha_avx_ic(stream, stream_length, nonce, counter, key);
+  ?{}, r = #set0();
+  return r;
+}
+

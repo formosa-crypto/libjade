@@ -276,24 +276,24 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
   stack ptr u32[8] Hp;
   reg ptr u32[8] H;
   stack ptr u32[32] s_sblocks;
-  reg u64 oblocks tr;
-  stack u64 s_oblocks;
+  reg u64 i oblocks tr;
+  stack u64 s_i;
 
   Kp = SHA256_K;
   Hp = _H;
-  oblocks = 0;
+  i = 0;
 
   H = Hp;
 
-  while(nblocks > 0)
+  while(i < nblocks)
   {
+    s_i = i;
+    oblocks = i << 4;
     for t=0 to 16
     { v = sblocks[(int)oblocks + t];
       v = #BSWAP_32(v);
       W[t] = v;
     }
-    oblocks += 16;
-    s_oblocks = oblocks;
     s_sblocks = sblocks;
 
     for t=16 to 64
@@ -346,8 +346,8 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
     H = __store_H_ref(H,a,b,c,d,e,f,g,h);
 
     sblocks = s_sblocks;
-    oblocks = s_oblocks;
-    nblocks -= 1;
+    i = s_i;
+    i += 1;
   }
 
   _H = H;
@@ -358,11 +358,16 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
 inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
 {
   stack u32[32] sblocks;
+  inline int k;
   reg u64 i j nblocks;
   reg u8 v;
 
-  // copy in to sblocks
   i = 0;
+
+  // Zero-fill the sblocks array
+  for k = 0 to 32 { sblocks[k] = i; }
+
+  // copy in to sblocks
   while(i < inlen)
   { v = (u8)[in + i];
     sblocks[u8 (int)i] = v;
@@ -371,39 +376,23 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
 
   // set first byte after input to 0x80 
   sblocks[u8 (int)i] = 0x80;
-  i += 1;
 
   // check if one or two blocks are needed
-  if(inlen < 56) 
-  { j = (64-8); nblocks = 1; }
+  if(inlen < 56) // 448 / 8 = 56
+  { j = (64-8); nblocks = 1; i = 63; }
   else
-  { j = (128-8); nblocks = 2; }
-
-  // set remaining bytes to zero (can be optimized)
-  v = 0;
-  while(i < j)
-  { sblocks[u8 (int)i] = v;
-    i += 1;
-  }
-  i += 7; // i=63 || i=127
+  { j = (128-8); nblocks = 2; i = 127; }
 
   while(i >= j)
   { sblocks[u8 (int)i] = (8u) bits;
     bits >>= 8;
     i -= 1;
   }
-  i += 9; 
-
-  // set remaining bytes to zero (can be optimized)
-  while(i < 128)
-  { sblocks[u8 (int)i] = v;
-    i += 1;
-  }
 
   return sblocks, nblocks;
 }
 
-inline fn __sha256(reg u64 out in inlen)
+inline fn __sha256_ref(reg u64 out in inlen)
 {
   reg u64 bits nblocks;
   stack u64 s_bits;

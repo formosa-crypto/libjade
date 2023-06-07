@@ -1,5 +1,5 @@
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
-from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref1(reg ptr u64[25] a) -> reg u64[5]
@@ -60,7 +60,7 @@ inline fn __rol_sum_ref1(
   {
     x_ = (x + 3*y) % 5;
     y_ = x;
-    r = __rhotates(x_, y_);
+    r = __rhotates_spec(x_, y_);
 
     // B[x] = A[x',y']
     b[x] = a[x_ + y_*5];
@@ -94,7 +94,10 @@ inline fn __set_row_ref1(
   { 
     x1 = (x + 1) % 5;
     x2 = (x + 2) % 5;
-    t  = !b[x1] & b[x2];
+
+    //t  = !b[x1] & b[x2];
+    t = b[x1]; t = !t; t &= b[x2];
+
     t ^= b[x];
     if( x==0 && y==0 ){ t ^= s_rc; }
     e[x + y*5] = t;
@@ -135,7 +138,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
   e = s_e;
 
   c = 0;
-  while
+  while (c < KECCAK_ROUNDS - 1)
   {
     s_c = c;
 
@@ -151,7 +154,7 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 
     c = s_c;
     c += 2;
-  } (c < KECCAK_ROUNDS)
+  }
 
   return a;
 }
@@ -161,6 +164,15 @@ inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 fn _keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   a = __keccakf1600_ref1(a);
+  return a;
+}
+
+
+inline fn _keccakf1600_ref1_(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = a;
+  a = _keccakf1600_ref1(a);
+  a = a;
   return a;
 }
 

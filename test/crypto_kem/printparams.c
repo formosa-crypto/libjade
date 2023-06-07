@@ -1,16 +1,26 @@
 #include <stdio.h>
+
 #include "api.h"
+#include "jade_kem.h"
 
-#define PASTER(x, y) x##_##y
-#define EVALUATOR(x, y) PASTER(x, y)
-#define NAMESPACE(fun) EVALUATOR(JADE_NAMESPACE, fun)
-#define NAMESPACE_LC(fun) EVALUATOR(JADE_NAMESPACE_LC, fun)
+int main(void)
+{
+  printf("{\n");
 
-int main() {
-    printf("{\n");
-    printf("\t\"CRYPTO_SECRETKEYBYTES\": %u,\n",  NAMESPACE(SECRETKEYBYTES));
-    printf("\t\"CRYPTO_PUBLICKEYBYTES\": %u,\n",  NAMESPACE(PUBLICKEYBYTES));
-    printf("\t\"CRYPTO_CIPHERTEXTBYTES\": %u,\n", NAMESPACE(CIPHERTEXTBYTES));
-    printf("\t\"CRYPTO_BYTES\": %u,\n",           NAMESPACE(BYTES));
-    printf("\t\"CRYPTO_ALGNAME\": \"%s\"\n}\n",   NAMESPACE(ALGNAME));
+  printf(" \"JADE_KEM_ALGNAME\": \"%s\",\n", JADE_KEM_ALGNAME);
+  printf(" \"JADE_KEM_ARCH\": \"%s\",\n", JADE_KEM_ARCH);
+  printf(" \"JADE_KEM_IMPL\": \"%s\",\n", JADE_KEM_IMPL);
+
+  printf(" \"JADE_KEM_SECRETKEYBYTES\": %u,\n", JADE_KEM_SECRETKEYBYTES);
+  printf(" \"JADE_KEM_PUBLICKEYBYTES\": %u,\n", JADE_KEM_PUBLICKEYBYTES);
+  printf(" \"JADE_KEM_CIPHERTEXTBYTES\": %u,\n", JADE_KEM_CIPHERTEXTBYTES);
+
+  printf(" \"JADE_KEM_KEYPAIRCOINBYTES\": %u,\n", JADE_KEM_KEYPAIRCOINBYTES);
+  printf(" \"JADE_KEM_ENCCOINBYTES\": %u,\n", JADE_KEM_ENCCOINBYTES);
+
+  printf(" \"JADE_KEM_BYTES\": %u", JADE_KEM_BYTES);
+
+  printf("\n}\n");
+
+  return 0;
 }

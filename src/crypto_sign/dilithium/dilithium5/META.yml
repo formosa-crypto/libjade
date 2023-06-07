@@ -1,0 +1,20 @@
+name: Dilithium5
+type: sign
+checksumsmall: b1fd5d7815befbe9a254f4d3fd274f90f8b5f3ad245e33e9d4f88c5cdb925af2
+checksumbig: d18ce3c4014818331e8ccd6df9730700f2377926caeb86505dd8b35706af4533
+claimed-nist-level: 3
+implementations:
+    - name: amd64/ref
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+    - name: amd64/avx2
+      version: 0.1
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin

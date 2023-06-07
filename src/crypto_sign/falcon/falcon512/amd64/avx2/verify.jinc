@@ -1,0 +1,38 @@
+
+from Jade require "crypto_sign/falcon/falcon512/common/params.jinc"
+from Jade require "crypto_sign/falcon/falcon512/common/amd64/common.jinc"
+
+require "polymul.jinc"
+
+
+inline
+fn __verify_raw(stack u16[ARRAY_N] c0 s2 h) -> reg u32 {
+
+    stack u16[ARRAY_N] buff1 buff2;
+
+    reg u64 i;
+    reg u32 res;
+
+    i = 0;
+    while(i < ARRAY_N){
+        buff2[(int) i] = s2[(int) i];
+        i += 1;
+    }
+
+
+    buff2 = __NTT_transpose(buff2);
+    h = __NTT_transpose(h);
+
+    buff1 = __basemul(buff1, buff2, h);
+
+    buff1 = __iNTT_transpose(buff1);
+
+
+    buff1 = __sub_canonical(h, buff1, c0);
+
+    res = __is_short(buff1, s2);
+
+    return res;
+
+}
+

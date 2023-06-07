@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+
+# usage:   $ ./run   # runs with 1 JOBS (make -j1 ...)
+#          $ ./run 4 # runs with 4 JOBS (make -j4 ...)
+
+TOP=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+JOBS=1
+
+if [ ! "$#" -eq 0 ]
+then
+  JOBS=$1
+fi
+
+SLOG=CIs.log
+LLOG=CIl.log
+
+make_err()
+{
+  dir=$1
+  params=$2
+  tag=$3
+
+  (make -C $dir err CI=1 $params && echo "$tag: OK" >> $SLOG) || echo "$tag: ERROR" >> $SLOG;
+}
+
+# change directory to TOP (libjade/) and empty logs
+cd $TOP
+echo "" > $SLOG;
+echo "" > $LLOG;
+
+# compile
+(
+echo "#start: compile";
+make -j$JOBS -C src/ distclean CI=1;
+make -j$JOBS -C src/ default   CI=1;
+make         -C src/ reporter  CI=1 CICL="0";
+) >> $LLOG
+make_err src/ "" "compile"
+
+# dist-source
+echo "#start: dist-source"                                >> $LLOG
+env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-v1 amd64      >> $LLOG || \
+ echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-v1 amd64 "      >> $SLOG
+env JOBS=$JOBS ./scripts/ci/releaser/jdist-src-test-v1 amd64 >> $LLOG || \
+ echo "dist-source: ERROR, ./scripts/ci/releaser/jdist-src-test-v1 amd64 " >> $SLOG
+
+# test
+(
+echo "#start: test";
+make -j$JOBS -C test/ clean    CI=1;
+make -j$JOBS -C test/ default  CI=1;
+make         -C test/ reporter CI=1 CICL="0";
+) >> $LLOG
+make_err        test/ "" "test"
+
+# bench1
+(
+echo "#start: bench1";
+make -j1 -C bench/ clean    CI=1         ;
+make -j1 -C bench/ run      CI=1         DEFINE='-DTIMINGS=10';
+make     -C bench/ reporter CI=1;
+) >> $LLOG
+make_err    bench/ "" "bench1"
+
+# bench2
+(
+echo "#start: bench2";
+make -j1 -C bench/ clean    CI=1;
+make -j1 -C bench/ run      CI=1 DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
+make     -C bench/ reporter CI=1;
+) >> $LLOG
+make_err    bench/ "" "bench2"
+
+# proof-extracted
+(
+echo "#start: proof-extracted";
+make -j$JOBS -C proof/ check-extracted CI=1 ECJOBS=$JOBS;
+make         -C proof/ reporter        CI=1;
+) >> $LLOG
+make_err        proof/ "" "proof-extracted"
+
+# proof-all
+(
+echo "#start: proof-all";
+make -j$JOBS -C proof/ default  CI=1 ECJOBS=$JOBS;
+make         -C proof/ reporter CI=1;
+) # redirect to file not supported # >> $LLOG
+make_err        proof/ "" "proof-all"
+
+# dist-proof
+echo "#start: dist-proof"                         >> $LLOG
+env JOBS=$JOBS; ./scripts/ci/releaser/jdist-proof >> $LLOG || \
+ echo "dist-proof: ERROR, ./scripts/ci/releaser/jdist-proof amd64 " >> $SLOG
+
+

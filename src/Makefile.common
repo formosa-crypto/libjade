@@ -1,113 +1,136 @@
-###
 
-TOP = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
-SRC = $(TOP)/src/
-CDIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
-RDIR = $(subst $(SRC),,$(CDIR))
-PDIR = $(TOP)/proof/$(RDIR)
+# --------------------------------------------------------------------
+TOP   = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
+SRC   = $(TOP)/src/
+TEST  = $(TOP)/test/
+PROOF = $(TOP)/proof/
+
+CDIR  = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
+RDIR  = $(subst $(SRC),,$(CDIR))
+TDIR  = $(TEST)bin/$(RDIR)
+PDIR  = $(PROOF)$(RDIR)
+
+# OPERATION: crypto_kem, crypto_hash, ..., common; OP is a shorthand for OPERATION
 OPERATION = $(word 1, $(subst /, ,$(RDIR)))
+OP        = $(word 2, $(subst _, , $(OPERATION)_))
 NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
 
-#
-CIDIR =
+# --------------------------------------------------------------------
+
+include $(SRC)/Makefile.functions
+
+# --------------------------------------------------------------------
+CI_DIR =
 CIT =
 ifeq ($(CI),1)
-CIDIR := .ci
-CIT = 2> $(CIDIR)/$(@F).log && rm -f $(CIDIR)/$(@F).error || \
-     (echo $$? > $(CIDIR)/$(@F).error && \
-      cat $(CIDIR)/$(@F).log >> $(CIDIR)/$(@F).error && \
-      rm $(CIDIR)/$(@F).log && \
+CI_DIR := .ci
+CIT = 2> $(CI_DIR)/$(@F).log && rm -f $(CI_DIR)/$(@F).error || \
+     (echo $$? > $(CI_DIR)/$(@F).error && \
+      cat $(CI_DIR)/$(@F).log >> $(CI_DIR)/$(@F).error && \
+      rm $(CI_DIR)/$(@F).log && \
       exit 127)
 endif
 
-#
-JEXT ?= jazz
-JFLAGS := $(JFLAGS) -noinsertarraycopy
+# --------------------------------------------------------------------
+JEXT    ?= jazz
+override JFLAGS += -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
-JASMIN ?= jasminc
+JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
-COMPILE = ($(JASMINC) -o $@ $<) $(CIT)
+COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
-#
-ECDIR := $(PDIR)
+# --------------------------------------------------------------------
 include $(SRC)/$(OPERATION)/EcFlags.mk
-ECFLAGS = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT_S = (cd $(ECDIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
-EXTRACT_CT = (cd $(ECDIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
-#
-DEPSDIR := .deps
-DEPS = ((printf "$@: "; $(JASMINC) -print-dependencies $<) > $(DEPSDIR)/$(@F).d) $(CIT)
+EC_DIR     := $(PDIR)
+ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
+EXTRACT_S  = (cd $(EC_DIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
+EXTRACT_CT = (cd $(EC_DIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
-###
+# --------------------------------------------------------------------
+CHECKS_DIR := checks
 
+# --------------------------------------------------------------------
+DEPS_DIR := .deps
+DEPS = ((printf "$@: "; printf "$< "; $(JASMINC) -print-dependencies $<) > $(DEPS_DIR)/$(@F).d) $(CIT)
+DEPFILES :=
+
+# --------------------------------------------------------------------
 compile: $(SRCS:%.$(JEXT)=%.s)
 	@true
 
-###
+# --------------------------------------------------------------------
+# Note: by using a single-file extraction, only one Jasmin file can be processed (the first from SRCS)
 
-extract: extract_s extract_ct
+extract: $(EC_DIR)/extracted_s.ec $(EC_DIR)/extracted_ct.ec
 	@true
 
-extract_s: $(SRCS:%.$(JEXT)=$(ECDIR)/%_s.ec)
+$(EC_DIR)/extracted_s.ec : $(SRCS) $(DEPS_DIR)/extracted_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_S)
+
+$(EC_DIR)/extracted_ct.ec : $(SRCS) $(DEPS_DIR)/extracted_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_CT)
+
+# --------------------------------------------------------------------
+
+extract0: extract_s extract_ct
 	@true
 
-extract_ct: $(SRCS:%.$(JEXT)=$(ECDIR)/%_ct.ec)
+extract_s: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_s.ec)
 	@true
 
-###
-.PHONY: check-sct check-scton
+extract_ct: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_ct.ec)
+	@true
 
-check-sct: $(SRCS) | $(CIDIR)
-	($(JASMINC) -checkSCT $(CHECKSCTAFTER) $<) $(CIT)
+%.s : %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(COMPILE)
 
-# usage: """make check-scton F=[funtion_name]"""
-check-scton: $(SRCS) | $(CIDIR)
-	($(JASMINC) -checkSCTon $(F) $(CHECKSCTAFTER) $<) $(CIT)
+$(EC_DIR)/%_s.ec : %.$(JEXT) $(DEPS_DIR)/%_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_S)
 
-###
+$(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+	$(DEPS)
+	$(EXTRACT_CT)
 
-%.s : %.$(JEXT)
-%.s : %.$(JEXT) $(DEPSDIR)/%.s.d | $(DEPSDIR) $(CIDIR)
-	@$(DEPS)
-	@$(COMPILE)
+# --------------------------------------------------------------------
 
-###
+include $(SRC)/Makefile.checksafety
 
-$(ECDIR)/%_s.ec : %.$(JEXT)
-$(ECDIR)/%_s.ec : %.$(JEXT) $(DEPSDIR)/%_s.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
-	@$(DEPS)
-	@$(EXTRACT_S)
-
-$(ECDIR)/%_ct.ec : %.$(JEXT)
-$(ECDIR)/%_ct.ec : %.$(JEXT) $(DEPSDIR)/%_ct.ec.d | $(DEPSDIR) $(ECDIR) $(CIDIR)
-	@$(DEPS)
-	@$(EXTRACT_CT)
-
-###
-
-$(DEPSDIR): ; @mkdir -p $@
-$(ECDIR): ; @mkdir -p $@; touch $@/.gitkeep
+# --------------------------------------------------------------------
+$(CHECKSDIR): ; @mkdir -p $@
+$(DEPS_DIR): ; @mkdir -p $@
+$(EC_DIR): ; @mkdir -p $@; touch $@/.gitkeep
 ifeq ($(CI),1)
-$(CIDIR): ; @mkdir -p $@
+$(CI_DIR): ; @mkdir -p $@
 endif
 
-
 DEPFILES := \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%.s.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_s.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPSDIR)/%_ct.ec.d)
+ $(DEPFILES) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.s.d) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_s.ec.d) \
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_ct.ec.d) \
+ $(DEPS_DIR)/extracted_s.ec.d \
+ $(DEPS_DIR)/extracted_ct.ec.d
 
 $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
 
-###
-.PHONY: clean-ci clean
+# --------------------------------------------------------------------
+.PHONY: .jflags
+.jflags:
+	@echo -n "$(JFLAGS)" > .jflags
 
-clean-ci:
-	@rm -fr $(CIDIR)
+# --------------------------------------------------------------------
+.PHONY: clean
 
-clean: clean-ci
-	@rm -fr $(DEPSDIR) *.s *.o *.a
+clean:
+	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.o *.a .jflags *.out
+ifeq ($(CI),1)
+	@rm -fr $(CI_DIR)
+endif
 

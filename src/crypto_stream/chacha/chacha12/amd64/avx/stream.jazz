@@ -2,22 +2,18 @@ param int CHACHA_ROUNDS=12;
 
 from Jade require "crypto_stream/chacha/common/amd64/avx/chacha.jinc"
 
-export fn jade_stream_chacha_chacha12_amd64_avx_xor(reg u64 output plain len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha12_amd64_avx_xor(reg u64 output input input_length nonce key) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __chacha_xor_avx(output, plain, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_xor_avx(output, input, input_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }
 
-export fn jade_stream_chacha_chacha12_amd64_avx(reg u64 output len nonce key) -> reg u64
+export fn jade_stream_chacha_chacha12_amd64_avx(reg u64 stream stream_length nonce key) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __chacha_avx(output, len, nonce, key);
-  _,_,_,_,_,r = #set0();
+  __chacha_avx(stream, stream_length, nonce, key);
+  ?{}, r = #set0();
   return r;
 }

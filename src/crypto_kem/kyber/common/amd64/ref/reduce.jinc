@@ -1,0 +1,46 @@
+param int QINV    = 62209;     /* q^(-1) mod 2^16 */
+param int MONT    = 2285;      /* 2^16 % Q */
+param int BARR    = 20159;     /* (1U << 26)/KYBER_Q + 1 */
+
+inline
+fn __fqmul(reg u16 a, reg u16 b) -> reg u16
+{
+  reg u32 ad;
+  reg u32 bd;
+  reg u32 c;
+  reg u32 t;
+  reg u16 r;
+  reg u32 u;
+
+  ad = (32s)a;
+  bd = (32s)b;
+
+  c = ad * bd;
+
+  u = c * QINV;
+  u <<= 16;
+  //u = #SAR_32(u, 16);
+  u >>s= 16;
+  t = u * KYBER_Q;
+  t = c - t;
+  //t = #SAR_32(t, 16);
+  t >>s= 16;
+  r = t;
+  return r;
+}
+
+inline
+fn __barrett_reduce(reg u16 a) -> reg u16
+{
+  reg u32 t;
+  reg u16 r;
+  t = (32s)a;
+  t = t * BARR;
+  //t = #SAR_32(t, 26);
+  t >>s= 26;
+  t *= KYBER_Q;
+  r = t;
+  r = a;
+  r -= t;
+  return r;
+}

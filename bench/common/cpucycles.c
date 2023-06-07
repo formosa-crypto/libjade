@@ -1,5 +1,5 @@
-#ifndef CPUCYCLES_H
-#define CPUCYCLES_H
+#ifndef CPUCYCLES_C
+#define CPUCYCLES_C
 
 static inline uint64_t cpucycles(void) {
   uint64_t result;

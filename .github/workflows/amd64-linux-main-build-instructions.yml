@@ -1,0 +1,27 @@
+name: amd64-linux-main-build-instructions
+
+on:
+  workflow_dispatch:
+
+  schedule:
+    - cron:  '00 1 * * *'
+
+jobs:
+
+  build0:
+    runs-on: [self-hosted, linux, X64, amd64-instructions]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: sh scripts/ci/misc/jasmin-build-instructions0
+
+  build1:
+    runs-on: [self-hosted, linux, X64, amd64-instructions]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: build
+        run: sh scripts/ci/misc/jasmin-build-instructions1

@@ -2,7 +2,7 @@
 
 #include <inttypes.h>
 #include <string.h>
-#include "notrandombytes.h"
+#include "randombytes.h"
 
 
 // ////////////////////////////////////////////////////////////////////////////
@@ -154,7 +154,7 @@ static int crypto_rng(
   const uint8_t *g  /* old key */
 )
 {
-  unsigned char x[KEYBYTES + OUTPUTBYTES];
+  uint8_t x[KEYBYTES + OUTPUTBYTES];
   chacha20(x,sizeof x,nonce,g);
   memcpy(n,x,KEYBYTES);
   memcpy(r,x + KEYBYTES,OUTPUTBYTES);
@@ -165,29 +165,66 @@ static int crypto_rng(
 // ////////////////////////////////////////////////////////////////////////////
 
 
-static uint8_t g[KEYBYTES];
-static uint8_t r[OUTPUTBYTES];
-static uint64_t pos = OUTPUTBYTES;
+static uint8_t g0[KEYBYTES];
+static uint8_t g1[KEYBYTES];
 
-static void randombytes_internal(uint8_t *x, uint64_t xlen)
+static uint8_t r0[OUTPUTBYTES];
+static uint8_t r1[OUTPUTBYTES];
+
+static uint64_t pos0 = OUTPUTBYTES;
+static uint64_t pos1 = OUTPUTBYTES;
+
+static void randombytes_internal(
+  uint8_t *x, uint64_t xlen,
+  uint8_t *g, uint8_t *r,
+  uint64_t *pos
+)
 {
-  while (xlen > 0) {
-    if (pos == OUTPUTBYTES) {
-      crypto_rng(r,g,g);
-      pos = 0;
+  while (xlen > 0)
+  {
+    if ((*pos) == OUTPUTBYTES)
+    { crypto_rng(r,g,g);
+      *pos = 0;
     }
-    *x++ = r[pos]; xlen -= 1;
-    r[pos++] = 0;
+
+    *x = r[*pos]; x += 1;
+    xlen -= 1;
+    r[*pos] = 0; *pos += 1;
   }
 }
 
 
 // ////////////////////////////////////////////////////////////////////////////
 
-
-void notrandombytes(unsigned char *x, uint64_t xlen)
+void resetrandombytes(void)
 {
-  randombytes_internal(x,xlen);
+  pos0 = OUTPUTBYTES;
+  memset(g0, 0, KEYBYTES);
 }
 
+void randombytes(uint8_t* x, uint64_t xlen)
+{
+  randombytes_internal(x,xlen,g0,r0,&pos0);
+}
+
+// ////////
+
+void resetrandombytes1(void)
+{
+  pos1 = OUTPUTBYTES;
+  memset(g1, 0, KEYBYTES);
+}
+
+void randombytes1(uint8_t* x, uint64_t xlen)
+{
+  randombytes_internal(x,xlen,g1,r1,&pos1);
+}
+
+// ////////
+
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen)
+{
+  randombytes(x, xlen);
+  return x;
+}
 

@@ -2,75 +2,101 @@
 
 # --------------------------------------------------------------------
 AS      ?= as
-CC      ?= gcc
-CFLAGS  ?= -Wall -Ofast
+CC      ?= clang
+CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
+	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
+	         -fstrict-aliasing -fno-common -pipe
+JASMIN  ?= jasminc
+
+# --------------------------------------------------------------------
 CI      ?= 0
 export CI
+CICL    ?= "1"
+
+# --------------------------------------------------------------------
+LOGS    := libjade-logs-src.tar.gz
+
 EXCLUDE ?=
+SRC     := .
+
+FILTER  ?= $(SRC)/crypto_%
+JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
+SAFETY  ?= $(addsuffix safety, $(JAZZ))
+
+SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
+ASM     := $(shell find $(SRC) -name '*.s')
+API     := $(addsuffix include/api.h, $(dir $(ASM)))
+OBJ     := $(ASM:%.s=%.o)
 
 # --------------------------------------------------------------------
-SRC    := .
-BUILD  := .build
-
-ECMK   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(dir $(shell find $(SRC) -name 'Ec.mk'))) # just for cleaning .deps and .ci
-JAZZ   := $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz'))))
-API    := $(shell find $(SRC) -name 'api.h')
-ASM    := $(shell find $(SRC) -name '*.s')
-OBJ    := $(ASM:%.s=$(BUILD)/%.o)
-
-# --------------------------------------------------------------------
-.PHONY: default __libjade.a source $(JAZZ) clean-ci clean distclean check.tar.gz report err
-
-default: libjade.a libjade.h
-
-libjade.a: source
-	$(MAKE) __$@
-
-__libjade.a: $(OBJ)
-	ar -rc $(subst __,,$@) $(OBJ) && ranlib $(subst __,,$@)
 ifeq ($(CI),1)
-	$(MAKE) check.tar.gz
-	$(MAKE) report
+.PHONY: backward_compatibility
+backward_compatibility:
+	$(MAKE) default
+	$(MAKE) reporter
+	mv $(LOGS) check.tar.gz
 	$(MAKE) err
 endif
 
-libjade.h: $(API)
-	cat $(API) > $@
+# --------------------------------------------------------------------
+.PHONY: libjade.a libjade.h $(JAZZ) clean distclean $(LOGS)
+.INTERMEDIATE: $(OBJ)
 
-source: $(JAZZ)
+default: libjade.a libjade.h
+
+all: $(JAZZ)
+
+libjade.a: $(JAZZ)
+	$(MAKE) __libjade
+
+__libjade: $(OBJ)
+	ar -rc libjade.a $(OBJ)
+	ranlib libjade.a
+	echo "" | cat - $(API) > libjade.h
+
 $(JAZZ):
 	$(MAKE) -C $@ || true
-
-$(BUILD)/%.s: %.s
-	mkdir -p $(dir $@); cp $< $(dir $@)
 
 # --------------------------------------------------------------------
 check-sct:
 	for i in $(JAZZ); do $(MAKE) -C $$i $@ || exit 127; done
 
-# --------------------------------------------------------------------
-clean-ci:
-	for i in $(JAZZ); do $(MAKE) -C $$i clean-ci; done
-	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean-ci; done
+SAFETY_TIMEOUT ?= 1440m
+export SAFETY_TIMEOUT
 
-clean:
-	for i in $(JAZZ); do $(MAKE) -C $$i clean; done
-	for i in $(ECMK); do $(MAKE) -C $$i -f Ec.mk clean; done
+.PHONY: safety
+safety: $(SAFETY)
 
-distclean: clean
-	rm -fr libjade.a libjade.h $(BUILD) check.tar.gz
+$(SAFETY):
+	$(MAKE) -C $(@D) $(@F) || true
 
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 
-ERR := $(shell find $(SRC) -name '*.s.error')
-CIL := $(shell find $(SRC) -name '.ci')
+reporter:
+	$(MAKE) reporter_s
+	$(MAKE) $(LOGS)
 
-check.tar.gz:
-	@tar -zcvf $@ $(CIL)
+reporter_s:
+	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
+	$(MAKE) $(LOGS)
 
-report:
-	./../scripts/ci/jsrc
+reporter_safety:
+	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
+	$(MAKE) $(LOGS)
+
+ERR := $(shell find $(BIN) -name '*.error')
+CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+
+$(LOGS):
+	@$(JASMIN) -version > notes
+ifeq ($(words $(CIR)),0)
+	@echo "good job." >> notes
+	@tar -zcvf $@ notes
+else
+	@tar -zcvf $@ notes $(CIR)
+endif
+	@rm notes
 
 err:
 ifneq ($(words $(ERR)),0)
@@ -78,4 +104,11 @@ ifneq ($(words $(ERR)),0)
 endif
 
 endif
+
+# --------------------------------------------------------------------
+clean:
+	rm -f libjade.a libjade.h $(LOGS) check.tar.gz
+
+distclean: clean
+	for i in $(SOURCES); do $(MAKE) -C $$i clean; done
 

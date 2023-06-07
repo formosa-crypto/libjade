@@ -1,6 +1,5 @@
 *.eco
 *_s.ec
 *_ct.ec
+*.ec.out
 *Array*.ec
-check.tar.gz
-ecfiles.tar.gz

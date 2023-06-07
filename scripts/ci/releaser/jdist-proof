@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+name=libjade-dist-proof
+
+top=$(cd "$(dirname "$0")/../../../" ; pwd -P)
+proof=$top/proof
+dist=$top/$name;
+jade=$dist/jade
+
+# create distribution directory
+rm -fr $dist
+mkdir -p $jade;
+
+# copy ec files
+find $proof -name "*.ec" -exec dirname {} \; | sort -u | \
+while read ecdir;
+do
+  decdir=${ecdir/$proof/$jade};
+  mkdir -p $decdir;
+  cp $ecdir/* $decdir;
+done
+
+# copy tests.config
+cp $proof/tests.config $jade/
+
+# rm hidden files, compress, and delete dist directory
+find $dist -type f -name ".*" -exec rm {} \;
+(cd $top/ && tar -zcvf $name.tar.gz $name/)
+rm -fr $dist
+

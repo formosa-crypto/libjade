@@ -1,0 +1,98 @@
+// require "keygen_end.jinc"
+// require "sign_end.jinc"
+// require "verify_end.jinc"
+
+//
+inline fn __sign(reg u64 sm smlen_p m mlen sk) -> reg u64
+{
+  stack u64 s_sm;
+
+  stack u8[Li2_SK_LEN] secret_key; // we need these two bc of testing overlapping pointers but double-checkme
+  stack u8[Li2_SIGN_LEN] signature;
+  reg u8 c;
+  reg u64 i r smlen;
+  stack u32 status;
+  reg u32 r_status;
+
+  //
+  s_sm = sm;
+
+  // copy secret key
+  ?{}, i = #set0();
+  while(i < Li2_SK_LEN) {
+    c = (u8)[sk + i];
+    secret_key[(int) i] = c;
+    i += 1;
+  } // sk dead.
+
+  // write smlen_p
+  smlen = mlen;
+  smlen += Li2_SIGN_LEN;
+  (u64)[smlen_p + 0] = smlen; // smlen_p dead.
+
+  // copy message
+  sm = #LEA(sm + mlen + Li2_SIGN_LEN);
+  m  = #LEA(m + mlen);
+
+  ?{}, i = #set0();
+  while(i < mlen)
+  { m -= 1;
+    c = (u8)[m + 0];
+    sm -= 1;
+    (u8) [sm + 0] = c;
+    i += 1;
+  }
+
+  signature, status = sign_inner(sm, mlen, secret_key);
+
+  // copy signature
+  sm = s_sm;
+  ?{}, i = #set0();
+  while(i < Li2_SIGN_LEN)
+  { c = signature[(int) i];
+    (u8)[sm + i] = c;
+    i += 1;
+  }
+
+  //
+  r_status = status;
+  r = (64s) r_status;
+  return r;
+}
+
+//
+inline fn __open(reg u64 m mlen_p sm smlen pk) -> reg u64
+{
+  stack u64 s_sm s_m;
+  reg u8 c;
+  reg u32 r32;
+  reg u64 i r mlen;
+
+  //
+  s_sm = sm;
+  s_m = m;
+
+  // write mlen_p
+  mlen = smlen - Li2_SIGN_LEN; // this is a variable renaming (mlen and smlen are merged)
+  (u64)[mlen_p + 0] = mlen; // mlen_p dead
+  m = #LEA(sm + Li2_SIGN_LEN);
+
+  // verify
+  r32 = verify(sm, m, mlen, pk);
+  r = (64s) r32;
+
+  // copy message from sm to m
+  sm = s_sm;
+  m = s_m;
+
+  sm = #LEA(sm + Li2_SIGN_LEN);
+  ?{}, i = #set0();
+	while(i < mlen) {
+		c = (u8)[sm + i];
+		(u8)[m + i] = c;
+		i += 1;
+	}
+
+  return r;
+}
+

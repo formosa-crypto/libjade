@@ -1,0 +1,218 @@
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
+
+// SHAKE128 rate is 168 bytes
+// Then the pad byte is at the 8th byte of the 5th u256 block
+u256 SHAKE128_END_OF_ABSORB = (4u64)[0x8000000000000000, 0x0, 0x0, 0x0];
+u256 POLYDEG_4X = (4u64)[Li2_polydeg, Li2_polydeg, Li2_polydeg, Li2_polydeg];
+
+inline
+fn expandA_xof_buf_addr(reg u64 addr, reg u64 lane) -> reg u64
+{
+	reg u64 v64;
+
+	v64 = addr;
+	addr &= 0x7;
+	v64 &= 0xFFFFFFFFFFFFFFF8;
+	lane <<= 3;
+	addr |= lane;
+	v64 <<= 2;
+	addr |= v64;
+	return addr;
+}
+
+inline
+fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
+                        stack u64 coeffs_filled,
+                        stack u256[25] xof,
+                        reg u64 xof_offset,
+			reg u64 lane)
+	-> reg ptr u32[Li2_polydeg],
+	   stack u64,
+	   stack u256[25],
+	   stack u64
+{
+	// Assume the XOF buffer is full.
+	//
+	// Extract until:
+	//   * The poly buffer is full, or
+	//   * The XOF buffer is empty.
+	//
+	// Note: This function relies on the fact that the amount of bytes
+	// needed to sample a coefficient mod q (3 bytes) aligns with the
+	// SHAKE128 rate (168 bytes).  That is why we don't have to stash
+	// any bytes in some scratch space between calls.
+	//
+	// TODO: Make an attempt to un-inline this function
+	//
+	reg u32[3] vs;
+	reg u8 yield;
+	reg u64 addr;
+	reg u32 coeff;
+
+	reg u64 v64_1 v64_2;
+	
+	inline int ii;
+
+	?{}, yield = #set0_8();
+	while (yield == 0) {
+		for ii = 0 to 3 {
+			v64_1 = xof_offset;
+			v64_2 = lane;
+			addr = expandA_xof_buf_addr(v64_1, v64_2);
+			vs[ii] = (32u) xof[u8 (int) addr];
+			xof_offset += 1;
+		}
+
+		// There are now 3 bytes in vs[ii] ready for rejection sample
+		coeff = vs[0];
+		vs[1] <<= 8;
+		coeff |= vs[1];
+		vs[2] <<= 16;
+		coeff |= vs[2];
+
+		// Rejection-sample
+		coeff &= 0x7FFFFF;
+		if coeff < Li2_q {
+			addr = coeffs_filled;
+			poly[(int) addr] = coeff;
+			coeffs_filled += 1;
+			if coeffs_filled >= Li2_polydeg {
+				yield = 1;
+			}
+		}
+
+		if xof_offset >= SHAKE128_RATE {
+			// We have run out of random bytes.
+			// Yield back to the caller.
+			yield = 1;
+		}
+	}
+
+	return poly, coeffs_filled, xof, xof_offset;
+}
+
+inline
+fn expandA_chunk(
+	reg ptr u8[32] rho,
+	stack u64[4] nonces,
+	reg ptr u32[Li2_polydeg] poly0,
+	reg ptr u32[Li2_polydeg] poly1,
+	reg ptr u32[Li2_polydeg] poly2,
+	reg ptr u32[Li2_polydeg] poly3)
+	->
+	reg ptr u32[Li2_polydeg],
+	reg ptr u32[Li2_polydeg],
+	reg ptr u32[Li2_polydeg],
+	reg ptr u32[Li2_polydeg]
+{	
+	stack u256[25] xof;
+	
+	stack u64[4] coeffs_filled;
+	stack u64[4] xof_offset;
+	reg u64 lane;
+
+	reg u256 v256 v256_zero;
+	reg u64 v64;
+
+	reg u8 done;
+	reg bool zf;
+
+	inline int ii lane;
+
+	// Initialize the XOF state
+	for ii = 0 to 4 {
+		v64 = rho.[u64 8 * ii];
+		v256 = (256u) v64;
+		v256 = #VPBROADCAST_4u64(v256);
+		xof[ii] = v256;		
+	}	
+	for lane = 0 to 4 {
+		v64 = nonces[lane];
+		v64 = #LEA_64(0x1F0000 + v64);
+		xof[u64 16 + (int) lane] = v64;
+	}
+	?{}, v256_zero = #set0_256();
+	for ii = 5 to 20 {
+		xof[ii] = v256_zero;
+	}
+	v64 = 0x8000000000000000;
+	v256 = (256u) v64;
+	v256 = #VPBROADCAST_4u64(v256);
+	xof[20] = v256;
+	for ii = 21 to 25 {
+		xof[ii] = v256_zero;
+	}
+
+	?{}, done = #set0_8();
+	coeffs_filled[0] = 0;
+	coeffs_filled[1] = 0;
+	coeffs_filled[2] = 0;
+	coeffs_filled[3] = 0;
+	while {
+		v64 = coeffs_filled[lane];
+	} (done != 0x0F) {
+		xof = _keccakf1600_4x_avx2(xof);
+		for lane = 0 to 4 {
+			xof_offset[lane] = 0;
+		}
+
+		lane = 0;
+		_, _, _, _, zf = #TEST_8(done, 1 << lane);
+		if zf {
+			poly0, coeffs_filled[lane], xof, xof_offset[lane] =
+				expandA_poly_extract(
+					poly0,
+					coeffs_filled[lane],
+					xof, xof_offset[lane],
+					lane);
+			if (coeffs_filled[lane] >= Li2_polydeg) {
+				// TODO: opt: use setcc + shift to elim branch
+				done |= 1 << lane;
+			}
+		}
+		
+		lane = 1;
+		_, _, _, _, zf = #TEST_8(done, 1 << lane);
+		if zf {
+			poly1, coeffs_filled[lane], xof, xof_offset[lane] =
+				expandA_poly_extract(
+					poly1,
+					coeffs_filled[lane],
+					xof, xof_offset[lane],
+					lane);
+			if (coeffs_filled[lane] >= Li2_polydeg) {
+				done |= 1 << lane;
+			}
+		}
+
+		lane = 2;
+		_, _, _, _, zf = #TEST_8(done, 1 << lane);
+		if zf {
+			poly2, coeffs_filled[lane], xof, xof_offset[lane] =
+				expandA_poly_extract(
+					poly2,
+					coeffs_filled[lane],
+					xof, xof_offset[lane],
+					lane);
+			if (coeffs_filled[lane] >= Li2_polydeg) {
+				done |= 1 << lane;
+			}
+		}
+
+		lane = 3;
+		_, _, _, _, zf = #TEST_8(done, 1 << lane);
+		if zf {
+			poly3, coeffs_filled[lane], xof, xof_offset[lane] =
+				expandA_poly_extract(
+					poly3,
+					coeffs_filled[lane],
+					xof, xof_offset[lane],
+					lane);
+			if (coeffs_filled[lane] >= Li2_polydeg) {
+				done |= 1 << lane;
+			}
+		}
+	}
+
+	return poly0, poly1, poly2, poly3;
+}

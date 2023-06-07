@@ -1,11 +1,9 @@
 require "sha3-256.jinc"
 
-export fn jade_hash_sha3_256_amd64_ref(reg u64 out in inlen) -> reg u64
+export fn jade_hash_sha3_256_amd64_ref(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __sha3_256_ref(out, in, inlen);
-  _,_,_,_,_,r = #set0();
+  __sha3_256_ref(hash, input, input_length);
+  ?{}, r = #set0();
   return r;
 }

@@ -1,12 +1,9 @@
 require "shake256.jinc"
 
-export fn jade_xof_shake256_amd64_ref1(reg u64 out outlen in inlen) -> reg u64
+export fn jade_xof_shake256_amd64_ref1(reg u64 output output_length input input_length) -> reg u64
 {
   reg u64 r;
-
-  _ = #init_msf();
-  __shake256_ref1(out, outlen, in, inlen);
-  _,_,_,_,_,r = #set0();
-
+  __shake256_ref1(output, output_length, input, input_length);
+  ?{}, r = #set0();
   return r;
 }

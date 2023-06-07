@@ -10,7 +10,7 @@
 
 #include "try-anything.h"
 #include "api.h"
-#include "namespace.h"
+#include "jade_hash.h"
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -30,14 +30,6 @@ void deallocate(state**);
 void unalign(state*);
 void realign(state*);
 void test(unsigned char*,state *);
-
-// ////////////////////////////////////////////////////////////////////////////
-
-#define CRYPTO_BYTES NAMESPACE(BYTES)
-#define CRYPTO_ALGNAME NAMESPACE(ALGNAME)
-
-#define crypto_hash JADE_NAMESPACE_LC
-
 
 // ////////////////////////////////////////////////////////////////////////////
 
@@ -67,12 +59,12 @@ void allocate(state *s)
 
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
   if (alloclen < MAXTEST_BYTES) alloclen = MAXTEST_BYTES;
-  if (alloclen < CRYPTO_BYTES) alloclen = CRYPTO_BYTES;
+  if (alloclen < JADE_HASH_BYTES) alloclen = JADE_HASH_BYTES;
   s->h  = alignedcalloc(&(s->free[0]), alloclen);
   s->m  = alignedcalloc(&(s->free[1]), alloclen);
   s->h2 = alignedcalloc(&(s->free[2]), alloclen);
   s->m2 = alignedcalloc(&(s->free[3]), alloclen);
-  s->hlen = CRYPTO_BYTES;
+  s->hlen = JADE_HASH_BYTES;
 }
 
 void deallocate(state **_s)
@@ -114,30 +106,30 @@ void test(unsigned char *checksum_state, state *_s)
     
     output_prepare(s.h2, s.h, s.hlen);
     input_prepare(s.m2, s.m, s.mlen);
-    result = crypto_hash(s.h, s.m, s.mlen);
-    if (result != 0) fail("crypto_hash returns nonzero");
+    result = jade_hash(s.h, s.m, s.mlen);
+    if (result != 0) fail("jade_hash returns nonzero");
     checksum(checksum_state, s.h, s.hlen);
-    output_compare(s.h2, s.h, s.hlen,"crypto_hash");
-    input_compare(s.m2, s.m, s.mlen,"crypto_hash");
+    output_compare(s.h2, s.h, s.hlen,"jade_hash");
+    input_compare(s.m2, s.m, s.mlen,"jade_hash");
     
     double_canary(s.h2, s.h, s.hlen);
     double_canary(s.m2, s.m, s.mlen);
-    result = crypto_hash(s.h2, s.m2, s.mlen);
-    if (result != 0) fail("crypto_hash returns nonzero");
-    if (memcmp(s.h2, s.h, s.hlen) != 0) fail("crypto_hash is nondeterministic");
+    result = jade_hash(s.h2, s.m2, s.mlen);
+    if (result != 0) fail("jade_hash returns nonzero");
+    if (memcmp(s.h2, s.h, s.hlen) != 0) fail("jade_hash is nondeterministic");
     
     double_canary(s.h2, s.h, s.hlen);
     double_canary(s.m2, s.m, s.mlen);
-    result = crypto_hash(s.m2, s.m2, s.mlen);
-    if (result != 0) fail("crypto_hash with m=h overlap returns nonzero");
-    if (memcmp(s.m2, s.h, s.hlen) != 0) fail("crypto_hash does not handle m=h overlap");
+    result = jade_hash(s.m2, s.m2, s.mlen);
+    if (result != 0) fail("jade_hash with m=h overlap returns nonzero");
+    if (memcmp(s.m2, s.h, s.hlen) != 0) fail("jade_hash does not handle m=h overlap");
     memcpy(s.m2, s.m, s.mlen);
   }
 }
 
 #include "try-anything.c"
 
-int main()
+int main(void)
 {
   return try_anything_main();
 }

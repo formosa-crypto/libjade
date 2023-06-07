@@ -1,3 +1,6 @@
 [submodule "ext/ssbd-tools"]
-	path = ext/ssbd-tools
+	path = submodules/ssbd-tools
 	url = https://github.com/tyhicks/ssbd-tools.git
+[submodule "submodules/crypto-specs"]
+	path = submodules/crypto-specs
+	url = git@github.com:formosa-crypto/crypto-specs.git

@@ -4,15 +4,13 @@ from Jade require "crypto_kem/kyber/common/amd64/avx2/polyvec.jinc"
 require "gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair(reg u64 pkp, reg u64 skp) -> #msf reg u64
+fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] coins)
 {
   stack u64 spkp sskp;
-  stack u8[KYBER_SYMBYTES] rb;
   stack u16[KYBER_K*KYBER_VECN] aa;
   stack u16[KYBER_VECN] e pkpv skpv;
   stack u8[64] buf;
   stack u8[KYBER_SYMBYTES] publicseed noiseseed;
-  stack u8[32] inbuf;
   reg u64 t64;
   reg u8 nonce;
   inline int i;
@@ -22,16 +20,7 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp) -> #msf reg u64
   spkp = pkp;
   sskp = skp;
 
-  rb = #randombytes(rb); // CHECKME
-  ms = #init_msf();
-
-  for i=0 to KYBER_SYMBYTES/8
-  {
-    t64 = rb[u64 i];
-    inbuf[u64 i] = t64;
-  }
-
-  buf, ms = _isha3_512_32(buf, inbuf, ms);
+  buf = _sha3_512_32(buf, coins);
 
   for i=0 to KYBER_SYMBYTES/8
   {
@@ -82,8 +71,8 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp) -> #msf reg u64
 inline
 fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] noiseseed, #msf reg u64 ms) -> #msf reg u64
 {
-  stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_K*KYBER_VECN] aat;
+  stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
   stack ptr u8[KYBER_SYMBYTES] s_noiseseed;
@@ -153,8 +142,8 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
 inline
 fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] noiseseed, #msf reg u64 ms) -> reg ptr u8[KYBER_INDCPA_BYTES], #msf reg u64
 {
-  stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_K*KYBER_VECN] aat;
+  stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
   stack ptr u8[KYBER_SYMBYTES] s_noiseseed;

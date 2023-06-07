@@ -1,14 +1,20 @@
 #include <stdio.h>
+
 #include "api.h"
+#include "jade_scalarmult.h"
 
-#define PASTER(x, y) x##_##y
-#define EVALUATOR(x, y) PASTER(x, y)
-#define NAMESPACE(fun) EVALUATOR(JADE_NAMESPACE, fun)
-#define NAMESPACE_LC(fun) EVALUATOR(JADE_NAMESPACE_LC, fun)
+int main(void)
+{
+  printf("{\n");
 
-int main() {
-    printf("{\n");
-    printf("\t\"CRYPTO_BYTES\": %u,\n",         NAMESPACE(BYTES));
-    printf("\t\"CRYPTO_SCALARBYTES\": %u,\n",   NAMESPACE(SCALARBYTES));
-    printf("\t\"CRYPTO_ALGNAME\": \"%s\"\n}\n", NAMESPACE(ALGNAME));
+  printf(" \"JADE_SCALARMULT_ALGNAME\": \"%s\",\n", JADE_SCALARMULT_ALGNAME);
+  printf(" \"JADE_SCALARMULT_ARCH\": \"%s\",\n", JADE_SCALARMULT_ARCH);
+  printf(" \"JADE_SCALARMULT_IMPL\": \"%s\"", JADE_SCALARMULT_IMPL);
+
+  printf(" \"JADE_SCALARMULT_BYTES\": %u,\n", JADE_SCALARMULT_BYTES);
+  printf(" \"JADE_SCALARMULT_SCALARBYTES\": %u,\n", JADE_SCALARMULT_SCALARBYTES);
+
+  printf("\n}\n");
+
+  return 0;
 }

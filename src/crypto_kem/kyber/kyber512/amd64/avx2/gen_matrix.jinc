@@ -392,7 +392,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 32);
   fl1 = #SETcc(cf || zf);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
+  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
   fl2 = #SETcc(cf || zf);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -470,7 +470,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     fl1 = #SETcc(cf || zf);
 
     pos += 48;
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
+    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
     fl2 = #SETcc(cf || zf);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -480,7 +480,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
   fl1 = #SETcc(cf || zf);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
+  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
   fl2 = #SETcc(cf || zf);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -514,7 +514,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
     fl1 = #SETcc(cf || zf);
 
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
+    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
     fl2 = #SETcc(cf || zf);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
@@ -603,10 +603,9 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
   #secret reg u256 f;
   reg u64 ctr0 ctr1 ctr2 ctr3 tmp;
   reg u8 flg0 flg1 bflg;
-  reg bool cf zf, b;
-
+  reg bool cf zf;
   inline int i, j;
-
+  
   f = seed[u256 0];
   buf0[u256 0] = f;
   buf1[u256 0] = f;
@@ -692,8 +691,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     _, _, _, _, _, bflg = #OR_8(flg0, bflg);
     b = bflg == 0;
   }
-  ms = #set_msf(!(!b), ms);
-
   for i = 0 to KYBER_K
   {
     for j = 0 to KYBER_K
@@ -702,5 +699,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     }
   }
 
-  return rr, ms;
+
+  return rr;
 }

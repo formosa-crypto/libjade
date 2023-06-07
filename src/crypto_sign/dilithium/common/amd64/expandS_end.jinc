@@ -1,0 +1,28 @@
+
+//reminder to self
+//param int SHAKE256_RATE = 136;
+
+inline
+fn expandS(stack u8[64] rho_prime)
+	-> stack u32[Li2_l * Li2_polydeg], stack u32[Li2_k * Li2_polydeg]
+{
+	reg ptr u32[Li2_polydeg] entry;
+	stack u32[Li2_l * Li2_polydeg] s1;
+	stack u32[Li2_k * Li2_polydeg] s2;
+
+	inline int i;
+
+	for i = 0 to Li2_l {
+		entry = s1[Li2_polydeg * i : Li2_polydeg];
+		entry = expandS_poly(rho_prime, i, entry);
+		s1[Li2_polydeg * i : Li2_polydeg] = entry;
+	}
+
+	for i = 0 to Li2_k {
+		entry = s2[Li2_polydeg * i : Li2_polydeg];
+		entry = expandS_poly(rho_prime, Li2_l + i, entry);
+		s2[Li2_polydeg * i : Li2_polydeg] = entry;
+	}
+
+	return s1, s2;
+}

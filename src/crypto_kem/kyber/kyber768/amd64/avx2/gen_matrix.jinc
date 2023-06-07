@@ -296,16 +296,16 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
   reg u16 t;
   reg u64 pos ctr;
   reg u8 fl1 fl2;
-  reg bool cf zf b b1 b2 b3;
+  reg bool b;
 
   ctr = offset;
   pos = 0;
 
-  _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 1);
-  fl1 = #SETcc(cf || zf); //SETBE
+  ?{ "<=u" = b }= #CMP_64(ctr, KYBER_N - 1);
+  fl1 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(pos, buflen - 3);
-  fl2 = #SETcc(cf || zf);  //SETBE
+  ?{ "<=u" = b } = #CMP_64(pos, buflen - 3);
+  fl2 = #SETcc(b);
 
   _, _, _, _, b = #TEST_8(fl1, fl2);
 
@@ -360,12 +360,11 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
       ms = #set_msf(!b2, ms);
     }
 
+    ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 1);
+    fl1 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 1);
-    fl1 = #SETcc(cf || zf); //SETBE
-
-    _, cf, _, _, zf = #CMP_64(pos, buflen - 3);
-    fl2 = #SETcc(cf || zf);  //SETBE
+    ?{ "<=u" = b } = #CMP_64(pos, buflen - 3);
+    fl2 = #SETcc(b);
 
     _, _, _, _, b = #TEST_8(fl1, fl2);
   }
@@ -391,7 +390,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   reg u16 val0 val1 t16;
   reg ptr u8[2048] idxp;
   reg u8 fl1 fl2;
-  reg bool cf zf b b1 b2 b3;
+  reg bool b;
 
   idxp = ru_idx;
 
@@ -402,11 +401,11 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   mask = #VPBROADCAST_16u16(ru_mask_s);
   idx8 = ru_idx8_s[u256 0];
 
-  _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 32);
-  fl1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 32);
+  fl1 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
-  fl2 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
+  fl2 = #SETcc(b);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
 
@@ -480,22 +479,22 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
     ctr = t64_3;
 
-    _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 32);
-    fl1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 32);
+    fl1 = #SETcc(b);
 
     pos += 48;
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 48);
-    fl2 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 56);
+    fl2 = #SETcc(b);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
   }
   ms = #set_msf(!(!b), ms);
 
-  _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
-  fl1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 8);
+  fl1 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
-  fl2 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
+  fl2 = #SETcc(b);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
 
@@ -526,21 +525,21 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     ctr += good;
 
     pos += 12;
-    _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 8);
-    fl1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 8);
+    fl1 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 12);
-    fl2 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 16);
+    fl2 = #SETcc(b);
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
   }
   ms = #set_msf(!(!b), ms);
 
-  _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 1);
-  fl1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 1);
+  fl1 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 3);
-  fl2 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 3);
+  fl2 = #SETcc(b);
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
 
@@ -594,11 +593,11 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
       ms = #set_msf(!b2, ms);
     }
 
-    _, cf, _, _, zf = #CMP_64(ctr, KYBER_N - 1);
-    fl1 = #SETcc(cf || zf); //SETBE
+    ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 1);
+    fl1 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 3);
-    fl2 = #SETcc(cf || zf);  //SETBE
+    ?{ "<=u" = b } = #CMP_64(pos, REJ_UNIFORM_AVX_BUFLEN - 3);
+    fl2 = #SETcc(b);
 
     _, _, _, _, b = #TEST_8(fl1, fl2);
   }
@@ -623,7 +622,8 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
   reg u64 ctr0 ctr1 ctr2 ctr3 tmp;
   stack u64 ctr0_s;
   reg u8 flg0 flg1 bflg;
-  reg bool cf zf, b;
+  reg bool b;
+  reg bool zf;
 
   inline int i, j;
 
@@ -668,25 +668,24 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
   ctr2 = tmp;
   ctr3, rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], ms = _rej_uniform_avx(rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], buf3, ms);
 
-  _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-  flg0 = #SETcc(cf || zf); //SETBE
+  ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+  flg0 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(ctr1, KYBER_N - 1);
-  flg1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr1, KYBER_N - 1);
+  flg1 = #SETcc(b);
 
   _, _, _, _, _, bflg = #OR_8(flg0, flg1);
 
-  _, cf, _, _, zf = #CMP_64(ctr2, KYBER_N - 1);
-  flg0 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr2, KYBER_N - 1);
+  flg0 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(ctr3, KYBER_N - 1);
-  flg1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr3, KYBER_N - 1);
+  flg1 = #SETcc(b);
 
   _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
-  _, _, _, _, _, bflg = #OR_8(flg0, bflg);
+  _, _, _, _, zf, _ = #OR_8(flg0, bflg);
 
-  while{b = bflg == 0;}(!b) {
-    ms = #set_msf(!b, ms);
+  while (!zf) {
     state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE] = __shake128_squeezeblock4x(state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE]);
 
     ctr0, rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], ms = __rej_uniform(rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], ctr0, buf0[0:SHAKE128_RATE], SHAKE128_RATE, ms);
@@ -694,22 +693,22 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     ctr2, rr[0*KYBER_VECN+2*KYBER_N:KYBER_N], ms = __rej_uniform(rr[0*KYBER_VECN+2*KYBER_N:KYBER_N], ctr2, buf2[0:SHAKE128_RATE], SHAKE128_RATE, ms);
     ctr3, rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], ms = __rej_uniform(rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], ctr3, buf3[0:SHAKE128_RATE], SHAKE128_RATE, ms);
 
-    _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-    flg0 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+    flg0 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(ctr1, KYBER_N - 1);
-    flg1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr1, KYBER_N - 1);
+    flg1 = #SETcc(b);
 
     _, _, _, _, _, bflg = #OR_8(flg0, flg1);
 
-    _, cf, _, _, zf = #CMP_64(ctr2, KYBER_N - 1);
-    flg0 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr2, KYBER_N - 1);
+    flg0 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(ctr3, KYBER_N - 1);
-    flg1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr3, KYBER_N - 1);
+    flg1 = #SETcc(b);
 
     _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
-    _, _, _, _, _, bflg = #OR_8(flg0, bflg);
+    _, _, _, _, zf, _ = #OR_8(flg0, bflg);
   }
   ms = #set_msf(!(!b), ms);
 
@@ -754,25 +753,25 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
   ctr2 = tmp;
   ctr3, rr[2*KYBER_VECN+1*KYBER_N:KYBER_N], ms = _rej_uniform_avx(rr[2*KYBER_VECN+1*KYBER_N:KYBER_N], buf3, ms);
 
-  _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-  flg0 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+  flg0 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(ctr1, KYBER_N - 1);
-  flg1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr1, KYBER_N - 1);
+  flg1 = #SETcc(b);
 
   _, _, _, _, _, bflg = #OR_8(flg0, flg1);
 
-  _, cf, _, _, zf = #CMP_64(ctr2, KYBER_N - 1);
-  flg0 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr2, KYBER_N - 1);
+  flg0 = #SETcc(b);
 
-  _, cf, _, _, zf = #CMP_64(ctr3, KYBER_N - 1);
-  flg1 = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr3, KYBER_N - 1);
+  flg1 = #SETcc(b);
 
   _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
-  _, _, _, _, _, bflg = #OR_8(flg0, bflg);
+  _, _, _, _, zf, _ = #OR_8(flg0, bflg);
 
-  while{b = bflg == 0;}(!b) {
-    ms = #set_msf(!b, ms);
+
+  while(!zf) {
     state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE] = __shake128_squeezeblock4x(state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE]);
 
     ctr0, rr[1*KYBER_VECN+1*KYBER_N:KYBER_N], ms = __rej_uniform(rr[1*KYBER_VECN+1*KYBER_N:KYBER_N], ctr0, buf0[0:SHAKE128_RATE], SHAKE128_RATE, ms);
@@ -780,22 +779,22 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     ctr2, rr[2*KYBER_VECN+0*KYBER_N:KYBER_N], ms = __rej_uniform(rr[2*KYBER_VECN+0*KYBER_N:KYBER_N], ctr2, buf2[0:SHAKE128_RATE], SHAKE128_RATE, ms);
     ctr3, rr[2*KYBER_VECN+1*KYBER_N:KYBER_N], ms = __rej_uniform(rr[2*KYBER_VECN+1*KYBER_N:KYBER_N], ctr3, buf3[0:SHAKE128_RATE], SHAKE128_RATE, ms);
 
-    _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-    flg0 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+    flg0 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(ctr1, KYBER_N - 1);
-    flg1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr1, KYBER_N - 1);
+    flg1 = #SETcc(b);
 
     _, _, _, _, _, bflg = #OR_8(flg0, flg1);
 
-    _, cf, _, _, zf = #CMP_64(ctr2, KYBER_N - 1);
-    flg0 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr2, KYBER_N - 1);
+    flg0 = #SETcc(b);
 
-    _, cf, _, _, zf = #CMP_64(ctr3, KYBER_N - 1);
-    flg1 = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr3, KYBER_N - 1);
+    flg1 = #SETcc(b);
 
     _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
-    _, _, _, _, _, bflg = #OR_8(flg0, bflg);
+    _, _, _, _, zf, _ = #OR_8(flg0, bflg);
   }
   ms = #set_msf(!(!b), ms);
 
@@ -812,8 +811,8 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
 
   ctr0, rr[2*KYBER_VECN+2*KYBER_N:KYBER_N], ms = _rej_uniform_avx(rr[2*KYBER_VECN+2*KYBER_N:KYBER_N], buf0, ms);
 
-  _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-  bflg = #SETcc(cf || zf);
+  ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+  bflg = #SETcc(b);
 
   for i=0 to 7 { statev[i] = s_state[u256 i]; }
 
@@ -823,8 +822,8 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
 
     ctr0, rr[2*KYBER_VECN+2*KYBER_N:KYBER_N], ms = __rej_uniform(rr[2*KYBER_VECN+2*KYBER_N:KYBER_N], ctr0, buf0[0:SHAKE128_RATE], SHAKE128_RATE, ms);
 
-    _, cf, _, _, zf = #CMP_64(ctr0, KYBER_N - 1);
-    bflg = #SETcc(cf || zf);
+    ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
+    bflg = #SETcc(b);
   }
   ms = #set_msf(!(!b), ms);
 

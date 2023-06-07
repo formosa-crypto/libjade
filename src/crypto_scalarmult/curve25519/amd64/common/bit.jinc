@@ -8,7 +8,7 @@ inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
 
   p = ctr;
   p &= 7;
-  bit >>= p;
+  bit >>= (p & 63);
 
   bit &= 1;
 
