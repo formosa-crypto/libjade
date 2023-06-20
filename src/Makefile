@@ -22,6 +22,7 @@ SRC     := .
 FILTER  ?= $(SRC)/crypto_%
 JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 SAFETY  ?= $(addsuffix safety, $(JAZZ))
+SCT     ?= $(addsuffix sct, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -58,8 +59,6 @@ $(JAZZ):
 	$(MAKE) -C $@ || true
 
 # --------------------------------------------------------------------
-check-sct:
-	for i in $(JAZZ); do $(MAKE) -C $$i $@ || exit 127; done
 
 SAFETY_TIMEOUT ?= 1440m
 export SAFETY_TIMEOUT
@@ -71,10 +70,19 @@ $(SAFETY):
 	$(MAKE) -C $(@D) $(@F) || true
 
 # --------------------------------------------------------------------
+
+.PHONY: sct
+sct: $(SCT)
+
+$(SCT):
+	$(MAKE) -C $(@D) $(@F) || true
+
+# --------------------------------------------------------------------
 ifeq ($(CI),1)
 
 reporter:
 	$(MAKE) reporter_s
+	$(MAKE) reporter_sct
 	$(MAKE) $(LOGS)
 
 reporter_s:
@@ -83,6 +91,10 @@ reporter_s:
 
 reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
+	$(MAKE) $(LOGS)
+
+reporter_sct:
+	./../scripts/ci/reporter/jlog "Constant-time status" src/ *.sct $(CICL)
 	$(MAKE) $(LOGS)
 
 ERR := $(shell find $(BIN) -name '*.error')

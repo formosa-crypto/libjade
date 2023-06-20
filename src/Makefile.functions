@@ -1,41 +1,47 @@
 ifeq ($(OP),kem)
 ifeq ($(SRCS),kem.jazz)
-FUNCTIONS = $(addprefix $(NAMESPACE)_, keypair_derand keypair enc_derand enc dec)
+FN ?= $(addprefix $(NAMESPACE)_, keypair_derand keypair enc_derand enc dec)
 endif
 endif
 
 ifeq ($(OP),hash)
 ifeq ($(SRCS),hash.jazz)
-FUNCTIONS = $(NAMESPACE)
+FN ?= $(NAMESPACE)
 endif
 endif
 
 ifeq ($(OP),onetimeauth)
 ifeq ($(SRCS),onetimeauth.jazz)
-FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_verify
+FN ?= $(NAMESPACE) $(NAMESPACE)_verify
 endif
 endif
 
 ifeq ($(OP),scalarmult)
 ifeq ($(SRCS),scalarmult.jazz)
-FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_base
+FN ?= $(NAMESPACE) $(NAMESPACE)_base
 endif
 endif
 
 ifeq ($(OP),secretbox)
 ifeq ($(SRCS),secretbox.jazz)
-FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_open
+FN ?= $(NAMESPACE) $(NAMESPACE)_open
 endif
 endif
 
 ifeq ($(OP),sign)
 ifeq ($(SRCS),sign.jazz)
-FUNCTIONS = $(NAMESPACE)_keypair $(NAMESPACE) $(NAMESPACE)_open
+FN ?= $(NAMESPACE)_keypair $(NAMESPACE) $(NAMESPACE)_open
+endif
+endif
+
+ifeq ($(OP),stream)
+ifeq ($(SRCS),stream.jazz)
+FN ?= $(NAMESPACE) $(NAMESPACE)_xor
 endif
 endif
 
 ifeq ($(OP),xof)
 ifeq ($(SRCS),xof.jazz)
-FUNCTIONS = $(NAMESPACE)
+FN ?= $(NAMESPACE)
 endif
 endif
