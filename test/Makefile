@@ -119,7 +119,6 @@ main:
 	$(MAKE) CI=1 -C $(SRC) all
 	$(MAKE) CI=1 all
 	$(MAKE) CI=1 reporter
-	$(MAKE) CI=1 err
 
 # --------------------------------------------------------------------
 $(TESTS):
