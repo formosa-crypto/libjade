@@ -14,7 +14,7 @@ export CI
 CICL    ?= "1"
 
 # --------------------------------------------------------------------
-LOGS    := libjade-logs-src.tar.gz
+LOGS    := libjade-logs-src
 
 EXCLUDE ?=
 SRC     := .
@@ -35,12 +35,12 @@ ifeq ($(CI),1)
 backward_compatibility:
 	$(MAKE) default
 	$(MAKE) reporter
-	mv $(LOGS) check.tar.gz
+	mv $(LOGS).tar.gz check.tar.gz
 	$(MAKE) err
 endif
 
 # --------------------------------------------------------------------
-.PHONY: libjade.a libjade.h $(JAZZ) clean distclean $(LOGS)
+.PHONY: libjade.a libjade.h $(JAZZ) clean distclean $(LOGS).tar.gz
 .INTERMEDIATE: $(OBJ)
 
 default: libjade.a libjade.h
@@ -83,32 +83,33 @@ ifeq ($(CI),1)
 reporter:
 	$(MAKE) reporter_s
 	$(MAKE) reporter_sct
-	$(MAKE) $(LOGS)
+	$(MAKE) logs
 
 reporter_s:
 	./../scripts/ci/reporter/jlog "Compilation status" src/ *.s $(CICL)
-	$(MAKE) $(LOGS)
 
 reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
-	$(MAKE) $(LOGS)
 
 reporter_sct:
 	./../scripts/ci/reporter/jlog "Constant-time status" src/ *.sct $(CICL)
-	$(MAKE) $(LOGS)
 
-ERR := $(shell find $(BIN) -name '*.error')
-CIR := $(shell find $(BIN) -name '*.log') $(ERR)
+ERR := $(shell find . -name '*.error')
+CIR := $(shell find . -name '*.log') $(ERR)
 
-$(LOGS):
-	@$(JASMIN) -version > notes
+logs: $(LOGS).tar.gz
+
+$(LOGS).tar.gz:
+	mkdir $(LOGS)
+	@$(JASMIN) -version > $(LOGS)/notes
 ifeq ($(words $(CIR)),0)
-	@echo "good job." >> notes
-	@tar -zcvf $@ notes
+	echo "good job." >> $(LOGS)/notes
+	tar -zcvf $@ $(LOGS)
 else
-	@tar -zcvf $@ notes $(CIR)
+	for file in $(CIR); do cp $$file $(LOGS)/; done
+	tar -zcvf $@ $(LOGS)
 endif
-	@rm notes
+	rm -fr $(LOGS)
 
 err:
 ifneq ($(words $(ERR)),0)

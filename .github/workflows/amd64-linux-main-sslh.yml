@@ -21,6 +21,9 @@ jobs:
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter_sct
 
+      - name: build tar.gz with with *.log and *.error
+        run: JASMIN=$(which_jasminc) make -C src/ CI=1 logs
+
       - name: (does NOT) return error if there are any errors (to avoid spam)
         run: (make -C src/ CI=1 err) || true
 
@@ -28,7 +31,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v3
         with:
-          name: libjade-logs-src.tar.gz
+          name: libjade-logs-src-sct.tar.gz
           path: src/libjade-logs-src.tar.gz
 
   compile:
