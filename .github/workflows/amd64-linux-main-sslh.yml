@@ -9,9 +9,30 @@ on:
 
 jobs:
 
+  sct:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
 
+      - name: compile
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 sct
+
+      - name: print logs
+        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter_sct
+
+      - name: (does NOT) return error if there are any errors (to avoid spam)
+        run: (make -C src/ CI=1 err) || true
+
+      - name: libjade-logs-src-sct.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-src.tar.gz
+          path: src/libjade-logs-src.tar.gz
 
   compile:
+    needs: [sct]
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
@@ -32,4 +53,27 @@ jobs:
         with:
           name: libjade-logs-src.tar.gz
           path: src/libjade-logs-src.tar.gz
+
+  test:
+    needs: [compile]
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile and run
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 default
+
+      - name: print logs
+        run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
+
+      - name: (does NOT) return error if there are any errors
+        run: (make -C test/ CI=1 err) || true
+
+      - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-logs-test.tar.gz
+          path: test/libjade-logs-test.tar.gz
 
