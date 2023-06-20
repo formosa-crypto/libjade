@@ -3,16 +3,24 @@ require "curve25519.jinc"
 export fn jade_scalarmult_curve25519_amd64_ref5(reg u64 q n p) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __curve25519_ref5(q, n, p);
   ?{}, r = #set0();
+
   return r;
 }
 
 export fn jade_scalarmult_curve25519_amd64_ref5_base(reg u64 q n) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __curve25519_ref5_base(q, n);
   ?{}, r = #set0();
+
   return r;
 }
 
