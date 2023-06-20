@@ -94,19 +94,27 @@ reporter_safety:
 reporter_sct:
 	./../scripts/ci/reporter/jlog "Constant-time status" src/ *.sct $(CICL)
 
-ERR := $(shell find . -name '*.error')
-CIR := $(shell find . -name '*.log') $(ERR)
+ERR := $(subst ./,, $(shell find . -name '*.error'))
+CIR := $(subst ./,, $(shell find . -name '*.log') $(ERR))
+
+echo_CIR:
+	echo $(CIR)
 
 logs: $(LOGS).tar.gz
 
 $(LOGS).tar.gz:
-	mkdir $(LOGS)
+	mkdir -p $(LOGS)
+	rm -fr $(LOGS)/*
 	@$(JASMIN) -version > $(LOGS)/notes
 ifeq ($(words $(CIR)),0)
 	echo "good job." >> $(LOGS)/notes
 	tar -zcvf $@ $(LOGS)
 else
-	for file in $(CIR); do cp $$file $(LOGS)/; done
+	for file in $(CIR); do \
+		mkdir -p $(LOGS)/$$(dirname $$(dirname $$file)); \
+		cp $$file $(LOGS)/$$(dirname $$(dirname $$file))/; \
+		echo $(LOGS)/$$(dirname $$(dirname $$file))/$$(basename $$file) >> $(LOGS)/notes; \
+	done
 	tar -zcvf $@ $(LOGS)
 endif
 	rm -fr $(LOGS)
