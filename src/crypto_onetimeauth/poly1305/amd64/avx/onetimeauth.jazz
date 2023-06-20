@@ -4,6 +4,8 @@ export fn jade_onetimeauth_poly1305_amd64_avx(reg u64 mac input input_length key
 {
   reg u64 r;
 
+  _ = #init_msf();
+
   mac = mac;
   input = input;
   input_length = input_length;
@@ -18,6 +20,8 @@ export fn jade_onetimeauth_poly1305_amd64_avx(reg u64 mac input input_length key
 export fn jade_onetimeauth_poly1305_amd64_avx_verify(reg u64 mac input input_length key) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
 
   mac = mac;
   input = input;
