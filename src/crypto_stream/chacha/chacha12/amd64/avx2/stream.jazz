@@ -5,15 +5,23 @@ from Jade require "crypto_stream/chacha/common/amd64/avx2/chacha.jinc"
 export fn jade_stream_chacha_chacha12_amd64_avx2_xor(reg u64 output input input_length nonce key) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __chacha_xor_avx2(output, input, input_length, nonce, key);
   ?{}, r = #set0();
+
   return r;
 }
 
 export fn jade_stream_chacha_chacha12_amd64_avx2(reg u64 stream stream_length nonce key) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __chacha_avx2(stream, stream_length, nonce, key);
   ?{}, r = #set0();
+
   return r;
 }

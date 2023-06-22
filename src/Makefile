@@ -92,7 +92,7 @@ reporter_safety:
 	./../scripts/ci/reporter/jlog "Safety status" src/ *.safety $(CICL)
 
 reporter_sct:
-	./../scripts/ci/reporter/jlog "Constant-time status" src/ *.sct $(CICL)
+	./../scripts/ci/reporter/jlog "Speculative constant-time status" src/ *.sct $(CICL)
 
 ERR := $(subst ./,, $(shell find . -name '*.error'))
 CIR := $(subst ./,, $(shell find . -name '*.log') $(ERR))
