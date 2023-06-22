@@ -6,11 +6,11 @@ fn _chacha_xor_ref_ic(reg u64 output input len nonce, reg u32 counter, reg u64 k
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
+  st = __init_ref(nonce, counter, key);
+
   s_output = output;
   s_input = input;
   s_len = len;
-
-  st = __init_ref(nonce, counter, key);
 
   while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
@@ -52,10 +52,10 @@ fn _chacha_ref_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
   reg u32[16] k;  // the full state is in k[0..14] and k15;
   stack u32 k15;
 
+  st = __init_ref(nonce, counter, key);
+
   s_output = output;
   s_len = len;
-
-  st = __init_ref(nonce, counter, key);
 
   while {len = s_len;} (len >= 64)
   { k, k15 = __copy_state_ref(st);
