@@ -93,8 +93,7 @@ inline fn __montgomery_ladder5(
 {
   stack u64[5] us x2 x3 z3;
   reg u64[5] z2r;
-  stack u64 swapped;
-  #mmx reg u64 ctrx;
+  stack u64 swapped ctrs;
   reg u64 ctr;
 
   (x2,z2r,x3,z3) = __init_points5(u); 
@@ -106,12 +105,12 @@ inline fn __montgomery_ladder5(
   while
   {
     ctr -= 1;
-    ctrx = ctr;
+    ctrs = ctr;
 
     (x2, z2r, x3, z3, swapped) = 
       __montgomery_ladder_step5(k, us, x2, z2r, x3, z3, swapped, ctr);
 
-    ctr = ctrx;
+    ctr = ctrs;
   } (ctr > 0)
 
   return x2, z2r;
@@ -149,14 +148,14 @@ inline fn __curve25519_ref5(reg u64 rp kp up)
   stack u8[32] k;
   reg u64[5] u;
   reg u64[4] r;
-  #mmx reg u64 rpx;
+  stack u64 rps;
 
-  rpx = rp;
+  rps = rp;
   k = __decode_scalar(kp);
   u = __decode_u_coordinate5(up);
   r = __curve25519_internal_ref5(k, u);
 
-  rp = rpx;
+  rp = rps;
   for i=0 to 4
   { [rp + 8*i] = r[i]; }
 }
@@ -167,14 +166,14 @@ inline fn __curve25519_ref5_base(reg u64 rp kp)
   stack u8[32] k;
   reg u64[5] u;
   reg u64[4] r;
-  #mmx reg u64 rpx;
+  stack u64 rps;
 
-  rpx = rp;
+  rps = rp;
   k = __decode_scalar(kp);
   u = __decode_u_coordinate_base5();
   r = __curve25519_internal_ref5(k, u);
 
-  rp = rpx;
+  rp = rps;
   for i=0 to 4
   { [rp + 8*i] = r[i]; }
 }
