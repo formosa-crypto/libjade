@@ -2,6 +2,9 @@ param int QINV    = 62209;     /* q^(-1) mod 2^16 */
 param int MONT    = 2285;      /* 2^16 % Q */
 param int BARR    = 20159;     /* (1U << 26)/KYBER_Q + 1 */
 
+
+/*
+// previous version (proven correct)
 inline
 fn __fqmul(reg u16 a, reg u16 b) -> reg u16
 {
@@ -19,13 +22,33 @@ fn __fqmul(reg u16 a, reg u16 b) -> reg u16
 
   u = c * QINV;
   u <<= 16;
-  //u = #SAR_32(u, 16);
   u >>s= 16;
+
   t = u * KYBER_Q;
   t = c - t;
-  //t = #SAR_32(t, 16);
   t >>s= 16;
   r = t;
+  return r;
+}
+*/
+
+inline fn __fqmul(reg u16 a b) -> reg u16
+{
+  reg u32 ad bd c t u;
+  reg u16 r;
+
+  ad = (32s) a;
+  bd = (32s) b;
+  c = ad * bd;
+
+  u = c * (QINV << 16); // merge multiplication of u (<<16)
+  u >>s= 16;
+
+  t = u * -KYBER_Q; // replace sub by add
+  t += c;
+  t >>s= 16;
+  r = t;
+
   return r;
 }
 
