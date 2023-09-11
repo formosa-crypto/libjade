@@ -72,12 +72,16 @@ export FILTER
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
+JAZZ_NISTKAT    ?= $(filter $(SRC)/crypto_kem/kyber/%, $(JAZZ))
+TESTDIR_NISTKAT := $(subst $(SRC),$(BIN), $(JAZZ_NISTKAT))
+
 CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
 CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
 PRINTPARAMS       := $(addsuffix printparams,   $(TESTDIR))
 FUNCTEST          := $(addsuffix functest,      $(TESTDIR))
 SAFETYPARAMS      := $(addsuffix safetyparams,  $(TESTDIR))
 MEMORY            := $(addsuffix memory,        $(TESTDIR))
+NISTKAT           := $(addsuffix nistkat,       $(TESTDIR_NISTKAT))
 
 CHECKSUMSMALL_OUT := $(addsuffix .out, $(CHECKSUMSMALL))
 CHECKSUMBIG_OUT   := $(addsuffix .out, $(CHECKSUMBIG))
@@ -85,9 +89,10 @@ PRINTPARAMS_OUT   := $(addsuffix .out, $(PRINTPARAMS))
 FUNCTEST_OUT      := $(addsuffix .out, $(FUNCTEST))
 SAFETYPARAMS_OUT  := $(addsuffix .out, $(SAFETYPARAMS))
 MEMORY_OUT        := $(addsuffix .out, $(MEMORY))
+NISTKAT_OUT       := $(addsuffix .out, $(NISTKAT))
 
-TESTS             := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
-OUT               := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
+TESTS             := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)     $(NISTKAT)
+OUT               := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT) $(NISTKAT_OUT)
 STDOUT            := $(subst .out,.stdout, $(OUT))
 
 # --------------------------------------------------------------------
@@ -154,6 +159,11 @@ include Makefile.partial_implementations
 	$(CIC)
 	$(COMPILE) || true
 
+%/nistkat: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(COMPILE) || true
+
 # --------------------------------------------------------------------
 $(OUT):
 
@@ -180,6 +190,7 @@ printparams-all:       $(PRINTPARAMS)
 functest-all:          $(FUNCTEST)
 safetyparams-all:      $(SAFETYPARAMS)
 memory-all:            $(MEMORY)
+nistkat-all:           $(NISTKAT)
 
 checksumsmall-out-all: $(CHECKSUMSMALL_OUT)
 checksumbig-out-all:   $(CHECKSUMBIG_OUT)
@@ -187,6 +198,7 @@ printparams-out-all:   $(PRINTPARAMS_OUT)
 functest-out-all:      $(FUNCTEST_OUT)
 safetyparams-out-all:  $(SAFETYPARAMS_OUT)
 memory-out-all:        $(MEMORY_OUT)
+nistkat-out-all:       $(NISTKAT_OUT)
 
 all:                   $(OUT)
 
@@ -209,18 +221,19 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory nistkat; do \
 	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
-	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory nistkat; do \
 	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 
 reporter_checksums:
-	./scripts/checksumsok
+	./scripts/checksumsok 
 	./../scripts/ci/reporter/jlog "Checksums status" test/$(BIN) checksum*.ok $(CICL);
+	./../scripts/ci/reporter/jlog "NIST KAT status" test/$(BIN) nistkat*.ok $(CICL);
 
 ERR := $(shell test -d $(BIN) && find $(BIN) -name '*.error')
 CIR := $(shell test -d $(BIN) && find $(BIN) -name '*.log') $(ERR)

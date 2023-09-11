@@ -2,6 +2,10 @@ name: Kyber768
 type: kem
 checksumsmall: 456bb24a767160dcca466adde267b87f359de6e827d31b5b23512d227d8bbfaa
 checksumbig: 8004a42f34a4125acb4f88628139576882cdf9502a77937003e34f52d217a730
+
+# TODO: replace me
+nistkat: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+
 claimed-nist-level: 3
 claimed-security: IND-CCA2
 length-public-key: 1184

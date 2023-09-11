@@ -35,14 +35,17 @@ do
   #slower.
   #checksumsmall=$(yq '.checksumsmall' $meta | tr -d '\n');
   #checksumbig=$(yq '.checksumbig' $meta | tr -d '\n');
+
   checksumsmall_e=$(cat $meta | grep "checksumsmall: " | sed -e 's/checksumsmall: //' | tr -d '\n');
   checksumbig_e=$(cat $meta | grep "checksumbig: " | sed -e 's/checksumbig: //' | tr -d '\n');
+  nistkat_e=$(cat $meta | grep "nistkat: " | sed -e 's/nistkat: //' | tr -d '\n');
 
   bases=$(dirname $meta);
   baset=${bases//$src/$test};
 
   check_checksums $checksumsmall_e checksumsmall
   check_checksums $checksumbig_e checksumbig
+  check_checksums $nistkat_e nistkat
 done
 
 # 

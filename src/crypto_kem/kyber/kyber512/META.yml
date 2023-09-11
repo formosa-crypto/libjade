@@ -2,6 +2,10 @@ name: Kyber512
 type: kem
 checksumsmall: 9c1a84c0573d21b5fb50ff68f015c19206cebbda4aa3caa6f9ba4b167eea9514
 checksumbig: 4596232083e3da10d341576afbc59b24a520073e985a9b9df2d587e67e926a7b
+
+# TODO: replace me
+nistkat: 5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03
+
 claimed-nist-level: 1
 claimed-security: IND-CCA2
 length-public-key: 800
