@@ -309,7 +309,6 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
 
   _, _, _, _, b = #TEST_8(fl1, fl2);
 
-  //b1 = !b;
   while(!b)
   {
     ms = #update_msf(!b, ms);
@@ -333,6 +332,7 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
     val1 |= t;
     pos += 1;
 
+    inline bool b2;
     b2 = val0 < KYBER_Q;
     if(b2)
     {
@@ -347,6 +347,7 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
     if(b2)
     {
       ms = #update_msf(b2, ms);
+      inline bool b3;
       b3 = val1 < KYBER_Q;
       if(b3)
       {
@@ -368,7 +369,7 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
 
     _, _, _, _, b = #TEST_8(fl1, fl2);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(b, ms);
 
   return ctr, rp, ms;
 }
@@ -409,7 +410,6 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
    _, _, _, _, b = #TEST_8(fl1, fl2);
 
-  //b1 = !b;
   while(!b)
   {
     ms = #update_msf(!b, ms);
@@ -488,7 +488,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(b, ms);
 
   ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 8);
   fl1 = #SETcc(b);
@@ -533,7 +533,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
      _, _, _, _, b = #TEST_8(fl1, fl2);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(b, ms);
 
   ?{ "<=u" = b } = #CMP_64(ctr, KYBER_N - 1);
   fl1 = #SETcc(b);
@@ -566,6 +566,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     val0 = #protect_16(val0, ms);
     val1 = #protect_16(val1, ms);
 
+    inline bool b2;
     b2 = val0 < KYBER_Q;
     if(b2)
     {
@@ -580,6 +581,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     if(b2)
     {
       ms = #update_msf(b2, ms);
+      inline bool b3;
       b3 = ctr < KYBER_N;
       if(b3)
       {
@@ -601,7 +603,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
     _, _, _, _, b = #TEST_8(fl1, fl2);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(b, ms);
 
   return ctr, rp, ms;
 }
@@ -710,7 +712,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
     _, _, _, _, zf, _ = #OR_8(flg0, bflg);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(zf, ms);
 
   f = fs;
   buf0[u256 0] = f;
@@ -796,7 +798,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     _, _, _, _, _, flg0 = #OR_8(flg0, flg1);
     _, _, _, _, zf, _ = #OR_8(flg0, bflg);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(zf, ms);
 
   f = fs;
   buf0[u256 0] = f;
@@ -825,7 +827,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, #msf reg u
     ?{ "<=u" = b } = #CMP_64(ctr0, KYBER_N - 1);
     bflg = #SETcc(b);
   }
-  ms = #update_msf(!(!b), ms);
+  ms = #update_msf(b, ms);
 
   for i = 0 to KYBER_K
   {

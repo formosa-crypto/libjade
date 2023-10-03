@@ -1,3 +1,3 @@
 SRCS := xof.jazz
-CHECKSCTAFTER := -checkSCTafter unroll
+SCT_FLAGS := -checkSCTafter unroll
 include ../../../../Makefile.common

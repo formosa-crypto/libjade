@@ -723,7 +723,7 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
   }
   extseed[KYBER_SYMBYTES] = nonce;
 
-  buf = _shake256_128_33(buf, extseed);
+  buf, ms = _shake256_128_33(buf, extseed, ms);
 
   mask55 = #VPBROADCAST_8u32(mask55_s);
   mask33 = #VPBROADCAST_8u32(mask33_s);

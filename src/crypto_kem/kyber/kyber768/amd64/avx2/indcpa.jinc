@@ -4,7 +4,7 @@ from Jade require "crypto_kem/kyber/common/amd64/avx2/polyvec.jinc"
 require "gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] coins)
+fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] coins, reg u64 ms) -> #msf reg u64
 {
   stack u64 spkp sskp;
   stack u16[KYBER_K*KYBER_VECN] aa;
@@ -14,12 +14,11 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
   reg u64 t64;
   reg u8 nonce;
   inline int i;
-  #msf reg u64 ms;
 
   spkp = pkp;
   sskp = skp;
 
-  buf = _sha3_512_32(buf, coins);
+  buf, ms = _sha3_512_32(buf, coins, ms);
 
   for i=0 to KYBER_SYMBYTES/8
   {
