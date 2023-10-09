@@ -34,7 +34,7 @@ inline fn __add_full_block_avx2(
   reg ptr u64[25] a_jagged_p,
   reg u64 in inlen,
   reg u64 rate,
-  #msf reg u64 ms
+  reg u64 ms
 ) -> reg u256[7], stack u64[28], reg u64, reg u64, #msf reg u64
 {
 
@@ -83,7 +83,7 @@ inline fn __add_final_block_avx2(
   reg   u64 in inlen,
   reg   u8  trail_byte,
   reg   u64 rate,
-  #msf reg u64 ms
+  reg u64 ms
 ) -> reg u256[7], #msf reg u64
 {
   inline int i;
@@ -156,7 +156,7 @@ inline fn __xtr_full_block_avx2(
   reg ptr u64[25] a_jagged_p,
   reg u64 out,
   reg u64 len,
-  #msf reg u64 ms
+  reg u64 ms
 ) -> reg u64, #msf reg u64
 {
   inline int i;
@@ -196,7 +196,7 @@ inline fn __xtr_bytes_avx2(
   reg ptr u64[25] a_jagged_p,
   reg u64 out,
   reg u64 len,
-  #msf reg u64 ms
+  reg u64 ms
 ) -> reg u64, #msf reg u64
 {
   inline int i;
@@ -251,7 +251,7 @@ inline fn __absorb_avx2(
   reg u64 in inlen,
   reg u8  trail_byte,
   reg u64 rate,
-  #msf reg u64 ms
+  reg u64 ms
 ) -> reg u256[7], #msf reg u64
 {
   stack u64[28] s_state;
@@ -279,7 +279,7 @@ inline fn __absorb_avx2(
 }
 
 
-inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate, #msf reg u64 ms) -> #msf reg u64
+inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate, reg u64 ms) -> #msf reg u64
 {
   reg ptr u64[25] a_jagged_p;
   reg bool b;
@@ -304,7 +304,7 @@ inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate, #msf reg u6
 }
 
 
-inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, #msf reg u64 ms) -> #msf reg u64
+inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, reg u64 ms) -> #msf reg u64
 {
   reg u256[7] state;
 
@@ -319,7 +319,7 @@ inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
 }
 
 
-fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, #msf reg u64 ms) -> #msf reg u64
+fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, reg u64 ms) -> #msf reg u64
 {
   ms = __keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate, ms);
   return ms;

@@ -2,7 +2,7 @@ require "fips202_params.jinc"
 from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
 
 #[returnaddress="stack"]
-fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
+fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in, reg u64 ms) -> stack u8[128], #msf reg u64
 {
   stack ptr u8[128] s_out;
   stack u64[25] _state;
@@ -30,7 +30,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
     c = state[u8 i];
     out[i] = c;
   }
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
@@ -78,7 +78,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
 }
 
 #[returnaddress="stack"]
-fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in, reg u64 ms) -> stack u8[64], #msf reg u64
 {
   stack ptr u8[64] s_out;
   stack u64[25] _state;
@@ -106,7 +106,7 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
     c = state[u8 (int) i];
     out[i] = c;
   }
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
@@ -149,7 +149,7 @@ fn _shake128_squeezeblock(reg ptr u64[25] state, reg ptr u8[SHAKE128_RATE] out) 
 }
 
 #[returnaddress="stack"]
-fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
+fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen, reg u64 ms) -> reg ptr u8[32], #msf reg u64
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
@@ -196,11 +196,11 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
     out[u64 i] = t64;
   }
 
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
-fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
+fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in, reg u64 ms) -> reg ptr u8[32], #msf reg u64
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
@@ -232,11 +232,11 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
     out[u64 i] = t64;
   }
 
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
-fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
+fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in, reg u64 ms) -> stack u8[64], #msf reg u64
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
@@ -268,11 +268,11 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
     out[u64 i] = t64;
   }
 
-  return out;
+  return out, ms;
 }
 
 #[returnaddress="stack"]
-fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
+fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in, reg u64 ms) -> #msf reg u64
 {
   reg u64 t64 j;
   reg u8 c;
@@ -339,4 +339,6 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
     (u8)[out + j] = c;
     j = j + 1;
   }
+
+  return ms;
 }

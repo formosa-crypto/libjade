@@ -697,7 +697,7 @@ fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf
 
 
 #[returnaddress="stack"]
-fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, #msf reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
+fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
   inline int i;
   reg u256 f0 f1 f2 f3;

@@ -85,7 +85,7 @@ fn _poly_basemul(reg ptr u16[KYBER_N] rp, reg const ptr u16[KYBER_N] ap bp) -> r
     zetasp = jzetas;
     zeta = zetasp[(int)zetasctr];
     zetasctr += 1;
-    
+
     a0 = ap[(int)i];
     b0 = bp[(int)i];
     i += 1;
@@ -133,7 +133,7 @@ fn _poly_basemul(reg ptr u16[KYBER_N] rp, reg const ptr u16[KYBER_N] ap bp) -> r
     i += 1;
     rp[(int)i] = r1;
     srp = rp;
-    
+
     i += 1;
   }
   return rp;
@@ -142,11 +142,11 @@ fn _poly_basemul(reg ptr u16[KYBER_N] rp, reg const ptr u16[KYBER_N] ap bp) -> r
 inline
 fn __poly_reduce(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
-  reg u64 j; 
+  reg u64 j;
   reg u16 t;
   j = 0;
   #bounded
-  while (j < KYBER_N) 
+  while (j < KYBER_N)
   {
     t = rp[(int)j];
     t = __barrett_reduce(t);
@@ -298,7 +298,7 @@ fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   reg u16 dmont;
 
   dmont = DMONT;
-  
+
   i = 0;
   #bounded
   while (i < KYBER_N)
@@ -308,7 +308,7 @@ fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     rp[(int)i] = r;
     i += 1;
   }
-  return rp; 
+  return rp;
 }
 
 fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
@@ -322,49 +322,49 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
   {
     c = (u8)[ap + i];
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+1] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+2] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+3] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+4] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+5] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+6] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
@@ -385,49 +385,49 @@ fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBE
   {
     c = ap[i];
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+1] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+2] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+3] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+4] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+5] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+6] = t;
     c >>= 1;
 
-    t = (16u)c; 
+    t = (16u)c;
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
@@ -437,7 +437,7 @@ fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> stack u16[KYBE
 }
 
 #[returnaddress=stack]
-fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
+fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
   stack u8[33] extseed;   /* 33 = KYBER_SYMBYTES +1 */
   stack u8[128] buf;      /* 128 = KYBER_ETA*KYBER_N/4 */
@@ -450,7 +450,7 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
   stack ptr u16[KYBER_N] srp;
 
   srp = rp;
-  
+
   for k = 0 to KYBER_SYMBYTES
   {
     c = seed[k];
@@ -458,7 +458,7 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
   }
   extseed[KYBER_SYMBYTES] = nonce;
 
-  buf = _shake256_128_33(buf, extseed);
+  buf, ms = _shake256_128_33(buf, extseed, ms);
 
   rp = srp;
 
@@ -494,18 +494,19 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
     i += 1;
     j += 1;
   }
-  
-  return rp;
+
+  ms = #init_msf();
+  return rp, ms;
 }
 
 fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
-  reg u64 len;  
+  reg u64 len;
   reg u64 start;
   reg u64 j;
   reg u64 cmp;
   reg u64 offset;
-  
+
   reg u16 zeta;
   reg u16 t;
   reg u16 s;
@@ -552,7 +553,7 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   zeta = zetasp[127];
   j = 0;
   #bounded
-  while (j < KYBER_N) 
+  while (j < KYBER_N)
   {
     t = rp[(int)j];
     t = __fqmul(t, zeta);
@@ -564,12 +565,12 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
 fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
-  reg u64 len;  
+  reg u64 len;
   reg u64 start;
   reg u64 j;
   reg u64 cmp;
   reg u64 offset;
-  
+
   reg u16 zeta;
   reg u16 t;
   reg u16 s;
@@ -647,9 +648,9 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
   #bounded
   while (i < KYBER_N)
   {
-    t0 = a[(int)i]; 
+    t0 = a[(int)i];
     i += 1;
-    t1 = a[(int)i]; 
+    t1 = a[(int)i];
     i += 1;
     d  = t0;
     d  &= 0xff;
@@ -676,15 +677,15 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
   reg u32 d;
   inline int i j;
 
-  a = _poly_csubq(a); 
+  a = _poly_csubq(a);
 
   for i = 0 to 32
   {
     r = 0;
     for j = 0 to 8
     {
-      t = a[8*i+j]; 
-      d = (32u)t; 
+      t = a[8*i+j];
+      d = (32u)t;
       d <<= 1;
       d += 1665;
       d *= 80635;
@@ -706,15 +707,15 @@ fn _i_poly_tomsg(reg ptr u8[KYBER_N/8] rp, reg ptr u16[KYBER_N] a) -> reg ptr u8
   reg u32 d;
   inline int i j;
 
-  a = _poly_csubq(a); 
+  a = _poly_csubq(a);
 
   for i = 0 to 32
   {
     r = 0;
     for j = 0 to 8
     {
-      t = a[8*i+j]; 
-      d = (32u)t; 
+      t = a[8*i+j];
+      d = (32u)t;
       d <<= 1;
       d += 1665;
       d *= 80635;

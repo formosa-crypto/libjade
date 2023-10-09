@@ -59,7 +59,7 @@ u64[25] KECCAK_A_JAGGED =
 };
 
 
-inline fn __keccakf1600_avx2(reg u256[7] state, #msf reg u64 ms) -> reg u256[7], #msf reg u64
+inline fn __keccakf1600_avx2(reg u256[7] state, reg u64 ms) -> reg u256[7], #msf reg u64
 {
   reg u256[9] t;
   reg u256 c00 c14 d00 d14;

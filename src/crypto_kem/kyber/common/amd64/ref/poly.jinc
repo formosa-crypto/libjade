@@ -554,7 +554,7 @@ fn __poly_cbd_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_ETA2*KYBER_N/4] buf
 
 
 #[returnaddress=stack]
-fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
+fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
   stack ptr u16[KYBER_N] s_rp;
   stack u8[KYBER_SYMBYTES+1] extseed;
@@ -577,7 +577,7 @@ fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed,
 
   if(KYBER_ETA1 == 2)
   {
-    buf[0:KYBER_ETA2*KYBER_N/4] = _shake256_128_33(buf[0:KYBER_ETA2*KYBER_N/4], extseed);
+    buf[0:KYBER_ETA2*KYBER_N/4], ms = _shake256_128_33(buf[0:KYBER_ETA2*KYBER_N/4], extseed, ms);
   } else {
     buf = _shake256_192_33(buf, extseed);
   }
@@ -585,11 +585,11 @@ fn _poly_getnoise_eta1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed,
   rp = s_rp;
   rp = __poly_cbd_eta1(rp, buf[0:KYBER_ETA1*KYBER_N/4]);
 
-  return rp;
+  return rp, ms;
 }
 
 
-fn _poly_getnoise_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[KYBER_N]
+fn _poly_getnoise_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg u8 nonce, reg u64 ms) -> reg ptr u16[KYBER_N], #msf reg u64
 {
   stack ptr u16[KYBER_N] s_rp;
   stack u8[KYBER_SYMBYTES+1] extseed;
@@ -606,12 +606,12 @@ fn _poly_getnoise_eta2(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed,
   }
   extseed[KYBER_SYMBYTES] = nonce;
 
-  buf = _shake256_128_33(buf, extseed);
+  buf, ms = _shake256_128_33(buf, extseed, ms);
 
   rp = s_rp;
   rp =__poly_cbd_eta2(rp, buf);
 
-  return rp;
+  return rp, ms;
 }
 
 

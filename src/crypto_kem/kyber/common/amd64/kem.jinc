@@ -90,7 +90,7 @@ fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 }
 
 inline
-fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp, #msf reg u64 ms) -> #msf reg u64
+fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp, reg u64 ms) -> #msf reg u64
 {
   stack u8[KYBER_INDCPA_BYTES] ctpc;
   stack u8[2*KYBER_SYMBYTES] kr buf;
