@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization loop" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization loopSCT" default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
       - name: return error if there are any errors
@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loop" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT" default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loop -register-zeroization all" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT -register-zeroization all" default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
