@@ -65,6 +65,7 @@ COMMON   := common
 
 EXT      := ../ext
 RANDSRC  := $(COMMON)/notrandombytes.c
+NIST_RANDSRC := $(COMMON)/nistkatrng.c
 
 FILTER   ?= $(SRC)/crypto_%
 export FILTER
@@ -112,8 +113,10 @@ DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
 PRINT       = common/print.c
+AES			= $(COMMON)/aes.c
 COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
 COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
+COMPILE_NIST = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(NIST_RANDSRC) $(AES) $(CIL)
 
 # --------------------------------------------------------------------
 .PHONY: __phony default main
@@ -162,7 +165,7 @@ include Makefile.partial_implementations
 %/nistkat: __phony | %/ %/$(CID)
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)
-	$(COMPILE) || true
+	$(COMPILE_NIST) || true
 
 # --------------------------------------------------------------------
 $(OUT):

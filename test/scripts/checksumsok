@@ -14,7 +14,12 @@ check_checksums()
   then
     find $baset -name $checksumtype.out | \
     while read checksum_f; do
-      checksum_o=$(cat $checksum_f);
+      if [ "$checksumtype" = "nistkat" ]
+      then
+        checksum_o=$(cat $checksum_f | sed 's/\r\n/\n/g' | sha256sum -b | cut -d' ' -f1)
+      else
+        checksum_o=$(cat $checksum_f);
+      fi
       #echo "$meta / $checksum_o / $checksum_expected";
 
       error=$(dirname $checksum_f)/.ci/$checksumtype.$suffix.error
