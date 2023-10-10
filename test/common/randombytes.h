@@ -2,6 +2,7 @@
 #define NOTRANDOMBYTES_H
 
 #include <stdint.h>
+#include <stddef.h>
 
 void resetrandombytes(void);
 void randombytes(uint8_t* x, size_t xlen);
