@@ -27,12 +27,12 @@ typedef struct state {
   uint8_t *d2;
   uint8_t *e2;
   uint8_t *f2;
-  uint64_t alen;
-  uint64_t blen;
-  uint64_t clen;
-  uint64_t dlen;
-  uint64_t elen;
-  uint64_t flen;
+  size_t alen;
+  size_t blen;
+  size_t clen;
+  size_t dlen;
+  size_t elen;
+  size_t flen;
   void* free[12];
 } state;
 
@@ -63,7 +63,7 @@ state* preallocate(void)
 
 void allocate(state *s)
 {
-  unsigned long long alloclen = 0;
+  size_t alloclen = 0;
   if (alloclen < JADE_SCALARMULT_SCALARBYTES) alloclen = JADE_SCALARMULT_SCALARBYTES;
   if (alloclen < JADE_SCALARMULT_BYTES) alloclen = JADE_SCALARMULT_BYTES;
   s->a  = alignedcalloc(&(s->free[0]), alloclen);

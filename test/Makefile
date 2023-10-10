@@ -21,8 +21,11 @@
 #   $ make -j2 CI=1 FILTER=../src/crypto_kem/kyber/%
 #   $ make -j2 CI=1 reporter_checksums
 #
+
 # --------------------------------------------------------------------
-AS      ?= as
+ARCH    ?= amd64
+
+# --------------------------------------------------------------------
 CC      ?= clang
 CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
@@ -61,6 +64,8 @@ BIN      ?= bin
 LOGS     := libjade-logs-test.tar.gz
 
 SRC      := ../src
+export SRC
+
 COMMON   := common
 
 EXT      := ../ext
@@ -69,8 +74,10 @@ RANDSRC  := $(COMMON)/notrandombytes.c
 FILTER   ?= $(SRC)/crypto_%
 export FILTER
 
-JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
-TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
+JAZZ_ARCH ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -path "*/$(ARCH)/*" -name '*.jazz')))))
+TESTDIR   := $(subst $(SRC),$(BIN), $(JAZZ_ARCH))
+
+# --------------------------------------------------------------------
 
 CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
 CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
@@ -101,7 +108,15 @@ NAMESPACE   = jade_$(OPERATION)_$(NAMESPACE0)
 NAMESPACE1  = JADE_$(OPERATION1)_$(NAMESPACE0)
 
 IDIR        = $(subst $(BIN),$(SRC),$(@D))
-ASM         = $(IDIR)/$(OPERATION).s
+
+# TODO: the following line (ASM =) is commented (and 'replaced' by the one after) as a temporary patch to allow C code in libjade's implementations:
+# - when compiling (Jasmin) exported functions with more than 4 arguments the compilation fails since the ABI is not fully supported
+# - for this reason, we need to write a (temporary) C wrapper to overcome this difficulty
+# - this wrapper is temporary as we expect to support more than X arguments in the Jasmin compiler in the future
+# - X is 5/6 in amd64 win/linux and 4 in armv7m
+
+#ASM         = $(IDIR)/$(OPERATION).s
+ASM         = $(IDIR)/*.s
 
 DEFINE     ?=
 DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
@@ -116,7 +131,7 @@ COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 default: compile-and-run
 
 compile-and-run:
-	$(MAKE) CI=1 -C $(SRC) all
+	$(MAKE) CI=1 -C $(SRC) compile-$(ARCH)
 	$(MAKE) CI=1 all
 
 reporter-and-err:
@@ -158,17 +173,20 @@ include Makefile.partial_implementations
 
 # --------------------------------------------------------------------
 $(OUT):
-
+ifeq ($(ARCH),amd64)
 %memory.out: %memory
 	(valgrind --leak-check=full --error-exitcode=1 --log-file=$@ ./$*memory) $(CIL) || true
+endif
 
 %.out: %
 	$(CIC)
 	(cd $(dir $*) && ./$(notdir $*) > $(notdir $*).out) $(CIL) || true
 
 $(STDOUT):
+ifeq ($(ARCH),amd64)
 %memory.stdout: %memory
 	(valgrind --leak-check=full --error-exitcode=1 ./$*memory) $(CIL) || true
+endif
 
 %.stdout: %
 	$(CIC)

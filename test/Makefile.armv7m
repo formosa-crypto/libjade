@@ -1,0 +1,14 @@
+
+# some commands:
+# make -f Makefile.armv7m CI=1 distclean && make -f Makefile.armv7m CI=1 default && make -f Makefile.armv7m CI=1 reporter
+
+ARCH   := armv7m
+CC     := arm-linux-gnueabi-gcc
+CFLAGS := -O3 -Wall -march=armv7 -z noexecstack -g -static
+
+export ARCH
+export CC
+export CFLAGS
+
+include Makefile
+

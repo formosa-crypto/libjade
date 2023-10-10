@@ -112,10 +112,10 @@ static void chacha20_init(uint32_t x[16], const uint8_t n[8], const uint8_t k[32
 }
 
 
-static void chacha20(uint8_t *c, uint64_t clen, const uint8_t n[8], const uint8_t k[32])
+static void chacha20(uint8_t *c, size_t clen, const uint8_t n[8], const uint8_t k[32])
 {
   uint32_t x[16], output[16];
-  uint64_t i;
+  size_t i;
 
   chacha20_init(x,n,k);
   while(clen > 0)
@@ -171,13 +171,13 @@ static uint8_t g1[KEYBYTES];
 static uint8_t r0[OUTPUTBYTES];
 static uint8_t r1[OUTPUTBYTES];
 
-static uint64_t pos0 = OUTPUTBYTES;
-static uint64_t pos1 = OUTPUTBYTES;
+static size_t pos0 = OUTPUTBYTES;
+static size_t pos1 = OUTPUTBYTES;
 
 static void randombytes_internal(
-  uint8_t *x, uint64_t xlen,
+  uint8_t *x, size_t xlen,
   uint8_t *g, uint8_t *r,
-  uint64_t *pos
+  size_t *pos
 )
 {
   while (xlen > 0)
@@ -202,7 +202,7 @@ void resetrandombytes(void)
   memset(g0, 0, KEYBYTES);
 }
 
-void randombytes(uint8_t* x, uint64_t xlen)
+void randombytes(uint8_t* x, size_t xlen)
 {
   randombytes_internal(x,xlen,g0,r0,&pos0);
 }
@@ -215,14 +215,14 @@ void resetrandombytes1(void)
   memset(g1, 0, KEYBYTES);
 }
 
-void randombytes1(uint8_t* x, uint64_t xlen)
+void randombytes1(uint8_t* x, size_t xlen)
 {
   randombytes_internal(x,xlen,g1,r1,&pos1);
 }
 
 // ////////
 
-uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, uint64_t xlen)
+uint8_t* __jasmin_syscall_randombytes__(uint8_t* x, size_t xlen)
 {
   randombytes(x, xlen);
   return x;

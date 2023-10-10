@@ -152,7 +152,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile amd64
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 compile-amd64
 
       - name: dist amd64
         run: JASMIN=$(which_jasminc) ./scripts/ci/releaser/jdist-src-v1 amd64

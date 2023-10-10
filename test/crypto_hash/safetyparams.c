@@ -6,14 +6,6 @@
 #include "api.h"
 #include "jade_hash.h"
 
-/*
-int jade_hash(
- uint8_t *hash,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
 int main(void)
 {
   char *functions[1] = {xstr(jade_hash,)};

@@ -9,21 +9,12 @@
 #include "randombytes.h"
 #include "config.h"
 
-/*
-int jade_xof(
- uint8_t *output,
- uint64_t output_length,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
 int main(void)
 {
   uint8_t *output;
-  uint64_t output_length;
+  size_t output_length;
   uint8_t *input;
-  uint64_t input_length;
+  size_t input_length;
 
   for (output_length = MINOUTBYTES; output_length <= MAXOUTBYTES; output_length++)
   { 

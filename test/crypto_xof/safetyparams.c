@@ -5,15 +5,6 @@
 #include "api.h"
 #include "jade_xof.h"
 
-/*
-int jade_xof(
- uint8_t *output,
- uint64_t output_length,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
 int main(void)
 {
   char *functions[1] = {xstr(jade_xof,)};

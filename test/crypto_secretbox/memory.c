@@ -10,31 +10,13 @@
 #include "randombytes.h"
 #include "config.h"
 
-/*
-int jade_secretbox(
-  uint8_t *ciphertext,
-  const uint8_t *plaintext,
-  uint64_t plaintext_length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-
-int jade_secretbox_open(
-  uint8_t *plaintext,
-  const uint8_t *ciphertext,
-  uint64_t ciphertext_length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-*/
-
 int main(void)
 {
   int r;
   uint8_t *ciphertext;
   uint8_t *plaintext;
-  uint64_t plaintext_length;
-  uint64_t ciphertext_length;
+  size_t plaintext_length;
+  size_t ciphertext_length;
   uint8_t *nonce;
   uint8_t *key;
 

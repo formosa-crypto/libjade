@@ -19,7 +19,7 @@ int main(void)
   uint8_t plaintext_2[PLAINTEXT_LENGTH];
   uint8_t ciphertext[PLAINTEXT_LENGTH];
   uint8_t stream[PLAINTEXT_LENGTH];
-  uint64_t length = PLAINTEXT_LENGTH;
+  size_t length = PLAINTEXT_LENGTH;
   uint8_t _nonce[JADE_STREAM_NONCEBYTES];
   uint8_t _key[JADE_STREAM_KEYBYTES];
   uint8_t* nonce = _nonce;

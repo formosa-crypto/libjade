@@ -1,3 +1,6 @@
+
+ifeq ($(ARCH),amd64)
+
 EXTERNAL_PATH    = $(subst $(BIN),external,$(@D))
 EXTERNAL_LIB     = $(EXTERNAL_PATH)/$(subst -,_,$(subst /,_,$(EXTERNAL_PATH))).a
 EXTERNAL_COMPILE = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(EXTERNAL_LIB) $(CIL)
@@ -41,6 +44,9 @@ bin/crypto_sign/falcon/falcon512/amd64/avx2/memory: __phony | bin/crypto_sign/fa
 	$(MAKE) -C $(EXTERNAL_PATH)
 	$(EXTERNAL_COMPILE) || true
 
+endif
+
 #-- clean
 clean-external:
 	$(MAKE) -C external/crypto_sign/falcon/falcon512/amd64/avx2 clean
+

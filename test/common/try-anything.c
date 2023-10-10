@@ -65,11 +65,11 @@ static void core(uint8_t *out, const uint8_t *in, const uint8_t *k)
   FOR(i,16) st32(out + 4 * i,x[i] + y[i]);
 }
 
-static void salsa20(uint8_t *c, uint64_t b, const uint8_t *n, const uint8_t *k)
+static void salsa20(uint8_t *c, size_t b, const uint8_t *n, const uint8_t *k)
 {
   uint8_t z[16], x[64];
   uint32_t u;
-  uint64_t i;
+  size_t i;
 
   if (!b) return;
   FOR(i,16) z[i] = 0;
@@ -108,7 +108,7 @@ static void increment(uint8_t *n)
 // ////////////////////////////////////////////////////////////////////////////
 
 
-static void testvector(unsigned char *x, uint64_t xlen)
+static void testvector(unsigned char *x, size_t xlen)
 {
   static const unsigned char testvector_k[33] = "generate inputs for test vectors";
   static unsigned char testvector_n[8]; // TODO REFACTOR
@@ -134,7 +134,7 @@ unsigned long long myrandom(void)
 
 // ////////////////////////////////////////////////////////////////////////////
 
-static void canary(uint8_t *x, uint64_t xlen)
+static void canary(uint8_t *x, size_t xlen)
 {
   static const uint8_t canary_k[33] = "generate pad to catch overwrites";
   static uint8_t canary_n[8]; // TODO REFACTOR
@@ -142,7 +142,7 @@ static void canary(uint8_t *x, uint64_t xlen)
   increment(canary_n);
 }
 
-void double_canary(uint8_t *x2, uint8_t *x, uint64_t xlen)
+void double_canary(uint8_t *x2, uint8_t *x, size_t xlen)
 {
   canary(x - CANARY_LENGTH, CANARY_LENGTH);
   canary(x + xlen, CANARY_LENGTH);
@@ -150,7 +150,7 @@ void double_canary(uint8_t *x2, uint8_t *x, uint64_t xlen)
   memcpy(x2 + xlen, x + xlen, CANARY_LENGTH);
 }
 
-void input_prepare(uint8_t *x2, uint8_t *x, uint64_t xlen)
+void input_prepare(uint8_t *x2, uint8_t *x, size_t xlen)
 {
   testvector(x, xlen);
   canary(x - CANARY_LENGTH, CANARY_LENGTH);
@@ -158,7 +158,7 @@ void input_prepare(uint8_t *x2, uint8_t *x, uint64_t xlen)
   memcpy(x2 - CANARY_LENGTH, x - CANARY_LENGTH, xlen + (2*CANARY_LENGTH));
 }
 
-void input_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const char *fun)
+void input_compare(const uint8_t *x2, const uint8_t *x, size_t xlen, const char *fun)
 {
   if (memcmp(x2 - CANARY_LENGTH, x - CANARY_LENGTH, xlen + (2*CANARY_LENGTH)))
   { fprintf(stderr,"%s overwrites input\n",fun);
@@ -166,13 +166,13 @@ void input_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const cha
   }
 }
 
-void output_prepare(uint8_t *x2, uint8_t *x, uint64_t xlen)
+void output_prepare(uint8_t *x2, uint8_t *x, size_t xlen)
 {
   canary(x - CANARY_LENGTH, xlen + (2*CANARY_LENGTH));
   memcpy(x2 - CANARY_LENGTH, x - CANARY_LENGTH, xlen + (2*CANARY_LENGTH));
 }
 
-void output_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const char *fun)
+void output_compare(const uint8_t *x2, const uint8_t *x, size_t xlen, const char *fun)
 {
   if (memcmp(x2 - CANARY_LENGTH, x - CANARY_LENGTH, CANARY_LENGTH))
   { fprintf(stderr,"%s writes before output\n",fun);
@@ -186,10 +186,10 @@ void output_compare(const uint8_t *x2, const uint8_t *x, uint64_t xlen, const ch
 
 // ////////////////////////////////////////////////////////////////////////////
 
-void checksum(uint8_t *checksum_state, uint8_t *x, uint64_t xlen)
+void checksum(uint8_t *checksum_state, uint8_t *x, size_t xlen)
 {
   uint8_t block[16];
-  uint64_t i;
+  size_t i;
 
   while (xlen >= 16)
   { core(checksum_state, x, checksum_state);
@@ -227,10 +227,10 @@ void fail(const char *why)
 
 // ////////////////////////////////////////////////////////////////////////////
 
-uint8_t* alignedcalloc(void** c, uint64_t len)
+uint8_t* alignedcalloc(void** c, size_t len)
 {
   uint8_t *x;
-  uint64_t i;
+  size_t i;
 
   x = (uint8_t *) calloc(1,len + 256);
   if (!x) fail("out of memory");

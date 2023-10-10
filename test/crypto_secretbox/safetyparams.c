@@ -6,24 +6,6 @@
 #include "api.h"
 #include "jade_secretbox.h"
 
-/*
-int jade_secretbox(
-  uint8_t *ciphertext,
-  const uint8_t *plaintext,
-  uint64_t length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-
-int jade_secretbox_open(
-  uint8_t *plaintext,
-  const uint8_t *ciphertext,
-  uint64_t length,
-  const uint8_t *nonce,
-  const uint8_t *key
-);
-*/
-
 int main(void)
 {
   char *functions[] = {xstr(jade_secretbox,), xstr(jade_secretbox_open,)};

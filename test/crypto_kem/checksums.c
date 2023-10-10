@@ -47,13 +47,13 @@ typedef struct state {
   uint8_t *_kc2;
   uint8_t *_ec2;
 
-  uint64_t plen;
-  uint64_t slen;
-  uint64_t klen;
-  uint64_t clen;
-  uint64_t tlen;
-  uint64_t kclen;
-  uint64_t eclen;
+  size_t plen;
+  size_t slen;
+  size_t klen;
+  size_t clen;
+  size_t tlen;
+  size_t kclen;
+  size_t eclen;
 
   void* free[24];
 } state;
@@ -89,7 +89,7 @@ state* preallocate(void)
 
 void allocate(state *s)
 {
-  unsigned long long alloclen = 0;
+  size_t alloclen = 0;
 
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
   if (alloclen < MAXTEST_BYTES) alloclen = MAXTEST_BYTES;

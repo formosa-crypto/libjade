@@ -25,11 +25,11 @@ typedef struct state {
   uint8_t *m2;
   uint8_t *c2;
   uint8_t *t2;
-  uint64_t klen;
-  uint64_t nlen;
-  uint64_t mlen;
-  uint64_t clen;
-  uint64_t tlen;
+  size_t klen;
+  size_t nlen;
+  size_t mlen;
+  size_t clen;
+  size_t tlen;
   void* free[10];
 } state;
 
@@ -64,7 +64,7 @@ state* preallocate(void)
 
 void allocate(state *s)
 {
-  uint64_t alloclen = 0;
+  size_t alloclen = 0;
   if (alloclen < TUNE_BYTES) alloclen = TUNE_BYTES;
   if (alloclen < MAXTEST_BYTES) alloclen = MAXTEST_BYTES;
   if (alloclen < JADE_SECRETBOX_KEYBYTES) alloclen = JADE_SECRETBOX_KEYBYTES;

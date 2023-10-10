@@ -6,22 +6,6 @@
 #include "api.h"
 #include "jade_onetimeauth.h"
 
-/*
-int jade_onetimeauth(
- uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-
-int jade_onetimeauth_verify(
- const uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-*/
-
 int main(void)
 {
   char *functions[2] = {xstr(jade_onetimeauth,), xstr(jade_onetimeauth_verify,)};

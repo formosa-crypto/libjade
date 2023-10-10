@@ -19,7 +19,7 @@ int main(void)
   uint8_t  ciphertext[JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH];
   uint8_t  plaintext_1[JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH];
   uint8_t  plaintext_2[JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH];
-  uint64_t length = JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH;
+  size_t length = JADE_SECRETBOX_ZEROBYTES + PLAINTEXT_LENGTH;
   uint8_t  _nonce[JADE_SECRETBOX_NONCEBYTES];
   uint8_t  _key[JADE_SECRETBOX_KEYBYTES];
   uint8_t* nonce = _nonce;

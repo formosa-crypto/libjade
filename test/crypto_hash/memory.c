@@ -8,20 +8,11 @@
 #include "jade_hash.h"
 #include "config.h"
 
-/*
-int jade_hash(
- uint8_t *hash,
- const uint8_t *input,
- uint64_t input_length
-);
-*/
-
-
 int main(void)
 {
   uint8_t *hash;
   uint8_t *input;
-  uint64_t input_length;
+  size_t input_length;
 
   hash = malloc(sizeof(uint8_t) * JADE_HASH_BYTES);
 
