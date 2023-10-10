@@ -178,9 +178,16 @@ ifeq ($(ARCH),amd64)
 	(valgrind --leak-check=full --error-exitcode=1 --log-file=$@ ./$*memory) $(CIL) || true
 endif
 
+## -- %.out
+ifeq ($(ARCH),armv7m)
+%.out: %
+	$(CIC)
+	(cd $(dir $*) && qemu-arm-static $(notdir $*) > $(notdir $*).out) $(CIL) || true
+else
 %.out: %
 	$(CIC)
 	(cd $(dir $*) && ./$(notdir $*) > $(notdir $*).out) $(CIL) || true
+endif
 
 $(STDOUT):
 ifeq ($(ARCH),amd64)
@@ -188,9 +195,16 @@ ifeq ($(ARCH),amd64)
 	(valgrind --leak-check=full --error-exitcode=1 ./$*memory) $(CIL) || true
 endif
 
+## -- %.stdout
+ifeq ($(ARCH),armv7m)
+%.stdout: %
+	$(CIC)
+	(cd $(dir $*) && qemu-arm-static $(notdir $*) && echo) $(CIL) || true
+else
 %.stdout: %
 	$(CIC)
 	(cd $(dir $*) && ./$(notdir $*) && echo) $(CIL) || true
+endif
 
 
 # --------------------------------------------------------------------
