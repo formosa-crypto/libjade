@@ -1,0 +1,160 @@
+// the following implementation requires:
+// - (even) param int CHACHA_ROUNDS;
+// - inline fn __init_ref(reg u64 nonce key) -> stack u32[16] (check chacha_state.jinc)
+// - inline fn __increment_counter_ref(stack u32[16] state) -> stack u32[16] (check chacha_state.jinc)
+
+fn _copy_state_ref(reg ptr u32[16] k st) -> reg ptr u32[16]
+{
+  reg u32 i t;
+
+  i = 0;
+  while(i < 16)
+  { t = st[(int)i];
+    k[(int)i] = t;
+    i += 1;
+  }
+
+  return k;
+}
+
+inline fn __line_ref(reg ptr u32[16] k, inline int a b c r) -> reg ptr u32[16]
+{
+  reg u32 ka kb kc;
+
+  ka = k[a];
+  kb = k[b];
+  kc = k[c];
+
+  ka += kb;
+  kc ^= ka;
+  kc = #ROR(kc, (32-r));
+
+  k[a] = ka;
+  k[c] = kc;
+
+  return k;
+}
+
+inline fn __quarter_round_ref(reg ptr u32[16] k, inline int a b c d) -> reg ptr u32[16]
+{
+  k = __line_ref(k, a, b, d, 16);
+  k = __line_ref(k, c, d, b, 12);
+  k = __line_ref(k, a, b, d, 8);
+  k = __line_ref(k, c, d, b, 7);
+  return k;
+}
+
+inline fn __column_round_ref(reg ptr u32[16] k) -> reg ptr u32[16]
+{
+  k = __quarter_round_ref(k, 0, 4,  8, 12);
+  k = __quarter_round_ref(k, 1, 5,  9, 13);
+  k = __quarter_round_ref(k, 2, 6, 10, 14);
+  k = __quarter_round_ref(k, 3, 7, 11, 15);
+  return k;
+}
+
+inline fn __diagonal_round_ref(reg ptr u32[16] k) -> reg ptr u32[16]
+{
+  k = __quarter_round_ref(k, 0, 5, 10, 15);
+  k = __quarter_round_ref(k, 1, 6, 11, 12);
+  k = __quarter_round_ref(k, 2, 7, 8,  13);
+  k = __quarter_round_ref(k, 3, 4, 9,  14);
+  return k;
+}
+
+// TODO: write compact version of this: line_ref args from inline to reg
+inline fn __double_round_ref(reg ptr u32[16] k) -> reg ptr u32[16]
+{
+  k = __column_round_ref(k);
+  k = __diagonal_round_ref(k);
+  return k;
+}
+
+fn _rounds_ref(reg ptr u32[16] k) -> reg ptr u32[16]
+{
+  reg bool zf;
+  reg u32 c;
+
+  c = (CHACHA_ROUNDS/2);
+  while
+  { k = __double_round_ref(k);
+    _, zf, _, _, c = #SUBS(c, 1);
+  } (!zf)
+
+  return k;
+}
+
+fn _sum_states_ref(reg ptr u32[16] k st) -> reg ptr u32[16]
+{
+  reg u32 i tk tst;
+
+  i = 0;
+  while(i < 16)
+  {
+    tk = k[(int)i];
+    tst = st[(int)i];
+    tk += tst;
+    k[(int)i] = tk;
+
+    i += 1;
+  }
+
+  return k;
+}
+
+inline fn __chacha_xor_ref(reg u32 output plain len nonce key)
+{
+  stack u32[16] k st;
+  reg ptr u32[16] kp stp;
+
+  kp = k;
+  stp = st;
+
+  nonce = nonce; // allow register swap
+  key = key; // same.
+
+  stp = _init_ref(stp, nonce, key);
+
+  while (len >= 64)
+  { kp = _copy_state_ref(kp, stp);
+    kp = _rounds_ref(kp);
+    output, plain, len = __sum_states_store_xor_ref(output, plain,len, kp, stp);
+    stp = __increment_counter_ref(stp);
+  }
+
+  if(len > 0)
+  { kp = _copy_state_ref(kp, stp);
+    kp = _rounds_ref(kp);
+    kp = _sum_states_ref(kp, stp);
+    __store_xor_last_ref(output, plain, len, kp);
+  }
+}
+
+inline fn __chacha_ref(reg u32 output len nonce key)
+{
+  stack u32[16] k st;
+  reg ptr u32[16] kp stp;
+
+  kp = k;
+  stp = st;
+
+  nonce = nonce; // allow register swap
+  key = key; // same.
+
+  stp = _init_ref(stp, nonce, key);
+
+  while (len >= 64)
+  { kp = _copy_state_ref(kp, stp);
+    kp = _rounds_ref(kp);
+    output, len = __sum_states_store_ref(output, len, kp, stp);
+    stp = __increment_counter_ref(stp);
+  }
+
+  if(len > 0)
+  { kp = _copy_state_ref(kp, stp);
+    kp = _rounds_ref(kp);
+    kp = _sum_states_ref(kp, stp);
+    __store_last_ref(output, len, kp);
+  }
+}
+

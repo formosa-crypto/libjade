@@ -1,0 +1,56 @@
+
+u32[4] CHACHA_SIGMA = { 0x61707865, 0x3320646e, 0x79622d32, 0x6b206574 };
+
+// nonce : 8 bytes
+// key : 32 bytes
+// counter : 8 bytes (starts at 0)
+fn _init_ref(reg ptr u32[16] st, reg u32 nonce key) -> reg ptr u32[16]
+{
+  // TODO: compress this function
+
+  reg ptr u32[4] sigma;
+  reg u32 t;
+  inline int i;
+
+  sigma = CHACHA_SIGMA;
+  for i=0 to 4
+  { t = sigma[i];
+    st[i] = t; }
+
+  // reads 8 u32 from pointer key
+  for i=0 to 8
+  { t = (u32)[key + 4*i];
+    st[4+i] = t; }
+
+  // 64-bit counter
+  t = 0;
+  st[12] = t;
+  st[13] = t;
+
+  // nonce
+  t = (u32)[nonce + 0];
+  st[14] = t;
+  t = (u32)[nonce + 4];
+  st[15] = t;
+
+  return st;
+}
+
+// TODO: double check here: 64 bit counter
+// increments 64-bit counter
+inline fn __increment_counter_ref(reg ptr u32[16] st) -> reg ptr u32[16]
+{
+  reg bool cf;
+  reg u32 l h;
+
+  l = st[12];
+  h = st[13];
+
+  _, _, cf, _, l = #ADDS(l, 1);
+  h = #ADDcc(h, 1, cf, h);
+
+  st[12] = l;
+  st[13] = h;
+
+  return st;
+}

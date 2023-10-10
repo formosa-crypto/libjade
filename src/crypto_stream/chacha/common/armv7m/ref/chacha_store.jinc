@@ -1,0 +1,96 @@
+
+// store 'xor' ////////////////////////////////////////////////////////////////
+
+inline fn __update_ptr_xor_ref(reg u32 output plain len, inline int n) -> reg u32, reg u32, reg u32
+{
+  output += n;
+  plain += n;
+  len -= n;
+  return output, plain, len;
+}
+
+inline fn __sum_states_store_xor_ref(
+  reg u32 output plain len,
+  reg ptr u32[16] k st)
+  ->
+  reg u32, reg u32, reg u32
+{
+  reg u32 i t s v;
+
+  i = 0;
+  while(i < 16)
+  { t = k[(int)i];
+    s = st[(int)i];
+    v = (u32)[plain + 4*i];
+    t += s;
+    t ^= v;
+    (u32)[output + 4*i] = t;
+    i += 1;
+  }
+
+  output, plain, len = __update_ptr_xor_ref(output, plain, len, 64);
+
+  return output, plain, len;
+}
+
+
+// len bytes
+inline fn __store_xor_last_ref(reg u32 output plain len, reg ptr u32[16] k)
+{
+  reg u32 i t v;
+
+  i = 0;
+  while(i < len)
+  { t = (32u)k[u8 (int)i];
+    v = (32u)(u8)[plain + i];
+    t ^= v;
+    (u8)[output + i] = t;
+    i += 1;
+  }
+}
+
+// store //////////////////////////////////////////////////////////////////////
+
+inline fn __update_ptr_ref(reg u32 output len, inline int n) -> reg u32, reg u32
+{
+  output += n;
+  len -= n;
+  return output, len;
+}
+
+inline fn __sum_states_store_ref(
+  reg u32 output len,
+  reg ptr u32[16] k st)
+  ->
+  reg u32, reg u32
+{
+  reg u32 i t s;
+
+  i = 0;
+  while(i < 16)
+  { t = k[(int)i];
+    s = st[(int)i];
+    t += s;
+    [output + 4*i] = t;
+    i += 1;
+  }
+
+  output, len = __update_ptr_ref(output, len, 64);
+
+  return output, len;
+}
+
+// len bytes
+inline fn __store_last_ref(reg u32 output len, reg ptr u32[16] k)
+{
+  reg u32 i t;
+
+  i = 0;
+  while(i < len)
+  { t = (32u)k[u8 (int)i];
+    (u8)[output + i] = t;
+    i += 1;
+  }
+}
+
+
