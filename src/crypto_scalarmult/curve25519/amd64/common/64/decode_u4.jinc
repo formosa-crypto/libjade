@@ -1,0 +1,18 @@
+inline fn __decode_u_coordinate4(reg u64[4] u) -> reg u64[4]
+{
+  u[3] &= 0x7fffffffffffffff;
+  return u;
+}
+
+inline fn __decode_u_coordinate_base4() -> reg u64[4]
+{
+  reg u64[4] u;
+
+  u[0] = 9;
+  u[1] = 0;
+  u[2] = 0;
+  u[3] = 0;
+
+  return u;
+}
+

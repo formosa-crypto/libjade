@@ -168,6 +168,54 @@ inline fn __mul4_rsr(stack u64[4] fs, reg u64[4] g) -> reg u64[4]
   return h;
 }
 
+inline fn __mul4_rpr(reg ptr u64[4] fp, reg u64[4] g) -> reg u64[4]
+{
+  reg bool cf of;
+  reg u64[4] h r;
+  reg u64 _38 f z;
+
+  of, cf, _, _, _, z = #set0();
+
+  f = fp[0];
+  h, r, cf, of = __mul4_c0(      f, g, z, cf, of);
+
+  f = fp[1];
+  h, r, cf, of = __mul4_c1(h, r, f, g, z, cf, of);
+
+  f = fp[2];
+  h, r, cf, of = __mul4_c2(h, r, f, g, z, cf, of);
+
+  f = fp[3];
+  h, r, cf, of = __mul4_c3(h, r, f, g, z, cf, of);
+
+  _38 = 38;
+  h = __reduce4(h, r, _38, z, cf, of);
+
+  return h;
+}
+
+fn _mul4_rpr(reg ptr u64[4] fp, reg u64[4] g) -> reg u64[4]
+{
+  reg u64[4] h;
+
+  h = __mul4_rpr(fp, g);
+
+  return h;
+}
+
+inline fn _mul4_rsr_(stack u64[4] _fs, reg u64[4] _g) -> reg u64[4]
+{
+  reg ptr u64[4] fp;
+  reg u64[4] _h h g;
+
+  fp = _fs;
+  g = #copy(_g);
+  h = _mul4_rpr(fp, g);
+  _h = #copy(h);
+
+  return _h;
+}
+
 inline fn __mul4_ssr(stack u64[4] fs, reg u64[4] g) -> stack u64[4]
 {
   stack u64[4] hs;
