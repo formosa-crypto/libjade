@@ -1,9 +1,6 @@
 require "mul4.jinc"
 require "sqr4.jinc"
 
-// TODO:
-// - rewrite invert4 (& aux. functions) once reg arrays are supported in non-inline functions
-// - this should reduce the size of scalarmult.s to half
 inline fn __invert4(reg u64[4] f) -> reg u64[4]
 {
   reg u32 i;
@@ -13,90 +10,90 @@ inline fn __invert4(reg u64[4] f) -> reg u64[4]
   fs = #copy(f);
 
   // z2 = z1^2^1
-  t0  = __sqr4_rr(f);
+  t0  = _sqr4_rr_(f);
   t0s = #copy(t0);
 
   // z8 = z2^2^2
-  t1  = __sqr4_rr(t0);
-  t1  = __sqr4_rr(t1);
+  t1  = _sqr4_rr_(t0);
+  t1  = _sqr4_rr_(t1);
 
   // z9 = z1*z8
-  t1  = __mul4_rsr(fs,t1);
+  t1  = _mul4_rsr_(fs,t1);
   t1s = #copy(t1);
 
   // z11 = z2*z9
-  t0  = __mul4_rsr(t0s,t1);
+  t0  = _mul4_rsr_(t0s,t1);
   t0s = #copy(t0);
 
   // z22 = z11^2^1
-  t2 = __sqr4_rr(t0);
+  t2 = _sqr4_rr_(t0);
 
   // z_5_0 = z9*z22
-  t1  = __mul4_rsr(t1s,t2);
+  t1  = _mul4_rsr_(t1s,t2);
   t1s = #copy(t1);
 
   // z_10_5 = z_5_0^2^5
-  t2 = __sqr4_rr(t1);
+  t2 = _sqr4_rr_(t1);
   i = 4/2;
-  t2 = __it_sqr4_x2(t2, i);
+  t2 = _it_sqr4_x2_(t2, i);
   t2s = #copy(t2);
 
   // z_10_0 = z_10_5*z_5_0
-  t1  = __mul4_rsr(t1s,t2);
+  t1  = _mul4_rsr_(t1s,t2);
   t1s = #copy(t1);
 
   // z_20_10 = z_10_0^2^10
   i = 10/2;
-  t2 = __it_sqr4_x2(t1, i);
+  t2 = _it_sqr4_x2_(t1, i);
 
   // z_20_0 = z_20_10*z_10_0
-  t2  = __mul4_rsr(t1s,t2);
+  t2  = _mul4_rsr_(t1s,t2);
   t2s = #copy(t2);
 
   // z_40_20 = z_20_0^2^20
   i = 20/2;
-  t3 = __it_sqr4_x2(t2, i);
+  t3 = _it_sqr4_x2_(t2, i);
 
   // z_40_0 = z_40_20*z_20_0
-  t2  = __mul4_rsr(t2s,t3);
+  t2  = _mul4_rsr_(t2s,t3);
 
   // z_50_10 = z_40_0^2^10
   i = 10/2;
-  t2 = __it_sqr4_x2(t2, i);
+  t2 = _it_sqr4_x2_(t2, i);
 
   // z_50_0 = z_50_10*z_10_0
-  t1  = __mul4_rsr(t1s,t2);
+  t1  = _mul4_rsr_(t1s,t2);
   t1s = #copy(t1);
 
   // z_100_50 = z_50_0^2^50
   i = 50/2;
-  t2 = __it_sqr4_x2(t1, i);
+  t2 = _it_sqr4_x2_(t1, i);
 
   // z_100_0 = z_100_50*z_50_0
-  t2  = __mul4_rsr(t1s,t2);
+  t2  = _mul4_rsr_(t1s,t2);
   t2s = #copy(t2);
 
   // z_200_100 = z_100_0^2^100
   i = 100/2;
-  t3 = __it_sqr4_x2(t2, i);
+  t3 = _it_sqr4_x2_(t2, i);
 
   // z_200_0 = z_200_100*z_100_0
-  t2  = __mul4_rsr(t2s,t3);
+  t2  = _mul4_rsr_(t2s,t3);
 
   // z_250_50 = z_200_0^2^50
   i = 50/2;
-  t2 = __it_sqr4_x2(t2, i);
+  t2 = _it_sqr4_x2_(t2, i);
 
   // z_250_0 = z_250_50*z_50_0
-  t1  = __mul4_rsr(t1s,t2);
+  t1  = _mul4_rsr_(t1s,t2);
 
   // z_255_5 = z_250_0^2^5
   i = 4/2;
-  t1 = __it_sqr4_x2(t1, i);
-  t1 = __sqr4_rr(t1);
+  t1 = _it_sqr4_x2_(t1, i);
+  t1 = _sqr4_rr_(t1);
 
   // z_255_21 = z_255_5*z11
-  t1 = __mul4_rsr(t0s,t1);
+  t1 = _mul4_rsr_(t0s,t1);
 
   return t1;
 }

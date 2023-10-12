@@ -1,0 +1,28 @@
+inline fn __decode_scalar(reg u64[4] k) -> stack u8[32]
+{
+  inline int i;
+  stack u8[32] ks;
+
+  for i=0 to 4
+  { ks[u64 i] = k[i]; }
+
+  ks[0]  &= 0xf8;
+  ks[31] &= 0x7f;
+  ks[31] |= 0x40;
+
+  return ks;
+}
+
+inline fn __decode_scalar_shl1(reg u64[4] k) -> stack u64[4]
+{
+  stack u64[4] ks;
+
+  k[3] <<= 1;
+  k[0] &= 0xfffffffffffffff8;
+  k[3] |= 0x8000000000000000;
+
+  ks = #copy(k);
+
+  return ks;
+}
+

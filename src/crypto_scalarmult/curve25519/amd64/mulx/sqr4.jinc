@@ -29,7 +29,7 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
 
   of, h[3]     = #ADOX ( h[3], t[3], of );
   cf, r[0]     = #ADCX ( r[0], t[4], cf );
-  
+
   (r[1], t[4]) = #MULX ( fx,   f[3]     ); // f1*f3
      of, r[0]  = #ADOX ( r[0], t[4], of );
 
@@ -81,6 +81,24 @@ inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
   return h;
 }
 
+fn _sqr4_rr(reg u64[4] f) -> reg u64[4]
+{
+  reg u64[4] h;
+  h = __sqr4_rr(f);
+  return h;
+}
+
+inline fn _sqr4_rr_(reg u64[4] _f) -> reg u64[4]
+{
+  reg u64[4] _h h f;
+
+  f = #copy(_f);
+  h = _sqr4_rr(f);
+  _h = #copy(h);
+
+  return _h;
+}
+
 inline fn __it_sqr4_x2(reg u64[4] f, reg u32 i) -> reg u64[4]
 {
   reg bool zf;
@@ -99,6 +117,21 @@ inline fn __it_sqr4_x2(reg u64[4] f, reg u32 i) -> reg u64[4]
 
   return f;
 }
+
+fn _it_sqr4_x2(reg u64[4] f, reg u32 i) -> reg u64[4]
+{
+  f = __it_sqr4_x2(f, i);
+  return f;
+}
+
+inline fn _it_sqr4_x2_(reg u64[4] _f, reg u32 i) -> reg u64[4]
+{
+  reg u64[4] f;
+  f = #copy(_f);
+  f = _it_sqr4_x2(f, i);
+  return f;
+}
+
 
 inline fn __sqr4_ss(stack u64[4] fs) -> stack u64[4]
 {
