@@ -1,0 +1,56 @@
+inline fn __init_points5(
+  reg u64[5] initr)
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5],
+  stack u64[5]
+{
+  inline int i;
+  stack u64[5] x2 x3 z3;
+  reg u64[5] z2r;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  x2[0] = 1;
+  z2r[0] = 0;
+  x3 = #copy(initr);
+  z3[0] = 1;
+
+  for i=1 to 5
+  { x2[i] = z;
+    z2r[i] = z;
+    z3[i] = z;
+  }
+
+  //     (1,   0, init, 1)
+  return x2, z2r, x3,  z3;
+}
+
+inline fn __init_points5_x3()
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5]
+{
+  inline int i;
+  stack u64[5] f1s f3s;
+  reg   u64[5] f2;
+  reg   u64 z;
+
+  ?{}, z = #set0();
+
+  f1s[0] = 1;
+  f2[0]  = 1;
+  f3s[0] = 1;
+
+  for i=1 to 5
+  { f1s[i] = z;
+    f2[i]  = z;
+    f3s[i] = z;
+  }
+
+  return f1s, f2, f3s;
+}
+

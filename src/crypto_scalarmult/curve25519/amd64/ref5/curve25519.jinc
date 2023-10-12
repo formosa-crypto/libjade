@@ -1,10 +1,11 @@
 from Jade require "crypto_scalarmult/curve25519/amd64/common/bit.jinc"
-from Jade require "crypto_scalarmult/curve25519/amd64/common/decode.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/decode_scalar.jinc"
 
+from Jade require "crypto_scalarmult/curve25519/amd64/common/51/decode_u5.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/common/51/init_points5.jinc"
 from Jade require "crypto_scalarmult/curve25519/amd64/common/51/add5.jinc"
 from Jade require "crypto_scalarmult/curve25519/amd64/common/51/sub5.jinc"
 from Jade require "crypto_scalarmult/curve25519/amd64/common/51/cswap5.jinc"
-from Jade require "crypto_scalarmult/curve25519/amd64/common/51/load5.jinc"
 from Jade require "crypto_scalarmult/curve25519/amd64/common/51/tobytes5.jinc"
 
 require "mul5.jinc"
@@ -142,40 +143,29 @@ inline fn __curve25519_internal_ref5(stack u8[32] k, reg u64[5] u) -> reg u64[4]
   return r;
 }
 
-inline fn __curve25519_ref5(reg u64 rp kp up)
+inline fn __curve25519_ref5(reg u64[4] _k _u) -> reg u64[4]
 {
-  inline int i;
   stack u8[32] k;
   reg u64[5] u;
   reg u64[4] r;
-  stack u64 rps;
 
-  rps = rp;
-  k = __decode_scalar(kp);
-  u = __decode_u_coordinate5(up);
+  k = __decode_scalar(_k);
+  u = __decode_u_coordinate5(_u);
   r = __curve25519_internal_ref5(k, u);
 
-  rp = rps;
-  for i=0 to 4
-  { [rp + 8*i] = r[i]; }
+  return r;
 }
 
-inline fn __curve25519_ref5_base(reg u64 rp kp)
+inline fn __curve25519_ref5_base(reg u64[4] _k) -> reg u64[4]
 {
-  inline int i;
   stack u8[32] k;
   reg u64[5] u;
   reg u64[4] r;
-  stack u64 rps;
 
-  rps = rp;
-  k = __decode_scalar(kp);
+  k = __decode_scalar(_k);
   u = __decode_u_coordinate_base5();
   r = __curve25519_internal_ref5(k, u);
 
-  rp = rps;
-  for i=0 to 4
-  { [rp + 8*i] = r[i]; }
+  return r;
 }
-
 
