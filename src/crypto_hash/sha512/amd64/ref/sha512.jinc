@@ -395,7 +395,8 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u64[32], reg u64
 inline fn __sha512_ref(reg u64 out in inlen)
 {
   reg u64 bits nblocks;
-  stack u64 s_out s_bits;
+  stack u64 s_bits;
+  #mmx reg u64 s_out;
   stack u64[8] H;
   reg ptr u64[8] Hp;
   stack u64[32] sblocks;
