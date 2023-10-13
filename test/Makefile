@@ -21,6 +21,11 @@
 #   $ make -j2 CI=1 FILTER=../src/crypto_kem/kyber/%
 #   $ make -j2 CI=1 reporter_checksums
 #
+# 3) make CI=1 JFLAGS='-stack-zeroization loopSCT' FILTER=../src/crypto_scalarmult/% clearstack-out-all
+#
+# --------------------------------------------------------------------
+ARCH    ?= amd64
+
 # --------------------------------------------------------------------
 AS      ?= as
 CC      ?= clang
@@ -72,12 +77,13 @@ export FILTER
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
-CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
-CHECKSUMBIG       := $(addsuffix checksumbig,   $(TESTDIR))
-PRINTPARAMS       := $(addsuffix printparams,   $(TESTDIR))
-FUNCTEST          := $(addsuffix functest,      $(TESTDIR))
-SAFETYPARAMS      := $(addsuffix safetyparams,  $(TESTDIR))
-MEMORY            := $(addsuffix memory,        $(TESTDIR))
+CHECKSUMSMALL     := $(addsuffix checksumsmall,      $(TESTDIR))
+CHECKSUMBIG       := $(addsuffix checksumbig,        $(TESTDIR))
+PRINTPARAMS       := $(addsuffix printparams,        $(TESTDIR))
+FUNCTEST          := $(addsuffix functest,           $(TESTDIR))
+SAFETYPARAMS      := $(addsuffix safetyparams,       $(TESTDIR))
+MEMORY            := $(addsuffix memory,             $(TESTDIR))
+CLEARSTACK        := $(addsuffix clearstack-$(ARCH), $(TESTDIR))
 
 CHECKSUMSMALL_OUT := $(addsuffix .out, $(CHECKSUMSMALL))
 CHECKSUMBIG_OUT   := $(addsuffix .out, $(CHECKSUMBIG))
@@ -85,10 +91,11 @@ PRINTPARAMS_OUT   := $(addsuffix .out, $(PRINTPARAMS))
 FUNCTEST_OUT      := $(addsuffix .out, $(FUNCTEST))
 SAFETYPARAMS_OUT  := $(addsuffix .out, $(SAFETYPARAMS))
 MEMORY_OUT        := $(addsuffix .out, $(MEMORY))
+CLEARSTACK_OUT    := $(addsuffix .out, $(CLEARSTACK))
 
-TESTS             := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)
-OUT               := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT)
-STDOUT            := $(subst .out,.stdout, $(OUT))
+TESTS  := $(CHECKSUMSMALL)     $(CHECKSUMBIG)     $(PRINTPARAMS)     $(FUNCTEST)     $(SAFETYPARAMS)     $(MEMORY)     $(CLEARSTACK)
+OUT    := $(CHECKSUMSMALL_OUT) $(CHECKSUMBIG_OUT) $(PRINTPARAMS_OUT) $(FUNCTEST_OUT) $(SAFETYPARAMS_OUT) $(MEMORY_OUT) $(CLEARSTACK_OUT)
+STDOUT := $(subst .out,.stdout, $(OUT))
 
 # --------------------------------------------------------------------
 
@@ -100,15 +107,19 @@ NAMESPACE0  = $(subst $(OPERATION)_,,$(subst crypto_,,$(subst -,_,$(subst /,_,$(
 NAMESPACE   = jade_$(OPERATION)_$(NAMESPACE0)
 NAMESPACE1  = JADE_$(OPERATION1)_$(NAMESPACE0)
 
+DEFINE     ?=
+DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
+CSDEFINE    = $(DEFINE) $(shell cat $(IDIR)/.$(OPERATION).stack-alloc.defines)
+
 IDIR        = $(subst $(BIN),$(SRC),$(@D))
 ASM         = $(IDIR)/$(OPERATION).s
 
-DEFINE     ?=
-DNAMESPACES = -DJADE_NAMESPACE=$(NAMESPACE1) -DJADE_NAMESPACE_LC=$(NAMESPACE)
 INCLUDES    = -I$(IDIR)/include/ -I$(COMMON)/ -Iinclude/
 PRINT       = common/print.c
-COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
-COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
+COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE)   $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
+COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE)   $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
+COMPILE_CS  = $(CC) $(CFLAGS) -o $@ $(CSDEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
+
 
 # --------------------------------------------------------------------
 .PHONY: __phony default main
@@ -154,6 +165,16 @@ include Makefile.partial_implementations
 	$(CIC)
 	$(COMPILE) || true
 
+
+%/clearstack-$(ARCH): %/clearstack-$(ARCH)_ | %/ %/$(CID)
+	$(CIC)
+	$(COMPILE_CS) || true
+
+# the following rule is needed because the contents of .op.stack-alloc.defines
+# should be available in the variable when at rule entry 
+%/clearstack-$(ARCH)_: __phony | %/ %/$(CID)
+	$(MAKE) -C $(IDIR) compile .stack-alloc.defines || true
+
 # --------------------------------------------------------------------
 $(OUT):
 
@@ -180,6 +201,7 @@ printparams-all:       $(PRINTPARAMS)
 functest-all:          $(FUNCTEST)
 safetyparams-all:      $(SAFETYPARAMS)
 memory-all:            $(MEMORY)
+clearstack-all:        $(CLEARSTACK)
 
 checksumsmall-out-all: $(CHECKSUMSMALL_OUT)
 checksumbig-out-all:   $(CHECKSUMBIG_OUT)
@@ -187,6 +209,7 @@ printparams-out-all:   $(PRINTPARAMS_OUT)
 functest-out-all:      $(FUNCTEST_OUT)
 safetyparams-out-all:  $(SAFETYPARAMS_OUT)
 memory-out-all:        $(MEMORY_OUT)
+clearstack-out-all:    $(CLEARSTACK_OUT)
 
 all:                   $(OUT)
 
@@ -209,12 +232,12 @@ reporter:
 	$(MAKE) $(LOGS)
 
 reporter_compilation:
-	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory clearstack-$(ARCH); do \
 	  ./../scripts/ci/reporter/jlog "Compilation status - $$type" test/$(BIN) $$type $(CICL); \
 	done
 
 reporter_execution:
-	@for type in checksumsmall checksumbig printparams functest safetyparams memory; do \
+	@for type in checksumsmall checksumbig printparams functest safetyparams memory clearstack-$(ARCH); do \
 	  ./../scripts/ci/reporter/jlog "Execution status - $$type" test/$(BIN) $$type.out $(CICL); \
 	done
 

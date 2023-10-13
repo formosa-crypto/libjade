@@ -11,3 +11,5 @@ libjade.h
 .log
 .error
 .jflags
+.*.defines
+.*.json

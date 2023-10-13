@@ -36,7 +36,7 @@ JEXT    ?= jazz
 override JFLAGS += -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
 JASMIN  ?= jasminc
-JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
+JASMINC  = $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
 # --------------------------------------------------------------------
@@ -97,6 +97,19 @@ $(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI
 	$(EXTRACT_CT)
 
 # --------------------------------------------------------------------
+.stack-alloc.defines: $(SRCS:%.$(JEXT)=.%.stack-alloc.defines)
+
+.PRECIOUS: .%.stack-alloc.json
+
+.%.stack-alloc.json: JFLAGS += -print-stack-alloc-json
+.%.stack-alloc.json: %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	($(JASMINC) $< 2>$@) $(CIT)
+
+.%.stack-alloc.defines: .%.stack-alloc.json
+	jq -rc '."stack alloc"[] | select( .description.export == true) | [ "-D\(."function name")_STACK_ALIGNMENT=\(.description.alignment | sub("u";""))", "-D\(."function name")_STACK_MAX_SIZE=\(.description."max used size".total)"] | .[] ' $< | tr '\n' ' ' > $@
+
+# --------------------------------------------------------------------
 
 include $(SRC)/Makefile.checksafety
 
@@ -129,7 +142,7 @@ include $(wildcard $(DEPFILES))
 .PHONY: clean
 
 clean:
-	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.o *.a .jflags *.out
+	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s .*.stack-alloc.* *.safety* *.o *.a .jflags *.out
 ifeq ($(CI),1)
 	@rm -fr $(CI_DIR)
 endif
