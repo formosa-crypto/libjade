@@ -111,15 +111,13 @@ COMPILE     = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_$(OPERATION)/$(@F).c $(PRINT)        $(RANDSRC) $(CIL)
 
 # --------------------------------------------------------------------
-.PHONY: __phony default compile-and-run reporter-and-err
+.PHONY: __phony default main
 
-default: compile-and-run
+default: main
 
-compile-and-run:
+main:
 	$(MAKE) CI=1 -C $(SRC) all
 	$(MAKE) CI=1 all
-
-reporter-and-err:
 	$(MAKE) CI=1 reporter
 	$(MAKE) CI=1 err
 

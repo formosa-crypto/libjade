@@ -1,39 +1,17 @@
-from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
 require "curve25519.jinc"
 
-export fn jade_scalarmult_curve25519_amd64_ref4(reg u64 qp np pp) -> reg u64
+export fn jade_scalarmult_curve25519_amd64_ref4(reg u64 q n p) -> reg u64
 {
   reg u64 r;
-  stack u64 qps;
-  reg u64[4] q n p;
-
-  qps = qp;
-  n   = __load4(np);
-  p   = __load4(pp);
-
-  q = __curve25519_ref4(n, p);
-
-  qp = qps;
-  __store4(qp, q);
-
+  __curve25519_ref4(q, n, p);
   ?{}, r = #set0();
   return r;
 }
 
-export fn jade_scalarmult_curve25519_amd64_ref4_base(reg u64 qp np) -> reg u64
+export fn jade_scalarmult_curve25519_amd64_ref4_base(reg u64 q n) -> reg u64
 {
   reg u64 r;
-  stack u64 qps;
-  reg u64[4] q n;
-
-  qps = qp;
-  n   = __load4(np);
-
-  q = __curve25519_ref4_base(n);
-
-  qp = qps;
-  __store4(qp, q);
-
+  __curve25519_ref4_base(q, n);
   ?{}, r = #set0();
   return r;
 }
