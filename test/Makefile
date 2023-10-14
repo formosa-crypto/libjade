@@ -122,13 +122,18 @@ COMPILE_CS  = $(CC) $(CFLAGS) -o $@ $(CSDEFINE) $(DNAMESPACES) $(INCLUDES) crypt
 
 
 # --------------------------------------------------------------------
-.PHONY: __phony default main
+.PHONY: __phony default compile-and-run reporter-and-err
 
-default: main
+ddd:
+	echo $(JAZZ)
 
-main:
+default: compile-and-run
+
+compile-and-run:
 	$(MAKE) CI=1 -C $(SRC) all
 	$(MAKE) CI=1 all
+
+reporter-and-err:
 	$(MAKE) CI=1 reporter
 	$(MAKE) CI=1 err
 

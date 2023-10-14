@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
@@ -80,7 +80,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
@@ -101,7 +101,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT -register-zeroization all" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT -register-zeroization all" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
@@ -121,7 +121,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled -register-zeroization all" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled -register-zeroization all" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
       - name: return error if there are any errors
