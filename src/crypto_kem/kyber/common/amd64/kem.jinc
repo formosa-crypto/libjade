@@ -41,10 +41,20 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER
   skp = s_skp;
   coins = s_coins;
 
-  __fromstack32u8(skp, h_pk);
-    skp += 32;
+  skp = #protect(skp, ms);
 
-  __fromstack32u8(skp, coins[32:32]);
+  reg ptr u8[32] ph_pk;
+  ph_pk = h_pk;
+  ph_pk = #protect_ptr(ph_pk, ms);
+
+  __fromstack32u8(skp, ph_pk);
+  skp += 32;
+
+  reg ptr u8[32] pcoins;
+  pcoins = coins[32:32];
+  pcoins = #protect_ptr(pcoins, ms);
+
+  __fromstack32u8(skp, pcoins);
 
   return ms;
 }

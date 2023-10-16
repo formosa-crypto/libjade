@@ -94,6 +94,7 @@ fn __schoolbook16x(reg u256 are aim bre bim zeta zetaqinv qx16 qinvx16, inline i
   bc0, bc1 = __wmul_16u16(aim, bre);
   zbd0, zbd1 = __wmul_16u16(zaim, bim);
 
+  #inline
   if (sign == 0) {
     x0 = #VPADD_8u32(ac0, zbd0);
     x1 = #VPADD_8u32(ac1, zbd1);
@@ -801,9 +802,9 @@ fn _poly_getnoise_eta1_4x(
   reg u256 f;
   stack u256[25] state;
   stack u8[NOISE_NBLOCKS * SHAKE256_RATE] buf0 buf1 buf2 buf3;
-  stack ptr u16[KYBER_N] r0s;
+  #mmx reg ptr u16[KYBER_N] _r0;
 
-  r0s = r0;
+  _r0 = r0;
 
   f = seed[u256 0];
   buf0[u256 0] = f;
@@ -821,8 +822,8 @@ fn _poly_getnoise_eta1_4x(
 
   state = _shake256_absorb4x_33(state, buf0[0:33], buf1[0:33], buf2[0:33], buf3[0:33]);
   state, buf0, buf1, buf2, buf3 = __shake256_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
-  
-  r0 = r0s;
+
+  r0 = _r0;
   r0 = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
   r1 = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
   r2 = __poly_cbd_eta1(r2, buf2[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
@@ -845,9 +846,9 @@ fn _poly_getnoise_eta1122_4x(
   reg u256 f;
   stack u256[25] state;
   stack u8[NOISE_NBLOCKS * SHAKE256_RATE] buf0 buf1 buf2 buf3;
-  stack ptr u16[KYBER_N] r0s;
+  #mmx reg ptr u16[KYBER_N] _r0;
 
-  r0s = r0;
+  _r0 = r0;
 
   f = seed[u256 0];
   buf0[u256 0] = f;
@@ -866,7 +867,7 @@ fn _poly_getnoise_eta1122_4x(
   state = _shake256_absorb4x_33(state, buf0[0:33], buf1[0:33], buf2[0:33], buf3[0:33]);
   state, buf0, buf1, buf2, buf3 = __shake256_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
 
-  r0 = r0s;
+  r0 = _r0;
   r0 = __poly_cbd_eta1(r0, buf0[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
   r1 = __poly_cbd_eta1(r1, buf1[0:KYBER_ETA1*KYBER_N/4+(KYBER_ETA1 - 2)*8]);
   r2 = __poly_cbd_eta2(r2, buf2[0:KYBER_ETA2*KYBER_N/4]);
@@ -1011,6 +1012,7 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
     r0 = __red16x(r0, qx16, vx16);
 
+    #inline
     if (i==0) {
      rp.[u256 32*0+256*i] = r0;
      rp.[u256 32*1+256*i] = r2;
@@ -1028,6 +1030,7 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
   for i=0 to 2
   {
+    #inline
     if (i == 0) {
      r7 = r6;
      r6 = r4;
@@ -1179,7 +1182,8 @@ fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
     zeta0 = #VPBROADCAST_8u32(zetasp.[u32 8 + 392*i]);
     zeta1 = #VPBROADCAST_8u32(zetasp.[u32 12 + 392*i]);
 
-    if ( i == 0) {
+    #inline
+    if (i == 0) {
      r4 = r0;
      r5 = r1;
      r6 = r2;
