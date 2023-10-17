@@ -806,7 +806,6 @@ fn __shake256_squeezenblocks4x(
       buf3[i*SHAKE256_RATE:SHAKE256_RATE],
       ms
     );
-    ms = #init_msf();
   }
 
   return state, buf0, buf1, buf2, buf3, ms;
