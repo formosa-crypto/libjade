@@ -4,13 +4,15 @@ from Jade require "common/keccak/common/fips202_params.jinc" // SHAKE128_RATE
 
 inline fn __shake128_squeezeblock4x(
   reg ptr u256[25] state,
-  reg ptr u8[SHAKE128_RATE] h0 h1 h2 h3)
+  reg ptr u8[SHAKE128_RATE] h0 h1 h2 h3,
+  reg u64 ms)
   ->
   reg ptr u256[25],
   reg ptr u8[SHAKE128_RATE],
   reg ptr u8[SHAKE128_RATE],
   reg ptr u8[SHAKE128_RATE],
-  reg ptr u8[SHAKE128_RATE]
+  reg ptr u8[SHAKE128_RATE],
+  #msf reg u64
 {
   reg u256 t256;
   reg u128 t128;
@@ -28,5 +30,6 @@ inline fn __shake128_squeezeblock4x(
 		h3[u64 i] = #VMOVHPD(t128);
 	}
 
-  return state, h0, h1, h2, h3;
+  ms = #init_msf(); // TODO: REMOVE
+  return state, h0, h1, h2, h3, ms;
 }

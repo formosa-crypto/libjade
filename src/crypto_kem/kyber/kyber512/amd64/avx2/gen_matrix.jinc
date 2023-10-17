@@ -263,17 +263,39 @@ u8[2048] ru_idx = {-1, -1, -1, -1, -1, -1, -1, -1,
                 0,  2,  4,  6,  8, 10, 12, 14};
 
 inline
-fn __shake128_squeezenblocks4x(reg ptr u256[25] state, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] h0 h1 h2 h3)
-  -> reg ptr u256[25], reg ptr u8[REJ_UNIFORM_AVX_BUFLEN], reg ptr u8[REJ_UNIFORM_AVX_BUFLEN], reg ptr u8[REJ_UNIFORM_AVX_BUFLEN], reg ptr u8[REJ_UNIFORM_AVX_BUFLEN]
+fn __shake128_squeezenblocks4x(
+  reg ptr u256[25] state,
+  reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] h0 h1 h2 h3,
+  reg u64 ms)
+  ->
+  reg ptr u256[25],
+  reg ptr u8[REJ_UNIFORM_AVX_BUFLEN],
+  reg ptr u8[REJ_UNIFORM_AVX_BUFLEN],
+  reg ptr u8[REJ_UNIFORM_AVX_BUFLEN],
+  reg ptr u8[REJ_UNIFORM_AVX_BUFLEN],
+  #msf reg u64
 {
   inline int i;
 
   for i = 0 to GENMATRIX_NBLOCKS
   {
-    state, h0[i*SHAKE128_RATE:SHAKE128_RATE], h1[i*SHAKE128_RATE:SHAKE128_RATE], h2[i*SHAKE128_RATE:SHAKE128_RATE], h3[i*SHAKE128_RATE:SHAKE128_RATE] = __shake128_squeezeblock4x(state, h0[i*SHAKE128_RATE:SHAKE128_RATE], h1[i*SHAKE128_RATE:SHAKE128_RATE], h2[i*SHAKE128_RATE:SHAKE128_RATE], h3[i*SHAKE128_RATE:SHAKE128_RATE]);
+    state,
+    h0[i*SHAKE128_RATE:SHAKE128_RATE],
+    h1[i*SHAKE128_RATE:SHAKE128_RATE],
+    h2[i*SHAKE128_RATE:SHAKE128_RATE],
+    h3[i*SHAKE128_RATE:SHAKE128_RATE],
+    ms
+    = __shake128_squeezeblock4x(
+      state,
+      h0[i*SHAKE128_RATE:SHAKE128_RATE],
+      h1[i*SHAKE128_RATE:SHAKE128_RATE],
+      h2[i*SHAKE128_RATE:SHAKE128_RATE],
+      h3[i*SHAKE128_RATE:SHAKE128_RATE],
+      ms
+    );
   }
 
-  return state, h0, h1, h2, h3;
+  return state, h0, h1, h2, h3, ms;
 }
 
 inline
@@ -634,8 +656,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, reg u64 ms
   }
 
   state = _shake128_absorb4x_34(state, buf0[0:34], buf1[0:34], buf2[0:34], buf3[0:34]);
-  state, buf0, buf1, buf2, buf3 = __shake128_squeezenblocks4x(state, buf0, buf1, buf2, buf3);
-  ms = #init_msf();
+  state, buf0, buf1, buf2, buf3, ms = __shake128_squeezenblocks4x(state, buf0, buf1, buf2, buf3, ms);
 
   tmp, rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], ms = _rej_uniform_avx(rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], buf0, ms);
 
@@ -669,8 +690,22 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, inline int transposed, reg u64 ms
   b = bflg == 0;
   while(!b) {
     ms = #update_msf(!b, ms);
-    state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE] = __shake128_squeezeblock4x(state, buf0[0:SHAKE128_RATE], buf1[0:SHAKE128_RATE], buf2[0:SHAKE128_RATE], buf3[0:SHAKE128_RATE]);
-    ms = #init_msf();
+
+    state,
+    buf0[0:SHAKE128_RATE],
+    buf1[0:SHAKE128_RATE],
+    buf2[0:SHAKE128_RATE],
+    buf3[0:SHAKE128_RATE],
+    ms
+    = __shake128_squeezeblock4x(
+      state,
+      buf0[0:SHAKE128_RATE],
+      buf1[0:SHAKE128_RATE],
+      buf2[0:SHAKE128_RATE],
+      buf3[0:SHAKE128_RATE],
+      ms
+    );
+
     ctr0, rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], ms = __rej_uniform(rr[0*KYBER_VECN+0*KYBER_N:KYBER_N], ctr0, buf0[0:SHAKE128_RATE], SHAKE128_RATE, ms);
     ctr1, rr[0*KYBER_VECN+1*KYBER_N:KYBER_N], ms = __rej_uniform(rr[0*KYBER_VECN+1*KYBER_N:KYBER_N], ctr1, buf1[0:SHAKE128_RATE], SHAKE128_RATE, ms);
     ctr2, rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], ms = __rej_uniform(rr[1*KYBER_VECN+0*KYBER_N:KYBER_N], ctr2, buf2[0:SHAKE128_RATE], SHAKE128_RATE, ms);
