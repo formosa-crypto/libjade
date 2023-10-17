@@ -40,6 +40,9 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
   nonce = 3;
   e[KYBER_N:KYBER_N], ms = _poly_getnoise_eta1(e[KYBER_N:KYBER_N], noiseseed, nonce, ms);
 
+  #mmx reg u64 _ms;
+  _ms = #mov_msf(ms);
+
   skpv = __polyvec_ntt(skpv);
   e    = __polyvec_ntt(e);
 
@@ -66,6 +69,7 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
     pkp += 8;
   }
 
+  ms = #mov_msf(_ms);
   return ms;
 }
 

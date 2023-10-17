@@ -10,8 +10,8 @@ export fn jade_kem_kyber_kyber512_amd64_ref_keypair_derand(reg u64 public_key se
 
   public_key = public_key;
   secret_key = secret_key;
+  ms = #init_msf(); // Protects __tostack.
   stack_coins = __tostack64u8(stack_coins, coins);
-  ms = #init_msf();
   ms = __crypto_kem_keypair_derand_jazz(public_key, secret_key, stack_coins, ms);
   ?{}, r = #set0();
   return r;
@@ -39,8 +39,8 @@ export fn jade_kem_kyber_kyber512_amd64_ref_enc_derand(reg u64 ciphertext shared
   ciphertext = ciphertext;
   shared_secret = shared_secret;
   public_key = public_key;
+  ms = #init_msf(); // Protects __tostack.
   stack_coins = __tostack32u8(stack_coins, coins);
-  ms = #init_msf();
   ms = __crypto_kem_enc_derand_jazz(ciphertext, shared_secret, public_key, stack_coins, ms);
   ?{}, r = #set0();
   return r;

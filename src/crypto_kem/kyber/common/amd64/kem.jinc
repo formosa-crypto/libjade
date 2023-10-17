@@ -108,6 +108,9 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp, reg u64 ms) -> 
   reg u64 pkp hp zp t64 cnd;
   inline int i;
 
+  #mmx reg u64 _ms;
+  _ms = #mov_msf(ms);
+
   s_shkp = shkp;
   s_ctp = ctp;
 
@@ -123,6 +126,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp, reg u64 ms) -> 
   }
 
   s_skp = skp;
+  ms = #mov_msf(_ms);
 
   kr, ms = _sha3_512_64(kr, buf, ms);
 
