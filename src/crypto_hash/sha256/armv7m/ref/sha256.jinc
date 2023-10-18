@@ -47,25 +47,6 @@ inline fn __store_H_ref(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u3
   return H;
 }
 
-inline fn REV(reg u32 a) -> reg u32
-{
-  // a = #REV(a); // USE this instruction when available
-
-  inline int i;
-  reg u32 t b;
-
-  t  = (a & 0xff);
-
-  for i=0 to 3
-  { t <<= 8;
-    a >>= 8;
-    b  = (a & 0xff);
-    t |= b;
-  }
-
-  return t;
-}
-
 inline fn __store_ref(reg u32 out, reg ptr u32[8] H)
 {
   inline int i;
@@ -73,7 +54,7 @@ inline fn __store_ref(reg u32 out, reg ptr u32[8] H)
 
   for i=0 to 8
   { v = H[i];
-    v = REV(v);
+    v = #REV(v);
     (u32)[out + i*4] = v;
   }
 }
@@ -292,7 +273,7 @@ inline fn _blocks_0_ref(reg ptr u32[8] H, reg u32 in, reg u32 inlen) -> reg ptr 
   {
     for t=0 to 16
     { v = (u32)[in + t*4];
-      v = REV(v);
+      v = #REV(v);
       W[t] = v;
     }
 
@@ -333,7 +314,7 @@ inline fn _blocks_1_ref(reg ptr u32[8] H, reg ptr u32[32] blocks, reg u32 nblock
     for t=0 to 16
     { v = blocks[(int)i];
       i += 1;
-      v = REV(v);
+      v = #REV(v);
       W[t] = v;
     }
     i_s = i;
