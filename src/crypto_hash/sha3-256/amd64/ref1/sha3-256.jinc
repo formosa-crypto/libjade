@@ -1,4 +1,4 @@
-from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/ref1_nomsf/keccak1600.jinc"
 
 inline fn __sha3_256_ref1(reg u64 out in inlen)
 {

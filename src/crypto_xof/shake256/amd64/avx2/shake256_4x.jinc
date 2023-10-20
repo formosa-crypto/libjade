@@ -30,6 +30,6 @@ inline fn __shake256_squeezeblock4x(
 		h3[u64 i] = #VMOVHPD(t128);
 	}
 
-  ms = #init_msf(); // TODO: REMOVE
+  ms = #init_msf();
   return state, h0, h1, h2, h3, ms;
 }
