@@ -447,7 +447,7 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
   reg u64 i j;
   inline int k;
 
-  stack ptr u16[KYBER_N] srp;
+  #mmx reg ptr u16[KYBER_N] srp;
 
   srp = rp;
 

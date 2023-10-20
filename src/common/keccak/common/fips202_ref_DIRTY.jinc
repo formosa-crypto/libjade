@@ -4,7 +4,7 @@ from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
 #[returnaddress="stack"]
 fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in, reg u64 ms) -> stack u8[128], #msf reg u64
 {
-  stack ptr u8[128] s_out;
+  #mmx reg ptr u8[128] s_out;
   stack u64[25] _state;
   reg ptr u64[25] state;
   reg u8 c;
@@ -80,7 +80,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> stack u8[19
 #[returnaddress="stack"]
 fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in, reg u64 ms) -> stack u8[64], #msf reg u64
 {
-  stack ptr u8[64] s_out;
+  #mmx reg ptr u8[64] s_out;
   stack u64[25] _state;
   reg ptr u64[25] state;
   reg u8 c;
@@ -153,7 +153,7 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen, reg u64 ms) -> reg ptr u8[32]
 {
   stack u64[25] _state;
   reg ptr u64[25] state;
-  stack ptr u8[32] s_out;
+  #mmx reg ptr u8[32] s_out;
   stack u64 s_in s_ilen s_r8;
   reg u64 ilen r8 t64;
   reg u8 t8;
