@@ -9,7 +9,7 @@
 # libjade/src$ make CI=1 distclean && make -j12 libjade-amd64.a libjade-amd64.h
 #
 # - build libjade-armv7m.a libjade-armv7m.h
-# libjade/src$ make CI=1 distclean && make -j12 ARCH=armv7m CC=arm-linux-gnueabi-gcc CFLAGS='-Wall -O3' AS=arm-linux-gnueabi-as AR=arm-linux-gnueabi-ar RANLIB=arm-linux-gnueabi-ranlib libjade-armv7m.a libjade-armv7m.h
+# libjade/src$ make CI=1 distclean && make -j12 CI=1 ARCH=armv7m CC=arm-linux-gnueabi-gcc CFLAGS='-Wall -O3' AS=arm-linux-gnueabi-as AR=arm-linux-gnueabi-ar RANLIB=arm-linux-gnueabi-ranlib libjade-armv7m.a libjade-armv7m.h && make CI=1 reporter
 #
 # In particular for the last command, it is helpful to setup some sort of
 # facilitator that sets the variables according to the system's configuration || *
