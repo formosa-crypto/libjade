@@ -106,10 +106,13 @@ inline fn __set_row_bmi1(
 }
 
 
-inline fn __round_bmi1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25]
+inline fn __round_bmi1(reg ptr u64[25] e a, reg u64 rc) -> reg ptr u64[25]
 {
   inline int y;
   reg u64[5] b c d;
+  stack u64 s_rc;
+
+  s_rc = rc;
 
   c = __theta_sum_bmi1(a);
   d = __theta_rol_bmi1(c);
@@ -130,7 +133,6 @@ inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
   stack u64[25] s_e;
   reg ptr u64[25] e;
   reg u64 c rc;
-  stack u64 s_c s_rc;
 
   RC = KECCAK1600_RC;
   s_RC = RC;
@@ -139,19 +141,14 @@ inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
   c = 0;
   while (c < KECCAK_ROUNDS - 1)
   {
-    s_c = c;
-
     RC = s_RC;
     rc = RC[(int) c];
-    s_rc = rc;
-    e = __round_bmi1(e, a, s_rc);
+    e = __round_bmi1(e, a, rc);
 
     RC = s_RC;
     rc = RC[(int) c + 1];
-    s_rc = rc;
-    a = __round_bmi1(a, e, s_rc);
+    a = __round_bmi1(a, e, rc);
 
-    c = s_c;
     c += 2;
   }
 
