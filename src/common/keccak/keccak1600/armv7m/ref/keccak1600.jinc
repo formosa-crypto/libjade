@@ -1,0 +1,250 @@
+require "keccakf1600.jinc"
+
+inline fn __keccak_init_ref(reg ptr u32[25*2] state) -> reg ptr u32[25*2]
+{
+  reg u32 i t;
+
+  i = 0;
+  t = 0;
+  while(i < 25*2)
+  { state[(int)i] = t;
+    i += 1;
+  }
+
+  return state;
+}
+
+
+// obs: @pre: rate multiple of 4
+inline fn __add_full_block_ref(
+  reg ptr u32[25*2] state,
+  reg u32 in inlen,
+  reg u32 rate
+) -> reg ptr u32[25*2], reg u32, reg u32
+{
+  reg u32 i t0 t1 rate32;
+
+  rate32 = rate;
+  rate32 >>= 2;
+  i = 0;
+  while( i < rate32)
+  {
+    t0 = [in + 4*i];
+    t1 = state[(int)i];
+    t0 ^= t1;
+    state[(int)i] = t0;
+    i+=1;
+  }
+
+  in += rate;
+  inlen -= rate;
+
+  return state, in, inlen;
+}
+
+
+// obs: @pre: inlen < rate_in_bytes
+inline fn __add_final_block_ref(
+  reg ptr u32[25*2] state,
+  reg     u32 in inlen,
+  reg     u32 trail_byte,
+  reg     u32 rate
+) -> reg ptr u32[25*2]
+{
+  reg u32 i t0 t1 inlen4;
+
+  inlen4 = inlen;
+  inlen4 >>= 2;
+  i = 0;
+  while ( i < inlen4 )
+  {
+    t0 = [in + 4*i];
+    t1 = state[(int)i];
+    t0 ^= t1;
+    state[(int)i] = t0;
+    i += 1;
+  }
+
+  i <<= 2;
+  while ( i < inlen )
+  {
+    t0 = (32u)(u8)[in + i];
+    t1 = (32u) state[u8 (int)i];
+    t0 ^= t1;
+    state[u8 (int)i] = (8u) t0;
+    i += 1;
+  }
+
+  t0 = (32u) state[u8 (int)i];
+  t0 ^= trail_byte;
+  state[u8 (int)i] = (8u) t0;
+
+  i = rate;
+  i -= 1;
+
+  t0 = (32u) state[u8 (int)i];
+  t1 = 0x80;
+  t0 ^= t1;
+  state[u8 (int)i] = (8u) t0;
+
+  return state;
+}
+
+
+inline fn __absorb_ref(
+  reg ptr u32[25*2] state,
+  reg   u32 in inlen,
+  stack u32 s_trail_byte,
+  reg   u32 rate // rate already in bytes -- it is returned bc of spills
+) -> reg ptr u32[25*2], reg u32
+{
+  stack u32 s_in s_inlen s_rate;
+  reg u32 trail_byte t;
+
+  // intermediate blocks
+  while ( inlen >= rate )
+  {
+    state, in, inlen = __add_full_block_ref(state, in, inlen, rate);
+
+    s_in = in;
+    s_inlen = inlen; 
+    s_rate = rate;
+
+    state = _keccakf1600_ref(state);
+
+    in = s_in;
+    inlen = s_inlen;
+    rate = s_rate;
+  }
+
+  // final block
+  trail_byte = s_trail_byte;
+
+  state = __add_final_block_ref(state, in, inlen, trail_byte, rate);
+
+  return state, rate;
+}
+
+
+inline fn __xtr_full_block_ref(
+  reg ptr u32[25*2] state,
+  reg u32 out outlen,
+  reg u32 rate
+) -> reg u32, reg u32
+{
+  reg u32 i t rate32;
+
+  rate32 = rate;
+  rate32 >>= 2;
+  i = 0;
+  while ( i < rate32 )
+  {
+    t = state[(int)i];
+    [out + 4*i] = t;
+    i += 1;
+  }
+
+  out += rate;
+  outlen -= rate;
+
+  return out, outlen;
+}
+
+
+inline fn __xtr_bytes_ref(
+  reg ptr u32[25*2] state,
+  reg u32 out outlen
+) -> reg u32
+{
+  reg u32 i t outlen4;
+
+  outlen4 = outlen;
+  outlen4 >>= 4;
+  i = 0;
+  while ( i < outlen4 )
+  {
+    t = state[(int)i];
+    [out + 4*i] = t;
+    i += 1;
+  }
+
+  i <<= 2;
+  while ( i < outlen )
+  {
+    t = (32u) state[u8 (int)i];
+    (u8)[out + i] = (8u) t;
+    i += 1;
+  }
+
+  out += outlen;
+  return out;
+}
+
+
+inline fn __squeeze_ref(
+  reg mut ptr u32[25*2] state,
+  stack   u32 s_out,
+  reg     u32 outlen,
+  reg     u32 rate
+)
+{
+  reg u32 out;
+  stack u32 s_outlen s_rate;
+
+  // intermediate blocks
+  while ( outlen > rate )
+  {
+    s_outlen = outlen;
+    s_rate = rate;
+
+    state = _keccakf1600_ref(state);
+
+    out = s_out;
+    outlen = s_outlen;
+    rate = s_rate;
+
+    out, outlen = __xtr_full_block_ref(state, out, outlen, rate);
+    s_out = out;
+  }
+
+  s_outlen = outlen;
+
+  state = _keccakf1600_ref(state);
+
+  out = s_out;
+  outlen = s_outlen;
+
+  out = __xtr_bytes_ref(state, out, outlen);
+}
+
+
+inline fn __keccak1600_ref(reg u32 out outlen in inlen trail_byte rate)
+{
+  stack u32[25*2] _state;
+  reg ptr u32[25*2] state;
+  stack u32 s_out s_outlen;
+  stack u32 s_trail_byte;
+
+  s_out = out;
+  s_outlen = outlen;
+  s_trail_byte = trail_byte;
+
+  state = _state;
+  state = __keccak_init_ref(state);
+
+  // absorb
+  state, rate = __absorb_ref(state, in, inlen, s_trail_byte, rate);
+
+  // squeeze
+  outlen = s_outlen;
+  __squeeze_ref(state, s_out, outlen, rate);
+}
+
+
+#[returnaddress="stack"]
+fn _keccak1600_ref(reg u32 out outlen in inlen trail_byte rate)
+{
+  __keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+}
+
+

@@ -259,9 +259,7 @@ inline fn __set_row_ref(
   return e_s;
 }
 
-
-#[returnaddress=stack]
-fn _round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
+inline fn __round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
 {
   stack ptr u32[25*2] e_s a_s;
   stack u32 rc0_s rc1_s;
@@ -283,6 +281,14 @@ fn _round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
 
   e = e_s;
 
+  return e;
+}
+
+
+#[returnaddress=stack]
+fn _round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
+{
+  e = __round_ref(e, a, rc0, rc1);
   return e;
 }
 
