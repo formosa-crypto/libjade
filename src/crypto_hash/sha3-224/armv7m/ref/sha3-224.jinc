@@ -1,0 +1,14 @@
+from Jade require "common/keccak/keccak1600/armv7m/ref/keccak1600.jinc"
+
+inline fn __sha3_224_ref(reg u32 out in inlen)
+{
+  reg u32 outlen rate trail_byte;
+
+  outlen = (224/8);
+  trail_byte = 0x6;
+  rate = (1152/8);
+
+  _keccak1600_ref(out, outlen, in, inlen, trail_byte, rate);
+}
+
+

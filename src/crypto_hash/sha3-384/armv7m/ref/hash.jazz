@@ -1,0 +1,11 @@
+require "sha3-384.jinc"
+
+export fn jade_hash_sha3_384_armv7m_ref(reg u32 hash input input_length) -> reg u32
+{
+  reg u32 r;
+  __sha3_384_ref(hash, input, input_length);
+  r = 0;
+  return r;
+}
+
+
