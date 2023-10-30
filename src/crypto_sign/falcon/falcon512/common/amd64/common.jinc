@@ -34,7 +34,6 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
   t = ng >>s 31;
   t = -t;
   s |= t;
-  t = BOUND;
 
   if(s <= BOUND)
   { res = 1; }
@@ -81,7 +80,6 @@ fn __is_short_unrolled(stack u16[ARRAY_N] s1 s2) -> reg u32
     t = ng >>s 31;
     t = -t;
     s |= t;
-    t = BOUND;
 
     if(s <= BOUND){
         res = 1;
