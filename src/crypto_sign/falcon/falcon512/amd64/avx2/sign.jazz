@@ -14,6 +14,8 @@ export fn jade_sign_falcon_falcon512_amd64_avx2_open(
 {
   reg u64 r;
 
+  _ = #init_msf();
+
   r = __jade_sign_falcon_falcon512_amd64_avx2_open(
           message, message_length, 
           signed_message, signed_message_length,

@@ -14,6 +14,7 @@ export fn jade_sign_dilithium_dilithium2_amd64_avx2_keypair(
   ) -> reg u64
 {
   reg u64 r;
+  _ = #init_msf();
   keygen(public_key, secret_key);
   ?{}, r = #set0();
   return r;
@@ -29,6 +30,7 @@ export fn jade_sign_dilithium_dilithium2_amd64_avx2(
    ) -> reg u64
 {
   reg u64 r;
+  _ = #init_msf();
   r = __sign(signed_message, signed_message_length,
              message, message_length, secret_key);
   return r;
@@ -44,6 +46,7 @@ export fn jade_sign_dilithium_dilithium2_amd64_avx2_open(
   ) -> reg u64
 {
   reg u64 r;
+  _ = #init_msf();
   r = __open(message, message_length, 
              signed_message, signed_message_length, public_key);
   return r;
