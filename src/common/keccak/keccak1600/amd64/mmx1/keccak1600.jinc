@@ -2,28 +2,25 @@ param int KECCAK_ROUNDS=24;
 
 require "keccakf1600.jinc"
 
-inline fn __keccak_init_mmx1() -> stack u64[25]
+
+inline fn __keccak_init_mmx1(reg ptr u64[25] state) -> reg ptr u64[25]
 {
-  stack u64[25] state;
-  reg u64 t;
   inline int i;
+  reg u64 t;
 
-  _,_,_,_,_, t = #set0();
-
-  for i = 0 to 25
-  { state[i] = t;
-    i += 1;
-  }
+  ?{}, t = #set0();
+  for i=0 to 25
+  { state[i] = t; }
 
   return state;
 }
 
 
 inline fn __add_full_block_mmx1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 in inlen,
   reg u64 rate
-) -> stack u64[25], reg u64, reg u64
+) -> reg ptr u64[25], reg u64, reg u64
 {
   reg u64 i t rate64;
 
@@ -46,20 +43,19 @@ inline fn __add_full_block_mmx1(
 
 // obs: @pre: inlen < rate_in_bytes
 inline fn __add_final_block_mmx1(
-  stack u64[25] state,
-  reg   u64 in inlen,
-  reg   u8  trail_byte,
-  reg   u64 rate
-) -> stack u64[25]
+  reg ptr u64[25] state,
+  reg     u64 in inlen,
+  reg     u8  trail_byte,
+  reg     u64 rate
+) -> reg ptr u64[25]
 {
   reg u64 i t inlen8;
   reg u8 c;
-  reg bool b;
 
   inlen8 = inlen;
   inlen8 >>= 3;
   i = 0;
-  while { b = i < inlen8;} (b)
+  while ( i < inlen8 )
   {
     t = [in + 8*i];
     state[(int)i] ^= t;
@@ -67,7 +63,7 @@ inline fn __add_final_block_mmx1(
   }
 
   i <<= 3;
-  while { b = i < inlen; } (b)
+  while ( i < inlen )
   {
     c = (u8)[in + i];
     state[u8 (int)i] ^= c;
@@ -85,35 +81,35 @@ inline fn __add_final_block_mmx1(
 
 
 inline fn __absorb_mmx1(
-  stack u64[25] state,
-  reg   u64 in inlen,
-  stack u8  s_trail_byte,
-  reg   u64 rate // rate already in bytes -- it is returned bc of spills
-) -> stack u64[25], reg u64
+  reg ptr u64[25] state,
+  reg u64 in inlen,
+  #mmx reg u64 s_trail_byte,
+  reg u64 rate // rate already in bytes -- it is returned bc of spills
+) -> reg ptr u64[25], reg u64
 {
-  #mmx reg u64 x_in x_inlen x_rate;
+  #mmx reg u64 s_in s_inlen s_rate;
   reg u8 trail_byte;
   reg u64 t;
-  reg bool b;
 
   // intermediate blocks
-  while {b = inlen >= rate;} ( b )
+  while ( inlen >= rate )
   {
     state, in, inlen = __add_full_block_mmx1(state, in, inlen, rate);
 
-    x_in = in;
-    x_inlen = inlen;
-    x_rate = rate;
+    s_in = in;
+    s_inlen = inlen; 
+    s_rate = rate;
 
     state = _keccakf1600_mmx1(state);
 
-    in = x_in;
-    inlen = x_inlen;
-    rate = x_rate;
+    in = s_in;
+    inlen = s_inlen;
+    rate = s_rate;
   }
 
   // final block
-  trail_byte = s_trail_byte;
+  t = s_trail_byte;
+  trail_byte = (8u) t;
 
   state = __add_final_block_mmx1(state, in, inlen, trail_byte, rate);
 
@@ -122,18 +118,17 @@ inline fn __absorb_mmx1(
 
 
 inline fn __xtr_full_block_mmx1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 out outlen,
   reg u64 rate
 ) -> reg u64, reg u64
 {
   reg u64 i t rate64;
-  reg bool b;
 
   rate64 = rate;
   rate64 >>= 3;
   i = 0;
-  while { b = i < rate64; } (b)
+  while ( i < rate64 )
   {
     t = state[(int)i];
     [out + 8*i] = t;
@@ -148,7 +143,7 @@ inline fn __xtr_full_block_mmx1(
 
 
 inline fn __xtr_bytes_mmx1(
-  stack u64[25] state,
+  reg ptr u64[25] state,
   reg u64 out outlen
 ) -> reg u64
 {
@@ -179,38 +174,37 @@ inline fn __xtr_bytes_mmx1(
 
 
 inline fn __squeeze_mmx1(
-  stack u64[25] state,
-  #mmx reg u64 x_out,
-  reg   u64 outlen,
-  reg   u64 rate
+  reg mut ptr u64[25] state,
+  #mmx reg u64 s_out,
+  reg u64 outlen,
+  reg u64 rate
 )
 {
   reg u64 out;
-  #mmx reg u64 x_outlen x_rate;
-  reg bool b;
+  #mmx reg u64 s_outlen s_rate;
 
   // intermediate blocks
-  while {b = outlen > rate;} (b)
+  while ( outlen > rate )
   {
-    x_outlen = outlen;
-    x_rate = rate;
+    s_outlen = outlen;
+    s_rate = rate;
 
     state = _keccakf1600_mmx1(state);
 
-    out = x_out;
-    outlen = x_outlen;
-    rate = x_rate;
+    out = s_out;
+    outlen = s_outlen;
+    rate = s_rate;
 
     out, outlen = __xtr_full_block_mmx1(state, out, outlen, rate);
-    x_out = out;
+    s_out = out;
   }
 
-  x_outlen = outlen;
+  s_outlen = outlen;
 
   state = _keccakf1600_mmx1(state);
 
-  out = x_out;
-  outlen = x_outlen;
+  out = s_out;
+  outlen = s_outlen;
 
   out = __xtr_bytes_mmx1(state, out, outlen);
 }
@@ -218,22 +212,26 @@ inline fn __squeeze_mmx1(
 
 inline fn __keccak1600_mmx1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
-  stack u64[25] state;
-  #mmx reg u64 x_out x_outlen;
-  stack u8 s_trail_byte;
+  stack u64[25] _state;
+  reg ptr u64[25] state;
+  #mmx reg u64 s_out s_outlen;
+  #mmx reg u64 s_trail_byte_64;
+  reg u64 t;
 
-  x_out = out;
-  x_outlen = outlen;
-  s_trail_byte = trail_byte;
+  s_out = out;
+  s_outlen = outlen;
+  t = (64u) trail_byte;
+  s_trail_byte_64 = t;
 
-  state = __keccak_init_mmx1();
+  state = _state;
+  state = __keccak_init_mmx1(state);
 
   // absorb
-  state, rate = __absorb_mmx1(state, in, inlen, s_trail_byte, rate);
+  state, rate = __absorb_mmx1(state, in, inlen, s_trail_byte_64, rate);
 
   // squeeze
-  outlen = x_outlen;
-  __squeeze_mmx1(state, x_out, outlen, rate);
+  outlen = s_outlen;
+  __squeeze_mmx1(state, s_out, outlen, rate);
 }
 
 
@@ -242,3 +240,5 @@ fn _keccak1600_mmx1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate
 {
   __keccak1600_mmx1(out, outlen, in, inlen, trail_byte, rate);
 }
+
+

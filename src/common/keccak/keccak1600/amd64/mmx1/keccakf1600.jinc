@@ -1,5 +1,5 @@
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
-from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates
+from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_mmx1(reg ptr u64[25] a) -> reg u64[5]
@@ -21,7 +21,7 @@ inline fn __theta_sum_mmx1(reg ptr u64[25] a) -> reg u64[5]
 }
 
 
-// D[x] = C[x-1] ^ ROT(C[x+1], 1)
+// D[x] = C[x-1] ^ ROT(C[x+1], 1) 
 inline fn __theta_rol_mmx1(reg u64[5] c) -> reg u64[5]
 {
   inline int x;
@@ -60,7 +60,7 @@ inline fn __rol_sum_mmx1(
   {
     x_ = (x + 3*y) % 5;
     y_ = x;
-    r = __rhotates_nomodmsf(x_, y_);
+    r = __rhotates_spec(x_, y_);
 
     // B[x] = A[x',y']
     b[x] = a[x_ + y_*5];
@@ -69,7 +69,7 @@ inline fn __rol_sum_mmx1(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    #inline if(r != 0)
+    if(r != 0)
     { _, _, b[x] = #ROL_64(b[x], r); }
 
   }
@@ -84,19 +84,22 @@ inline fn __set_row_mmx1(
   reg ptr u64[25] e,
   reg u64[5] b,
   inline int y,
-  stack u64 s_rc
+  #mmx reg u64 s_rc
 ) -> reg ptr u64[25]
 {
   inline int x x1 x2;
-  reg u64 t;
+  reg u64 t rc;
 
   for x=0 to 5
-  {
+  { 
     x1 = (x + 1) % 5;
     x2 = (x + 2) % 5;
-    t  = !b[x1] & b[x2];
+
+    //t  = !b[x1] & b[x2];
+    t = b[x1]; t = !t; t &= b[x2];
+
     t ^= b[x];
-    #inline if( x==0 && y==0 ){ t ^= s_rc; }
+    if( x==0 && y==0 ){ rc = s_rc; t ^= rc; }
     e[x + y*5] = t;
   }
 
@@ -104,57 +107,51 @@ inline fn __set_row_mmx1(
 }
 
 
-inline fn __round_mmx1(reg ptr u64[25] e a, stack u64 s_rc) -> reg ptr u64[25], reg ptr u64[25]
+inline fn __round_mmx1(reg ptr u64[25] e a, reg u64 rc) -> reg ptr u64[25]
 {
   inline int y;
   reg u64[5] b c d;
+  #mmx reg u64 s_rc;
+
+  s_rc = rc;
 
   c = __theta_sum_mmx1(a);
   d = __theta_rol_mmx1(c);
 
   for y = 0 to 5
-  {
-    b = __rol_sum_mmx1(a, d, y);
+  { b = __rol_sum_mmx1(a, d, y);
     e = __set_row_mmx1(e, b, y, s_rc);
   }
 
-  return e, a;
+  return e;
 }
 
 
 inline fn __keccakf1600_mmx1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   reg ptr u64[24] RC;
-  #mmx reg ptr u64[24] x_RC;
+  #mmx reg ptr u64[24] s_RC;
   stack u64[25] s_e;
   reg ptr u64[25] e;
   reg u64 c rc;
-  #mmx reg u64 x_c x_rc;
-  reg bool b;
 
   RC = KECCAK1600_RC;
-  x_RC = RC;
+  s_RC = RC;
   e = s_e;
 
   c = 0;
-  while
+  while (c < KECCAK_ROUNDS - 1)
   {
-    x_c = c;
-
-    RC = x_RC;
+    RC = s_RC;
     rc = RC[(int) c];
-    x_rc = rc;
-    e, a = __round_mmx1(e, a, x_rc);
+    e = __round_mmx1(e, a, rc);
 
-    RC = x_RC;
+    RC = s_RC;
     rc = RC[(int) c + 1];
-    x_rc = rc;
-    a, e = __round_mmx1(a, e, x_rc);
+    a = __round_mmx1(a, e, rc);
 
-    c = x_c;
     c += 2;
-    b = c < KECCAK_ROUNDS;
-  } (b) { }
+  }
 
   return a;
 }
@@ -166,3 +163,14 @@ fn _keccakf1600_mmx1(reg ptr u64[25] a) -> reg ptr u64[25]
   a = __keccakf1600_mmx1(a);
   return a;
 }
+
+
+inline fn _keccakf1600_mmx1_(reg ptr u64[25] a) -> reg ptr u64[25]
+{
+  a = a;
+  a = _keccakf1600_mmx1(a);
+  a = a;
+  return a;
+}
+
+
