@@ -32,6 +32,7 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 		ptr_state = 0;
 		while(ptr_state < SHAKE256_RATE) {
 			addr = ptr_pk;
+      _ = #init_msf();
 			c = pk[(int) addr];
 
 			addr = ptr_state;
@@ -43,8 +44,12 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 		state_rsp = __keccakf1600_ref(state_rsp);
 	}
 
+  reg bool ble;
 	ptr_state = 0;
-	while(ptr_pk < Li2_PK_LEN) {
+	while {
+      ble = ptr_pk < Li2_PK_LEN;
+      _ = #init_msf();
+  } (ble) {
 		addr = ptr_pk;
 		c = pk[(int) addr];
 
@@ -56,6 +61,7 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 	}
 
 	addr = ptr_state;
+  _ = #init_msf();
 	state_rsp[u8 (int) addr] ^= 0x1f;
 	state_rsp[u8 SHAKE256_RATE-1] ^= 0x80;
 

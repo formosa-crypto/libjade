@@ -44,6 +44,7 @@ fn expandSEta2_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_po
 		t1 = t0;
 		offset += 1;
 
+    _ = #init_msf();
 		// t0 = buf[pos] & 0x0F;
 		t0 &= 0x0F;
 		if t0 < 15 {

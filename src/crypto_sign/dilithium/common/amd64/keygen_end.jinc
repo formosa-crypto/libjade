@@ -130,6 +130,9 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 	pk, sk = keygen_inner(random_zeta_p);
 
   pk_ptr = pk_ptr_s;
+  sk_ptr = sk_ptr_s;
+  _ = #init_msf();
+
 	i = 0;
 	while(i < Li2_PK_LEN) {
 		c = pk[(int) i];
@@ -137,7 +140,6 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 		i += 1;
 	}
 
-  sk_ptr = sk_ptr_s;
 	i = 0;
 	while(i < Li2_SK_LEN) {
 		c = sk[(int) i];

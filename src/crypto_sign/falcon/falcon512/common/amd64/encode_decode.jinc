@@ -22,7 +22,11 @@ inline fn __modq_decode_8(
 
   while(out_i < out_e)
   {
-    acc <<= 8; t = (32u)(u8)[in]; in += 1; acc |= t;
+    acc <<= 8;
+    #declassify
+    t = (32u)(u8)[in];
+    in += 1;
+    acc |= t;
     acc_len += 8;
 
     if(acc_len >= 14)
@@ -30,6 +34,7 @@ inline fn __modq_decode_8(
       acc_len -= 14;
       w = acc; w >>= (acc_len & 31); w &= 0x3fff;
 
+      _ = #init_msf();
       if(w >= 12289)
       { is_zero = 1; }
 

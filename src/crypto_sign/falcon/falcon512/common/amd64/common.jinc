@@ -14,6 +14,7 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
   i = 0;
   while(i < ARRAY_N)
   {
+    #declassify
     z = (32s)s1[(int)i];
     t = z;
     t *= z;
@@ -21,6 +22,7 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
     s = s;
     ng |= s;
 
+    #declassify
     z = (32s)s2[(int)i];
     t = z;
     t *= z;
@@ -36,6 +38,7 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
   s |= t;
   t = BOUND;
 
+  _ = #init_msf();
   if(s <= BOUND)
   { res = 1; }
   else

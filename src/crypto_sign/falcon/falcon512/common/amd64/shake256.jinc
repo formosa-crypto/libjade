@@ -1,14 +1,14 @@
 
-from Jade require "common/keccak/keccak1600/amd64/ref1_nomsf/keccak1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/mmx1/keccak1600.jinc"
 
 param int SHAKE256_RATE = 136;
 
 inline
 fn __shake256_absorb(stack u64[25] state, reg u64 in inlen) -> stack u64[25] {
 
-    reg u8 trail_byte;
+    reg u64 trail_byte;
     reg u64 rate;
-    stack u8 s_trail_byte;
+    #mmx reg u64 s_trail_byte;
     reg ptr u64[25] state_ptr;
 
     trail_byte = 0x1f;
@@ -16,9 +16,9 @@ fn __shake256_absorb(stack u64[25] state, reg u64 in inlen) -> stack u64[25] {
     rate = SHAKE256_RATE;
 
     state_ptr = state;
-    state_ptr = __keccak_init_ref1(state_ptr);
+    state_ptr = __keccak_init_mmx1(state_ptr);
 
-    state_ptr, rate = __absorb_ref1(state_ptr, in, inlen, s_trail_byte, rate);
+    state_ptr, rate = __absorb_mmx1(state_ptr, in, inlen, s_trail_byte, rate);
     state = state_ptr;
 
     return state;
@@ -37,7 +37,7 @@ fn __shake256_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE256_RATE] out) -
   s_out = out;
   
   state_ptr = state;
-  state_ptr = __keccakf1600_ref1(state_ptr);
+  state_ptr = __keccakf1600_mmx1(state_ptr);
   state = state_ptr;
 
   out = s_out;

@@ -63,6 +63,8 @@ fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
 			xof_offset += 1;
 		}
 
+    _ = #init_msf();
+
 		// There are now 3 bytes in vs[ii] ready for rejection sample
 		coeff = vs[0];
 		vs[1] <<= 8;
@@ -107,8 +109,8 @@ fn expandA_chunk(
 {	
 	stack u256[25] xof;
 	
-	stack u64[4] coeffs_filled;
-	stack u64[4] xof_offset;
+	reg u64[4] coeffs_filled;
+	reg u64[4] xof_offset;
 	reg u64 lane;
 
 	reg u256 v256 v256_zero;
@@ -131,7 +133,7 @@ fn expandA_chunk(
 		v64 = #LEA_64(0x1F0000 + v64);
 		xof[u64 16 + (int) lane] = v64;
 	}
-	?{}, v256_zero = #set0_256();
+	v256_zero = #set0_256();
 	for ii = 5 to 20 {
 		xof[ii] = v256_zero;
 	}
@@ -155,6 +157,8 @@ fn expandA_chunk(
 		for lane = 0 to 4 {
 			xof_offset[lane] = 0;
 		}
+
+    _ = #init_msf();
 
 		lane = 0;
 		_, _, _, _, zf = #TEST_8(done, 1 << lane);
