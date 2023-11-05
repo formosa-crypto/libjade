@@ -1,0 +1,32 @@
+name: armv7m-linux-main
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  test:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+
+      - name: compile and run
+        run: JASMIN=$(which_jasminc) make -f Makefile.armv7m -j$JOBS -C test/ CI=1 default
+      - name: print logs
+        run: JASMIN=$(which_jasminc) make -f Makefile.armv7m -C test/ CI=1 reporter
+      - name: return error if there are any errors
+        run: make -f Makefile.armv7m -C test/ CI=1 err
+
+      - name: libjade-armv7m-logs-test.tar.gz - contains non-empty logs and errors
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: libjade-armv7m-logs-test.tar.gz
+          path: test/libjade-armv7m-logs-test.tar.gz
+
+

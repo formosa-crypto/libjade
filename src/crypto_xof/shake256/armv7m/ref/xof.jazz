@@ -1,0 +1,10 @@
+require "shake256.jinc"
+
+export fn jade_xof_shake256_armv7m_ref(reg u32 output output_length input input_length) -> reg u32
+{
+  reg u32 r;
+  __shake256_ref(output, output_length, input, input_length);
+  r = 0;
+  return r;
+}
+

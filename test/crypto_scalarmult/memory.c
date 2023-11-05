@@ -9,19 +9,6 @@
 #include "randombytes.h"
 #include "config.h"
 
-/*
-int jade_scalarmult(
- uint8_t *q,
- const uint8_t *n,
- const uint8_t *p
-);
-
-int jade_scalarmult_base(
- uint8_t *q,
- const uint8_t *n
-);
-*/
-
 int main(void)
 {
   uint8_t *public_key = malloc(sizeof(uint8_t) * JADE_SCALARMULT_BYTES);

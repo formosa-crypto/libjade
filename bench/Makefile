@@ -14,6 +14,9 @@
 EXCLUDE ?= crypto_xof/shake256/amd64/spec/
 
 # --------------------------------------------------------------------
+ARCH    ?= amd64
+
+# --------------------------------------------------------------------
 AS      ?= as
 CC      ?= clang
 CFLAGS  ?= -Wall -Wno-unused-function -march=native -O3 -fomit-frame-pointer -fwrapv -fPIC -fPIE
@@ -51,6 +54,8 @@ BIN      ?= bin
 LOGS     := libjade-logs-bench.tar.gz
 
 SRC      := ../src
+export SRC
+
 COMMON   := common
 
 EXT      := ../ext
@@ -59,8 +64,13 @@ RANDINC  ?= $(EXT)/randombytes/
 SSBD_DIR := $(EXT)/ssbd-tools
 
 FILTER   ?= $(SRC)/crypto_%
-JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
-BENCHDIR := $(subst $(SRC),$(BIN), $(JAZZ))
+export FILTER
+
+JAZZ_ARCH ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -path "*/$(ARCH)/*" -name '*.jazz')))))
+
+BENCHDIR := $(subst $(SRC),$(BIN), $(JAZZ_ARCH))
+
+# --------------------------------------------------------------------
 
 EXEC     := $(addsuffix bench, $(BENCHDIR))
 OUT      := $(addsuffix .out, $(EXEC))

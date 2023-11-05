@@ -10,28 +10,12 @@
 #include "randombytes.h"
 #include "config.h"
 
-/*
-int jade_onetimeauth(
- uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-
-int jade_onetimeauth_verify(
- const uint8_t *mac,
- const uint8_t *input,
- uint64_t input_length,
- const uint8_t *key
-);
-*/
-
 int main(void)
 {
   int r;
   uint8_t *mac;
   uint8_t *input;
-  uint64_t input_length;
+  size_t input_length;
   uint8_t *key;
 
   mac = malloc(sizeof(uint8_t) * JADE_ONETIMEAUTH_BYTES);

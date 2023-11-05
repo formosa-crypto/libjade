@@ -6,19 +6,6 @@
 #include "api.h"
 #include "jade_scalarmult.h"
 
-/*
-int jade_scalarmult(
- uint8_t *q,
- const uint8_t *n,
- const uint8_t *p
-);
-
-int jade_scalarmult_base(
- uint8_t *q,
- const uint8_t *n
-);
-*/
-
 int main(void)
 {
   char *functions[] = {xstr(jade_scalarmult,), xstr(jade_scalarmult_base,)};

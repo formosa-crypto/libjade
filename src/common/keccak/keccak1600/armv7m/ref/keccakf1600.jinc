@@ -1,0 +1,370 @@
+param int KECCAK_ROUNDS=24;
+
+u32[24*2] KECCAK1600_RC =
+{
+  0x00000001, 0x00000000,
+  0x00008082, 0x00000000,
+  0x0000808a, 0x80000000,
+  0x80008000, 0x80000000,
+  0x0000808b, 0x00000000,
+  0x80000001, 0x00000000,
+  0x80008081, 0x80000000,
+  0x00008009, 0x80000000,
+  0x0000008a, 0x00000000,
+  0x00000088, 0x00000000,
+  0x80008009, 0x00000000,
+  0x8000000a, 0x00000000,
+  0x8000808b, 0x00000000,
+  0x0000008b, 0x80000000,
+  0x00008089, 0x80000000,
+  0x00008003, 0x80000000,
+  0x00008002, 0x80000000,
+  0x00000080, 0x80000000,
+  0x0000800a, 0x00000000,
+  0x8000000a, 0x80000000,
+  0x80008081, 0x80000000,
+  0x00008080, 0x80000000,
+  0x80000001, 0x00000000,
+  0x80008008, 0x80000000
+};
+
+// disclaimer: this is a non-optimized implementation designed with the goal of
+// being proven equivalent to the amd64 implementation; an optimized
+// implementation (bit interleaving; lazy rotates; etc) is needed and it will
+// be proven equivalent to this one.
+
+// /////////////////////////////////////////////////////////////////////////////
+// the following functions are the same for armv7-m and amd64;
+// to do, think a bit more where to put them, maybe here is just fine
+
+inline fn __index_ref1(inline int x y) -> inline int
+{
+  inline int r;
+  r = (x % 5) + 5 * (y % 5);
+  return r;
+}
+
+
+inline fn __keccak_rho_offsets_ref1(inline int i) -> inline int
+{
+  inline int r x y z t;
+
+  r = 0;
+  x = 1;
+  y = 0;
+
+  for t = 0 to 24 {
+    if (i == x + 5 * y) {
+      r = ((t + 1) * (t + 2) / 2) % 64;
+    }
+    z = (2 * x + 3 * y) % 5;
+    x = y;
+    y = z;
+  }
+
+  return r;
+}
+
+
+inline fn __rhotates_ref1(inline int x y) -> inline int
+{
+  inline int i r;
+  i = __index_ref1(x, y);
+  r = __keccak_rho_offsets_ref1(i);
+  return r;
+}
+
+
+// /////////////////////////////////////////////////////////////////////////////
+
+
+// r == 32
+inline fn __ROL_64_32(reg u32 h l) -> reg u32, reg u32
+{
+  return l, h;
+}
+
+// r < 32
+inline fn __ROL_64_L(reg u32 h l, inline int r) -> reg u32, reg u32
+{
+  reg u32 x y;
+
+  x = l;
+  y = h << r;
+  l = l << r;
+  l = l | (h >> (32-r));
+  h = y | (x >> (32-r));
+
+  return h, l;
+}
+
+
+inline fn __ROL_64(reg u32 h l, inline int r) -> reg u32, reg u32
+{
+  if(r == 32)
+  { 
+    h, l = __ROL_64_32(h, l);
+  }
+  else if( r > 32 )
+  {
+    h, l = __ROL_64_32(h, l);
+    h, l = __ROL_64_L(h, l, r-32);
+  }
+  else
+  {
+    h, l = __ROL_64_L(h, l, r);
+  }
+  return h, l;
+}
+
+
+// C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+inline fn __theta_sum_ref(reg ptr u32[25*2] a) -> stack u32[5*2]
+{
+  inline int x y;
+  reg u32[5*2] c;
+  reg u32 t0 t1;
+  stack u32[5*2] cs;
+
+  // C[x] = A[x, 0]
+  for x=0 to 5
+  { c[2*x + 0] = a[2*x + 0];
+    c[2*x + 1] = a[2*x + 1]; }
+
+  // C[x] ^= A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+  for y=1 to 5
+  { for x=0 to 5
+    { t0 = a[2*(x + y*5)+0];
+      t1 = a[2*(x + y*5)+1];
+
+      c[2*x+0] ^= t0;
+      c[2*x+1] ^= t1;
+     }
+  }
+
+  cs = #copy(c);
+
+  return cs;
+}
+
+
+// D[x] = C[x-1] ^ ROT(C[x+1], 1) 
+inline fn __theta_rol_ref(stack u32[5*2] c) -> stack u32[5*2]
+{
+  inline int x;
+  reg u32[5*2] d;
+  reg u32 t0 t1;
+  stack u32[5*2] ds;
+
+  for x = 0 to 5
+  { // D[x] = C[x + 1] : 1 2 3 4 0
+    d[2*x+0] = c[2*((x + 1) % 5)+0];
+    d[2*x+1] = c[2*((x + 1) % 5)+1];
+
+    // D[x] = ROT(D[x], 1)
+    d[2*x+1], d[2*x+0] = __ROL_64(d[2*x+1], d[2*x+0], 1);
+
+    // D[x] ^= C[x-1] : 4 0 1 2 3
+    t0 = c[2*((x - 1 + 5) % 5)+0];
+    t1 = c[2*((x - 1 + 5) % 5)+1];
+
+    d[2*x+0] ^= t0;
+    d[2*x+1] ^= t1;
+  }
+
+  ds = #copy(d);
+
+  return ds;
+}
+
+
+// B[x] = ROT( (A[x',y'] ^ D[x']), r[x',y'] ) with (x',y') = M^-1 (x,y)
+//
+// M = (0 1)  M^-1 = (1 3)  x' = 1x + 3y
+//     (2 3)         (1 0)  y' = 1x + 0y
+//
+inline fn __rol_sum_ref(
+  reg ptr u32[25*2] a,
+  stack u32[5*2] d,
+  inline int y
+) -> reg u32[5*2]
+{
+  inline int r x x_ y_;
+  reg u32[5*2] b;
+  reg u32 t0 t1;
+
+  for x = 0 to 5
+  {
+    x_ = (x + 3*y) % 5;
+    y_ = x;
+    r = __rhotates_ref1(x_, y_);
+
+    // B[x] = A[x',y']
+    b[2*x+0] = a[2*(x_ + y_*5)+0];
+    b[2*x+1] = a[2*(x_ + y_*5)+1];
+
+    // B[x] ^= D[x'];
+    t0 = d[2*x_+0];
+    t1 = d[2*x_+1];
+    b[2*x+0] ^= t0;
+    b[2*x+1] ^= t1;
+
+    // B[x] = ROT( B[x], r[x',y'] );
+    if(r != 0)
+    { b[2*x+1], b[2*x+0] = __ROL_64(b[2*x+1], b[2*x+0], r); }
+  }
+
+  return b;
+}
+
+
+// E[x, y] = B[x] ^ ( (!B[x+1]) & B[x+2] )
+// -- when x and y are 0: E[0,0] ^= RC[i];
+inline fn __set_row_ref(
+  stack ptr u32[25*2] e_s,
+  reg u32[5*2] b,
+  inline int y,
+  stack u32 rc0_s,
+  stack u32 rc1_s
+) -> stack ptr u32[25*2]
+{
+  inline int x x1 x2;
+  reg u32 t0 t1 rc0 rc1;
+  reg ptr u32[24*2] RC;
+  reg ptr u32[25*2] e;
+
+  for x=0 to 5
+  { 
+    x1 = (x + 1) % 5;
+    x2 = (x + 2) % 5;
+
+    //t  = !b[x1] & b[x2];
+    t0 = #BIC(b[2*x2+0], b[2*x1+0]);
+    t1 = #BIC(b[2*x2+1], b[2*x1+1]);
+
+    t0 ^= b[2*x+0];
+    t1 ^= b[2*x+1];
+
+    if( x==0 && y==0 )
+    { rc0 = rc0_s; t0 ^= rc0;
+      rc1 = rc1_s; t1 ^= rc1;
+    }
+
+    e = e_s;
+    e[2*(x + y*5)+0] = t0;
+    e[2*(x + y*5)+1] = t1;
+    e_s = e;
+  }
+
+  return e_s;
+}
+
+inline fn __round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
+{
+  stack ptr u32[25*2] e_s a_s;
+  stack u32 rc0_s rc1_s;
+  stack u32[5*2] c d;
+  inline int y;
+  reg u32[5*2] b;
+
+  e_s = e;
+  rc0_s = rc0;
+  rc1_s = rc1;
+
+  c = __theta_sum_ref(a);
+  d = __theta_rol_ref(c);
+
+  for y = 0 to 5
+  { b = __rol_sum_ref(a, d, y);
+    e_s = __set_row_ref(e_s, b, y, rc0_s, rc1_s);
+  }
+
+  e = e_s;
+
+  return e;
+}
+
+
+#[returnaddress=stack]
+fn _round_ref(reg ptr u32[25*2] e a, reg u32 rc0 rc1) -> reg ptr u32[25*2]
+{
+  e = __round_ref(e, a, rc0, rc1);
+  return e;
+}
+
+
+inline fn __get_RC(
+  stack ptr u32[24*2] s_RC,
+  reg u32 c)
+  ->
+  reg u32,
+  reg u32,
+  reg u32
+{
+  reg ptr u32[24*2] RC;
+  reg u32 rc0 rc1;
+
+  RC = s_RC;
+
+  rc0 = RC[(int) c];
+  c += 1;
+  rc1 = RC[(int) c];
+  c += 1;
+
+  return rc1, rc0, c;
+}
+
+
+inline fn __keccakf1600_ref(reg ptr u32[25*2] a) -> reg ptr u32[25*2]
+{
+  reg ptr u32[24*2] RC;
+  stack ptr u32[24*2] RC_s;
+  stack ptr u32[25*2] a_s;
+  reg ptr u32[25*2] e;
+  stack u32[25*2] s_e;
+  reg u32 rc0 rc1 c;
+  stack u32 c_s;
+
+  e    = s_e;
+  RC   = KECCAK1600_RC;
+  RC_s = RC;
+
+  c = 0;
+  while (c < KECCAK_ROUNDS*2)
+  {
+    rc1, rc0, c = __get_RC(RC_s, c); c_s = c;
+    e = _round_ref(e, a, rc0, rc1);
+
+    
+    a_s = a; s_e = e; // swap 'e' and 'a' (in practice this is just "pointer swapping", to do, improve)
+    a = a_s; e = s_e;
+
+                                     c = c_s;
+    rc1, rc0, c = __get_RC(RC_s, c); c_s = c;
+    a = _round_ref(a, e, rc0, rc1);
+
+    a_s = a; s_e = e; // swap again
+    a = a_s; e = s_e;
+
+                                     c = c_s;
+  }
+
+  return a;
+}
+
+
+#[returnaddress=stack]
+fn _keccakf1600_ref(reg ptr u32[25*2] a) -> reg ptr u32[25*2]
+{
+  a = __keccakf1600_ref(a);
+  return a;
+}
+
+
+inline fn _keccakf1600_ref_(reg ptr u32[25*2] a) -> reg ptr u32[25*2]
+{
+  a = a;
+  a = _keccakf1600_ref(a);
+  a = a;
+  return a;
+}

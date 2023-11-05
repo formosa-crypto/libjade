@@ -18,10 +18,10 @@ int main(void)
   #define MESSAGE_LENGTH 3
   uint8_t message_1[MESSAGE_LENGTH] = {0x61, 0x62, 0x63};
   uint8_t message_2[MESSAGE_LENGTH];
-  uint64_t message_length;
+  size_t message_length;
 
   uint8_t signed_message[JADE_SIGN_BYTES + MESSAGE_LENGTH];
-  uint64_t signed_message_length;
+  size_t signed_message_length;
 
   //
   r = jade_sign_keypair(public_key, secret_key);
