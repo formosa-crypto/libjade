@@ -124,9 +124,6 @@ COMPILE_CS  = $(CC) $(CFLAGS) -o $@ $(CSDEFINE) $(DNAMESPACES) $(INCLUDES) crypt
 # --------------------------------------------------------------------
 .PHONY: __phony default compile-and-run reporter-and-err
 
-ddd:
-	echo $(JAZZ)
-
 default: compile-and-run
 
 compile-and-run:
