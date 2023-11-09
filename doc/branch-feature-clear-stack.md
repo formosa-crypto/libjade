@@ -1,6 +1,6 @@
 # Description of branch feature/clear-stack
 
-Libjade branch `feature/clear-stack` compiles with Jasmin branch `clear-stack_reborn`.
+Libjade branch `feature/clear-stack` compiles with Jasmin branch `merge-clear-stack`.
 
 This Libjade branch aims to integrate the new `clear-stack` feature of the Jasmin
 compiler. This new feature allows the user to indicate the compiler if the stack
