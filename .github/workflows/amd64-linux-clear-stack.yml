@@ -51,7 +51,7 @@ jobs:
           path: src/libjade-logs-src.tar.gz
 
 
-  compile-clear-stack-loop-register-zeroization all:
+  compile-clear-stack-loop-register-zeroization-all:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
@@ -72,7 +72,7 @@ jobs:
           path: src/libjade-logs-src.tar.gz
 
 
-  compile-clear-stack-unrolled-register-zeroization all:
+  compile-clear-stack-unrolled-register-zeroization-all:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
