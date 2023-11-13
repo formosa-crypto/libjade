@@ -1,0 +1,33 @@
+// params of frodo 976
+
+param int EXTRACTED_BITS = 3;
+param int D = 16;
+param int N = 976;
+param int NBAR = 8;
+
+param int NNBAR = N * NBAR;
+
+param int BYTES_SEED_A = 16;
+param int BYTES_SEC = 24;
+param int BYTES_SEED_SE = 48;
+param int BYTES_SALT = 48;
+
+param int BYTES_PK = BYTES_SEED_A + D * N;
+param int BYTES_SK = BYTES_SEC + BYTES_PK + 2 * NNBAR + BYTES_SEC;
+param int BYTES_CT = D * N + D * NBAR + BYTES_SALT;
+
+param int CDF_TABLE_LEN = 11;
+
+u16[CDF_TABLE_LEN] CDF_TABLE = {
+    5638,
+    15915,
+    23689,
+    28571,
+    31116,
+    32217,
+    32613,
+    32731,
+    32760,
+    32766,
+    32767
+};

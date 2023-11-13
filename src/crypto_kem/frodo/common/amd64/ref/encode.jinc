@@ -1,0 +1,58 @@
+fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR / 8] in) -> stack u16[NBAR * NBAR] {
+    inline int i j;
+    reg u64 tmp tmp2 mask;
+
+    mask = (1 << EXTRACTED_BITS) - 1;
+
+    for i = 0 to NBAR {
+        tmp = 0;
+
+        for j = 0 to EXTRACTED_BITS {
+            tmp2 = (64u)in[i * EXTRACTED_BITS + j];
+            tmp2 <<= 8 * j;
+            tmp |= tmp2;
+        }
+
+        for j = 0 to 8 {
+            out[i * NBAR + j] = tmp;
+            out[i * NBAR + j] &= mask;
+            out[i * NBAR + j] <<= D - EXTRACTED_BITS;
+            tmp >>= EXTRACTED_BITS;
+        }
+    }
+
+    return out;
+}
+
+fn __decode(reg ptr u8[EXTRACTED_BITS * NBAR] out, reg ptr u16[NBAR * NBAR] in) -> stack u8[EXTRACTED_BITS * NBAR] {
+    reg u32 tmplong tmp mask d;
+    inline int i j;
+
+    d = 1 << (D - EXTRACTED_BITS - 1);
+    mask = (1 << EXTRACTED_BITS) - 1;
+
+    out = out;
+    in = in;
+
+    for i = 0 to NBAR {
+        tmplong = 0;
+
+        for j = 0 to 8 {
+            tmp = (32u)in[(int) i * NBAR + j];
+            tmp += d;
+            tmp >>= D - EXTRACTED_BITS;
+            tmp &= mask;
+
+            tmp <<= EXTRACTED_BITS * j;
+
+            tmplong |= tmp;
+        }
+
+        for j = 0 to EXTRACTED_BITS {
+            out[i * EXTRACTED_BITS + j] = (8u)tmplong;
+            tmplong >>= 8;
+        }
+    }
+
+    return out;
+}

@@ -1,0 +1,26 @@
+name: frodo976shake
+type: kem
+checksumsmall: 0fc98ee686f97225c0f831be7a72d45a7ad2848811adaa7cc4a9bc651c245fa8
+checksumbig: de7124ccc70e76c6058b517a55789fe7b53a2a668d4dfb5651242d4afcd2d53a
+claimed-nist-level: 3
+claimed-security: IND-CCA2
+length-public-key: 15632
+length-ciphertext: 15792
+length-secret-key: 31296
+length-shared-secret: 24
+principal-submitters:
+  - TODO
+auxiliary-submitters:
+  - TODO
+implementations:
+  - name: amd64/ref
+    version: TODO
+    supported_platforms:
+      - architecture: x86_64
+        operating_systems:
+          - Linux
+          - Darwin
+        required_flags: # FIXME
+          - avx2
+          - bmi2
+          - popcnt
