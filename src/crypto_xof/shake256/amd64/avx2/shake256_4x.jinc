@@ -18,7 +18,7 @@ inline fn __shake256_squeezeblock4x(
   reg u128 t128;
   inline int i;
 
-  state = __keccakf1600_4x_avx2(state);
+  state = _keccakf1600_4x_avx2(state);
 
 	for i = 0 to (SHAKE256_RATE / 8) {
     t256 = state[i];
