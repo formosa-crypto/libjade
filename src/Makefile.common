@@ -101,7 +101,7 @@ $(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI
 
 .PRECIOUS: .%.stack-alloc.json
 
-.%.stack-alloc.json: JFLAGS += -print-stack-alloc-json
+.%.stack-alloc.json: JFLAGS += -print-stack-alloc-json -nowarning
 .%.stack-alloc.json: %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
 	$(DEPS)
 	($(JASMINC) $< 2>$@) $(CIT)

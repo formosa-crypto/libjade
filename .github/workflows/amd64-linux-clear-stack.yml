@@ -9,16 +9,32 @@ on:
 
 jobs:
 
-  compile-clear-stack-loop:
+  compile-clear-stack:
     runs-on: [self-hosted, linux, X64, amd64-main]
+
+    strategy:
+      matrix:
+        stack_zeroization:
+          - loop
+          - loopSCT
+          - unrolled
+        stack_zeroization_size:
+          - u8
+          - u16
+          - u32
+          - u64
+          - u128
+          - u256
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization loopSCT" default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization ${{ matrix.stack_zeroization }} -stack-zeroization-size ${{ matrix.stack_zeroization_size }}" default
+
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
+
       - name: return error if there are any errors
         run: make -C src/ CI=1 err
 
@@ -30,84 +46,34 @@ jobs:
           path: src/libjade-logs-src.tar.gz
 
 
-  compile-clear-stack-unrolled:
+
+
+
+  test-clear-stack:
     runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
 
-      - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization unrolled" default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C src/ CI=1 err
-
-      - name: libjade-logs-src-clear-stack-unrolled.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-src-clear-stack-unrolled.tar.gz
-          path: src/libjade-logs-src.tar.gz
-
-
-  compile-clear-stack-loop-register-zeroization-all:
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization loopSCT -register-zeroization all" default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C src/ CI=1 err
-
-      - name: libjade-logs-src-clear-stack-loop.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-src-clear-stack-loop.tar.gz
-          path: src/libjade-logs-src.tar.gz
-
-
-  compile-clear-stack-unrolled-register-zeroization-all:
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 JFLAGS="-stack-zeroization unrolled -register-zeroization all" default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C src/ CI=1 err
-
-      - name: libjade-logs-src-clear-stack-unrolled.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-src-clear-stack-unrolled.tar.gz
-          path: src/libjade-logs-src.tar.gz
-
-
-
-
-
-
-
-  test-clear-stack-loop:
-    runs-on: [self-hosted, linux, X64, amd64-main]
+    strategy:
+      matrix:
+        stack-zeroization:
+          - loop
+          - loopSCT
+          - unrolled
+        stack-zeroization-size:
+          - u8
+          - u16
+          - u32
+          - u64
+          - u128
+          - u256
     steps:
       - name: checkout
         uses: actions/checkout@v3
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization ${{ matrix.stack_zeroization }} -stack-zeroization-size ${{ matrix.stack_zeroization_size }}" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
+
       - name: return error if there are any errors
         run: make -C test/ CI=1 err
 
@@ -116,68 +82,6 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: libjade-logs-test-clear-stack-loop.tar.gz
-          path: test/libjade-logs-test.tar.gz
-
-
-  test-clear-stack-unrolled:
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C test/ CI=1 err
-
-      - name: libjade-logs-test-clear-stack-unrolled.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-test-clear-stack-unrolled.tar.gz
-          path: test/libjade-logs-test.tar.gz
-
-
-  test-clear-stack-loop-register-zeroization-all:
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization loopSCT -register-zeroization all" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C test/ CI=1 err
-
-      - name: libjade-logs-test-clear-stack-loop-register-zeroization-all.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-test-clear-stack-loop-register-zeroization-all.tar.gz
-          path: test/libjade-logs-test.tar.gz
-
-  test-clear-stack-unrolled-register-zeroization-all:
-    runs-on: [self-hosted, linux, X64, amd64-main]
-    steps:
-      - name: checkout
-        uses: actions/checkout@v3
-
-      - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization unrolled -register-zeroization all" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
-      - name: print logs
-        run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
-      - name: return error if there are any errors
-        run: make -C test/ CI=1 err
-
-      - name: libjade-logs-test-clear-stack-unrolled-register-zeroization-all.tar.gz - contains non-empty logs and errors
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: libjade-logs-test-clear-stack-unrolled-register-zeroization-all.tar.gz
           path: test/libjade-logs-test.tar.gz
 
 
