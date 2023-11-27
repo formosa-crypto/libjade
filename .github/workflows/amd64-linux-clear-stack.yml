@@ -54,11 +54,11 @@ jobs:
 
     strategy:
       matrix:
-        stack-zeroization:
+        stack_zeroization:
           - loop
           - loopSCT
           - unrolled
-        stack-zeroization-size:
+        stack_zeroization_size:
           - u8
           - u16
           - u32
@@ -71,6 +71,7 @@ jobs:
 
       - name: compile and run
         run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 JFLAGS="-stack-zeroization ${{ matrix.stack_zeroization }} -stack-zeroization-size ${{ matrix.stack_zeroization_size }}" EXCLUDE=crypto_sign/falcon/falcon512/amd64/avx2/ default
+
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
 
