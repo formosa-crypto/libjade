@@ -9,6 +9,10 @@ void randombytes(uint8_t* x, uint64_t xlen);
 void resetrandombytes1(void);
 void randombytes1(uint8_t* x, uint64_t xlen);
 
+void initrandombytes2(int position);
+void resetrandombytes2(void);
+void randombytes2(uint8_t* x, uint64_t xlen);
+
 //
 
 uint8_t* __jasmin_syscall_randombytes__(uint8_t* _x, uint64_t xlen) __asm__("__jasmin_syscall_randombytes__");

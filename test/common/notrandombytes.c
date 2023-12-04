@@ -161,18 +161,21 @@ static int crypto_rng(
   return 0;
 }
 
-
 // ////////////////////////////////////////////////////////////////////////////
 
-
 static uint8_t g0[KEYBYTES];
-static uint8_t g1[KEYBYTES];
-
 static uint8_t r0[OUTPUTBYTES];
-static uint8_t r1[OUTPUTBYTES];
-
 static uint64_t pos0 = OUTPUTBYTES;
+
+static uint8_t g1[KEYBYTES];
+static uint8_t r1[OUTPUTBYTES];
 static uint64_t pos1 = OUTPUTBYTES;
+
+static uint8_t g2[KEYBYTES];
+static uint8_t r2[OUTPUTBYTES];
+static uint64_t pos2 = OUTPUTBYTES;
+
+// ////////////////////////////////////////////////////////////////////////////
 
 static void randombytes_internal(
   uint8_t *x, uint64_t xlen,
@@ -218,6 +221,31 @@ void resetrandombytes1(void)
 void randombytes1(uint8_t* x, uint64_t xlen)
 {
   randombytes_internal(x,xlen,g1,r1,&pos1);
+}
+
+// ////////
+
+void initrandombytes2(int position)
+{
+  uint8_t k[KEYBYTES];
+
+  memset(k, 0, KEYBYTES);
+  while(position-- > 0)
+  { randombytes2(k, KEYBYTES); }
+
+  pos2 = OUTPUTBYTES;
+  memcpy(g2, k, KEYBYTES);
+}
+
+void resetrandombytes2(void)
+{
+  pos2 = OUTPUTBYTES;
+  memset(g2, 0, KEYBYTES);
+}
+
+void randombytes2(uint8_t* x, uint64_t xlen)
+{
+  randombytes_internal(x,xlen,g2,r2,&pos2);
 }
 
 // ////////
