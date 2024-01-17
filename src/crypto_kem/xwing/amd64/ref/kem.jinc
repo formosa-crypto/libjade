@@ -16,4 +16,15 @@ fn _crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u
 inline
 fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
+    stack u8[XWING_CT_LEN] ctpc;
+    stack u8[96] xw buf;
+    stack u64 s_skmp s_skxp s_ctp s_shmp;
+    reg u64 pkp;
+    inline int i;
+
+    s_shkp = shkp;
+    s_ctp = ctp;
+
+
+
 }
