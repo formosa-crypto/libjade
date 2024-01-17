@@ -14,6 +14,8 @@ export fn jade_kem_xwing_amd64_ref_keypair_derand(reg u64 public_key secret_key 
     stack_coins = __tostack64u8(stack_coins, coins);
     _crypto_kem_keypair_derand_jazz(public_key, secret_key, stack_coins);
 
+
+    
     ?{}, r = #set0();
     return r;
 }
