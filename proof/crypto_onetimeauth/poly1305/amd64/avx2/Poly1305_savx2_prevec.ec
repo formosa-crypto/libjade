@@ -273,8 +273,8 @@ module Mprevec = {
   }
   
   proc add_mulmod_avx2 (h:t4u64 Array5.t,m:t4u64 Array5.t,
-                        s_r:t4u64 Array5.t,s_rx5:t4u64 Array4.t,
-                        s_mask26:t4u64,s_bit25:t4u64) : t4u64 Array5.t = {
+                        s_r:t4u64 Array5.t,s_rx5:t4u64 Array4.t
+                       ) : t4u64 Array5.t = {
     var r0:t4u64;
     var r1:t4u64;
     var r4x5:t4u64;
@@ -473,11 +473,11 @@ module Mprevec = {
   
   proc final_avx2_v0 (h:t4u64 Array5.t,m:t4u64 Array5.t,
                       s_r:t4u64 Array5.t,s_rx5:t4u64 Array4.t,
-                      s_mask26:t4u64,s_bit25:t4u64) : t4u64 Array5.t = {
+                      s_mask26:t4u64) : t4u64 Array5.t = {
     
     var mask26:t4u64;
     
-    h <@ add_mulmod_avx2 (h,m,s_r,s_rx5,s_mask26,s_bit25);
+    h <@ add_mulmod_avx2 (h,m,s_r,s_rx5);
     mask26 <- s_mask26;
     h <@ carry_reduce_avx2 (h,mask26);
     return (h);
@@ -520,7 +520,7 @@ module Mprevec = {
       len <- (len - (W64.of_int 64));
     }
     len <- (len - (W64.of_int 64));
-    h <@ final_avx2_v0 (h,m,r1234,r1234x5,s_mask26,s_bit25);
+    h <@ final_avx2_v0 (h,m,r1234,r1234x5,s_mask26);
     h64 <@ pack_avx2 (h);
     return (in_0,len,h64);
   }

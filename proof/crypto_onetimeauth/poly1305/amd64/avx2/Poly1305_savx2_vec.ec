@@ -272,7 +272,7 @@ module Mvec = {
   
   proc add_mulmod_avx2 (h:vt4u64 Array5.t,m:vt4u64 Array5.t,
                         s_r:vt4u64 Array5.t,s_rx5:vt4u64 Array4.t,
-                        s_mask26:vt4u64,s_bit25:vt4u64) : vt4u64 Array5.t = {
+                        s_mask26:vt4u64) : vt4u64 Array5.t = {
     var r0:vt4u64;
     var r1:vt4u64;
     var r4x5:vt4u64;
@@ -470,11 +470,11 @@ module Mvec = {
   
   proc final_avx2_v0 (h:vt4u64 Array5.t,m:vt4u64 Array5.t,
                       s_r:vt4u64 Array5.t,s_rx5:vt4u64 Array4.t,
-                      s_mask26:vt4u64,s_bit25:vt4u64) : vt4u64 Array5.t = {
+                      s_mask26:vt4u64) : vt4u64 Array5.t = {
     
     var mask26:vt4u64;
     
-    h <@ add_mulmod_avx2 (h,m,s_r,s_rx5,s_mask26,s_bit25);
+    h <@ add_mulmod_avx2 (h,m,s_r,s_rx5,s_mask26);
     mask26 <- s_mask26;
     h <@ carry_reduce_avx2 (h,mask26);
     return (h);
@@ -516,7 +516,7 @@ module Mvec = {
       len <- (len - (W64.of_int 64));
     }
     len <- (len - (W64.of_int 64));
-    h <@ final_avx2_v0 (h,m,r1234,r1234x5,s_mask26,s_bit25);
+    h <@ final_avx2_v0 (h,m,r1234,r1234x5,s_mask26);
     h64 <@ pack_avx2 (h);
     return (in_0,len,h64);
   }
@@ -584,7 +584,7 @@ proof.
 qed.
 
 equiv eq_add_mulmod_avx2 :  Mprevec.add_mulmod_avx2 ~ Mvec.add_mulmod_avx2 : 
-  is4u64_5 h{1} h{2} /\ is4u64_5 m{1} m{2} /\ is4u64_5 s_r{1} s_r{2} /\ is4u64_4 s_rx5{1} s_rx5{2} /\ is4u64 s_mask26{1} s_mask26{2} /\ is4u64 s_bit25{1} s_bit25{2} ==>
+  is4u64_5 h{1} h{2} /\ is4u64_5 m{1} m{2} /\ is4u64_5 s_r{1} s_r{2} /\ is4u64_4 s_rx5{1} s_rx5{2} ==>
   is4u64_5 res{1} res{2}.
 proof.
   proc;wp.
