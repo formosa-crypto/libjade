@@ -190,9 +190,6 @@ inline fn __poly1305_setup_ref(reg u64 k) -> reg u64[3], reg u64[3], reg u64
 
 inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r) -> reg u64, reg u64, reg u64[3]
 {
-  reg bool cf;
-  reg u64[2] m;
-
   while(inlen >= 16)
   {
     h = __load_add(h, in);
@@ -207,7 +204,7 @@ inline fn __poly1305_update_ref(reg u64 in inlen, reg u64[3] h r) -> reg u64, re
 
 inline fn __poly1305_last_ref(reg u64 in inlen k, reg u64[3] h r) -> reg u64[2]
 {
-  reg u64[2] m s h2;
+  reg u64[2] s h2;
 
   if(inlen > 0)
   { h = __load_last_add(h, in, inlen);

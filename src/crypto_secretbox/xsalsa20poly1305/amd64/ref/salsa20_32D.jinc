@@ -144,8 +144,7 @@ inline fn __sum_states_ref_32(reg u32[16] k, stack u32 k15, stack u32[16] st) ->
 
 inline fn __store_ref_32(
   reg mut ptr u8[32] out,
-  reg u32[16] k,
-  stack u32 k15)
+  reg u32[16] k)
   ->
   reg ptr u8[32]
 {
@@ -178,7 +177,7 @@ inline fn __salsa20_ref_32(
   k, k15 = __sum_states_ref_32(k, k15, st);
 
   out = s_out;
-  out = __store_ref_32(out, k, k15);
+  out = __store_ref_32(out, k);
 
   return out;
 }
