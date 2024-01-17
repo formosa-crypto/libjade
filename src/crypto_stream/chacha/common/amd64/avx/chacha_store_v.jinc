@@ -102,7 +102,6 @@ inline fn __rotate_first_half_v_avx(reg u128[16] k) -> reg u128[8], stack u128[8
 
 inline fn __rotate_second_half_v_avx(stack u128[8] s_k8_15) -> reg u128[8]
 {
-  inline int i;
   reg u128[8] k8_15;
   k8_15 = __rotate_stack_avx(s_k8_15);
   return k8_15;
@@ -133,7 +132,7 @@ inline fn __interleave_avx(stack u128[8] s, reg u128[8] k, inline int o) -> reg 
 
 
 // 128 bytes (non sequentially)
-inline fn __store_xor_half_interleave_v_avx(reg u64 output input len, reg u128[8] k, inline int o)
+inline fn __store_xor_half_interleave_v_avx(reg u64 output input, reg u128[8] k, inline int o)
 {
   inline int i;
 
@@ -154,9 +153,9 @@ inline fn __store_xor_v_avx(reg u64 output input len, reg u128[16] k) -> reg u64
   reg u128[8] k0_7, k8_15;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx(k);
-  __store_xor_half_interleave_v_avx(output, input, len, k0_7, 0);
+  __store_xor_half_interleave_v_avx(output, input, k0_7, 0);
   k8_15 = __rotate_second_half_v_avx(s_k8_15);
-  __store_xor_half_interleave_v_avx(output, input, len, k8_15, 32);
+  __store_xor_half_interleave_v_avx(output, input, k8_15, 32);
   output, input, len = __update_ptr_xor_ref(output, input, len, 256);
 
   return output, input, len;
@@ -166,7 +165,6 @@ inline fn __store_xor_v_avx(reg u64 output input len, reg u128[16] k) -> reg u64
 // <= 256 bytes
 inline fn __store_xor_last_v_avx(reg u64 output input len, reg u128[16] k)
 {
-  inline int i;
   stack u128[8] s_k0_7 s_k8_15;
   reg u128[8] k0_7 k8_15;
   reg u128[4] k0_3 k4_7;
@@ -191,7 +189,7 @@ inline fn __store_xor_last_v_avx(reg u64 output input len, reg u128[16] k)
 
 
 // 128 bytes (non sequentially)
-inline fn __store_half_interleave_v_avx(reg u64 output len, reg u128[8] k, inline int o)
+inline fn __store_half_interleave_v_avx(reg u64 output, reg u128[8] k, inline int o)
 {
   inline int i;
 
@@ -208,9 +206,9 @@ inline fn __store_v_avx(reg u64 output len, reg u128[16] k) -> reg u64, reg u64
   reg u128[8] k0_7, k8_15;
 
   k0_7, s_k8_15 = __rotate_first_half_v_avx(k);
-  __store_half_interleave_v_avx(output, len, k0_7, 0);
+  __store_half_interleave_v_avx(output, k0_7, 0);
   k8_15 = __rotate_second_half_v_avx(s_k8_15);
-  __store_half_interleave_v_avx(output, len, k8_15, 32);
+  __store_half_interleave_v_avx(output, k8_15, 32);
   output, len = __update_ptr_ref(output, len, 256);
 
   return output, len;
@@ -220,7 +218,6 @@ inline fn __store_v_avx(reg u64 output len, reg u128[16] k) -> reg u64, reg u64
 // <= 256 bytes
 inline fn __store_last_v_avx(reg u64 output len, reg u128[16] k)
 {
-  inline int i;
   stack u128[8] s_k0_7 s_k8_15;
   reg u128[8] k0_7 k8_15;
   reg u128[4] k0_3 k4_7;

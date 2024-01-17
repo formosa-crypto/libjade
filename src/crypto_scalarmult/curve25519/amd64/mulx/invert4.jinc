@@ -4,7 +4,7 @@ require "sqr4.jinc"
 inline fn __invert4(reg u64[4] f) -> reg u64[4]
 {
   reg u32 i;
-  stack u64[4] fs t0s t1s t2s t3s;
+  stack u64[4] fs t0s t1s t2s;
   reg u64[4] t0  t1  t2  t3;
 
   fs = #copy(f);

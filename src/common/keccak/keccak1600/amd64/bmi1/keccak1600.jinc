@@ -90,7 +90,6 @@ inline fn __absorb_bmi1(
 {
   stack u64 s_in s_inlen s_rate;
   reg u8 trail_byte;
-  reg u64 t;
 
   // intermediate blocks
   while ( inlen >= rate )
