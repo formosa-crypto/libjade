@@ -573,8 +573,8 @@ module M = {
   }
   
   proc add_mulmod_avx2 (h:W256.t Array5.t, m:W256.t Array5.t,
-                        s_r:W256.t Array5.t, s_rx5:W256.t Array4.t,
-                        s_mask26:W256.t, s_bit25:W256.t) : W256.t Array5.t = {
+                        s_r:W256.t Array5.t, s_rx5:W256.t Array4.t
+                       ) : W256.t Array5.t = {
     
     var r0:W256.t;
     var r1:W256.t;
@@ -775,11 +775,11 @@ module M = {
   
   proc final_avx2_v0 (h:W256.t Array5.t, m:W256.t Array5.t,
                       s_r:W256.t Array5.t, s_rx5:W256.t Array4.t,
-                      s_mask26:W256.t, s_bit25:W256.t) : W256.t Array5.t = {
+                      s_mask26:W256.t) : W256.t Array5.t = {
     
     var mask26:W256.t;
     
-    h <@ add_mulmod_avx2 (h, m, s_r, s_rx5, s_mask26, s_bit25);
+    h <@ add_mulmod_avx2 (h, m, s_r, s_rx5);
     mask26 <- s_mask26;
     h <@ carry_reduce_avx2 (h, mask26);
     return (h);
@@ -820,7 +820,7 @@ module M = {
       len <- (len - (W64.of_int 64));
     }
     len <- (len - (W64.of_int 64));
-    h <@ final_avx2_v0 (h, m, r1234, r1234x5, s_mask26, s_bit25);
+    h <@ final_avx2_v0 (h, m, r1234, r1234x5, s_mask26);
     h64 <@ pack_avx2 (h);
     return (in_0, len, h64);
   }
