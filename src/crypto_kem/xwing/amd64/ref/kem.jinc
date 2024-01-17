@@ -1,1 +1,19 @@
 from Jade require "crypto_kem/xwing/amd64/ref/params.jinc"
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/kem.jinc"
+from Jade require "crypto_hash/sha3-512/amd64/ref/sha3-512.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/ref4/curve25519.jinc"
+
+fn _crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[XWING_SYMBYTES] randomnessp)
+{
+
+    
+}
+
+fn _crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] randomnessp)
+{
+}
+
+inline
+fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+{
+}
