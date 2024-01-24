@@ -209,7 +209,7 @@ fn __iNTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
 
         buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7 =
             __3_layer_GS_butterfly_8_last(buff0, buff1, buff2, buff3, buff4, buff5, buff6, buff7,
-            twiddle_indx, twiddlelo, twiddlehi, 0, 0, 1);
+            twiddle_indx, twiddlelo, twiddlehi, 0, 1);
 
         src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);

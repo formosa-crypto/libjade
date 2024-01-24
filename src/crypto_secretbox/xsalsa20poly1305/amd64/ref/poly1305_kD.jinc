@@ -42,7 +42,7 @@ inline fn __poly1305_last_ref_k(
   reg u64[2]
 {
   reg bool cf;
-  reg u64[2] m s h2;
+  reg u64[2] h2;
 
   if(inlen > 0)
   { h = __load_last_add(h, in, inlen);

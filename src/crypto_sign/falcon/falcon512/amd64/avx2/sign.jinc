@@ -11,7 +11,6 @@ inline fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARR
     reg u32 failed res;
     reg u8 t;
     reg u64 ptr0;
-    reg u64 i;
 
     failed = 0;
 
@@ -36,8 +35,6 @@ inline fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stac
     reg u32 failed res;
     reg u8 t;
     reg u64 ptr0 t_sign_len;
-
-    reg u64 i;
 
     failed = 0;
 
@@ -190,11 +187,9 @@ inline fn __jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen p
 
     reg u64 sig_len msg_len esig;
     reg u64 shake_in;
-    reg u64[25] state;
     reg u64 i;
     reg u32 failed;
     reg u64 res;
-    reg u16[ARRAY_N] h hm sig;
 
     reg u8 tmp8;
 

@@ -1,9 +1,11 @@
 name: amd64-linux-main-proof
 
 on:
-  workflow_run:
-    workflows: [amd64-linux-main]
-    types: [completed]
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
 
 jobs:
 

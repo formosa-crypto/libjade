@@ -32,7 +32,6 @@ inline fn __sub5_sss(stack u64[5] fs gs) -> stack u64[5]
 
 inline fn __sub5_rss(stack u64[5] fs gs) -> reg u64[5]
 {
-  stack u64[5] hs;
   reg u64[5] h f;
 
   f = #copy(fs);

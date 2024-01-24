@@ -6,7 +6,6 @@ inline fn __reduce4
   reg bool cf of // cf = 0 and of = 0
 ) -> reg u64[4]
 {
-  inline int i;
   reg u64 hi lo;
 
   //

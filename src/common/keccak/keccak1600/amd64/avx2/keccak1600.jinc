@@ -39,7 +39,6 @@ inline fn __add_full_block_avx2(
 
   inline int i;
   reg u64 j l t rate8;
-  reg u8 c;
 
   rate8 = rate;
   rate8 >>= 3;
@@ -141,7 +140,6 @@ inline fn __xtr_full_block_avx2(
   inline int i;
   stack u64[28] s_state;
   reg u64 j l t len8;
-  reg u8 c;
 
   for i = 0 to 7
   { s_state[u256 i] = state[i]; }

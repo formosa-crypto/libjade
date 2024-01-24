@@ -658,7 +658,7 @@ inline
 fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 buff7,
     reg u64 twiddle_indx,
     reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi,
-    inline int barrett0 barrett1 barrett2)
+    inline int barrett1 barrett2)
     ->
     reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
 {
