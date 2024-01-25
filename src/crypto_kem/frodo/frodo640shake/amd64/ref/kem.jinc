@@ -8,15 +8,12 @@ from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
 #[returnaddress="stack"]
 fn __gen_SE(reg ptr u16[2 * NNBAR] SE, reg ptr u8[BYTES_SEED_SE] r) -> stack u16[2 * NNBAR] {
     stack u8[1 + BYTES_SEED_SE] seed_se;
-    reg u64 i; stack u64 s_i;
+    inline int i;
 
     r = r;
-    i = 0;
-    while (i < BYTES_SEED_SE) {
-        seed_se[(int)i + 1] = r[(int)i];
-        i += 1;
+    for i = 0 to BYTES_SEED_SE {
+        seed_se[i + 1] = r[i];
     }
-    s_i = i;
 
     // S || E
     seed_se[0] = 0x5F;
@@ -33,6 +30,7 @@ fn __frodo_amd64_ref_keypair_derand(reg u64 pkp skp, reg ptr u8[BYTES_SEED_A + B
     stack u16[NNBAR] B;
 
     stack u64 s_pkp s_skp;
+    inline int k;
     reg u64 i; stack u64 s_i;
 
     s_pkp = pkp;
@@ -59,9 +57,8 @@ fn __frodo_amd64_ref_keypair_derand(reg u64 pkp skp, reg ptr u8[BYTES_SEED_A + B
 
     //
     i = s_i; i = 0;
-    while (i < BYTES_SEC) {
-        sk[(int) i] = coins[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        sk[k] = coins[k];
     }
 
     i = 0;
@@ -97,6 +94,7 @@ fn __frodo_amd64_ref_keypair_derand(reg u64 pkp skp, reg ptr u8[BYTES_SEED_A + B
 #[returnaddress="stack"]
 fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTES_SALT] coins) {
     reg u64 i j; stack u64 s_i s_j;
+    inline int k;
     stack u64 s_ctp s_ssp;
 
     // seedA || b
@@ -125,16 +123,12 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     s_j = j;
 
     // gen u || salt
-    i = 0;
-    while (i < BYTES_SEC + BYTES_SALT) {
-        pkh_u_salt[BYTES_SEC + (int)i] = coins[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC + BYTES_SALT {
+        pkh_u_salt[BYTES_SEC + k] = coins[k];
     }
 
-    i = 0;
-    while (i < BYTES_SALT) {
-        ct_k[D * N + D * NBAR + (int)i] = pkh_u_salt[BYTES_SEC * 2 + (int)i];
-        i += 1;
+    for k = 0 to BYTES_SALT {
+        ct_k[D * N + D * NBAR + k] = pkh_u_salt[BYTES_SEC * 2 + k];
     }
 
     // read pk
@@ -152,12 +146,9 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     seedSE_k[1 : BYTES_SEED_SE + BYTES_SEC] = __shake128_SE_k(seedSE_k[1:BYTES_SEED_SE + BYTES_SEC], pkh_u_salt);
 
     // copy k
-    i = s_i; i = 0;
-    while (i < BYTES_SEC) {
-        ct_k[BYTES_CT + (int)i] = seedSE_k[1 + BYTES_SEED_SE + (int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        ct_k[BYTES_CT + k] = seedSE_k[1 + BYTES_SEED_SE + k];
     }
-    s_i = i;
 
     // gen input bit string for sampling S and E
     SEE = __shake128_encap_r(SEE, seedSE_k[0 : 1 + BYTES_SEED_SE]);
@@ -197,10 +188,8 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
         i += 1;
     }
 
-    i = 0;
-    while (i < BYTES_SEC) {
-        (u8)[ssp + i] = ss[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        (u8)[ssp + k] = ss[k];
     }
 }
 
@@ -222,6 +211,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     stack u64 s_ssp s_ctp s_skp;
     reg u8 s1 s2;
     reg u64 i; stack u64 s_i;
+    inline int k;
 
     s_ssp = ssp;
     ctp = ctp;
@@ -235,10 +225,8 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     }
     s_ctp = ctp;
 
-    i = 0;
-    while (i < BYTES_SEC) {
-        s[(int) i] = (u8)[skp + i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        s[k] = (u8)[skp + k];
     }
 
     i = 0;
@@ -254,20 +242,15 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     }
 
     // copy pkh
-    i = 0;
-    while (i < BYTES_SEC) {
-        pkh_u_salt[(int)i] = (u8)[skp + BYTES_SK - BYTES_SEC + i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        pkh_u_salt[k] = (u8)[skp + BYTES_SK - BYTES_SEC + k];
     }
     s_skp = skp;
 
     // copy salt
-    i = 0;
-    while (i < BYTES_SALT) {
-        pkh_u_salt[BYTES_SEC * 2 + (int)i] = ct_k[BYTES_CT - BYTES_SALT + (int)i];
-        i += 1;
+    for k = 0 to BYTES_SALT {
+        pkh_u_salt[BYTES_SEC * 2 + k] = ct_k[BYTES_CT - BYTES_SALT + k];
     }
-    s_i = i;
 
     // B' <- Unpack(c1)
     Bp = __unpack_B(Bp, ct_k[0:D * N]);
@@ -318,11 +301,8 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     ss = __shake128_ss(ss, ct_k);
 
     ssp = s_ssp;
-    i = s_i;
-    i = 0;
-    while (i < BYTES_SEC) {
-        (u8)[ssp + i] = ss[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC {
+        (u8)[ssp + k] = ss[k];
     }
 }
 

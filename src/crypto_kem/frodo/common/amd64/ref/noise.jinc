@@ -3,39 +3,41 @@ fn __sample_2NNBAR(reg ptr u16[2 * NNBAR] s) -> stack u16[2 * NNBAR] {
     cdftp = CDF_TABLE;
 
     reg u64 i;
+    inline int j k;
+    reg u16 sample prnd sign;
+
     i = 0;
     while (i < 2 * NNBAR) {
-        reg u16 sample prnd sign;
+        for k = 0 to 2 {
+            sample = 0;
 
-        sample = 0;
+            // prnd = s[i] >> 1
+            prnd = s[(int)i + k];
+            prnd >>= 1;
 
-        // prnd = s[i] >> 1
-        prnd = s[(int)i];
-        prnd >>= 1;
+            // sign = s[(int)i + k] & 0x1
+            sign = s[(int)i + k];
+            sign &= 0x1;
 
-        // sign = s[(int)i] & 0x1
-        sign = s[(int)i];
-        sign &= 0x1;
+            // no need to compare with the last value
+            for j = 0 to CDF_TABLE_LEN - 1 {
+                // sample += (CDF_TABLE[j] - prnd) >> 15
 
-        // no need to compare with the last value
-        inline int j;
-        for j = 0 to CDF_TABLE_LEN - 1 {
-            // sample += (CDF_TABLE[j] - prnd) >> 15
+                reg u16 tmp_sample;
+                tmp_sample = cdftp[j];
+                tmp_sample -= prnd;
+                tmp_sample >>= 15;
+                sample += tmp_sample;
+            }
 
-            reg u16 tmp_sample;
-            tmp_sample = cdftp[j];
-            tmp_sample -= prnd;
-            tmp_sample >>= 15;
-            sample += tmp_sample;
+            // s[i] = ((-sign) ^ sample) + sign
+            s[(int)i + k] = 0;
+            s[(int)i + k] -= sign;
+            s[(int)i + k] ^= sample;
+            s[(int)i + k] += sign;
         }
 
-        // s[i] = ((-sign) ^ sample) + sign
-        s[(int)i] = 0;
-        s[(int)i] -= sign;
-        s[(int)i] ^= sample;
-        s[(int)i] += sign;
-
-        i += 1;
+        i += 2;
     }
 
     return s;
@@ -46,39 +48,40 @@ fn __sample_NBAR2(reg ptr u16[NBAR * NBAR] s) -> stack u16[NBAR * NBAR] {
     cdftp = CDF_TABLE;
 
     reg u64 i;
+    reg u16 sample prnd sign;
+    inline int j k;
     i = 0;
     while (i < NBAR * NBAR) {
-        reg u16 sample prnd sign;
+        for k = 0 to 2 {
+            sample = 0;
 
-        sample = 0;
+            // prnd = s[i] >> 1
+            prnd = s[(int)i + k];
+            prnd >>= 1;
 
-        // prnd = s[i] >> 1
-        prnd = s[(int)i];
-        prnd >>= 1;
+            // sign = s[(int)i] & 0x1
+            sign = s[(int)i + k];
+            sign &= 0x1;
 
-        // sign = s[(int)i] & 0x1
-        sign = s[(int)i];
-        sign &= 0x1;
+            // no need to compare with the last value
+            for j = 0 to CDF_TABLE_LEN - 1 {
+                // sample += (CDF_TABLE[j] - prnd) >> 15
 
-        // no need to compare with the last value
-        inline int j;
-        for j = 0 to CDF_TABLE_LEN - 1 {
-            // sample += (CDF_TABLE[j] - prnd) >> 15
+                reg u16 tmp_sample;
+                tmp_sample = cdftp[j];
+                tmp_sample -= prnd;
+                tmp_sample >>= 15;
+                sample += tmp_sample;
+            }
 
-            reg u16 tmp_sample;
-            tmp_sample = cdftp[j];
-            tmp_sample -= prnd;
-            tmp_sample >>= 15;
-            sample += tmp_sample;
+            // s[i] = ((-sign) ^ sample) + sign
+            s[(int)i + k] = 0;
+            s[(int)i + k] -= sign;
+            s[(int)i + k] ^= sample;
+            s[(int)i + k] += sign;
         }
 
-        // s[i] = ((-sign) ^ sample) + sign
-        s[(int)i] = 0;
-        s[(int)i] -= sign;
-        s[(int)i] ^= sample;
-        s[(int)i] += sign;
-
-        i += 1;
+        i += 2;
     }
 
     return s;
