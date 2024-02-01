@@ -1,43 +1,133 @@
 from Jade require "crypto_kem/xwing/amd64/ref/params.jinc"
-from Jade require "crypto_kem/kyber/kyber768/ref/kem.jinc"
-from Jade require "crypto_scalarmult/curve25519/amd64/mulx/curve25519.jinc"
-from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
-fro Jade require "common/tofromstack.jinc"
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/kem.jinc"
+from Jade require "crypto_kem/xwing/amd64/ref/scalarmult.jinc"
+from Jade require "crypto_hash/sha3-256/amd64/ref/sha3-256.jinc"
+from Jade require "common/tofromstack.jinc"
 
-fn _crypto_xwing_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[96] randomnessp)
+#[returnaddress="stack"]
+fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING_SYMBYTES] randomnessp)
 {
-    reg u64 randomnessp1 mpkp mskp skxp pkx, xwpkp;
+    stack ptr u8[XWING_SYMBYTES*3] s_randomnessp;
+    reg ptr u8[XWING_SYMBYTES*2] randomnessp1;
+    reg ptr u8[XWING_SYMBYTES] randomnessp2;
 
-    __fromstack64u8(randomnessp1, randomnessp[0:64])
-    __fromstack32u8(skxp, randomnessp[64:96])
+    stack u64 s_skp s_pkp;
 
-    _crypto_kem_keypair_derand_jazz(mpkp, mskp, randomnessp1);
-    reg u64[4] n = __load4((u64)[skxp])
-    reg u64[4] pkx4 = __curve25519_mulx_base(n);
+    s_randomnessp = randomnessp;
+    s_pkp = pkp;
+    s_skp = skp;
+    randomnessp1 = randomnessp[0:XWING_SYMBYTES*2];
 
-    __store4(pkx, pkx4); 
+    _crypto_kem_keypair_derand_jazz(pkp, skp, randomnessp1);
+    pkp = s_pkp;
+    skp = s_skp;
+    skp += MLKEM_SECRETKEYBYTES;
+    pkp += MLKEM_PUBLICKEYBYTES;
+
+    stack u64 s_skp, s_pkp;
+    s_skp = skp;
+    s_pkp = pkp;
 
 
+    randomnessp = s_randomnessp;
+    randomnessp2 = randomnessp[XWING_SYMBYTES:XWING_SYMBYTES];
+    __fromstack32u8(skp, randomnessp2);
+    
+    skp = s_skp;
+    scalarmult_base(pkp, skp);
+
+    skp = s_skp;
+    pkp = s_pkp;
+
+    inline int i;
+
+    for i=0 to X25519_PUBLICKEYBYTES/8{
+        [skp + i*8 + X25519_PUBLICKEYBYTES] = [pkp + i*8];
+    }
 }
 
-fn _crypto_xwing_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[XWING_SYMBYTES] randomnessp)
+#[returnaddress="stack"]
+fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[2*XWING_SYMBYTES] randomnessp)
 {
+    stack ptr u8[XWING_SYMBYTES*2] s_randomnessp;
+    reg ptr u8[XWING_SYMBYTES] randomnessp1 randomnessp2;
+
+    reg u64 t64;
+    stack u8[32] shmlkem shdh;
+
+    stack u64 s_pkp s_ctp s_shkp s_shkp2;
+
+    s_randomnessp = randomnessp;
+    s_pkp = pkp;
+    s_ctp = ctp;
+    s_shkp = shkp;
+    s_shkp2 = shkp;
+
+    randomnessp1 = randomnessp[0:XWING_SYMBYTES];
+    _crypto_kem_enc_derand_jazz(ctp, shkp, pkp, randomnessp1);
+
+    pkp = s_pkp;
+    ctp = s_ctp;
+    shkp = s_shkp;
+    shmlkem = __tostack32u8(shmlkem, shkp);
+    shkp = s_shkp;
+
+    ctp += MLKEM_CIPHERTEXTBYTES;
+    
+    randomnessp = s_randomnessp;
+    randomnessp2 = randomnessp[XWING_SYMBYTES:XWING_SYMBYTES];
+    __fromstack32u8(shkp, randomnessp2);
+    shkp = s_shkp;
+
+    scalarmult_base(ctp, shkp);
+
+    shkp = s_shkp;
+    t64 = shkp;
+    ctp = s_ctp;
+
+
+    pkp = s_pkp;
+    shkp = s_shkp2;
+    s_shkp = shkp;
+
+    scalarmult(shkp, t64, pkp);
+    
+    shkp = s_shkp;
+    shdh = __tostack32u8(shdh, shkp);
+    shkp = s_shkp2;
+    pkp = s_pkp;
+
+    pkp += MLKEM_PUBLICKEYBYTES;
+
+
+    stack u64 inlen;
+    inlen = XWING_PRFINPUT;
+    stack u8[128] in;
+    stack u8[XWING_SYMBYTES] sdhpkp;
+
+
+    sdhpkp = __tostack32u8(sdhpkp, pkp);
+    
+    inline int i j k;
+
+    for i=0 to XWING_SYMBYTES{
+        j = i + X25519_SSBYTES;
+        k = i + X25519_PUBLICKEYBYTES + X25519_SSBYTES;
+        in[i] = shmlkem[i];
+        in[j] = shdh[i];
+        in[k] = sdhpkp[i];
+    }
+
+    reg u64 inp;
+    inp = shkp;
+    __fromstack128u8(inp, in);
+    __sha3_256_ref(shkp, inp, inlen);
 }
 
 inline
-fn __crypto_xwing_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
-    stack u8[XWING_CT_LEN] ctpc;
-    stack u8[96] xw buf;
-    stack u64 s_skmp s_skxp s_ctp s_shmp;
-    reg u64 pkp;
-    inline int i;
-
-    s_shkp = shkp;
-    s_ctp = ctp;
-
-
-
+ 
 
 
 }

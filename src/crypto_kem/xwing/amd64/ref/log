@@ -1,0 +1,1376 @@
+((printf "kem.s: "; printf "kem.jazz "; jasminc -noinsertarraycopy -I Jade:/home/joao/libjade/src/ -print-dependencies kem.jazz) > .deps/kem.s.d) 
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 62 (10-16)
+warning: unused variable offset.633
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 319 (13-14)
+warning: unused variable j.724
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 382 (13-14)
+warning: unused variable j.735
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 444 (10-16)
+warning: unused variable outlen.746
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 28 (10-11)
+warning: unused variable d.860
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 93 (10-11)
+warning: unused variable d.875
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (23-27)
+warning: unused variable poly.1006
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (34-39)
+warning: unused variable poly0.1009
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (40-45)
+warning: unused variable poly1.1010
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (46-51)
+warning: unused variable poly2.1011
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 97 (12-13)
+warning: unused variable j.1014
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 99 (10-11)
+warning: unused variable t.1017
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (23-27)
+warning: unused variable poly.1034
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (34-39)
+warning: unused variable poly0.1037
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (40-45)
+warning: unused variable poly1.1038
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (46-51)
+warning: unused variable poly2.1039
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 166 (12-13)
+warning: unused variable j.1042
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 167 (10-11)
+warning: unused variable t.1044
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/verify.jinc", line 33 (15-20)
+warning: unused variable bcond.1082
+"/home/joao/libjade/src/crypto_kem/xwing/amd64/ref/scalarmult.jinc", line 7 (10-11)
+warning: unused variable r.1628
+"/home/joao/libjade/src/common/keccak/keccak1600/amd64/ref/keccak1600.jinc", line 1 (10-23)
+warning: the variable KECCAK_ROUNDS is already declared at "/home/joao/libjade/src/common/keccak/keccak1600/amd64/ref1/keccak1600.jinc", line 1 (10-23)
+"kem.jinc", line 27 (14-19)
+warning: the variable s_skp is already declared at "kem.jinc", line 14 (14-19)
+"kem.jinc", line 27 (21-26)
+warning: the variable s_pkp is already declared at "kem.jinc", line 14 (20-25)
+"kem.jinc", line 128 (34-38)
+warning: unused variable shkp.1928
+"kem.jinc", line 128 (48-51)
+warning: unused variable ctp.1929
+"kem.jinc", line 128 (61-64)
+warning: unused variable skp.1930
+(jasminc -noinsertarraycopy -I Jade:/home/joao/libjade/src/ -o kem.s kem.jazz) 
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 62 (10-16)
+warning: unused variable offset.633
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 319 (13-14)
+warning: unused variable j.724
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 382 (13-14)
+warning: unused variable j.735
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 444 (10-16)
+warning: unused variable outlen.746
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 28 (10-11)
+warning: unused variable d.860
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 93 (10-11)
+warning: unused variable d.875
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (23-27)
+warning: unused variable poly.1006
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (34-39)
+warning: unused variable poly0.1009
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (40-45)
+warning: unused variable poly1.1010
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 95 (46-51)
+warning: unused variable poly2.1011
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 97 (12-13)
+warning: unused variable j.1014
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 99 (10-11)
+warning: unused variable t.1017
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (23-27)
+warning: unused variable poly.1034
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (34-39)
+warning: unused variable poly0.1037
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (40-45)
+warning: unused variable poly1.1038
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 164 (46-51)
+warning: unused variable poly2.1039
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 166 (12-13)
+warning: unused variable j.1042
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 167 (10-11)
+warning: unused variable t.1044
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/verify.jinc", line 33 (15-20)
+warning: unused variable bcond.1082
+"/home/joao/libjade/src/crypto_kem/xwing/amd64/ref/scalarmult.jinc", line 7 (10-11)
+warning: unused variable r.1628
+"/home/joao/libjade/src/common/keccak/keccak1600/amd64/ref/keccak1600.jinc", line 1 (10-23)
+warning: the variable KECCAK_ROUNDS is already declared at "/home/joao/libjade/src/common/keccak/keccak1600/amd64/ref1/keccak1600.jinc", line 1 (10-23)
+"kem.jinc", line 27 (14-19)
+warning: the variable s_skp is already declared at "kem.jinc", line 14 (14-19)
+"kem.jinc", line 27 (21-26)
+warning: the variable s_pkp is already declared at "kem.jinc", line 14 (20-25)
+"kem.jinc", line 128 (34-38)
+warning: unused variable shkp.1928
+"kem.jinc", line 128 (48-51)
+warning: unused variable ctp.1929
+"kem.jinc", line 128 (61-64)
+warning: unused variable skp.1930
+"kem.jazz", line 57 (2-42)
+warning: extra assignment introduced:
+           RDI = #MOV_64(RSP); /* :r */
+"kem.jazz", line 58 (2-83)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jazz", line 43 (2-50)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jazz", line 44 (2-83)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jazz", line 29 (2-42)
+warning: extra assignment introduced:
+           RDI = #MOV_64(RSP); /* :r */
+"kem.jazz", line 30 (2-72)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jazz", line 14 (4-52)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jazz", line 15 (4-74)
+warning: extra assignment introduced:
+           RAX = #MOV_64(RSP); /* :r */
+"kem.jinc", line 72 (4-43)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 376))); /* :r */
+"kem.jinc", line 96 (4-37)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 184))); /* :r */
+"kem.jinc", line 109 (4-40)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 88))); /* :r */
+"kem.jinc", line 123 (4-30)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 408))); /* :r */
+"kem.jinc", line 124 (4-37)
+warning: extra assignment introduced:
+           R8 = #MOV_64((u64)[RSP + ((64u) 16)]); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 79 (2-84)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 136))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 79 (2-84)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 72))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 84 (2-95)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 168))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 86 (2-29)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 72))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 86 (2-29)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 136))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 136))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 104))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 217 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 102 (2-34)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDI = #LEA_64((RSP +64u ((64u) 2448))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 219 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 102 (2-34)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDI = #LEA_64((RSP +64u ((64u) 2960))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 221 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 102 (2-34)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDI = #LEA_64((RSP +64u ((64u) 3472))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 115 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 912))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #MOV_64(((64u) 1)); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 200))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 117 (2-36)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 13234))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 120 (2-66)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 122 (2-78)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 124 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 127 (2-66)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 5520))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 129 (2-78)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 6032))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 131 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 6544))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 134 (2-46)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 400))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 239 (2-41)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 136 (2-25)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 240 (2-53)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 136 (2-25)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 241 (2-57)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 136 (2-25)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8592))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 9104))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 9616))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 138 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 10128))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 10640))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 11152))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 139 (2-79)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 11664))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 12176))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 12688))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 140 (2-84)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 2448))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 3984))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1936))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 2960))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 4496))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1936))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1936))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3472))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 5008))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1936))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 142 (2-40)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 229 (2-44)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 144 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 230 (2-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 144 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 231 (2-60)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 144 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 145 (2-22)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 6 (2-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 6 (2-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 5520))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 7 (2-74)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 7 (2-74)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 6032))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 8 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 8 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 147 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 6544))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 148 (2-25)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 148 (2-25)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 400))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 149 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 149 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 912))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 267 (2-45)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 150 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 268 (2-57)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 150 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 269 (2-61)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 150 (2-28)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 151 (2-24)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 16 (2-43)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 36 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 154 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 7056))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 17 (2-55)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 36 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 154 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 7568))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 18 (2-59)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 36 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 154 (2-30)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 8080))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 156 (2-29)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 90 (2-85)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 1424))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 94 (2-93)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 104))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 98 (2-30)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 72))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 35 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 128))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 35 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 93 (6-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10120))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 192))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/common/amd64/ref/gen_matrix.jinc", line 108 (8-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 46 (2-37)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 10154))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 49 (2-70)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 49 (2-70)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 51 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 51 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 53 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 53 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 56 (2-64)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 2440))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 56 (2-64)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 58 (2-76)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 2952))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 58 (2-76)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 60 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 3464))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 60 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 64))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 239 (2-41)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 62 (2-29)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 240 (2-53)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 62 (2-29)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 241 (2-57)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 62 (2-29)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 239 (2-41)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 63 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 2440))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 240 (2-53)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 63 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 2952))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 241 (2-57)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 63 (2-26)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3464))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5512))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 6024))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 6536))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 65 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 66 (2-52)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7048))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 7560))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8072))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 67 (2-82)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 68 (2-64)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 8584))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 253 (2-51)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 9096))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 254 (2-63)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 255 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 9608))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 256 (2-67)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 257 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 392))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 259 (2-23)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 69 (2-86)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 70 (2-68)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 6 (2-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 6 (2-56)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 2440))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 7 (2-74)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 7 (2-74)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 2952))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 8 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 8 (2-80)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 72 (2-33)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 3464))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 267 (2-45)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 73 (2-32)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 268 (2-57)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 73 (2-32)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 269 (2-61)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 73 (2-32)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RAX = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 280 (2-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 78 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 904))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 282 (2-61)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 78 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 1416))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 284 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 78 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 1928))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 280 (2-49)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 79 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 3976))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 282 (2-61)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 79 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 4488))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/polyvec.jinc", line 284 (2-65)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/indcpa.jinc", line 79 (2-31)
+  from "/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 24 (2-50)
+warning: extra assignment introduced:
+           RSI = #LEA_64((RSP +64u ((64u) 5000))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/kem.jinc", line 40 (2-35)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 96))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 461 (2-39)
+warning: extra assignment introduced:
+           RCX = #LEA_64((RSP +64u ((64u) 49))); /* :r */
+"/home/joao/libjade/src/crypto_kem/kyber/kyber768/amd64/ref/poly.jinc", line 461 (2-39)
+warning: extra assignment introduced:
+           RDX = #LEA_64((RSP +64u ((64u) 16))); /* :r */
