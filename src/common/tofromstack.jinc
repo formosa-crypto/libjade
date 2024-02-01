@@ -56,12 +56,12 @@ fn __fromstack32u8(reg u64 outp, reg ptr u8[32] in)
 }
 
 inline 
-fn __fromstack128u8(reg u64 outp, reg ptr u8[128] in)
+fn __fromstack134u8(reg u64 outp, reg ptr u8[134] in)
 {
   reg u8 t;
   inline int i;
 
-  for i=0 to 128
+  for i=0 to 134
   {
     t = in[i];
     (u8)[outp + i] = t;
