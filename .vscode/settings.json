@@ -1,0 +1,11 @@
+{
+    "files.associations": {
+        "*.sage": "python",
+        "*.jinc": "c",
+        "*.jazz": "c",
+        "jade_kem.h": "c",
+        "namespace.h": "c",
+        "api.h": "c",
+        "random": "c"
+    }
+}
