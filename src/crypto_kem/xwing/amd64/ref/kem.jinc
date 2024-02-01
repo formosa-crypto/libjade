@@ -102,7 +102,7 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 
     stack u64 inlen;
     inlen = XWING_PRFINPUT;
-    stack u8[134] in;
+    stack u8[XWING_PRFINPUT] in;
     stack u8[XWING_SYMBYTES] sdhpkp;
 
     sdhpkp = __tostack32u8(sdhpkp, pkp);
@@ -131,7 +131,87 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 inline
 fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
- 
+    stack u64 s_ctp s_shkp s_skp;
+    stack u8[XWING_CIPHERTEXTBYTES] xctp;
+    stack u8[MLKEM_CIPHERTEXTBYTES] mlctp;
+    stack u8[X25519_CIPHERTEXTBYTES] dctp;
+
+    stack u8[XWING_SECRETKEYBYTES] xskp;
+    stack u8[MLKEM_SECRETKEYBYTES] mlskp;
+    stack u8[X25519_SECRETKEYBYTES] dskp;
+    stack u8[X25519_PUBLICKEYBYTES] dpkp;
+
+    s_ctp = ctp;
+    s_skp = skp;
+
+    xctp = __tostack1120u8(xctp, ctp);
+    mlctp = xctp[0:MLKEM_CIPHERTEXTBYTES];
+    dctp = xctp[MLKEM_CIPHERTEXTBYTES:X25519_CIPHERTEXTBYTES];
+
+    xskp = __tostack2464u8(xskp, skp);
+    mlskp = xskp[0:MLKEM_SECRETKEYBYTES];
+    dskp = xskp[MLKEM_SECRETKEYBYTES:X25519_SECRETKEYBYTES];
+    dpkp = xskp[MLKEM_SECRETKEYBYTES+X25519_SECRETKEYBYTES:X25519_PUBLICKEYBYTES];
+
+    reg u64 tctp tskp;
+    stack u64 s_tctp s_tskp;
+
+    s_shkp = shkp;
+    tctp = shkp;
+    tskp = shkp;
+    s_tctp = tctp;
+    s_tskp = tskp;
+
+    __fromstack1088u8(tctp, mlctp);
+    __fromstack2400u8(tskp, mlskp);
+
+    __crypto_kem_dec_jazz(shkp, tctp, tskp);
+    tctp = s_tctp;
+    tskp = s_tskp;
+
+    stack u8[MLKEM_SSBYTES] mlshkp;
+    __tostack32u8(mlshkp, shkp);
+    shkp = s_shkp;
+
+    __fromstack32u8(tctp, dpkp);
+    __fromstack32u8(tskp, dskp);
+
+    stack u64 ss_shkp;
+    ss_shkp = shkp;
+    scalarmult(shkp, tctp, tskp);
+    shkp = ss_shkp;
+
+    stack u8[X25519_SSBYTES] dhshkp;
+    __tostack32u8(dhshkp, shkp);
+    shkp = s_shkp;
+
+    stack u64 inlen;
+    inlen = XWING_PRFINPUT;
+    stack u8[XWING_PRFINPUT] in;
+
+    inline int i j k l;
+
+    for i=0 to 6{
+        in[i] = label[i];
+    }
+
+    for i=0 to XWING_SYMBYTES{
+        l = i + 6;
+        j = i + X25519_SSBYTES + 6;
+        k = i + X25519_PUBLICKEYBYTES + X25519_SSBYTES + 6;
+        in[l] = mlshkp[i];
+        in[j] = dhshkp[i];
+        in[k] = dpkp[i];
+    }
+
+    reg u64 inp;
+    inp = shkp;
+    __fromstack134u8(inp, in);
+    __sha3_256_ref(shkp, inp, inlen);
+
+
+    
+
 
 
 }
