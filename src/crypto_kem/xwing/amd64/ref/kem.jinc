@@ -102,25 +102,29 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 
     stack u64 inlen;
     inlen = XWING_PRFINPUT;
-    stack u8[128] in;
+    stack u8[134] in;
     stack u8[XWING_SYMBYTES] sdhpkp;
-
 
     sdhpkp = __tostack32u8(sdhpkp, pkp);
     
-    inline int i j k;
+    inline int i j k l;
+
+    for i=0 to 6{
+        in[i] = label[i];
+    }
 
     for i=0 to XWING_SYMBYTES{
-        j = i + X25519_SSBYTES;
-        k = i + X25519_PUBLICKEYBYTES + X25519_SSBYTES;
-        in[i] = shmlkem[i];
+        l = i + 6;
+        j = i + X25519_SSBYTES + 6;
+        k = i + X25519_PUBLICKEYBYTES + X25519_SSBYTES + 6;
+        in[l] = shmlkem[i];
         in[j] = shdh[i];
         in[k] = sdhpkp[i];
     }
 
     reg u64 inp;
     inp = shkp;
-    __fromstack128u8(inp, in);
+    __fromstack134u8(inp, in);
     __sha3_256_ref(shkp, inp, inlen);
 }
 
