@@ -18,11 +18,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 FILTER=crypto_kem/mlkem/% default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 FILTER=./crypto_kem/mlkem/% default
       - name: print logs
         run: JASMIN=$(which_jasminc) make -C src/ CI=1 FILTER=crypto_kem/mlkem/% reporter
       - name: return error if there are any errors
-        run: make -C src/ CI=1 FILTER=crypto_kem/mlkem/% err
+        run: make -C src/ CI=1 FILTER=./crypto_kem/mlkem/% err
 
       - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
@@ -41,11 +41,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 FILTER=crypto_kem/mlkem/% default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 FILTER=../src/crypto_kem/mlkem/% default
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C test/ CI=1 FILTER=crypto_kem/mlkem/% reporter
+        run: JASMIN=$(which_jasminc) make -C test/ CI=1 FILTER=../src/crypto_kem/mlkem/% reporter
       - name: return error if there are any errors
-        run: make -C test/ CI=1 FILTER=crypto_kem/mlkem/% err
+        run: make -C test/ CI=1 FILTER=../src/crypto_kem/mlkem/% err
 
       - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
         if: always()
@@ -64,16 +64,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=crypto_kem/mlkem/% default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=./crypto_kem/mlkem/% default
 
       - name: run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 FILTER=crypto_kem/mlkem/% DEFINE='-DTIMINGS=10' run
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% DEFINE='-DTIMINGS=10' run
 
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 FILTER=crypto_kem/mlkem/% reporter
+        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% reporter
 
       - name: return error if there are any errors
-        run: make -C bench/ CI=1 FILTER=crypto_kem/mlkem/% err
+        run: make -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% err
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
@@ -92,16 +92,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=crypto_kem/mlkem/% default
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=./crypto_kem/mlkem/% default
 
       - name: run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 FILTER=crypto_kem/mlkem/% run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
+        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
 
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 FILTER=crypto_kem/mlkem/% reporter
+        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% reporter
 
       - name: return error if there are any errors
-        run: make -C bench/ CI=1 FILTER=crypto_kem/mlkem/% err
+        run: make -C bench/ CI=1 FILTER=../src/crypto_kem/mlkem/% err
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
