@@ -15,7 +15,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile
         run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 FILTER=crypto_kem/mlkem/% default
@@ -26,7 +26,7 @@ jobs:
 
       - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-src.tar.gz
           path: src/libjade-logs-src.tar.gz
@@ -38,7 +38,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile and run
         run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 FILTER=crypto_kem/mlkem/% default
@@ -49,7 +49,7 @@ jobs:
 
       - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-test.tar.gz
           path: test/libjade-logs-test.tar.gz
@@ -61,7 +61,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile
         run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=crypto_kem/mlkem/% default
@@ -77,7 +77,7 @@ jobs:
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-bench1.tar.gz
           path: bench/libjade-logs-bench.tar.gz
@@ -89,7 +89,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile
         run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 FILTER=crypto_kem/mlkem/% default
@@ -105,7 +105,7 @@ jobs:
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-bench2.tar.gz
           path: bench/libjade-logs-bench.tar.gz
