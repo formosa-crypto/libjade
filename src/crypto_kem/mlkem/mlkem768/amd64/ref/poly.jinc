@@ -505,13 +505,13 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       zetasctr += 1;
 
       j = start;
-      cmp = start + len;
+      cmp = #LEA(start + len);
       while (j < cmp)
       {
-        offset = j + len;
+        offset = #LEA(j + len);
         s = rp[(int)offset];
         t = rp[(int)j];
-        m = s + t;
+        m = s; m += t;
         m = __barrett_reduce(m);
         rp[(int)j] = m;
         t -= s;
@@ -519,7 +519,7 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
         rp[(int)offset] = t;
         j += 1;
       }
-      start = j + len;
+      start = #LEA(j + len);
     }
     len <<= 1;
   }
@@ -563,10 +563,10 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       zetasctr += 1;
       zeta = zetasp[(int)zetasctr];
       j = start;
-      cmp = start + len;
+      cmp = #LEA(start + len);
       while (j < cmp)
       {
-        offset = j + len;
+        offset = #LEA(j + len);
         t = rp[(int)offset];
         t = __fqmul(t, zeta);
         s = rp[(int)j];
@@ -577,7 +577,7 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
         rp[(int)j] = t;
         j += 1;
       }
-      start = j + len;
+      start = #LEA(j + len);
     }
     len >>= 1;
   }
