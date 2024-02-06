@@ -71,7 +71,7 @@ fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[
 
   reg u8 c;
   reg u16 t;
-  reg u64 ctr k l;
+  reg u64 ctr k;
   stack u64 sctr;
   stack u64 stransposed;
   inline int j i;
@@ -112,14 +112,15 @@ fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       }
 
       k = 0;
-      l = i * MLKEM_VECN + j * MLKEM_N;
+      reg ptr u16[MLKEM_N] rij;
+      rij = r[i * MLKEM_VECN + j * MLKEM_N : MLKEM_N];
       while (k < MLKEM_N)
       {
         t = poly[(int) k];
-        r[(int) l] = t;
+        rij[k] = t;
         k += 1;
-        l += 1;
       }
+      r[i * MLKEM_VECN + j * MLKEM_N : MLKEM_N] = rij;
     }
   }
   return r;
