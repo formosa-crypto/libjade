@@ -60,7 +60,6 @@ jobs:
           path: test/libjade-logs-test.tar.gz
 
 
-
   bench1:
     needs: [compile]
     runs-on: [self-hosted, linux, X64, amd64-main]
@@ -86,7 +85,6 @@ jobs:
         with:
           name: libjade-logs-bench1.tar.gz
           path: bench/libjade-logs-bench.tar.gz
-
 
 
   bench2:
