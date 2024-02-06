@@ -302,8 +302,10 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
 {
   inline int i;
   reg u256 f q shufbidx mask shift;
+  reg u128 h;
   reg ptr u16[16] x16p;
   reg ptr u8[32] x32p;
+  stack u128 sh;
 
   x16p = jqx16;
   q = x16p[u256 0];
@@ -316,7 +318,11 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
 
   for i=0 to MLKEM_N/16
   {
-    f = #VPBROADCAST_2u128((u128)[ap + 8*i]);
+    // was patched in the context of Kyber: check https://github.com/formosa-crypto/libjade/commit/d05492d5eab67c86733b5e841d910bc353f1b38d
+    h = (128u)(u64)[ap + 8*i];
+    sh = h;
+    f = #VPBROADCAST_2u128(sh);
+
     f = #VPSHUFB_256(f, shufbidx);
     f = #VPAND_256(f, mask);
     f = #VPMULL_16u16(f, shift);
