@@ -1,0 +1,79 @@
+require "params.jinc"
+
+inline 
+fn __verify(reg u64 ctp, reg ptr u8[MLKEM_INDCPA_CIPHERTEXTBYTES] ctpc) -> reg u64
+{
+  reg u256 f g h;
+  reg u64 cnd t64;
+  reg u8 t1 t2;
+  reg bool zf;
+  inline int i off;
+
+  cnd = 0;
+  t64 = 1;
+  h = #set0_256();
+
+  for i=0 to MLKEM_INDCPA_CIPHERTEXTBYTES/32
+  {
+    f = ctpc.[u256 32*i];
+    g = (u256)[ctp + 32*i];
+    f = #VPXOR_256(f, g);
+    h = #VPOR_256(h, f);
+  }
+
+  _, _, _, _, zf = #VPTEST_256(h, h);
+
+  cnd = t64 if !zf;
+
+  off = MLKEM_INDCPA_CIPHERTEXTBYTES/32 * 32;
+
+  for i=off to MLKEM_INDCPA_CIPHERTEXTBYTES
+  {
+    t1 = ctpc.[i];
+    t2 = (u8)[ctp + i];
+    t1 ^= t2;
+    t64 = (64u)t1;
+    cnd |= t64;
+  }
+
+  cnd = -cnd;
+  cnd >>= 63;
+
+  return cnd;
+}
+
+inline
+fn __cmov(reg u64 dst, reg ptr u8[MLKEM_SYMBYTES] src, reg u64 cnd)
+{
+  reg u256 f g m;
+  stack u64 scnd;
+  reg u8 t1 t2 bcond;
+  inline int i off;
+
+  cnd = -cnd;
+  scnd = cnd;
+
+  m = #VPBROADCAST_4u64(scnd);
+
+  for i=0 to MLKEM_SYMBYTES/32
+  {
+    f = src.[u256 32*i];
+    g = (u256)[dst + 32*i];
+    f = #VPBLENDVB_256(f, g, m);
+    (u256)[dst + 32*i] = f;
+  }
+
+  off = MLKEM_SYMBYTES/32 * 32;
+
+  /* fixme: unused in 768, hence untested */
+  bcond = (8u)cnd;
+  for i=off to MLKEM_SYMBYTES
+  {
+    t2 = (u8)[dst + i];
+    t1 = src[i];
+    t2 = t2 ^ t1;
+    t2 = t2 & cnd;
+    t1 ^= t2;
+    (u8)[dst + i] = t1;
+  }
+}

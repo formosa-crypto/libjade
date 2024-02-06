@@ -1,0 +1,44 @@
+require "params.jinc"
+
+inline 
+fn __verify(reg u64 ctp, reg ptr u8[MLKEM_CT_LEN] ctpc) -> reg u64
+{
+  reg u64 cnd t64;
+  reg u8 t1 t2;
+  inline int i;
+
+  cnd = 0;
+
+  for i=0 to MLKEM_CT_LEN
+  {
+    t1 = ctpc.[i];
+    t2 = (u8)[ctp + i];
+    t1 ^= t2;
+    t64 = (64u)t1;
+    cnd |= t64;
+  }
+
+  cnd = -cnd;
+  cnd >>= 63;
+
+  return cnd;
+}
+
+inline
+fn __cmov(reg u64 dst, reg ptr u8[MLKEM_SYMBYTES] src, reg u64 cnd)
+{
+  reg u8 t1 t2 bcond;
+  inline int i;
+
+  cnd = -cnd;
+
+  for i=0 to MLKEM_SYMBYTES
+  {
+    t2 = (u8)[dst + i];
+    t1 = src.[i];
+    t2 = t2 ^ t1;
+    t2 = t2 & cnd;
+    t1 ^= t2;
+    (u8)[dst + i] = t1;
+  }
+}
