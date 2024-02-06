@@ -1,0 +1,86 @@
+require "kem.jinc"
+
+export fn jade_kem_mlkem_mlkem768_amd64_ref_keypair_derand(reg u64 public_key secret_key fixedrand) -> reg u64
+{
+  reg u64 r;
+  stack u8[MLKEM_SYMBYTES*2] randomness;
+  reg ptr u8[MLKEM_SYMBYTES*2] randomnessp;
+  inline int i;
+
+  public_key = public_key;
+  secret_key = secret_key;
+
+  for i = 0 to MLKEM_SYMBYTES*2 
+  {
+    randomness[i] = (u8)[fixedrand + i];
+  }
+
+  randomnessp = randomness;
+  __crypto_kem_keypair_jazz(public_key, secret_key, randomnessp);
+  ?{}, r = #set0();
+  return r;
+}
+
+export fn jade_kem_mlkem_mlkem768_amd64_ref_enc_derand(reg u64 ciphertext shared_secret public_key fixedrand) -> reg u64
+{
+  reg u64 r;
+  stack u8[MLKEM_SYMBYTES] randomness;
+  reg ptr u8[MLKEM_SYMBYTES] randomnessp;
+  inline int i;
+
+  ciphertext = ciphertext;
+  shared_secret = shared_secret;
+  public_key = public_key;
+
+  for i = 0 to MLKEM_SYMBYTES {
+    randomness[i] = (u8)[fixedrand + i];
+  }
+
+  randomnessp = randomness;
+  __crypto_kem_enc_jazz(ciphertext, shared_secret, public_key, randomnessp);
+  ?{}, r = #set0();
+  return r;
+}
+
+
+export fn jade_kem_mlkem_mlkem768_amd64_ref_keypair(reg u64 public_key secret_key) -> reg u64
+{
+  reg u64 r;
+  stack u8[MLKEM_SYMBYTES*2] randomness;
+  reg ptr u8[MLKEM_SYMBYTES*2] randomnessp;
+
+  public_key = public_key;
+  secret_key = secret_key;
+
+  randomnessp = randomness;
+  randomnessp = #randombytes(randomnessp);
+  __crypto_kem_keypair_jazz(public_key, secret_key, randomnessp);
+  ?{}, r = #set0();
+  return r;
+}
+
+export fn jade_kem_mlkem_mlkem768_amd64_ref_enc(reg u64 ciphertext shared_secret public_key) -> reg u64
+{
+  reg u64 r;
+  stack u8[MLKEM_SYMBYTES] randomness;
+  reg ptr u8[MLKEM_SYMBYTES] randomnessp;
+
+  ciphertext = ciphertext;
+  shared_secret = shared_secret;
+  public_key = public_key;
+
+  randomnessp = randomness;
+  randomnessp = #randombytes(randomnessp);
+  __crypto_kem_enc_jazz(ciphertext, shared_secret, public_key, randomnessp);
+  ?{}, r = #set0();
+  return r;
+}
+
+export fn jade_kem_mlkem_mlkem768_amd64_ref_dec(reg u64 shared_secret ciphertext secret_key) -> reg u64
+{
+  reg u64 r;
+  __crypto_kem_dec_jazz(shared_secret, ciphertext, secret_key);
+  ?{}, r = #set0();
+  return r;
+}
+

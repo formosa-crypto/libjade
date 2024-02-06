@@ -1,0 +1,137 @@
+require "params.jinc"
+require "shuffle.jinc"
+require "fips202.jinc"
+require "params.jinc"
+
+inline
+fn __rej_uniform(stack u16[MLKEM_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] buf) ->  reg u64, stack u16[MLKEM_N]
+{
+  reg u16 val1 val2;
+  reg u16 t;
+  reg u64 pos ctr;
+  reg u64 cnd0 cnd1 exit;
+
+
+  ctr = offset;
+  pos = 0;
+  exit = 0;
+
+  while(exit == 0)
+  {
+    val1 = (16u)buf[(int)pos];
+    pos += 1;
+    t   = (16u)buf[(int)pos];
+    val2 = t;
+    val2 >>= 4;
+    t &= 0x0F;
+    t <<= 8;
+    val1 |= t;
+    pos += 1;
+
+    t   = (16u)buf[(int)pos];
+    t <<= 4;
+    val2 |= t;
+    pos += 1;
+
+    if(val1 < MLKEM_Q)
+    {
+      rp[(int)ctr] = val1;
+      ctr += 1;
+    }
+
+    if(val2 < MLKEM_Q)
+    {
+      if(ctr < MLKEM_N)
+      {
+        rp[(int)ctr] = val2;
+        ctr += 1;
+      }
+    }
+
+    // Check if we should exit the loop
+    cnd0  = MLKEM_N;
+    cnd0 -= ctr;
+    cnd0 -= 1;
+    cnd1  = SHAKE128_RATE;
+    cnd1 -= pos;
+    cnd1 -= 3; //TODO: (potentially) wasting 2 'good' bytes
+    exit  = cnd0 | cnd1;
+    exit >>= 63;
+  }
+
+  return ctr, rp;
+}
+
+inline
+fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[MLKEM_K*MLKEM_VECN]
+{
+  stack u8[34] extseed;
+  stack u8[SHAKE128_RATE] buf;
+  stack u64[25] state;
+  stack u16[MLKEM_N] poly;
+  stack u16[MLKEM_K*MLKEM_VECN] r;
+
+  reg u8 c;
+  reg u16 t;
+  reg u64 ctr k l;
+  stack u64 sctr;
+  stack u64 stransposed;
+  inline int j i;
+
+  stransposed = transposed;
+
+  for j = 0 to MLKEM_SYMBYTES
+  {
+    c = seed[j];
+    extseed[j] = c;
+  }
+
+  for i=0 to MLKEM_K
+  {
+    for j = 0 to MLKEM_K
+    {
+      transposed = stransposed;
+      if(transposed == 0)
+      {
+        extseed[MLKEM_SYMBYTES] = j;
+        extseed[MLKEM_SYMBYTES+1] = i;
+      }
+      else
+      {
+        extseed[MLKEM_SYMBYTES] = i;
+        extseed[MLKEM_SYMBYTES+1] = j;
+      }
+
+      state = _shake128_absorb34(state, extseed);
+
+      ctr = 0;
+      while (ctr < MLKEM_N)
+      {
+        sctr = ctr;
+        state, buf = _shake128_squeezeblock(state, buf);
+        ctr = sctr;
+        ctr, poly  = __rej_uniform(poly, ctr, buf);
+      }
+
+      k = 0;
+      l = i * MLKEM_VECN + j * MLKEM_N;
+      while (k < MLKEM_N)
+      {
+        t = poly[(int) k];
+        r[(int) l] = t;
+        k += 1;
+        l += 1;
+      }
+    }
+  }
+
+  for i = 0 to MLKEM_K
+  {
+    for j = 0 to MLKEM_K
+    {
+      r[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N] = _nttunpack(r[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N]);
+    }
+  }
+
+  return r;
+}
