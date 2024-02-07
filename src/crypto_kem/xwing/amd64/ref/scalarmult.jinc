@@ -17,7 +17,8 @@ fn scalarmult_base(reg u64 qp np)
   __store4(qp, q);
 }
 
-inline fn scalarmult(reg u64 qp np pp)
+#[returnaddress="stack"]
+fn scalarmult(reg u64 qp np pp)
 {
   stack u64 qps;
   reg u64[4] q n p;
