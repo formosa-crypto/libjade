@@ -54,7 +54,7 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> r
   reg u16 b0;
   reg u16 b1;
   reg u16 t;
-  reg ptr u16[128] zetasp;
+  reg ptr u16[64] zetasp;
   reg u64 zetasctr;
   reg u64 i;
 
@@ -62,14 +62,14 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> r
 
   srp = rp;
 
-  zetasctr = 64;
   i = 0;
 
-  while(i < MLKEM_N)
+  while(i < MLKEM_N - 3)
   {
-    zetasp = jzetas;
-    zeta = zetasp[(int)zetasctr];
-    zetasctr += 1;
+    zetasp = jzetas[64:64];
+    zetasctr = i;
+    zetasctr >>= 2;
+    zeta = zetasp[zetasctr];
     
     a0 = ap[(int)i];
     b0 = bp[(int)i];
