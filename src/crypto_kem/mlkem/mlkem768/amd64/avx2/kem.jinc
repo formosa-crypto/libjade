@@ -106,7 +106,8 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   buf[0:MLKEM_INDCPA_MSGBYTES] = __indcpa_dec_1(buf[0:MLKEM_INDCPA_MSGBYTES], ctp, skp);
 
-  hp = #LEA(skp + 32);
+  //hp = #LEA(skp + 32);
+  hp = skp; hp += 32;
   hp += 24 * MLKEM_K * MLKEM_N>>3;
 
   /* fixme: should loads be 256-bits long? */
