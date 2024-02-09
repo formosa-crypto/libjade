@@ -486,9 +486,9 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       cmp = start; cmp += len;
       while (j < cmp)
       {
+        t = rp[(int)j];
         offset = j; offset += len;
         s = rp[(int)offset];
-        t = rp[(int)j];
         m = s; m += t;
         m = __barrett_reduce(m);
         rp[(int)j] = m;
@@ -544,14 +544,14 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       cmp = start; cmp += len;
       while (j < cmp)
       {
+        s = rp[(int)j];
+        m = s;
         offset = j; offset += len;
         t = rp[(int)offset];
         t = __fqmul(t, zeta);
-        s = rp[(int)j];
-        m = s;
         m -= t;
-        rp[(int)offset] = m;
         t += s;
+        rp[(int)offset] = m;
         rp[(int)j] = t;
         j += 1;
       }
