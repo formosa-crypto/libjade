@@ -318,7 +318,6 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
 
   for i=0 to MLKEM_N/16
   {
-    // was patched in the context of Kyber: check https://github.com/formosa-crypto/libjade/commit/d05492d5eab67c86733b5e841d910bc353f1b38d
     h = (128u)(u64)[ap + 8*i];
     sh = h;
     f = #VPBROADCAST_2u128(sh);
@@ -889,7 +888,6 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
 {
   reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16 flox16 fhix16;
   reg ptr u16[400] zetasp;
-  reg ptr u16[16] qx16p;
   inline int i;
 
   zetasp = jzetas_inv_exp;
@@ -1087,8 +1085,6 @@ fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16)
 fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
 {
   reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
-  reg u32 t;
-  reg u16 w;
   reg ptr u16[400] zetasp;
   inline int i;
 

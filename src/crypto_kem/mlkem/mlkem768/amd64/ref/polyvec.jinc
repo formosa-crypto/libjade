@@ -26,7 +26,6 @@ fn __polyvec_compress(reg u64 rp, stack u16[MLKEM_VECN] a)
 {
   stack u16[MLKEM_VECN] aa;
   reg u16 c, b;
-  reg u16 d;
   reg u64[4] t;
   reg u64 i j;
   inline int k;
@@ -90,7 +89,6 @@ fn __i_polyvec_compress(reg ptr u8[MLKEM_POLYVECCOMPRESSEDBYTES] rp, stack u16[M
 {
   stack u16[MLKEM_VECN] aa;
   reg u16 c, b;
-  reg u16 d;
   reg u64[4] t;
   reg u64 i j;
   inline int k;
