@@ -93,6 +93,9 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
   reg u64 i t64;
   reg u64 ctp;
   reg u8 nonce;
+  stack ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+
+  s_noiseseed = noiseseed;
 
   pkpv = __polyvec_frombytes(pkp);
 
@@ -110,20 +113,31 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
 
   aat = __gen_matrix(publicseed, 1);
 
+  noiseseed = s_noiseseed;
   nonce = 0;
   sp[0:MLKEM_N] = _poly_getnoise(sp[0:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 1;
   sp[MLKEM_N:MLKEM_N] = _poly_getnoise(sp[MLKEM_N:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 2;
   sp[2*MLKEM_N:MLKEM_N] = _poly_getnoise(sp[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
 
+  noiseseed = s_noiseseed;
   nonce = 3;
   ep[0:MLKEM_N] = _poly_getnoise(ep[0:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 4;
   ep[MLKEM_N:MLKEM_N] = _poly_getnoise(ep[MLKEM_N:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 5;
   ep[2*MLKEM_N:MLKEM_N] = _poly_getnoise(ep[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
 
+  noiseseed = s_noiseseed;
   nonce = 6;
   epp = _poly_getnoise(epp, noiseseed, nonce);
 
@@ -160,7 +174,9 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   reg u64 i t64;
   reg u8 nonce;
   stack ptr u8[MLKEM_CT_LEN] sctp;
+  stack ptr u8[MLKEM_SYMBYTES] s_noiseseed;
 
+  s_noiseseed = noiseseed;
   sctp = ctp;
 
   pkpv = __polyvec_frombytes(pkp);
@@ -179,20 +195,31 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
 
   aat = __gen_matrix(publicseed, 1);
 
+  noiseseed = s_noiseseed;
   nonce = 0;
   sp[0:MLKEM_N] = _poly_getnoise(sp[0:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 1;
   sp[MLKEM_N:MLKEM_N] = _poly_getnoise(sp[MLKEM_N:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 2;
   sp[2*MLKEM_N:MLKEM_N] = _poly_getnoise(sp[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
 
+  noiseseed = s_noiseseed;
   nonce = 3;
   ep[0:MLKEM_N] = _poly_getnoise(ep[0:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 4;
   ep[MLKEM_N:MLKEM_N] = _poly_getnoise(ep[MLKEM_N:MLKEM_N], noiseseed, nonce);
+
+  noiseseed = s_noiseseed;
   nonce = 5;
   ep[2*MLKEM_N:MLKEM_N] = _poly_getnoise(ep[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
 
+  noiseseed = s_noiseseed;
   nonce = 6;
   epp = _poly_getnoise(epp, noiseseed, nonce);
 
