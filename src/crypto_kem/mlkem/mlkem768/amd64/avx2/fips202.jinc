@@ -162,7 +162,7 @@ fn __keccak1600_scalar(
     s_inlen = inlen;
     s_rate = rate;
 
-    state = _keccakf1600_scalar(state);
+    state = _keccakf1600_(state);
 
     inlen = s_inlen;
     in = s_in;
@@ -180,7 +180,7 @@ fn __keccak1600_scalar(
     s_outlen = outlen;
     s_rate = rate;
 
-    state = _keccakf1600_scalar(state);
+    state = _keccakf1600_(state);
 
     out = s_out;
     outlen = s_outlen;
@@ -191,7 +191,7 @@ fn __keccak1600_scalar(
     s_out = out;
   }
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
   out = s_out;
   outlen = s_outlen;
 
@@ -267,7 +267,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
     s_ilen = ilen;
     s_r8 = r8;
 
-    state = _keccakf1600_scalar(state);
+    state = _keccakf1600_(state);
 
     in = s_in;
     ilen = s_ilen;
@@ -277,7 +277,7 @@ fn _isha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   t8 = 0x06;
   state = __add_final_block(state, in, ilen, t8, r8);
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = s_out;
 
@@ -315,7 +315,7 @@ fn __isha3_512(reg ptr u8[64] out, reg u64 in, inline int inlen) -> stack u8[64]
     s_ilen = ilen;
     s_r8 = r8;
 
-    state = _keccakf1600_scalar(state);
+    state = _keccakf1600_(state);
 
     in = s_in;
     ilen = s_ilen;
@@ -325,7 +325,7 @@ fn __isha3_512(reg ptr u8[64] out, reg u64 in, inline int inlen) -> stack u8[64]
   t8 = 0x06;
   state = __add_final_block(state, in, ilen, t8, r8);
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = s_out;
 
@@ -361,7 +361,7 @@ fn _shake256_1120_32(reg u64 out, reg u64 in0 in1) {
 
   s_in = in1;
       
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   r8 = SHAKE256_RATE;
   ilen = MLKEM_INDCPA_CIPHERTEXTBYTES - (SHAKE256_RATE - MLKEM_SYMBYTES);
@@ -376,7 +376,7 @@ fn _shake256_1120_32(reg u64 out, reg u64 in0 in1) {
     s_ilen = ilen;
     s_r8 = r8;
 
-    state = _keccakf1600_scalar(state);
+    state = _keccakf1600_(state);
 
     in = s_in;
     ilen = s_ilen;
@@ -386,7 +386,7 @@ fn _shake256_1120_32(reg u64 out, reg u64 in0 in1) {
   t8 = 0x1f;
   state = __add_final_block(state, in, ilen, t8, r8);
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = s_out;
 
@@ -422,7 +422,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
   state[u8 33] ^= 0x1f;
   state[u8 SHAKE256_RATE-1] ^= 0x80;
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = sout; 
 
@@ -455,7 +455,7 @@ fn _isha3_256_32(reg ptr u8[32] out, reg ptr u8[MLKEM_SYMBYTES] in) -> reg ptr u
   state[u8 MLKEM_SYMBYTES] ^= 0x06;
   state[u8 SHA3_256_RATE - 1] = 0x80;
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = s_out;
 
@@ -489,7 +489,7 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 
   out_s = out;
 
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = out_s;
 
@@ -523,7 +523,7 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 
   out_s = out;
   
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
 
   out = out_s;
   
@@ -567,7 +567,7 @@ fn _shake128_squeezeblock(reg ptr u64[25] state, reg ptr u8[SHAKE128_RATE] out) 
   inline int i;
 
   out_s = out;
-  state = _keccakf1600_scalar(state);
+  state = _keccakf1600_(state);
   out = out_s;
 
   for i = 0 to SHAKE128_RATE/8
