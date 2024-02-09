@@ -420,7 +420,7 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
   reg u64 outlen;
   reg u8 c,a,b;
   reg u16 t;
-  reg u64 i j;
+  reg u64 i;
   inline int k;
 
   stack ptr u16[MLKEM_N] srp;
@@ -439,9 +439,8 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
   rp = srp;
 
   i = 0;
-  j = 0;
   while (i < 128) {
-    c = buf[(int)i];
+    c = buf[i];
     a = c;
     a &= 0x55;
 
@@ -456,7 +455,7 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
     b &= 0x3;
     a -= b;
     t = (16s)a;
-    rp[(int)j] = t;
+    rp[2 * i] = t;
     a = c;
     a >>= 4;
     a &= 0x3;
@@ -464,10 +463,8 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
     b &= 0x3;
     a -= b;
     t = (16s)a;
-    j += 1;
-    rp[(int)j] = t;
+    rp[2 * i + 1] = t;
     i += 1;
-    j += 1;
   }
   
   return rp;
