@@ -98,7 +98,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
   stack u8[MLKEM_CT_LEN] ctpc;
   stack u8[2*MLKEM_SYMBYTES] kr buf;
-  stack u64 s_skp s_ctp s_shkp;
+  stack u64 s_skp s_ctp s_shkp s_cnd;
   reg u64 pkp hp zp t64 cnd;
   inline int i;
 
@@ -127,14 +127,17 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   ctp = s_ctp;
   cnd = __verify(ctp, ctpc);
+  s_cnd = cnd;
 
   zp = s_skp;
   zp += 64;
   zp += 24 * MLKEM_K * MLKEM_N>>3;
 
   /* fixme: should this be done in memory? */
+  shkp = s_shkp;
   _shake256_1120_32(shkp, zp, ctp);  
 
   shkp = s_shkp;
+  cnd = s_cnd;
    __cmov(shkp, kr[0:MLKEM_SYMBYTES], cnd); 
 }
