@@ -4,38 +4,31 @@ from Jade require "common/tofromstack.jinc"
 require "params.jinc"
 require "scalarmult.jinc"
 
-
 #[returnaddress="stack"]
 fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING_SYMBYTES] randomnessp)
 {
-    stack u64 stackSecretKeyPointer stackPublicKeyPointer;
-
-    stackPublicKeyPointer = pkp;
-    stackSecretKeyPointer = skp;
-
+    () = #spill(pkp, skp, randomnessp);
 
     _crypto_kem_keypair_derand_jazz(pkp, skp, randomnessp[0:2*MLKEM_SYMBYTES]);
-    pkp = stackPublicKeyPointer;
-    skp = stackSecretKeyPointer;
+    
+    () = #unspill(pkp, skp);
 
     skp += MLKEM_SECRETKEYBYTES;
     pkp += MLKEM_PUBLICKEYBYTES;
 
-    stackSecretKeyPointer = skp;
-    stackPublicKeyPointer = pkp;
+    () = #unspill(randomnessp);
 
     __fromstack32u8(skp, randomnessp[2*XWING_SYMBYTES:XWING_SYMBYTES]);
     
-    skp = stackSecretKeyPointer;
+    () = #spill(pkp, skp);
     scalarmult_base(pkp, skp);
 
-    skp = stackSecretKeyPointer;
-    pkp = stackPublicKeyPointer;
+    () = #unspill(pkp, skp);
 
     skp += X25519_PUBLICKEYBYTES;
 
     inline int i;
-    for i=0 to X25519_PUBLICKEYBYTES{
+    for i=0 to X25519_PUBLICKEYBYTES {
         [skp + i] = [pkp + i];
     }
 }
