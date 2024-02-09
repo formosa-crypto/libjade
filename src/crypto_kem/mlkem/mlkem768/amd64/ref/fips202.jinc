@@ -3,10 +3,6 @@ param int SHAKE256_RATE = 136;
 param int SHA3_256_RATE = 136;
 param int SHA3_512_RATE = 72;
 
-param int SHAKE128_RATE = 168;
-param int SHAKE256_RATE = 136;
-param int SHA3_512_RATE = 72;
-
 inline
 fn __index(inline int x, inline int y) -> inline int {
   inline int r;
@@ -148,7 +144,6 @@ u64[24] roundconstants = {0x0000000000000001, 0x0000000000008082, 0x800000000000
 
 
 fn __keccakf1600_ref(reg ptr u64[25] state) -> reg ptr u64[25] {
-  inline int round;
   reg ptr u64[24] constptr;
 
   reg u64 rctr;

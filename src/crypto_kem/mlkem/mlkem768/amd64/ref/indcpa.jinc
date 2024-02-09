@@ -88,11 +88,10 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
 {
   stack u16[MLKEM_VECN] pkpv sp ep bp;
   stack u16[MLKEM_K*MLKEM_VECN] aat;
-  stack u16[MLKEM_N] k poly epp v poly0 poly1 poly2;
+  stack u16[MLKEM_N] k epp v;
   stack u8[MLKEM_SYMBYTES] publicseed;
-  reg u64 i j t64;
+  reg u64 i t64;
   reg u64 ctp;
-  reg u16 t;
   reg u8 nonce;
 
   pkpv = __polyvec_frombytes(pkp);
@@ -156,10 +155,9 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
 {
   stack u16[MLKEM_VECN] pkpv sp ep bp;
   stack u16[MLKEM_K*MLKEM_VECN] aat;
-  stack u16[MLKEM_N] k poly epp v poly0 poly1 poly2;
+  stack u16[MLKEM_N] k epp v;
   stack u8[MLKEM_SYMBYTES] publicseed;
-  reg u64 i j t64;
-  reg u16 t;
+  reg u64 i t64;
   reg u8 nonce;
   stack ptr u8[MLKEM_CT_LEN] sctp;
 

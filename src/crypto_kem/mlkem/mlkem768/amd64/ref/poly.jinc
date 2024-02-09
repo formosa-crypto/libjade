@@ -45,7 +45,6 @@ fn _poly_csubq(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
 
 fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> reg ptr u16[MLKEM_N]
 {
-  reg u64 offset;
   reg u16 zeta;
   reg u16 r0;
   reg u16 r1;
@@ -293,7 +292,6 @@ fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
   reg u8 c;
   reg u16 t;
   inline int i;
-  inline int j;
 
   for i = 0 to 32
   {
@@ -356,7 +354,6 @@ fn _i_poly_frommsg(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> stack u16[MLKE
   reg u8 c;
   reg u16 t;
   inline int i;
-  inline int j;
 
   for i = 0 to 32
   {
@@ -417,7 +414,6 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
 {
   stack u8[33] extseed;   /* 33 = MLKEM_SYMBYTES +1 */
   stack u8[128] buf;      /* 128 = MLKEM_ETA*MLKEM_N/4 */
-  reg u64 outlen;
   reg u8 c,a,b;
   reg u16 t;
   reg u64 i;
@@ -499,11 +495,9 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       zetasctr += 1;
 
       j = start;
-      //cmp = #LEA(start + len);
       cmp = start; cmp += len;
       while (j < cmp)
       {
-        //offset = #LEA(j + len);
         offset = j; offset += len;
         s = rp[(int)offset];
         t = rp[(int)j];
@@ -515,7 +509,6 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
         rp[(int)offset] = t;
         j += 1;
       }
-      //start = #LEA(j + len);
       start = j; start += len;
     }
     len <<= 1;
@@ -560,11 +553,9 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
       zetasctr += 1;
       zeta = zetasp[(int)zetasctr];
       j = start;
-      // cmp = #LEA(start + len);
       cmp = start; cmp += len;
       while (j < cmp)
       {
-        //offset = #LEA(j + len);
         offset = j; offset += len;
         t = rp[(int)offset];
         t = __fqmul(t, zeta);
@@ -576,7 +567,6 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
         rp[(int)j] = t;
         j += 1;
       }
-      //start = #LEA(j + len);
       start = j; start += len;
     }
     len >>= 1;
