@@ -38,33 +38,27 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
     stack u8[32] mlkemSharedKeyPointer dhSharedKeyPointer dhCiphertextPointer;
     stack u64 stackPublicKeyPointer stackCiphertextPointer stackSharedKeyPointer stackSharedKeyPointerInitial;
 
-    stackPublicKeyPointer = pkp;
-    stackCiphertextPointer = ctp;
-    stackSharedKeyPointer = shkp;
     stackSharedKeyPointerInitial = shkp;
 
-    () = #spill(randomnessp);
+    () = #spill(pkp, ctp, shkp, randomnessp);
     _crypto_kem_enc_derand_jazz(ctp, shkp, pkp, randomnessp[0:32]);
-
-    pkp = stackPublicKeyPointer;
-    ctp = stackCiphertextPointer;
-    shkp = stackSharedKeyPointer;
+    
+    () = #unspill(pkp, ctp, shkp);
 
     mlkemSharedKeyPointer = __tostack32u8(mlkemSharedKeyPointer, shkp);
 
     pkp += MLKEM_PUBLICKEYBYTES;
     ctp += MLKEM_CIPHERTEXTBYTES;
 
-    stackPublicKeyPointer = pkp;
+    () = #spill(pkp);
     () = #unspill(randomnessp);
 
     __fromstack32u8(shkp, randomnessp[XWING_SYMBYTES:XWING_SYMBYTES]);
 
-    stackCiphertextPointer = ctp;
-    stackSharedKeyPointer = shkp;
+    () = #spill(ctp, shkp);
     scalarmult_base(ctp, shkp);
-    ctp = stackCiphertextPointer;
-    shkp = stackSharedKeyPointer;
+    () = #unspill(ctp, shkp);
+
 
     reg u64 dhEphemeralKeyPointer;
     dhEphemeralKeyPointer = shkp;
@@ -72,13 +66,12 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
     dhCiphertextPointer = __tostack32u8(dhCiphertextPointer, ctp);
     dhSharedKeyPointer = __tostack32u8(dhSharedKeyPointer, shkp);
 
-    pkp = stackPublicKeyPointer;
+    () = #unspill(pkp);    
     shkp = stackSharedKeyPointerInitial;
-    stackSharedKeyPointer = shkp;
 
+    () = #spill(shkp, pkp);
     scalarmult(shkp, dhEphemeralKeyPointer, pkp);
-    pkp = stackPublicKeyPointer;
-    shkp = stackSharedKeyPointer;
+    () = #unspill(shkp, pkp);
 
     dhSharedKeyPointer = __tostack32u8(dhSharedKeyPointer, shkp);
     
