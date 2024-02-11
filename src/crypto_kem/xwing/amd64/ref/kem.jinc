@@ -33,6 +33,7 @@ fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING
     }
 }
 
+#[returnaddress="stack"]
 fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[2*XWING_SYMBYTES] randomnessp)
 {
     stack u8[32] mlkemSharedKeyPointer dhSharedKeyPointer dhCiphertextPointer;
