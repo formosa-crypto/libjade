@@ -113,18 +113,12 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 inline
 fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
-    stack u64 s_ctp s_shkp s_shkp_initial s_skp;
-
+    stack u64 s_shkp_initial;
     s_shkp_initial = shkp;
 
-    s_ctp = ctp;
-    s_skp = skp;
-    s_shkp = shkp;
+    () = #spill(shkp, ctp, skp);
     __crypto_kem_dec_jazz(shkp, ctp, skp);
-    
-    skp = s_skp;
-    ctp = s_ctp;
-    shkp = s_shkp;
+    () = #unspill(shkp, ctp, skp);
 
     ctp += MLKEM_CIPHERTEXTBYTES;
     skp += MLKEM_SECRETKEYBYTES;
@@ -132,13 +126,11 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
     stack u8[MLKEM_SSBYTES] mlkem_shkp;
     mlkem_shkp = __tostack32u8(mlkem_shkp, shkp);
 
-    s_ctp = ctp;
-    s_skp = skp;
-    s_shkp = shkp;
+    () = #spill(shkp, skp, ctp);
     scalarmult(shkp, skp, ctp);
+    () = #unspill(shkp, skp, ctp);
+
     shkp = s_shkp_initial;
-    ctp = s_ctp;
-    skp = s_skp;
 
     stack u8[X25519_SECRETKEYBYTES + X25519_PUBLICKEYBYTES] stackdhKeysPointer;
     stack u8[X25519_SSBYTES] stackdh_shkp dh_skp dh_ctp dh_pkp;
