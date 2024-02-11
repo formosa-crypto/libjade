@@ -36,17 +36,17 @@ fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING
 #[returnaddress="stack"]
 fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[2*XWING_SYMBYTES] randomnessp)
 {
-    stack u8[32] mlkemSharedKeyPointer dhSharedKeyPointer dhCiphertextPointer;
-    stack u64 stackPublicKeyPointer stackCiphertextPointer stackSharedKeyPointer stackSharedKeyPointerInitial;
+    stack u8[32] m_shkp d_shkp dh_ctp;
+    stack u64 s_shkp;
 
-    stackSharedKeyPointerInitial = shkp;
+    s_shkp = shkp;
 
     () = #spill(pkp, ctp, shkp, randomnessp);
     _crypto_kem_enc_derand_jazz(ctp, shkp, pkp, randomnessp[0:32]);
     
     () = #unspill(pkp, ctp, shkp);
 
-    mlkemSharedKeyPointer = __tostack32u8(mlkemSharedKeyPointer, shkp);
+    m_shkp = __tostack32u8(m_shkp, shkp);
 
     pkp += MLKEM_PUBLICKEYBYTES;
     ctp += MLKEM_CIPHERTEXTBYTES;
@@ -61,32 +61,32 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
     () = #unspill(ctp, shkp);
 
 
-    reg u64 dhEphemeralKeyPointer;
-    dhEphemeralKeyPointer = shkp;
+    reg u64 dh_ekp;
+    dh_ekp = shkp;
 
-    dhCiphertextPointer = __tostack32u8(dhCiphertextPointer, ctp);
-    dhSharedKeyPointer = __tostack32u8(dhSharedKeyPointer, shkp);
+    dh_ctp = __tostack32u8(dh_ctp, ctp);
+    d_shkp = __tostack32u8(d_shkp, shkp);
 
     () = #unspill(pkp);    
-    shkp = stackSharedKeyPointerInitial;
+    shkp = s_shkp;
 
     () = #spill(shkp, pkp);
-    scalarmult(shkp, dhEphemeralKeyPointer, pkp);
+    scalarmult(shkp, dh_ekp, pkp);
     () = #unspill(shkp, pkp);
 
-    dhSharedKeyPointer = __tostack32u8(dhSharedKeyPointer, shkp);
+    d_shkp = __tostack32u8(d_shkp, shkp);
     
-    reg u64 inputLength;
-    inputLength = XWING_PRFINPUT;
-    stack u8[XWING_PRFINPUT] inputBuffer;
-    stack u8[XWING_SYMBYTES] sstackdhPublicKeyPointer;
+    reg u64 input_len;
+    input_len = XWING_PRFINPUT;
+    stack u8[XWING_PRFINPUT] buf;
+    stack u8[XWING_SYMBYTES] s_dh_pkp;
 
-    sstackdhPublicKeyPointer = __tostack32u8(sstackdhPublicKeyPointer, pkp);
+    s_dh_pkp = __tostack32u8(s_dh_pkp, pkp);
     
     inline int i j k l p;
 
     for i=0 to 6{
-        inputBuffer[i] = label[i];
+        buf[i] = label[i];
     }
 
     for i=0 to XWING_SYMBYTES{
@@ -94,28 +94,28 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
         j = l + MLKEM_SSBYTES;
         k = j + X25519_CIPHERTEXTBYTES;
         p = k +  X25519_PUBLICKEYBYTES; 
-        inputBuffer[l] = mlkemSharedKeyPointer[i];
-        inputBuffer[j] = dhSharedKeyPointer[i];
-        inputBuffer[k] = dhCiphertextPointer[i];
-        inputBuffer[p] = sstackdhPublicKeyPointer[i];
+        buf[l] = m_shkp[i];
+        buf[j] = d_shkp[i];
+        buf[k] = dh_ctp[i];
+        buf[p] = s_dh_pkp[i];
     }
     
-    reg u64 inputRegister;
-    inputRegister = shkp;
-    reg ptr u8[32] outRegPointer;
-    stack u8[32] outputBuffer;
-    outRegPointer = outputBuffer;
-    __fromstack134u8(inputRegister, inputBuffer);
+    reg u64 t64;
+    t64 = shkp;
+    reg ptr u8[32] outp;
+    stack u8[32] out;
+    outp = out;
+    __fromstack134u8(t64, buf);
 
-    outRegPointer = _sha3_256(outRegPointer, inputRegister, inputLength);
-    __fromstack32u8(shkp, outputBuffer);
+    outp = _sha3_256(outp, t64, input_len);
+    __fromstack32u8(shkp, out);
 }
 
 inline
 fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
-    stack u64 s_shkp_initial;
-    s_shkp_initial = shkp;
+    stack u64 s_shkp;
+    s_shkp = shkp;
 
     () = #spill(shkp, ctp, skp);
     __crypto_kem_dec_jazz(shkp, ctp, skp);
@@ -131,18 +131,18 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
     scalarmult(shkp, skp, ctp);
     () = #unspill(shkp, skp, ctp);
 
-    shkp = s_shkp_initial;
+    shkp = s_shkp;
 
-    stack u8[X25519_SECRETKEYBYTES + X25519_PUBLICKEYBYTES] stackdhKeysPointer;
-    stack u8[X25519_SSBYTES] stackdh_shkp dh_skp dh_ctp dh_pkp;
+    stack u8[X25519_SECRETKEYBYTES + X25519_PUBLICKEYBYTES] s_dh_kp;
+    stack u8[X25519_SSBYTES] s_dh_shkp dh_skp dh_ctp dh_pkp;
 
 
-    stackdh_shkp = __tostack32u8(stackdh_shkp, shkp);
+    s_dh_shkp = __tostack32u8(s_dh_shkp, shkp);
     dh_ctp = __tostack32u8(dh_ctp, ctp);
-    stackdhKeysPointer = __tostack64u8(stackdhKeysPointer, skp);
+    s_dh_kp = __tostack64u8(s_dh_kp, skp);
     
-    dh_skp = stackdhKeysPointer[0:X25519_SECRETKEYBYTES];
-    dh_pkp = stackdhKeysPointer[X25519_SECRETKEYBYTES:X25519_PUBLICKEYBYTES];
+    dh_skp = s_dh_kp[0:X25519_SECRETKEYBYTES];
+    dh_pkp = s_dh_kp[X25519_SECRETKEYBYTES:X25519_PUBLICKEYBYTES];
 
     reg u64 inp_len;
     inp_len = XWING_PRFINPUT;
@@ -160,12 +160,12 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
         k = j + X25519_CIPHERTEXTBYTES;
         p = k +  X25519_PUBLICKEYBYTES; 
         buf[l] = mlkem_shkp[i];
-        buf[j] = stackdh_shkp[i];
+        buf[j] = s_dh_shkp[i];
         buf[k] = dh_ctp[i];
         buf[p] = dh_pkp[i];
     }
 
-    shkp = s_shkp_initial;
+    shkp = s_shkp;
 
     reg u64 t64;
     t64 = shkp;
