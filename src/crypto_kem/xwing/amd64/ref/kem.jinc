@@ -76,8 +76,6 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
 
     d_shkp = __tostack32u8(d_shkp, shkp);
     
-    reg u64 input_len;
-    input_len = XWING_PRFINPUT;
     stack u8[XWING_PRFINPUT] buf;
     stack u8[XWING_SYMBYTES] s_dh_pkp;
 
@@ -100,15 +98,11 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
         buf[p] = s_dh_pkp[i];
     }
     
-    reg u64 t64;
-    t64 = shkp;
     reg ptr u8[32] outp;
     stack u8[32] out;
     outp = out;
-    __fromstack134u8(t64, buf);
 
-    outp = _sha3_256(outp, t64, input_len);
-    __fromstack32u8(shkp, out);
+    outp = _sha3_256_134(outp, buf);
 }
 
 inline
@@ -144,8 +138,6 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
     dh_skp = s_dh_kp[0:X25519_SECRETKEYBYTES];
     dh_pkp = s_dh_kp[X25519_SECRETKEYBYTES:X25519_PUBLICKEYBYTES];
 
-    reg u64 inp_len;
-    inp_len = XWING_PRFINPUT;
     stack u8[XWING_PRFINPUT] buf;
 
     inline int i j k l p;
@@ -166,15 +158,11 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
     }
 
     shkp = s_shkp;
-
-    reg u64 t64;
-    t64 = shkp;
     reg ptr u8[32] out_t64;
     stack u8[32] out_buf;
     out_t64 = out_buf;
-    __fromstack134u8(t64, buf);
 
-    out_t64 = _sha3_256(out_t64, t64, inp_len);
+    out_t64 = _sha3_256_134(out_t64, buf);
     __fromstack32u8(shkp, out_buf);
 
 }
