@@ -157,6 +157,14 @@ include Makefile.partial_implementations
 	$(COMPILE) || true
 
 # --------------------------------------------------------------------
+# notes: the following set of rules will be generalized
+
+bin/crypto_kem/mlkem/mlkem768/amd64/ref/test_vectors:  __phony | bin/crypto_kem/mlkem/mlkem768/amd64/ref/ bin/crypto_kem/mlkem/mlkem768/amd64/ref/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) -I crypto_kem/mlkem/mlkem768/ crypto_kem/test_vectors.c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
+
+# --------------------------------------------------------------------
 $(OUT):
 
 %memory.out: %memory
