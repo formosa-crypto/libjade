@@ -103,6 +103,7 @@ fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
     outp = out;
 
     outp = _sha3_256_134(outp, buf);
+    __fromstack32u8(shkp, outp);
 }
 
 inline
@@ -158,11 +159,12 @@ fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
     }
 
     shkp = s_shkp;
-    reg ptr u8[32] out_t64;
-    stack u8[32] out_buf;
-    out_t64 = out_buf;
+    
+    reg ptr u8[32] outp;
+    stack u8[32] out;
+    outp = out;
 
-    out_t64 = _sha3_256_134(out_t64, buf);
-    __fromstack32u8(shkp, out_buf);
+    outp = _sha3_256_134(outp, buf);
+    __fromstack32u8(shkp, outp);
 
 }
