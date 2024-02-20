@@ -91,6 +91,7 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
   stack u64[28] s_state;
   stack u64[25] a_jagged_p;
   reg u64 t l;
+  reg u8 c;
   inline int i;
 
   a_jagged_p = KECCAK_A_JAGGED;
@@ -105,9 +106,18 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
     s_state[(int) l] = t;
   }
 
-
-  l = a_jagged_p[17];
+  c = in[u8 128];
+  l = a_jagged_p[(int) 16];
   l <<= 3;
+  s_state[u8 (int)l] = c;
+
+  for i = 129 to 134{
+    c = in[i];
+    l += 1;
+    s_state[u8 (int)l] = c;
+  }
+
+  l += 1;
   s_state[u8 (int)l] = 0x06;
 
   l = a_jagged_p[(SHA3_256_RATE-1)/8];
