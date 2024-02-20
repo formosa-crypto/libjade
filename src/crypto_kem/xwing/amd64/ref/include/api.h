@@ -5,7 +5,7 @@
 
 #define JADE_KEM_xwing_amd64_ref_PUBLICKEYBYTES   1216
 #define JADE_KEM_xwing_amd64_ref_SECRETKEYBYTES   2464
-#define JADE_KEM_xwing_amd64_ref_CIPHERTEXTBYTES  1200
+#define JADE_KEM_xwing_amd64_ref_CIPHERTEXTBYTES  1120
 #define JADE_KEM_xwing_amd64_ref_KEYPAIRCOINBYTES 96
 #define JADE_KEM_xwing_amd64_ref_ENCCOINBYTES     64
 #define JADE_KEM_xwing_amd64_ref_BYTES            32
