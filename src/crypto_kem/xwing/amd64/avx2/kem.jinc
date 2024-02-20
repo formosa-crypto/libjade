@@ -31,7 +31,7 @@ fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING
 
     inline int i;
     for i=0 to X25519_PUBLICKEYBYTES {
-        [skp + i] = [pkp + i];
+        (u8)[skp + i] = (u8)[pkp + i];
     }
 }
 
