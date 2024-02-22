@@ -1,0 +1,208 @@
+
+// notes: "16" instead of BYTES_SEED_A on purpose
+// compilation should fail if BYTES_SEED_A changes
+
+fn _shake128_gen_A_opt(
+  #spill_to_mmx reg ptr u8[2 * N * 8] out, // note: this implementation should work for N multiple of 4
+  #spill_to_mmx reg u64 out_offset,        // out_offset in bytes
+  #spill_to_mmx reg ptr u8[16+2+6] index_seed_padding)
+  ->
+  reg ptr u8[2 * N * 8],
+  reg u64
+{
+  #spill_to_mmx reg u64 i;
+
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u64 j t0 t1 t2 zero;
+  reg u8 v0;
+
+  state = s_state;  
+
+  t0 = index_seed_padding[u64 0];
+  t1 = index_seed_padding[u64 1];
+  t2 = index_seed_padding[u64 2];
+  ?{}, zero = #set0();
+
+  state[0] = t0;
+  state[1] = t1;
+  state[2] = t2;
+
+  i = 3;
+  while (i < 25)
+  { state[i] = zero;
+    i += 1;
+  }
+
+  state[u8 167] = 0x80;
+
+  // out_offset in u64 words
+  out_offset >>= 3;
+
+  // notes:
+  // - i is incremented in the inner loop 
+  // - this function needs to output 2*N bytes
+  // - each iteration produces 168 bytes, but is incremented in "u64 mode" (by 21)
+  // - for N=640, 1280 bytes are needed, in 7 iterations, we produce 1176 bytes
+  //   and i will be 147.
+  i = 0;
+  while (i < (2*N)/168)
+  {
+      () = #spill(i, out, out_offset);
+
+    state = __keccakf1600_ref1(state);
+
+      () = #unspill(i, out, out_offset);
+
+    j = 0;
+    while (j < 21)
+    { t0 = state[j];
+      out[u64 out_offset] = t0;
+      out_offset += 1;
+      j += 1;
+    }
+
+    i += 1;
+  }
+
+    () = #spill(i, out, out_offset);
+
+  state = __keccakf1600_ref1(state);
+
+    () = #unspill(i, out, out_offset);
+
+  out_offset <<= 3; // in bytes again
+  i *= 168;
+  j = 0;
+  while (i < 2*N)
+  {
+    v0 = state[u8 (int)j];
+    out[(int)out_offset] = v0;
+    out_offset += 1;
+    i += 1;
+    j += 1;
+  }
+
+  return out, out_offset;
+}
+
+fn __SA_plus_E_opt(
+  #spill_to_mmx reg ptr u16[NNBAR] B,
+                reg ptr u8[16] seedA,
+  #spill_to_mmx reg ptr u16[NNBAR] S,
+  #spill_to_mmx reg ptr u16[NNBAR] E)
+  ->
+  reg ptr u16[NNBAR]
+{
+  inline int m;
+  stack u8[2+16+ 6] s_index_seed_padding;
+  reg ptr u8[2+16+ 6] index_seed_padding;
+
+  stack u16[N * 8] s_A;
+  reg ptr u16[N * 8] A;
+  reg u64 A_offset B_offset S_offset;
+
+  inline int p;
+  #spill_to_mmx reg u64 i j ij jN q;
+  reg u32[8] sp;
+  reg u32 sum mul;
+  reg u16 t;
+  reg u8 v;
+
+  // setup "index || seed || padding"
+  s_index_seed_padding[u16 0] = 0;
+  s_index_seed_padding[u64 2] = 0;
+  i = 0;
+  j = 2;
+  while(i < 16)
+  { v = seedA[i];
+    s_index_seed_padding[j] = v;
+    i += 1;
+    j += 1;
+  }
+  s_index_seed_padding[18] = 0x1f;
+
+
+  // TODO, avoid copy?
+  i = 0;
+  while (i < NNBAR)
+  { B[i] = E[i];
+    i += 1;
+  }
+
+  A = s_A;
+  i = 0;
+  while( i < N )
+  {
+
+    () = #spill(B, S);
+
+    //
+    A_offset = 0;
+    j = 0;
+    while( j < 8 )
+    {
+      ij = #LEA(i + j);
+
+      () = #spill(i, j);
+
+      s_index_seed_padding[u16 0] = (16u) ij;
+      index_seed_padding = s_index_seed_padding;
+      A, A_offset = _shake128_gen_A_opt(A, A_offset, index_seed_padding);
+
+      () = #unspill(i, j);
+      j += 1;
+    }
+
+    () = #unspill(B, S);
+
+    //
+    j = 0;
+    jN = 0;
+    while ( j < NBAR )
+    {
+      () = #spill(j);
+
+      //
+      S_offset = #LEA(jN + i);
+      for p=0 to 8
+      { sp[p] = (32u) S[S_offset + p]; }
+
+      () = #spill(S);
+
+      //
+      q = 0;
+      B_offset = jN;
+
+      () = #spill(jN);
+
+      while( q < N )
+      {
+        sum = (32u) B[B_offset];
+
+        for p=0 to 8
+        { 
+          mul  = (32u) A[p*N + q];
+          mul *= sp[p];
+          sum += mul;
+        }
+
+        B[B_offset] = (16u) sum;
+
+        q += 1;
+        B_offset += 1;
+      }
+
+      () = #unspill(j, S, jN);
+
+      j += 1;
+      jN += N;
+    }
+
+    i += 8;
+  }
+
+  return B;
+}
+
+

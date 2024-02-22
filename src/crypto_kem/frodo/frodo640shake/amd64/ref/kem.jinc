@@ -2,6 +2,7 @@ from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/encode.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/noise.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
 
 #[returnaddress="stack"]
@@ -167,7 +168,7 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
 
     // B' = S'A + E''
-    Bp = __SA_plus_E(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
+    Bp = __SA_plus_E_opt(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
 
     // c1 <- Pack(B')
     ct_k[0:D * N] = __pack_B(ct_k[0:D * N], Bp);
@@ -290,7 +291,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
 
     // B'' = S'A + E'
-    Bpp = __SA_plus_E(Bpp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
+    Bpp = __SA_plus_E_opt(Bpp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
 
     // B'' (mod q)
     i = s_i;
