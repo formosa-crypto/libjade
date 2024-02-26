@@ -86,7 +86,29 @@ fn _shake128_gen_A_opt(
   return out, out_offset;
 }
 
-fn __SA_plus_E_opt(
+inline fn __pad_seedA(reg ptr u8[16] seedA) -> reg ptr u8[2 + 16 + 6] {
+  reg u64 i j;
+  stack u8[2+16+ 6] s_index_seed_padding;
+  reg u8 v;
+
+  // setup "index || seed || padding"
+  s_index_seed_padding[u16 0] = 0;
+  s_index_seed_padding[u64 2] = 0;
+
+  i = 0; j = 2;
+  while (i < 16)
+  { v = seedA[i];
+    s_index_seed_padding[j] = v;
+    i += 1;
+    j += 1;
+  }
+
+  s_index_seed_padding[18] = 0x1f;
+
+  return s_index_seed_padding;
+}
+
+fn __AS_plus_E_opt(
   #spill_to_mmx reg ptr u16[NNBAR] B,
                 reg ptr u8[16] seedA,
   #spill_to_mmx reg ptr u16[NNBAR] S,
@@ -94,8 +116,104 @@ fn __SA_plus_E_opt(
   ->
   reg ptr u16[NNBAR]
 {
-  inline int m;
-  stack u8[2+16+ 6] s_index_seed_padding;
+  reg ptr u8[2+16+ 6] index_seed_padding;
+
+  stack u16[N * 8] s_A;
+  reg ptr u16[N * 8] A;
+  reg u64 A_offset B_offset S_offset;
+
+  inline int p;
+  #spill_to_mmx reg u64 i j ij jN q;
+  reg u32[8] sum;
+  reg u16 t16;
+  reg u32 mul sp;
+
+  index_seed_padding = __pad_seedA(seedA);
+
+  i = 0;
+  while (i < NNBAR) {
+    B[i] = E[i];
+    i += 1;
+  }
+
+  () = #spill(E, index_seed_padding);
+
+  A = s_A;
+  i = 0;
+  B_offset = 0;
+  while( i < N ) {
+    () = #spill(B, S);
+    () = #unspill(index_seed_padding);
+
+    A_offset = 0;
+    j = 0;
+    while( j < 8 )
+    {
+      ij = #LEA(i + j);
+
+      () = #spill(i, j);
+
+      index_seed_padding[u16 0] = (16u) ij;
+      A, A_offset = _shake128_gen_A_opt(A, A_offset, index_seed_padding);
+
+      () = #unspill(i, j);
+      j += 1;
+    }
+
+    () = #unspill(B, S);
+    () = #spill(index_seed_padding);
+
+    j = 0;
+    jN = 0;
+    while ( j < NBAR )
+    {
+      B_offset = #LEA(i * NBAR + j);
+
+      () = #spill(i, j, jN);
+      for p = 0 to 8 { sum[p] = (32u)B[B_offset + p*NBAR]; }
+
+      q = 0;
+      while (q < N) {
+        () = #unspill(jN);
+
+        S_offset = #LEA(jN + q);
+        sp = (32u)S[S_offset];
+
+        () = #spill(jN);
+
+        for p = 0 to 8
+        {
+            mul = (32u)A[p*N + q];
+            mul *= sp;
+            sum[p] += mul;
+        }
+
+        q += 1;
+      }
+
+      for p = 0 to 8 {
+        B[B_offset + p*NBAR] = (16u)sum[p];
+      }
+
+      () = #unspill(i, j, jN);
+
+      j += 1;
+      jN += N;
+    }
+
+    i += 8;
+  }
+
+  return B;
+}
+
+fn __SA_plus_E_opt(
+  #spill_to_mmx reg ptr u16[NNBAR] B, // initial value is set to E's to avoid copy
+                reg ptr u8[16] seedA,
+  #spill_to_mmx reg ptr u16[NNBAR] S)
+  ->
+  reg ptr u16[NNBAR]
+{
   reg ptr u8[2+16+ 6] index_seed_padding;
 
   stack u16[N * 8] s_A;
@@ -106,29 +224,10 @@ fn __SA_plus_E_opt(
   #spill_to_mmx reg u64 i j ij jN q;
   reg u32[8] sp;
   reg u32 sum mul;
-  reg u16 t;
-  reg u8 v;
 
-  // setup "index || seed || padding"
-  s_index_seed_padding[u16 0] = 0;
-  s_index_seed_padding[u64 2] = 0;
-  i = 0;
-  j = 2;
-  while(i < 16)
-  { v = seedA[i];
-    s_index_seed_padding[j] = v;
-    i += 1;
-    j += 1;
-  }
-  s_index_seed_padding[18] = 0x1f;
+  index_seed_padding = __pad_seedA(seedA);
 
-
-  // TODO, avoid copy?
-  i = 0;
-  while (i < NNBAR)
-  { B[i] = E[i];
-    i += 1;
-  }
+  () = #spill(index_seed_padding);
 
   A = s_A;
   i = 0;
@@ -136,6 +235,7 @@ fn __SA_plus_E_opt(
   {
 
     () = #spill(B, S);
+    () = #unspill(index_seed_padding);
 
     //
     A_offset = 0;
@@ -146,8 +246,7 @@ fn __SA_plus_E_opt(
 
       () = #spill(i, j);
 
-      s_index_seed_padding[u16 0] = (16u) ij;
-      index_seed_padding = s_index_seed_padding;
+      index_seed_padding[u16 0] = (16u) ij;
       A, A_offset = _shake128_gen_A_opt(A, A_offset, index_seed_padding);
 
       () = #unspill(i, j);
@@ -155,6 +254,7 @@ fn __SA_plus_E_opt(
     }
 
     () = #unspill(B, S);
+    () = #spill(index_seed_padding);
 
     //
     j = 0;
