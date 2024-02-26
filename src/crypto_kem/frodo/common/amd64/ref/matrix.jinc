@@ -202,9 +202,9 @@ fn __matrix_sub(reg ptr u16[NBAR * NBAR] a b) -> stack u16[NBAR * NBAR] {
 
 #[returnaddress="stack"]
 fn __mul_BS(reg ptr u16[NBAR * NBAR] M, reg ptr u16[NNBAR]B S) -> stack u16[NBAR * NBAR] {
-    reg u64 k ti tj;
+    reg u64 k tj;
     reg u16 tmp;
-    inline int i j l;
+    inline int i j;
 
     for i = 0 to NBAR {
         for j = 0 to NBAR {
@@ -212,16 +212,14 @@ fn __mul_BS(reg ptr u16[NBAR * NBAR] M, reg ptr u16[NNBAR]B S) -> stack u16[NBAR
 
             k = 0;
             while (k < N) {
-                for l = 0 to 1 {
-                    tmp = B[i * N + l + (int)k];
+                tmp = B[i * N + (int)k];
 
-                    tj = j * N + l;
-                    // NOTE: why is this needed ? register allocation, k and tj must be merged will be raised
-                    tj += k;
-                    tmp *= S[(int)tj];
+                tj = j * N;
+                // NOTE: why is this needed ? register allocation, k and tj must be merged will be raised
+                tj += k;
+                tmp *= S[(int)tj];
 
-                    M[i * NBAR + j] += tmp;
-                }
+                M[i * NBAR + j] += tmp;
 
                 k += 1;
             }
@@ -237,7 +235,6 @@ fn __ct_verify_NNBAR(reg ptr u16[NNBAR] a b) -> stack u8 {
     reg u64 i;
     reg u16 ac tmp;
     reg u8 r;
-    inline int k;
 
     i = 0;
     ac = 0;
