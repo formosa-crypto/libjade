@@ -1,28 +1,10 @@
 from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/shake128_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/encode.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/noise.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
-
-#[returnaddress="stack"]
-fn __gen_SE(reg ptr u16[2 * NNBAR] SE, reg ptr u8[BYTES_SEED_SE] r) -> stack u16[2 * NNBAR] {
-    stack u8[1 + BYTES_SEED_SE] seed_se;
-    inline int i;
-
-    r = r;
-    for i = 0 to BYTES_SEED_SE {
-        seed_se[i + 1] = r[i];
-    }
-
-    // S || E
-    seed_se[0] = 0x5F;
-
-    SE = __shake128_r(SE, seed_se);
-    SE = __sample_2NNBAR(SE);
-
-    return SE;
-}
 
 // coins = s || seed SE || z
 fn __frodo_amd64_ref_keypair_derand(
@@ -47,10 +29,11 @@ fn __frodo_amd64_ref_keypair_derand(
     }
 
     // gen seedA
-    pk[0:BYTES_SEED_A] = __shake128_seed_A(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
+    pk[0:BYTES_SEED_A] = __shake128_seed_A_opt(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
 
     // gen S || E
-    SE = __gen_SE(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
+    SE = __shake128_r_opt(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
+    SE = __sample_2NNBAR(SE);
 
     () = #spill(coins);
 
@@ -143,10 +126,10 @@ fn __frodo_amd64_ref_enc_derand(
     () = #spill(i, j);
 
     // pkh
-    pkh_u_salt[0:BYTES_SEC] = __shake128_pkh(pkh_u_salt[0:BYTES_SEC], pk);
+    pkh_u_salt[0:BYTES_SEC] = __shake128_pkh_opt(pkh_u_salt[0:BYTES_SEC], pk);
 
     // seedSE || k
-    seedSE_k[1 : BYTES_SEED_SE + BYTES_SEC] = __shake128_SE_k(seedSE_k[1:BYTES_SEED_SE + BYTES_SEC], pkh_u_salt);
+    seedSE_k = __shake128_SE_k_opt(seedSE_k, pkh_u_salt);
 
     // copy k
     for k = 0 to BYTES_SEC/8 {
@@ -154,7 +137,7 @@ fn __frodo_amd64_ref_enc_derand(
     }
 
     // gen input bit string for sampling S and E
-    SEE = __shake128_encap_r(SEE, seedSE_k[0 : 1 + BYTES_SEED_SE]);
+    SEE = __shake128_encap_r_opt(SEE, seedSE_k[0 : 1 + BYTES_SEED_SE]);
 
     // S' || E'
     SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
@@ -183,7 +166,7 @@ fn __frodo_amd64_ref_enc_derand(
     ct_k[D * N: D * NBAR] = __pack_C(ct_k[D * N: D * NBAR], C);
 
     // ss <- shake(c1 || c2 || salt || k)
-    ss = __shake128_ss(ss, ct_k);
+    ss = __shake128_ss_opt(ss, ct_k);
 
     () = #unspill(i, j, ctp, ssp);
     i = 0; j = 0;
@@ -276,9 +259,9 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     pkh_u_salt[BYTES_SEC:BYTES_SEC] = __decode(pkh_u_salt[BYTES_SEC:BYTES_SEC], M);
 
     seedSE_k[0] = 0x96;
-    seedSE_k[1:BYTES_SEED_SE + BYTES_SEC] = __shake128_SE_k(seedSE_k[1:BYTES_SEED_SE + BYTES_SEC], pkh_u_salt);
+    seedSE_k = __shake128_SE_k_opt(seedSE_k, pkh_u_salt);
 
-    SEE = __shake128_encap_r(SEE, seedSE_k[0: 1 + BYTES_SEED_SE]);
+    SEE = __shake128_encap_r_opt(SEE, seedSE_k[0: 1 + BYTES_SEED_SE]);
 
     // S' || E'
     SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
@@ -312,7 +295,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
 
     ct_k[BYTES_CT:BYTES_SEC] = __ct_select(ct_k[BYTES_CT:BYTES_SEC], seedSE_k[1+BYTES_SEED_SE:BYTES_SEC], s, s1);
 
-    ss = __shake128_ss(ss, ct_k);
+    ss = __shake128_ss_opt(ss, ct_k);
 
     ssp = s_ssp;
     for k = 0 to BYTES_SEC/8 {
