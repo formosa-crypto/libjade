@@ -36,7 +36,7 @@ print()
   file=$3;
   label=$4;
 
-  egrep -E "$filter" $file | \
+  grep -E "$filter" $file | \
   while read line; do
    line=${line/$dir\//};
    echo -e "${color}${BOLD}${label}, ${line}${NORMAL}"
@@ -46,7 +46,7 @@ print()
 clear_empty()
 {
   file=$1;
-  egrep -E "^0" $file | cut -d',' -f2 | \
+  grep -E "^0" $file | cut -d',' -f2 | \
   while read log; do
     rm -f "$log";
   done
