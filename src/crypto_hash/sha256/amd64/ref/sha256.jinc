@@ -53,7 +53,6 @@ inline fn __store_H_ref(reg ptr u32[8] H, reg u32 a b c d e f g h) -> reg ptr u3
 inline fn __store_ref(reg u64 out, stack u32[8] H)
 {
   inline int i;
-  reg u32 v;
 
   for i=0 to 8
   { // BSWAP could be used here, but it is not DOIT.
@@ -187,7 +186,7 @@ inline fn __Wt_ref(stack u32[64] W, inline int t) -> stack u32[64]
 fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64, reg u64
 {
   inline int t;
-  reg u32 T1 T2 a b c d e f g h r v;
+  reg u32 T1 T2 a b c d e f g h r;
   stack u32[64] W;
   reg ptr u32[64] Kp;
   stack ptr u32[8] Hp;
