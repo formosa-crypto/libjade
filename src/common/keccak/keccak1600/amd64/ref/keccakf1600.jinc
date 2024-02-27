@@ -1,5 +1,6 @@
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600_globals.jinc" // KECCAK1600_RC
 from Jade require "common/keccak/keccak1600/amd64/spec/keccakf1600.jinc" // __rhotates_spec
+from Jade require "common/doit.jinc" //__ROL64
 
 // C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
 inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
@@ -26,18 +27,13 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
 {
   inline int x;
   reg u64[5] d;
-  reg u64 t;
 
   for x = 0 to 5
   { // D[x] = C[x + 1]
     d[x] = c[(x + 1) % 5];
 
     // D[x] = ROT(D[x], 1)
-    // ROL is not DOIT, so use shifts.
-    t = d[x];
-    ?{}, t = #SHL_64(t, 1);
-    ?{}, d[x] = #SHR_64(d[x], 63);
-    ?{}, d[x] = #OR_64(t, d[x]);
+    d[x] = __ROL64(d[x], 1);
 
     // D[x] ^= C[x-1]
     d[x] ^= c[(x - 1 + 5) % 5];
@@ -60,7 +56,6 @@ inline fn __rol_sum_ref(
 {
   inline int r x x_ y_;
   reg u64[5] b;
-  reg u64 t;
 
   for x = 0 to 5
   {
@@ -75,13 +70,9 @@ inline fn __rol_sum_ref(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
-    // ROL is not DOIT, so use shifts.
     if(r != 0)
     {
-      t = b[x];
-      ?{}, t = #SHL_64(t, r);
-      ?{}, b[x] = #SHR_64(b[x], 64 - r);
-      ?{}, b[x] = #OR_64(t, b[x]);
+      b[x] = __ROL64(b[x], r);
     }
 
   }

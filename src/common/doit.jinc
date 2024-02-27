@@ -1,0 +1,40 @@
+// This file contains some utility functions that replace instructions
+// that are not on the DOIT list of guaranteed constant-time instructions.
+
+// ROL is not DOIT, so use shifts.
+inline fn __ROL32(reg u32 x, inline int c) -> reg u32
+{
+  reg u32 xt xb;
+  xt = x;
+  xb = x;
+  xt <<= c;
+  xb >>= 32 - c;
+  xt |= xb;
+  return xt;
+}
+
+// ROR is also not DOIT.
+inline fn __ROR32(reg u32 x, inline int c) -> reg u32
+{
+  x = __ROL32(x, 32 - c);
+  return x;
+}
+
+// ROL is not DOIT, so use shifts.
+inline fn __ROL64(reg u64 x, inline int c) -> reg u64
+{
+  reg u64 xt xb;
+  xt = x;
+  xb = x;
+  xt <<= c;
+  xb >>= 64 - c;
+  xt |= xb;
+  return xt;
+}
+
+// ROR is also not DOIT.
+inline fn __ROR64(reg u64 x, inline int c) -> reg u64
+{
+  x = __ROL64(x, 64 - c);
+  return x;
+}
