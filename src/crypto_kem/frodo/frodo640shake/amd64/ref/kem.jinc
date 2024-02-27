@@ -117,7 +117,8 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
 
     stack u16[NNBAR] B;
     reg ptr u16[NNBAR] Bp;
-    stack u16[NBAR * NBAR] C V;
+    stack u16[NBAR * NBAR] C;
+    reg ptr u16[NBAR * NBAR] V;
     stack u8[BYTES_SEC] ss;
 
     pkp = pkp;
@@ -173,7 +174,8 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     B = __unpack_B(B, pk[BYTES_SEED_A:D * N]);
 
     // V = S'B + E''
-    V = __SB_plus_E(V, SEE[0:NNBAR], B, SEE[NNBAR * 2:NBAR * NBAR]);
+    V = SEE[NNBAR*2:NBAR*NBAR];
+    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
 
     // C = V + Encode(u)
     C = __encode(C, pkh_u_salt[BYTES_SEC:BYTES_SEC]);
@@ -206,7 +208,8 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     stack u8[BYTES_CT + BYTES_SEC] ct_k;
     stack u16[NNBAR] B Bp;
     reg ptr u16[NNBAR] Bpp;
-    stack u16[NBAR * NBAR] M C Cp V;
+    stack u16[NBAR * NBAR] M C Cp;
+    reg ptr u16[NBAR * NBAR] V;
     stack u8[BYTES_SEC * 2 + BYTES_SALT] pkh_u_salt;
     stack u8[1 + BYTES_SEED_SE + BYTES_SEC] seedSE_k;
     stack u8[BYTES_SEC] ss;
@@ -294,7 +297,8 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     //
     B = __unpack_B(B, pk[BYTES_SEED_A:BYTES_PK - BYTES_SEED_A]);
 
-    V = __SB_plus_E(V, SEE[0:NNBAR], B, SEE[NNBAR * 2:NBAR * NBAR]);
+    V = SEE[NNBAR*2:NBAR*NBAR];
+    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
 
     Cp = __encode(Cp, pkh_u_salt[BYTES_SEC:BYTES_SEC]);
     Cp = __matrix_add(Cp, V);
