@@ -267,7 +267,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     C = __unpack_C(C, ct_k[D * N:D * NBAR]);
 
     // M = C - B'S
-    M = __mul_BS(M, Bp, ST);
+    M = __mul_BS_opt(M, Bp, ST);
     M = __matrix_sub(M, C);
 
     pkh_u_salt[BYTES_SEC:BYTES_SEC] = __decode(pkh_u_salt[BYTES_SEC:BYTES_SEC], M);

@@ -335,3 +335,35 @@ fn __SB_plus_E_opt(
 
     return V;
 }
+
+fn __mul_BS_opt(
+  #spill_to_mmx reg ptr u16[NBAR * NBAR] M,
+  #spill_to_mmx reg ptr u16[NNBAR]B S)
+-> reg ptr u16[NBAR * NBAR] {
+    reg u64 k S_offset;
+    reg u32 sum mul t32;
+    inline int i j;
+
+    for i = 0 to NBAR {
+        for j = 0 to NBAR {
+            sum = 0;
+
+            k = 0;
+            while (k < N) {
+                mul = (32u)B[i * N + k];
+
+                S_offset = #LEA(j*N+k);
+                t32 = (32u)S[S_offset];
+                mul *= t32;
+
+                sum += mul;
+
+                k += 1;
+            }
+            sum &= (1 << D) - 1;
+            M[i * NBAR + j] = (16u)sum;
+        }
+    }
+
+    return M;
+}
