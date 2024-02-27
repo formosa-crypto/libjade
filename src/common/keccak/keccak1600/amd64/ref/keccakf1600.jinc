@@ -26,13 +26,18 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
 {
   inline int x;
   reg u64[5] d;
+  reg u64 t;
 
   for x = 0 to 5
   { // D[x] = C[x + 1]
     d[x] = c[(x + 1) % 5];
 
     // D[x] = ROT(D[x], 1)
-    _, _, d[x] = #ROL_64(d[x], 1);
+    // ROL is not DOIT, so use shifts.
+    t = d[x];
+    ?{}, t = #SHL_64(t, 1);
+    ?{}, d[x] = #SHR_64(d[x], 63);
+    ?{}, d[x] = #OR_64(t, d[x]);
 
     // D[x] ^= C[x-1]
     d[x] ^= c[(x - 1 + 5) % 5];
@@ -55,6 +60,7 @@ inline fn __rol_sum_ref(
 {
   inline int r x x_ y_;
   reg u64[5] b;
+  reg u64 t;
 
   for x = 0 to 5
   {
@@ -69,8 +75,14 @@ inline fn __rol_sum_ref(
     b[x] ^= d[x_];
 
     // B[x] = ROT( B[x], r[x',y'] );
+    // ROL is not DOIT, so use shifts.
     if(r != 0)
-    { _, _, b[x] = #ROL_64(b[x], r); }
+    {
+      t = b[x];
+      ?{}, t = #SHL_64(t, r);
+      ?{}, b[x] = #SHR_64(b[x], 64 - r);
+      ?{}, b[x] = #OR_64(t, b[x]);
+    }
 
   }
 

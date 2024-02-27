@@ -55,9 +55,15 @@ inline fn __store_ref(reg u64 out, stack u64[8] H)
   reg u64 v;
 
   for i=0 to 8
-  { v = H[i];
-    v = #BSWAP_64(v);
-    (u64)[out + i*8] = v;
+  { //BSWAP could be used here, but it is not DOIT.
+    (u8)[out + i*8] = H[u8 i*8 + 7];
+    (u8)[out + i*8 + 1] = H[u8 i*8 + 6];
+    (u8)[out + i*8 + 2] = H[u8 i*8 + 5];
+    (u8)[out + i*8 + 3] = H[u8 i*8 + 4];
+    (u8)[out + i*8 + 4] = H[u8 i*8 + 3];
+    (u8)[out + i*8 + 5] = H[u8 i*8 + 2];
+    (u8)[out + i*8 + 6] = H[u8 i*8 + 1];
+    (u8)[out + i*8 + 7] = H[u8 i*8];
   }
 }
 
@@ -71,10 +77,14 @@ inline fn __SHR_ref(reg u64 x, inline int c) -> reg u64
 
 inline fn __ROTR_ref(reg u64 x, inline int c) -> reg u64
 {
-  reg u64 r;
-  r = x;
-  _, _, r = #ROR_64(r, c);
-  return r;
+  reg u64 rt rb;
+  //ROR could be used here, but it is not DOIT.
+  rt = x;
+  rb = x;
+  ?{}, rt = #SHR_64(rt, c);
+  ?{}, rb = #SHL_64(rb, 64 - c);
+  ?{}, rt = #OR_64(rt, rb);
+  return rt;
 }
 
 //(x & y) ^ (!x & z)
@@ -202,9 +212,15 @@ fn _blocks_0_ref(reg ptr u64[8] _H, reg u64 in inlen) -> reg ptr u64[8], reg u64
   while(inlen >= 128)
   {
     for t=0 to 16
-    { v = (u64)[in + t*8];
-      v = #BSWAP_64(v);
-      W[t] = v;
+    { //BSWAP could be used here, but it is not DOIT.
+      W[u8 t*8] = (u8)[in + t*8 + 7];
+      W[u8 t*8 + 1] = (u8)[in + t*8 + 6];
+      W[u8 t*8 + 2] = (u8)[in + t*8 + 5];
+      W[u8 t*8 + 3] = (u8)[in + t*8 + 4];
+      W[u8 t*8 + 4] = (u8)[in + t*8 + 3];
+      W[u8 t*8 + 5] = (u8)[in + t*8 + 2];
+      W[u8 t*8 + 6] = (u8)[in + t*8 + 1];
+      W[u8 t*8 + 7] = (u8)[in + t*8];
     }
     in_s = in;
 
@@ -290,9 +306,16 @@ fn _blocks_1_ref(reg ptr u64[8] _H, reg ptr u64[32] sblocks, reg u64 nblocks) ->
     s_i = i;
     oblocks = i << 4;
     for t=0 to 16
-    { v = sblocks[(int)oblocks + t];
-      v = #BSWAP_64(v);
-      W[t] = v;
+    { 
+      //BSWAP could be used here, but it is not DOIT.
+      W[u8 t*8] = sblocks[u8 (int)oblocks*8 + t*8 + 7];
+      W[u8 t*8 + 1] = sblocks[u8 (int)oblocks*8 + t*8 + 6];
+      W[u8 t*8 + 2] = sblocks[u8 (int)oblocks*8 + t*8 + 5];
+      W[u8 t*8 + 3] = sblocks[u8 (int)oblocks*8 + t*8 + 4];
+      W[u8 t*8 + 4] = sblocks[u8 (int)oblocks*8 + t*8 + 3];
+      W[u8 t*8 + 5] = sblocks[u8 (int)oblocks*8 + t*8 + 2];
+      W[u8 t*8 + 6] = sblocks[u8 (int)oblocks*8 + t*8 + 1];
+      W[u8 t*8 + 7] = sblocks[u8 (int)oblocks*8 + t*8];
     }
     s_sblocks = sblocks;
 
