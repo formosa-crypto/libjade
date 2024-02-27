@@ -1,3 +1,4 @@
+from Jade require "common/doit.jinc" //__ROL64
 
 u64[24] KECCAK_RC =
 {  0x0000000000000001
@@ -59,22 +60,6 @@ inline fn __rhotates(inline int x y) -> inline int
   i = __index(x, y);
   r = __keccak_rho_offsets(i);
   return r;
-}
-
-inline fn __ROL64(reg u64 x, inline int c) -> reg u64
-{
-  reg u64 y;
-
-  if (c == 0)
-  { y = x; }
-  else
-  { 
-    // _, _, y = #ROL_64(x, c);
-    ?{}, y = #SHL_64(x, c);
-    ?{}, x = #SHR_64(x, 64 - c);
-    ?{}, y = #OR_64(y, x);
-    }
-  return y;
 }
 
 inline fn __theta_sum_ref(stack u64[25] a) -> reg u64[5]
