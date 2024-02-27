@@ -1,6 +1,6 @@
 fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR / 8] in) -> stack u16[NBAR * NBAR] {
     inline int i j;
-    reg u64 tmp tmp2 mask;
+    reg u64 t tmp tmp2 mask;
 
     mask = (1 << EXTRACTED_BITS) - 1;
 
@@ -14,9 +14,10 @@ fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR
         }
 
         for j = 0 to 8 {
-            out[i * NBAR + j] = tmp;
-            out[i * NBAR + j] &= mask;
-            out[i * NBAR + j] <<= D - EXTRACTED_BITS;
+            t = tmp;
+            t &= mask;
+            t <<= D - EXTRACTED_BITS;
+            out[i*NBAR + j] = (16u)t;
             tmp >>= EXTRACTED_BITS;
         }
     }
