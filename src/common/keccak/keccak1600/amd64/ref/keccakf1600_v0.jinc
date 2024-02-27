@@ -68,7 +68,12 @@ inline fn __ROL64(reg u64 x, inline int c) -> reg u64
   if (c == 0)
   { y = x; }
   else
-  { _, _, y = #ROL_64(x, c); }
+  { 
+    // _, _, y = #ROL_64(x, c);
+    ?{}, y = #SHL_64(x, c);
+    ?{}, x = #SHR_64(x, 64 - c);
+    ?{}, y = #OR_64(y, x);
+    }
   return y;
 }
 
@@ -96,7 +101,7 @@ inline fn __theta_rol_ref(reg u64[5] c) -> reg u64[5]
 
   for i = 0 to 5
   { d[i] = c[(i+1)%5];
-    _, _, d[i] = #ROL_64(d[i], 1);
+    d[i] = __ROL64(d[i], 1);
     d[i] ^= c[(i+4)%5];
   }
 
