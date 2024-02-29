@@ -6,20 +6,26 @@ inline fn __ROL32(reg u32 x, inline int c) -> reg u32
 {
   reg u32 xt xb;
   xt = x;
-  xb = x;
-  xt <<= c;
-  xb >>= 32 - c;
-  xt |= xb;
+  if (c != 0 && c != 32)
+  {
+    xb = x;
+    xt <<= c;
+    xb >>= 32 - c;
+    xt |= xb;
+  }
   return xt;
 }
 
 inline fn __ROL32x(reg u32 x, inline int c) -> reg u32
 {
   reg u32 y;
-  y = x;
-  x <<= c;
-  y >>= 32 - c;
-  x |= y;
+  if (c != 0 && c != 32)
+  {
+    y = x;
+    x <<= c;
+    y >>= 32 - c;
+    x |= y;
+  }
   return x;
 }
 
@@ -27,19 +33,25 @@ inline fn __ROL32y(reg u32 x, inline int c) -> reg u32
 {
   reg u32 y;
   y = x;
-  x <<= c;
-  y >>= 32 - c;
-  y |= x;
+  if (c != 0 && c != 32)
+  {
+    x <<= c;
+    y >>= 32 - c;
+    y |= x;
+  }
   return y;
 }
 
 inline fn __ROL32s(reg u32 x, inline int c) -> reg u32
 {
   stack u32 y;
-  y = x;
-  x <<= c;
-  y >>= 32 - c;
-  x |= y;
+  if (c != 0 && c != 32)
+  {
+    y = x;
+    x <<= c;
+    y >>= 32 - c;
+    x |= y;
+  }
   return x;
 }
 
@@ -61,10 +73,13 @@ inline fn __ROL64(reg u64 x, inline int c) -> reg u64
 {
   reg u64 xt xb;
   xt = x;
-  xb = x;
-  xt <<= c;
-  xb >>= 64 - c;
-  xt |= xb;
+  if (c != 0 && c != 64)
+  {
+    xb = x;
+    xt <<= c;
+    xb >>= 64 - c;
+    xt |= xb;
+  }
   return xt;
 }
 
