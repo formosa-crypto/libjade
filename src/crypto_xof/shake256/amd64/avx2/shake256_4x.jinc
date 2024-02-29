@@ -1,5 +1,5 @@
 
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_4x.jinc" // _keccakf1600_4x_avx2_
 from Jade require "common/keccak/common/fips202_params.jinc" // SHAKE256_RATE
 
 inline fn __shake256_squeezeblock4x(
@@ -14,6 +14,7 @@ inline fn __shake256_squeezeblock4x(
 {
   reg u256 t256;
   reg u128 t128;
+  reg u64 t64;
   inline int i;
 
   state = _keccakf1600_4x_avx2(state);
@@ -21,11 +22,13 @@ inline fn __shake256_squeezeblock4x(
 	for i = 0 to (SHAKE256_RATE / 8) {
     t256 = state[i];
     t128 = (128u)t256;
-		h0[u64 i] = #VMOVLPD(t128);
-		h1[u64 i] = #VMOVHPD(t128);
+		h0[u64 i] = (64u)t128;
+    t128 = #VPSRLDQ(t128, 8);
+		h1[u64 i] = (64u)t128;
     t128 = #VEXTRACTI128(t256, 1);
-		h2[u64 i] = #VMOVLPD(t128);
-		h3[u64 i] = #VMOVHPD(t128);
+		h2[u64 i] = (64u)t128;
+    t128 = #VPSRLDQ(t128, 8);
+		h3[u64 i] = (64u)t128;
 	}
 
   return state, h0, h1, h2, h3;
