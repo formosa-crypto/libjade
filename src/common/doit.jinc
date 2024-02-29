@@ -13,6 +13,42 @@ inline fn __ROL32(reg u32 x, inline int c) -> reg u32
   return xt;
 }
 
+inline fn __ROL32x(reg u32 x, inline int c) -> reg u32
+{
+  reg u32 y;
+  y = x;
+  x <<= c;
+  y >>= 32 - c;
+  x |= y;
+  return x;
+}
+
+inline fn __ROL32y(reg u32 x, inline int c) -> reg u32
+{
+  reg u32 y;
+  y = x;
+  x <<= c;
+  y >>= 32 - c;
+  y |= x;
+  return y;
+}
+
+inline fn __ROL32s(reg u32 x, inline int c) -> reg u32
+{
+  stack u32 y;
+  y = x;
+  x <<= c;
+  y >>= 32 - c;
+  x |= y;
+  return x;
+}
+
+inline fn __ROL32i(reg u32 x, inline int c) -> reg u32
+{
+  ?{}, x = #ROL_32(x, c);
+  return x;
+}
+
 // ROR is also not DOIT.
 inline fn __ROR32(reg u32 x, inline int c) -> reg u32
 {
