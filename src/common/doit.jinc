@@ -29,19 +29,6 @@ inline fn __ROL32x(reg u32 x, inline int c) -> reg u32
   return x;
 }
 
-inline fn __ROL32y(reg u32 x, inline int c) -> reg u32
-{
-  reg u32 y;
-  y = x;
-  if (c != 0 && c != 32)
-  {
-    x <<= c;
-    y >>= 32 - c;
-    y |= x;
-  }
-  return y;
-}
-
 inline fn __ROL32s(reg u32 x, inline int c) -> reg u32
 {
   stack u32 y;
@@ -87,5 +74,62 @@ inline fn __ROL64(reg u64 x, inline int c) -> reg u64
 inline fn __ROR64(reg u64 x, inline int c) -> reg u64
 {
   x = __ROL64(x, 64 - c);
+  return x;
+}
+
+// POPCNT is not DOIT.
+inline fn __POPCNT32(reg u32 i) -> reg u32
+{
+  reg u32 x y;
+  
+  // i = i - ((i >> 1) & 0x55555555);        // add pairs of bits
+  x = i >> 1;
+  x &= 0x55555555;
+  i -= x;
+  
+  // i = (i & 0x33333333) + ((i >> 2) & 0x33333333);  // quads
+  x = i & 0x33333333;
+  y = i >> 2;
+  y &= 0x33333333;
+  i = x + y;
+
+  // i = (i + (i >> 4)) & 0x0f0f0f0f;        // groups of 8
+  x = i >> 4;
+  x += i;
+  i = x & 0x0f0f0f0f;
+
+  // i *= 0x01010101;                        // horizontal sum of bytes
+  i *= 0x01010101;
+  // i >> 24;                                // return just that top byte
+  i >>= 24;
+  return i;
+}
+
+inline fn __POPCNT64(reg u64 i) -> reg u64
+{
+  reg u64 x y;
+  // i -= (i >> 1) & 0x5555555555555555;             //put count of each 2 bits into those 2 bits
+  x = i;
+  x >>= 1;
+  x &= 0x5555555555555555;
+  i -= x;
+
+  // i = (i & 0x3333333333333333) + ((i >> 2) & 0x3333333333333333); //put count of each 4 bits into those 4 bits 
+  x = i;
+  x &= 0x3333333333333333;
+  y = i >> 2;
+  y &= 0x3333333333333333;
+  i = x + y;
+
+  // i = (i + (i >> 4)) & 0x0f0f0f0f0f0f0f0f;        //put count of each 8 bits into those 8 bits 
+  x = i;
+  x >>= 4;
+  x += i;
+  x &= 0x0f0f0f0f0f0f0f0f;
+
+  // (i * 0x0101010101010101) >> 56;  //returns left 8 bits of x + (x<<8) + (x<<16) + (x<<24) + ... 
+  x *= 0x0101010101010101;
+  x >>= 56;
+
   return x;
 }
