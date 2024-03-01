@@ -59,7 +59,7 @@ inline fn __line_ref_32(reg u32[16] k, inline int a b c r) -> reg u32[16]
   reg u32 t;
   t  = k[b];
   t += k[c];
-  _, _, t = #ROL_32(t, r);
+  t = __ROL32x(t, r);
   k[a] ^= t;
   return k;
 }
@@ -75,58 +75,79 @@ inline fn __quarter_round_ref_32(reg u32[16] k, inline int a b c d) -> reg u32[1
 }
 
 
-inline fn __column_round_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+inline fn __column_round_ref_32(reg u32[16] k, stack u32 k2 k3 k6) -> reg u32[16], stack u32, stack u32, stack u32
 {
-  stack u32 k12 k13;
+  stack u32 k9 k12 k13;
 
-  k = __quarter_round_ref_32(k,  0,  4,  8, 12); k12 = k[12]; k[2] = k2;
-  k = __quarter_round_ref_32(k,  5,  9, 13,  1); k13 = k[13]; k[3] = k3;
-  k = __quarter_round_ref_32(k, 10, 14,  2,  6);
+  k = __quarter_round_ref_32(k,  0,  4,  8, 12); k12 = k[12];
+  k = __quarter_round_ref_32(k,  5,  9, 13,  1); k9 = k[9]; k13 = k[13]; k[2] = k2; k[6] = k6;
+  k = __quarter_round_ref_32(k, 10, 14,  2,  6); k[3] = k3;
   k = __quarter_round_ref_32(k, 15,  3,  7, 11);
 
-  return k, k12, k13;
+  return k, k9, k12, k13;
 }
 
 
-inline fn __line_round_ref_32(reg u32[16] k, stack u32 k12 k13) -> reg u32[16], stack u32, stack u32
+inline fn __line_round_ref_32(reg u32[16] k, stack u32 k9 k12 k13) -> reg u32[16], stack u32, stack u32, stack u32
 {
-  stack u32 k2 k3;
+  stack u32 k2 k3 k6;
 
-  k = __quarter_round_ref_32(k,  0,  1,  2,  3); k2 = k[2]; k[12] = k12;
-  k = __quarter_round_ref_32(k,  5,  6,  7,  4); k3 = k[3]; k[13] = k13;
-  k = __quarter_round_ref_32(k, 10, 11,  8,  9);
+  k = __quarter_round_ref_32(k,  0,  1,  2,  3); k2 = k[2]; k3 = k[3];
+  k = __quarter_round_ref_32(k,  5,  6,  7,  4); k6 = k[6]; k[9] = k9;
+  k = __quarter_round_ref_32(k, 10, 11,  8,  9); k[12] = k12; k[13] = k13;
   k = __quarter_round_ref_32(k, 15, 12, 13, 14);
 
-  return k, k2, k3;
+  return k, k2, k3, k6;
 }
 
 
-inline fn __double_round_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32, stack u32
+// The function below requires the spillage of some state on the stack.
+//          ┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬─────────────────┐                  
+//          │ 0│ 1│ 2│ 3│ 4│ 5│ 6│ 7│ 8│ 9│10│11│12│13│14│15│  Spilled values │                  
+// ┌────────┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼─────────────────┤  + - Value used  
+// │ Column │ +│  │ S│ S│ +│  │ S│  │ +│  │  │  │ +│  │  │  │  3              │                  
+// │ round  ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │  S - Stack spills
+// │        │  │ +│ S│ S│  │ +│ S│  │  │ +│  │  │ S│ +│  │  │  4              │                  
+// │        ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │        │  │  │ +│ S│  │  │ +│  │  │ S│ +│  │ S│ S│ +│  │  4              │                  
+// │        ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │        │  │  │  │ +│  │  │  │ +│  │ S│  │ +│ S│ S│  │ +│  3              │                  
+// ├────────┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │ Line   │ +│ +│ +│ +│  │  │  │  │  │ S│  │  │ S│ S│  │  │  3              │                  
+// │ round  ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │        │  │  │ S│ S│ +│ +│ +│ +│  │ S│  │  │ S│ S│  │  │  5              │                  
+// │        ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │        │  │  │ S│ S│  │  │ S│  │ +│ +│ +│ +│ S│ S│  │  │  5              │                  
+// │        ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                 │                  
+// │        │  │  │ S│ S│  │  │ S│  │  │  │  │  │ +│ +│ +│ +│  3              │                  
+// └────────┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴─────────────────┘                  
+//
+inline fn __double_round_ref_32(reg u32[16] k, stack u32 k2 k3 k6) -> reg u32[16], stack u32, stack u32, stack u32
 {
-  stack u32 k12 k13;
+  stack u32 k9 k12 k13;
 
-  k, k12, k13 = __column_round_ref_32(k, k2, k3);
-  k, k2,  k3  = __line_round_ref_32(k, k12, k13);
-  return k, k2, k3;
+  k, k9, k12, k13 = __column_round_ref_32(k, k2, k3, k6);
+  k, k2,  k3,  k6 = __line_round_ref_32(k, k9, k12, k13);
+  return k, k2, k3, k6;
 }
 
 
 inline fn __rounds_ref_32(reg u32[16] k, stack u32 k2 k3) -> reg u32[16], stack u32
 {
-  stack u32 s_c k15;
+  stack u32 s_c k15 k6;
   reg u32 c;
+
+  k6 = k[6];
 
   c = 10;
   while
   { s_c = c;
-    k, k2, k3 = __double_round_ref_32(k, k2, k3);
+    k, k2, k3, k6 = __double_round_ref_32(k, k2, k3, k6);
     c = s_c;
     ?{}, c = #DEC_32(c);
   } (c > 0)
 
-  k15 = k[15];
-  k[2] = k2;
-  k[3] = k3;
+  k15 = k[15]; k[2] = k2; k[3] = k3; k[6] = k6;
   return k, k15;
 }
 

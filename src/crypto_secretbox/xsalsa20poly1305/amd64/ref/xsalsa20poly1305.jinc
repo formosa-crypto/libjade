@@ -61,6 +61,9 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
     clen = #LEA(clen - 32);
 
     r = __poly1305_verify_ref_k(tag, ct, clen, subkey_p);
+    // We declassify the result of tag verification, as the function returns it anyway.
+    // This is a hack due to the annotation getting lost if put directly on the inline function.
+    #declassify r = r;
 
     if(r == 0)
     { m = m_s;
