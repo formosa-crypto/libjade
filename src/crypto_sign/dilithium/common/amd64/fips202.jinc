@@ -1,3 +1,4 @@
+from Jade require "common/doit.jinc"
 /* -- Stolen and modified from the Kyber repo -- */
 
 param int SHAKE128_RATE = 168;
@@ -24,7 +25,7 @@ fn theta(reg ptr u64[25] a) -> reg ptr u64[25] {
 
   for x = 0 to 5 {
     d[x] = c[(x + 1) % 5];
-    ?{}, d[x] = #ROL_64(d[x], 1);
+    d[x] = __ROL64(d[x], 1);
     d[x] ^= c[(x + 4) % 5];
   }
 
@@ -66,7 +67,7 @@ fn rho(reg ptr u64[25] a) -> reg ptr u64[25] {
     for y = 0 to 5 {
       i = index(x, y);
       z = keccakRhoOffsets(i);
-      _, _, a[i] = #ROL_64(a[i], z);
+      a[i] = __ROL64(a[i], z);
     }
   }
 
