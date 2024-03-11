@@ -1,0 +1,331 @@
+
+require "keccakf1600_generic.jinc"
+
+u256[24] KECCAK1600_RC_AVX2 =
+{ (4u64)[0x0000000000000001, 0x0000000000000001, 0x0000000000000001, 0x0000000000000001],
+  (4u64)[0x0000000000008082, 0x0000000000008082, 0x0000000000008082, 0x0000000000008082],
+  (4u64)[0x800000000000808a, 0x800000000000808a, 0x800000000000808a, 0x800000000000808a],
+  (4u64)[0x8000000080008000, 0x8000000080008000, 0x8000000080008000, 0x8000000080008000],
+  (4u64)[0x000000000000808b, 0x000000000000808b, 0x000000000000808b, 0x000000000000808b],
+  (4u64)[0x0000000080000001, 0x0000000080000001, 0x0000000080000001, 0x0000000080000001],
+  (4u64)[0x8000000080008081, 0x8000000080008081, 0x8000000080008081, 0x8000000080008081],
+  (4u64)[0x8000000000008009, 0x8000000000008009, 0x8000000000008009, 0x8000000000008009],
+  (4u64)[0x000000000000008a, 0x000000000000008a, 0x000000000000008a, 0x000000000000008a],
+  (4u64)[0x0000000000000088, 0x0000000000000088, 0x0000000000000088, 0x0000000000000088],
+  (4u64)[0x0000000080008009, 0x0000000080008009, 0x0000000080008009, 0x0000000080008009],
+  (4u64)[0x000000008000000a, 0x000000008000000a, 0x000000008000000a, 0x000000008000000a],
+  (4u64)[0x000000008000808b, 0x000000008000808b, 0x000000008000808b, 0x000000008000808b],
+  (4u64)[0x800000000000008b, 0x800000000000008b, 0x800000000000008b, 0x800000000000008b],
+  (4u64)[0x8000000000008089, 0x8000000000008089, 0x8000000000008089, 0x8000000000008089],
+  (4u64)[0x8000000000008003, 0x8000000000008003, 0x8000000000008003, 0x8000000000008003],
+  (4u64)[0x8000000000008002, 0x8000000000008002, 0x8000000000008002, 0x8000000000008002],
+  (4u64)[0x8000000000000080, 0x8000000000000080, 0x8000000000000080, 0x8000000000000080],
+  (4u64)[0x000000000000800a, 0x000000000000800a, 0x000000000000800a, 0x000000000000800a],
+  (4u64)[0x800000008000000a, 0x800000008000000a, 0x800000008000000a, 0x800000008000000a],
+  (4u64)[0x8000000080008081, 0x8000000080008081, 0x8000000080008081, 0x8000000080008081],
+  (4u64)[0x8000000000008080, 0x8000000000008080, 0x8000000000008080, 0x8000000000008080],
+  (4u64)[0x0000000080000001, 0x0000000080000001, 0x0000000080000001, 0x0000000080000001],
+  (4u64)[0x8000000080008008, 0x8000000080008008, 0x8000000080008008, 0x8000000080008008]
+};
+
+u256 ROL56 = 0x181F1E1D1C1B1A191017161514131211080F0E0D0C0B0A090007060504030201;
+u256 ROL8  = 0x1E1D1C1B1A19181F16151413121110170E0D0C0B0A09080F0605040302010007;
+
+// C[x] = A[x,0] ^ A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+inline fn keccakf1600_4x_theta_sum(reg ptr u256[25] a) -> reg u256[5]
+{
+  inline int x y;
+  reg u256[5] c;
+
+  // C[x] = A[x, 0]
+  for x=0 to 5
+  { c[x] = a[x + 0]; }
+
+  // C[x] ^= A[x,1] ^ A[x,2] ^ A[x,3] ^ A[x,4]
+  for y=1 to 5
+  { for x=0 to 5
+    { c[x] ^= a[x + y*5]; }
+  }
+
+  return c;
+}
+
+inline fn keccakf1600_4x_rol(reg u256[5] a, inline int x r, reg u256 r8 r56) -> reg u256[5]
+{
+	reg u256 t;
+
+  if(r == 8)
+  {	a[x] = #VPSHUFB_256(a[x], r8); }
+  else { if(r == 56)
+  { a[x] = #VPSHUFB_256(a[x], r56); }
+  else
+  { t     = #VPSLL_4u64(a[x], r);
+	  a[x]  = #VPSRL_4u64(a[x], 64 - r);
+	  a[x] |= t; }
+  }
+
+	return a; 
+}
+
+// D[x] = C[x-1] ^ ROT(C[x+1], 1) 
+inline fn keccakf1600_4x_theta_rol(reg u256[5] c, reg u256 r8 r56) -> reg u256[5]
+{
+  inline int x;
+  reg u256[5] d;
+
+  for x = 0 to 5
+  { // D[x] = C[x + 1]
+    d[x] = c[(x + 1) % 5];
+
+    // D[x] = ROT(D[x], 1)
+    d = keccakf1600_4x_rol(d, x, 1, r8, r56);
+
+    // D[x] ^= C[x-1]
+    d[x] ^= c[(x - 1 + 5) % 5];
+  }
+
+  return d;
+}
+
+
+// B[x] = ROT( (A[x',y'] ^ D[x']), r[x',y'] ) with (x',y') = M^-1 (x,y)
+//
+// M = (0 1)  M^-1 = (1 3)  x' = 1x + 3y
+//     (2 3)         (1 0)  y' = 1x + 0y
+//
+inline fn keccakf1600_4x_rol_sum(
+  reg ptr u256[25] a,
+  reg u256[5] d,
+  inline int y,
+  reg u256 r8 r56
+) -> reg u256[5]
+{
+  inline int r x x_ y_;
+  reg u256[5] b;
+
+  for x = 0 to 5
+  {
+    x_ = (x + 3*y) % 5;
+    y_ = x;
+    r = keccakf1600_rhotates(x_, y_);
+
+    // B[x] = A[x',y']
+    b[x] = a[x_ + y_*5];
+
+    // B[x] ^= D[x'];
+    b[x] ^= d[x_];
+
+    // B[x] = ROT( B[x], r[x',y'] );
+    if(r != 0)
+    { b = keccakf1600_4x_rol(b, x, r, r8, r56); }
+  }
+
+  return b;
+}
+
+
+// E[x, y] = B[x] ^ ( (!B[x+1]) & B[x+2] )
+// -- when x and y are 0: E[0,0] ^= RC[i];
+inline fn keccakf1600_4x_set_row(
+  reg ptr u256[25] e,
+  reg u256[5] b,
+  inline int y,
+  reg u256 rc
+) -> reg ptr u256[25]
+{
+  inline int x x1 x2;
+  reg u256 t;
+
+  for x=0 to 5
+  { 
+    x1 = (x + 1) % 5;
+    x2 = (x + 2) % 5;
+
+    t = #VPANDN_256(b[x1], b[x2]);
+
+    t ^= b[x];
+    if( x==0 && y==0 ){ t ^= rc; }
+    e[x + y*5] = t;
+  }
+
+  return e;
+}
+
+
+fn keccakf1600_4x_round(reg ptr u256[25] e a, reg u256 rc r8 r56) -> reg ptr u256[25]
+{
+  inline int y;
+  reg u256[5] b c d;
+
+  c = keccakf1600_4x_theta_sum(a);
+  d = keccakf1600_4x_theta_rol(c, r8, r56);
+
+  for y = 0 to 5
+  { b = keccakf1600_4x_rol_sum(a, d, y, r8, r56);
+    e = keccakf1600_4x_set_row(e, b, y, rc);
+  }
+
+  return e;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+inline fn __keccakf1600_4x(reg ptr u256[25] a) -> reg ptr u256[25]
+{
+  #mmx reg ptr u256[25] a_s;
+
+  reg ptr u256[24] RC;
+
+  stack u256[25] s_e;
+  reg ptr u256[25] e;
+
+  reg u256 rc r8 r56;
+  reg u64 c;
+
+  RC = KECCAK1600_RC_AVX2;
+  e = s_e;
+  r8 = ROL8;
+  r56 = ROL56;
+
+  c = 0;
+  while(c < (KECCAK_ROUNDS*32))
+  {
+    rc = RC.[(int) c];
+    e = keccakf1600_4x_round(e, a, rc, r8, r56);
+
+    // just an expensive pointer swap (#todo request feature)
+    a_s = a; s_e = e;
+    a = a_s; e = s_e;
+
+    rc = RC.[(int) c + 32];
+    a = keccakf1600_4x_round(a, e, rc, r8, r56);
+
+    // just an expensive pointer swap (#todo request feature)
+    a_s = a; s_e = e;
+    a = a_s; e = s_e;
+
+    c += 64;
+  } 
+
+  return a;
+}
+
+fn _keccakf1600_4x_(reg ptr u256[25] a) -> reg ptr u256[25]
+{
+  a = __keccakf1600_4x(a);
+  return a;
+}
+
+inline fn _keccakf1600_4x(reg ptr u256[25] a) -> reg ptr u256[25]
+{
+  a = a;
+  a = _keccakf1600_4x_(a);
+  a = a;
+  return a;
+}
+
+// pack 4 keccak states (st25) into a 4-way state (st4x)
+inline fn __u256x4_4u64x4
+( reg u256 x0 x1 x2 x3
+) -> reg u256, reg u256, reg u256, reg u256 {
+  // x0 = l00 l01  l02 l03
+  // x1 = l10 l11  l12 l13
+  // x2 = l20 l21  l22 l23
+  // x3 = l30 l31  l32 l33
+  reg u256 y0, y1, y2, y3;
+  y0 = #VPUNPCKL_4u64(x0, x1);	// y0 = l00 l10  l02 l12
+  y1 = #VPUNPCKH_4u64(x0, x1);	// y1 = l01 l11  l03 l13
+  y2 = #VPUNPCKL_4u64(x2, x3);	// y2 = l20 l30  l22 l32
+  y3 = #VPUNPCKH_4u64(x2, x3);	// y3 = l21 l31  l23 l33
+
+  x0 = #VPERM2I128(y0, y2, 0x20);	// x0 = l00 l10  l20 l30
+  x1 = #VPERM2I128(y1, y3, 0x20);	// x1 = l01 l11  l21 l31
+  x2 = #VPERM2I128(y0, y2, 0x31);	// x2 = l02 l12  l22 l32
+  x3 = #VPERM2I128(y1, y3, 0x31);	// x3 = l03 l13  l23 l33
+
+  return x0, x1, x2, x3;
+}
+
+inline fn __st4x_pack
+( reg mut ptr u256[25] st4x
+, reg const ptr u64[25] st0 st1 st2 st3
+) -> reg ptr u256[25] {
+  inline int i;
+  reg u256 x0, x1, x2, x3;
+  reg u64 t0, t1, t2, t3;
+  for i = 0 to 6 {
+    x0 = st0[u256 i];
+    x1 = st1[u256 i];
+    x2 = st2[u256 i];
+    x3 = st3[u256 i];
+    x0, x1, x2, x3 = __u256x4_4u64x4(x0, x1, x2, x3);
+    st4x[4*i+0] = x0;
+    st4x[4*i+1] = x1;
+    st4x[4*i+2] = x2;
+    st4x[4*i+3] = x3;
+  }
+  t0 = st0[24];
+  t1 = st1[24];
+  t2 = st2[24];
+  t3 = st3[24];
+  st4x[u64 4*24+0] = t0;
+  st4x[u64 4*24+1] = t1;
+  st4x[u64 4*24+2] = t2;
+  st4x[u64 4*24+3] = t3;
+
+  return st4x;
+}
+
+
+
+// extracts 4 keccak states (st25) from a 4-way state (st4x)
+inline fn __4u64x4_u256x4
+( reg u256 y0 y1 y2 y3
+) -> reg u256, reg u256, reg u256, reg u256 {
+  // y0 = l00 l10  l20 l30
+  // y1 = l01 l11  l21 l31
+  // y2 = l02 l12  l22 l32
+  // y3 = l03 l13  l23 l33
+  reg u256 x0, x1, x2, x3;
+  x0 = #VPERM2I128(y0, y2, 0x20);	// x0 = l00 l10  l02 l12
+  x1 = #VPERM2I128(y1, y3, 0x20);	// x1 = l01 l11  l03 l13
+  x2 = #VPERM2I128(y0, y2, 0x31);	// x2 = l20 l30  l22 l32
+  x3 = #VPERM2I128(y1, y3, 0x31);	// x3 = l21 l31  l23 l33
+
+  y0 = #VPUNPCKL_4u64(x0, x1);	// y0 = l00 l01  l02 l03
+  y1 = #VPUNPCKH_4u64(x0, x1);	// y1 = l10 l11  l12 l13
+  y2 = #VPUNPCKL_4u64(x2, x3);	// y2 = l20 l21  l22 l23
+  y3 = #VPUNPCKH_4u64(x2, x3);	// y3 = l30 l31  l32 l33
+
+  return y0, y1, y2, y3;
+}
+
+inline fn __st4x_unpack
+( reg mut ptr u64[25] st0 st1 st2 st3
+, reg const ptr u256[25] st4x
+) -> reg ptr u64[25], reg ptr u64[25], reg ptr u64[25], reg ptr u64[25] {
+  inline int i;
+  reg u256 x0, x1, x2, x3;
+  reg u64 t0, t1, t2, t3;
+  for i = 0 to 6 {
+    x0 = st4x[u256 4*i+0];
+    x1 = st4x[u256 4*i+1];
+    x2 = st4x[u256 4*i+2];
+    x3 = st4x[u256 4*i+3];
+    x0, x1, x2, x3 = __4u64x4_u256x4(x0, x1, x2, x3);
+    st0.[u256 4*8*i] = x0;
+    st1.[u256 4*8*i] = x1;
+    st2.[u256 4*8*i] = x2;
+    st3.[u256 4*8*i] = x3;
+  }
+  t0 = st4x[u64 4*24+0];
+  t1 = st4x[u64 4*24+1];
+  t2 = st4x[u64 4*24+2];
+  t3 = st4x[u64 4*24+3];
+  st0.[u64 8*24] = t0;
+  st1.[u64 8*24] = t1;
+  st2.[u64 8*24] = t2;
+  st3.[u64 8*24] = t3;
+
+  return st0, st1, st2, st3;
+}

@@ -1,130 +1,802 @@
+require "keccak/keccakf1600_4x_avx2_compact.jinc"
+require "keccak/keccakf1600_avx2.jinc"
 require "params.jinc"
-require "shuffle.jinc"
-require "fips202.jinc"
-require "params.jinc"
+require "gen_matrix_globals.jinc"
 
-inline
-fn __rej_uniform(stack u16[MLKEM_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] buf) ->  reg u64, stack u16[MLKEM_N]
+// a < b && c < d
+inline fn comp_u64_l_int_and_u64_l_int(
+  reg u64 a,
+  inline int b,
+  reg u64 c,
+  inline int d) 
+  ->
+  reg bool
 {
-  reg u16 val1 val2;
-  reg u16 t;
-  reg u64 pos ctr;
+  reg bool c1 c2 c3;
+  reg u8 bc1 bc2;
 
+  ?{ "<u" = c1 } = #CMP_64(a, b);
+  // if(c1) <=> if(a <u b)
+  bc1 = #SETcc(c1);
 
-  ctr = offset;
-  pos = 0;
+  ?{ "<u" = c2 } = #CMP_64(c, d);
+  // if(c2) <=> if(a <u c)
+  bc2 = #SETcc(c2);
 
-  while (pos < SHAKE128_RATE - 2) {
-    if ctr < MLKEM_N {
-      val1 = (16u)buf[pos];
-      t   = (16u)buf[pos + 1];
-      val2 = t;
-      val2 >>= 4;
-      t &= 0x0F;
-      t <<= 8;
-      val1 |= t;
+  // zf == 1 => bc1 & bc2 == 0 => cond = false
+  // zf == 0 => bc1 & bc2 == 1 => cond = true
+  ?{ "!=" = c3 } = #TEST_8(bc1, bc2); 
 
-      t   = (16u)buf[pos + 2];
-      t <<= 4;
-      val2 |= t;
-      pos += 3;
-
-      reg bool cond;
-      #[declassify]
-      cond = val1 < MLKEM_Q;
-      if cond {
-        rp[ctr] = val1;
-        ctr += 1;
-      }
-
-      #[declassify]
-      cond = val2 < MLKEM_Q;
-      if cond {
-        if(ctr < MLKEM_N)
-        {
-          rp[ctr] = val2;
-          ctr += 1;
-        }
-      }
-    } else {
-      pos = SHAKE128_RATE;
-    }
-  }
-
-  return ctr, rp;
+  return c3;
 }
 
-inline
-fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[MLKEM_K*MLKEM_VECN]
+// BUF_size per entry: 21(rate) + 21(rate) + 25(keccak_state) + 1(pad) 
+param int BUF_size = (3 * 21) + 4 + 1; //5; 
+
+// deinterleave u64-lanes of 4 u256 regs
+fn _4u64x4_u256x4(reg u256 y0 y1 y2 y3) -> reg u256, reg u256, reg u256, reg u256 {
+  reg u256 x0, x1, x2, x3;
+  x0 = #VPERM2I128(y0, y2, 0x20);
+  x1 = #VPERM2I128(y1, y3, 0x20);
+  x2 = #VPERM2I128(y0, y2, 0x31);
+  x3 = #VPERM2I128(y1, y3, 0x31);
+
+  y0 = #VPUNPCKL_4u64(x0, x1);	// y0 = l00 l01  l02 l03
+  y1 = #VPUNPCKH_4u64(x0, x1);	// y1 = l10 l11  l12 l13
+  y2 = #VPUNPCKL_4u64(x2, x3);	// y2 = l20 l21  l22 l23
+  y3 = #VPUNPCKH_4u64(x2, x3);	// y3 = l30 l31  l32 l33
+
+  return y0, y1, y2, y3;
+}
+
+// extracts 4 keccak states (st25) from a 4-way state (st4x)
+inline fn __st4x_unpack_at
+( reg mut ptr u64[4*BUF_size] buf
+, reg const ptr u256[25] st4x
+, reg u64 offset // in bytes
+) -> reg ptr u64[4*BUF_size] {
+  inline int i;
+  reg u256 x0, x1, x2, x3;
+  reg u64 t0, t1, t2, t3;
+  for i = 0 to 6 {
+    x0 = st4x[u256 4*i+0];
+    x1 = st4x[u256 4*i+1];
+    x2 = st4x[u256 4*i+2];
+    x3 = st4x[u256 4*i+3];
+    x0, x1, x2, x3 = _4u64x4_u256x4(x0, x1, x2, x3);
+    buf.[u256 offset + 4*8*i + 0*8*BUF_size] = x0;
+    buf.[u256 offset + 4*8*i + 1*8*BUF_size] = x1;
+    buf.[u256 offset + 4*8*i + 2*8*BUF_size] = x2;
+    buf.[u256 offset + 4*8*i + 3*8*BUF_size] = x3;
+  }
+  t0 = st4x[u64 4*24+0];
+  t1 = st4x[u64 4*24+1];
+  t2 = st4x[u64 4*24+2];
+  t3 = st4x[u64 4*24+3];
+  buf.[u64 offset + 8*24 + 0*8*BUF_size] = t0;
+  buf.[u64 offset + 8*24 + 1*8*BUF_size] = t1;
+  buf.[u64 offset + 8*24 + 2*8*BUF_size] = t2;
+  buf.[u64 offset + 8*24 + 3*8*BUF_size] = t3;
+
+  return buf;
+}
+
+inline fn __stavx2_pack_at
+( reg const ptr u64[BUF_size] st
+, reg u64 offset // in bytes
+) -> reg u256[7] {
+  // 3*r256 (evitáveis...)
+  reg u256[7] state;
+  reg u256 t256_0 t256_1 t256_2;
+  reg u128 t128_0, t128_1;
+  reg u64 r;
+
+  // [ 0 0 0 0 ]
+  state[0] = #VPBROADCAST_4u64(st.[u64 8*0 + offset]);
+  // [ 1 2 3 4 ]
+  state[1] = st.[u256 1*8 + offset];
+  // [ 5 - ]
+  t128_0 = #VMOV(st.[u64 5*8 + offset]);
+  // [ 6 7 8 9 ]
+  state[3] = st.[u256 6*8 + offset];
+  // [ 10 - ]
+  t128_1 = #VMOV(st.[u64 10*8 + offset]);
+  // [ 11 12 13 14 ]
+  state[4] = st.[u256 11*8 + offset];
+  // [ 5 15 ]
+  r = st.[u64 15*8 + offset];
+  t128_0 = #VPINSR_2u64(t128_0, r, 1);
+  // [ 16 17 18 19 ]
+  state[5] = st.[u256 16*8 + offset];
+  // [ 10 20 ]
+  r = st.[u64 20*8 + offset];
+  t128_1 = #VPINSR_2u64(t128_1, r, 1);
+  // alternative not currently supported: VPGATHERDQ for filling state[2]
+  // [ 10 20 5 15 ]
+  state[2] = (2u128)[t128_0, t128_1];
+  // [ 21 22 23 24 ]
+  state[6] = st.[u256 21*8 + offset];
+
+  // [ 16 7 8 19 ]
+  t256_0 = #VPBLEND_8u32(state[3], state[5], (8u1)[1,1,0,0,0,0,1,1]);
+  // [ 11 22 23 14 ]
+  t256_1 = #VPBLEND_8u32(state[6], state[4], (8u1)[1,1,0,0,0,0,1,1]);
+  // [ 6 12 13 9 ]
+  t256_2 = #VPBLEND_8u32(state[4], state[3], (8u1)[1,1,0,0,0,0,1,1]);
+
+  // [ 16 7 23 14 ]
+  state[3] = #VPBLEND_8u32(t256_0, t256_1, (8u1)[1,1,1,1,0,0,0,0]);
+  // [ 11 22 8 19 ]
+  state[4] = #VPBLEND_8u32(t256_1, t256_0, (8u1)[1,1,1,1,0,0,0,0]);
+
+  // [ 21 17 18 24 ]
+  t256_0 = #VPBLEND_8u32(state[5], state[6], (8u1)[1,1,0,0,0,0,1,1]);
+
+  // [ 21 17 13 9 ]
+  state[5] = #VPBLEND_8u32(t256_0, t256_2, (8u1)[1,1,1,1,0,0,0,0]);
+  // [ 6 12 18 24 ]
+  state[6] = #VPBLEND_8u32(t256_2, t256_0, (8u1)[1,1,1,1,0,0,0,0]);
+
+  // [ 0  0  0  0  ]
+  // [ 1  2  3  4  ]
+  // [ 10 20 5  15 ]
+  // [ 16 7  23 14 ]
+  // [ 11 22 8  19 ]
+  // [ 21 17 13 9  ]
+  // [ 6  12 18 24 ]  
+  return state;
+}
+
+fn _stavx2_pack_at
+( reg const ptr u64[BUF_size] st
+, reg u64 offset // in bytes
+) -> reg u256[7] {
+  reg u256[7] stavx2;
+  stavx2 = __stavx2_pack_at(st, offset);
+  return stavx2;
+}
+
+inline fn __stavx2_unpack_at
+( reg mut ptr u64[BUF_size] buf
+, reg u64 offset // in bytes
+, reg u256[7] state
+) -> reg ptr u64[BUF_size] {
+  // 5*r256 + 2*r128(evitáveis) (+7*r256)
+  reg u256 t256_0 t256_1 t256_2 t256_3 t256_4;
+  reg u128 t128_0, t128_1;
+
+  // [ 0, 0 ]
+  t128_0 = (128u) state[0];
+  buf.[u64 0*8 + offset] = #VMOVLPD(t128_0);
+  // [ 1, 2, 3, 4 ]
+  buf.[u256 1*8 + offset] = state[1];
+
+  // [ 16, 7, 8, 19 ]
+  t256_0 = #VPBLEND_8u32(state[3], state[4], (8u1)[1,1,1,1,0,0,0,0]);
+  // [ 11, 22, 23, 14 ]
+  t256_1 = #VPBLEND_8u32(state[4], state[3], (8u1)[1,1,1,1,0,0,0,0]);
+  // [ 21, 17, 18, 24 ]
+  t256_2 = #VPBLEND_8u32(state[5], state[6], (8u1)[1,1,1,1,0,0,0,0]);
+  // [ 6, 12, 13, 9 ]
+  t256_3 = #VPBLEND_8u32(state[6], state[5], (8u1)[1,1,1,1,0,0,0,0]);
+
+  // [ 5, 15 ]
+  t128_1 = #VEXTRACTI128(state[2], 1);
+  buf.[u64 5*8 + offset] = #VMOVLPD(t128_1);
+
+  // [ 6, 7, 8, 9 ]
+  t256_4 = #VPBLEND_8u32(t256_0, t256_3, (8u1)[1,1,0,0,0,0,1,1]);
+  buf.[u256 6*8 + offset] = t256_4;
+
+  // [ 10, 20 ]
+  t128_0 = (128u) state[2];
+  buf.[u64 10*8 + offset] = #VMOVLPD(t128_0);
+  
+  // [ 11, 12, 13, 14 ]
+  t256_4 = #VPBLEND_8u32(t256_3, t256_1, (8u1)[1,1,0,0,0,0,1,1]);
+  buf.[u256 11*8 + offset] = t256_4;
+
+  // [ 15 ]
+  buf.[u64 15*8 + offset] = #VMOVHPD(t128_1);
+  
+  // [ 16, 17, 18, 19 ]
+  t256_4 = #VPBLEND_8u32(t256_2, t256_0, (8u1)[1,1,0,0,0,0,1,1]);
+  buf.[u256 16*8 + offset] = t256_4;
+
+  // [ 20 ]
+  buf.[u64 20*8 + offset] = #VMOVHPD(t128_0);
+
+  // [ 21, 22, 23, 24 ]
+  t256_4 = #VPBLEND_8u32(t256_1, t256_2, (8u1)[1,1,0,0,0,0,1,1]);
+  buf.[u256 21*8 + offset] = t256_4;
+
+  return buf;
+}
+
+fn _stavx2_unpack_at
+( reg mut ptr u64[BUF_size] buf
+, reg u64 offset // in bytes
+, reg u256[7] state
+) -> reg ptr u64[BUF_size] {
+  buf = __stavx2_unpack_at(buf, offset, state);
+  return buf;
+}
+
+u256[1] RATE_BIT_x4 =
+{  (4u64)[0x8000000000000000, 0x8000000000000000, 0x8000000000000000, 0x8000000000000000] };
+
+// xof related code
+inline fn xof_init_x4
+( reg const ptr u8[32] rho
+, reg u16[4] indexes
+) -> stack u256[25]
 {
-  stack u8[34] extseed;
-  stack u8[SHAKE128_RATE] buf;
-  stack u64[25] state;
-  stack u16[MLKEM_N] poly;
-  stack u16[MLKEM_K*MLKEM_VECN] r;
+  stack u256[25] state;
+  stack u256[1] temp;
+  inline int i;
+  reg u256 t;
+  reg u64 r;
 
-  reg u8 c;
-  reg u16 t;
-  reg u64 ctr k;
-  stack u64 sctr;
-  stack u64 stransposed;
-  inline int j i;
-
-  stransposed = transposed;
-
-  for j = 0 to MLKEM_SYMBYTES
-  {
-    c = seed[j];
-    extseed[j] = c;
+  // copy rho to state
+  for i = 0 to 4 {
+    t = #VPBROADCAST_4u64(rho[u64 i]);
+    state[i] = t;
   }
 
-  for i=0 to MLKEM_K
+  for i=0 to 4
+  { r = (64u) indexes[i];
+    r |= 0x1F0000;
+    temp[u64 i] = r;
+  }
+  t = temp[0];
+  state[4] = t;
+
+  // init to zero
+  t = #set0_256();
+  for i=5 to 25 { state[i] = t; }
+
+  t = RATE_BIT_x4[0];
+  t ^= state[20];
+  state[20] = t;
+
+  return state;
+}
+
+inline fn xof_init_avx2
+( reg const ptr u8[32] rho
+, reg u16 index
+) -> reg u256[7]
+{
+  inline int i;
+  stack u256[1] temp;
+  reg u256[7] state;
+  reg u256 t;
+  reg u128 t128;
+  reg u64 r;
+
+  // copy rho to state
+  state[0] = #VPBROADCAST_4u64(rho[u64 0]);
+  r = rho[u64 1];
+  temp[u64 0] = r;
+  r = rho[u64 2];
+  temp[u64 1] = r;
+  r = rho[u64 3];
+  temp[u64 2] = r;
+  r = (64u) index;
+  r |= 0x1F0000;
+  temp[u64 3] = r;
+  state[1] = temp[0];
+
+  t = #set0_256();
+  t128 = (128u) t;
+  r = 0x8000000000000000;
+  state[2] = (256u) #VPINSR_2u64(t128, r, 1);
+
+  for i=3 to 7 { state[i] = t; }
+  
+  return state;
+}
+
+/*
+DEFS:
+a \lmatch l == l is_prefix_of (to_list a)
+bytes2coefs: W8.t list -> int list
+ == converte lista de bytes em lista de coefs
+PARAMS: lpol, offset, lbuf
+
+@requires:
+ pol \lmatch lpol
+ size lpol = to_uint counter
+ size lpol <= MLKEM_N - 32
+ to_uint buf_offset = offset
+ to_list buf = lbuf
+ 0 <= offset <= BUF_size - (48 + 8)
+@ensures:
+ let lcoefs = filter (<q) (bytes2coefs (take 48 (drop offset lbuf)))
+ in res.`1 \lmatch (lpol ++ lcoefs)
+    /\ to_uint res.2 = size l + size lcoefs 
+*/
+inline fn __gen_matrix_buf_rejection_filter48
+( reg mut ptr u16[MLKEM_N] pol
+, reg u64 counter
+, reg const ptr u64[BUF_size] buf
+, reg u64 buf_offset // bytes
+
+, reg u256 load_shuffle
+, reg u256 mask
+, reg u256 bounds
+, reg ptr u8[2048] sst
+, reg u256 ones
+, #msf reg u64 ms
+) -> reg ptr u16[MLKEM_N], reg u64
+{
+  reg u256 f0 f1 g0 g1;
+  reg u256 shuffle_0 shuffle_1 shuffle_t;
+  reg u128 shuffle_0_1 shuffle_1_1;
+  reg u64 good t0_0 t0_1 t1_0 t1_1;
+
+  // loads 24 bytes (while touching 32 bytes of memory) into f0 and another
+  // 24 bytes into f1 while doing some rearrangements:
+  // - consider that the memory contains the following 32 bytes (in u64s)
+  // - 0x01aaaaaaaaaaaa08, 0x01bbbbbbbbbbbb08, 0x01cccccccccccc08, 0x01dddddddddddd08
+  // - the command given to vpermq is 0x94, or (8u1)[1,0,0,1, 0,1,0,0], or (4u2)[2,1,1,0]
+  // - so the last 8 bytes will be discarded:
+  //   - 0x01aaaaaaaaaaaa08, 0x01bbbbbbbbbbbb08, 0x01bbbbbbbbbbbb08, 0x01cccccccccccc08
+
+  f0 = #VPERMQ(buf.[u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
+  f1 = #VPERMQ(buf.[u256 (int) buf_offset + 24], (4u2)[2,1,1,0]);
+
+  // next, the data is shuffled at byte level. For a given state (in u64s): 
+  // - 0xa8a7a6a5a4a3a2a1, 0xb8b7b6b5b4b3b2b1, 0xc8c7c6c5c4c3c2c1, 0xd8d7d6d5d4d3d2d1
+  // f's get rearranged into: 
+  // - 0xa6a5a5a4a3a2a2a1, 0xb4b3b3b2b1a8a8a7, 0xd2d1d1c8c7c6c6c5, 0xd8d7d7d6d5d4d4d3
+
+  f0 = #VPSHUFB_256(f0, load_shuffle);
+  f1 = #VPSHUFB_256(f1, load_shuffle);
+
+  // next, a shift right by 4 (u16) is performed, for a given state:
+  // (consider that c's hold the same values as b's ++ some underscores to help the reading)
+  //
+  // - 0xa6a5_a5a4_a3a2_a2a1, 0xb4b3_b3b2_b1a8_a8a7, 0xd2d1_d1c8_c7c6_c6c5, 0xd8d7_d7d6_d5d4_d4d3
+  // to:
+  // - 0x0a6a_0a5a_0a3a_0a2a, 0x0b4b_0b3b_0b1a_0a8a, 0x0d2d_0d1c_0c7c_0c6c, 0x0d8d_0d7d_0d5d_0d4d
+
+  g0 = #VPSRL_16u16(f0, 4);
+  g1 = #VPSRL_16u16(f1, 4);
+
+  // next, blend.
+  // from: 
+  // - 0xAA (1010 1010 in binary)
+  //
+  //   bottom  top    b    t       b    t    b    t
+  //        1    0    1    0       1    0    1    0   (same for next 128-bit lane)
+  // - 0xa6a5_a5a4_a3a2_a2a1, 0xb4b3_b3b2_b1a8_a8a7,  0xd2d1_d1c8_c7c6_c6c5, 0xd8d7_d7d6_d5d4_d4d3
+  // - 0x0a6a_0a5a_0a3a_0a2a, 0x0b4b_0b3b_0b1a_0a8a,  0x0d2d_0d1c_0c7c_0c6c, 0x0d8d_0d7d_0d5d_0d4d
+  // to:
+  // - 0x0a6a_a5a4_0a3a_a2a1, 0x0b4b_b3b2_0b1a_a8a7, 0x0d2d_d1c8_0c7c_c6c5, 0x0d8d_d7d6_0d5d_d4d3
+
+  f0 = #VPBLEND_16u16(f0, g0, 0xAA);
+  f1 = #VPBLEND_16u16(f1, g1, 0xAA);
+
+  // next, mask at 12 bits (0xFFF)
+  // from:
+  // - 0x0a6a_a5a4_0a3a_a2a1, 0x0b4b_b3b2_0b1a_a8a7, 0x0d2d_d1c8_0c7c_c6c5, 0x0d8d_d7d6_0d5d_d4d3
+  // to:
+  // - 0x0a6a_05a4_0a3a_02a1, 0x0b4b_03b2_0b1a_08a7, 0x0d2d_01c8_0c7c_06c5, 0x0d8d_07d6_0d5d_04d3
+
+  f0 = #VPAND_256(f0, mask);
+  f1 = #VPAND_256(f1, mask);
+
+  // KYBER_Q is 3329 or 0xd01
+  //
+  // bounds:
+  // - 0x0d01_0d01_0d01_0d01, ...
+  //
+  // some input:
+  // - 0x0a6a_05a4_0a3a_02a1, 0x0b4b_03b2_0b1a_08a7, 0x0d2d_01c8_0c7c_06c5, 0x0d8d_07d6_0d5d_04d3
+  //
+  // output (the 'good' results are highlighted with Fs; what about when equal to 3329?) 
+  // - 0xffff_ffff_ffff_ffff, 0xffff_ffff_ffff_ffff, 0x0000_ffff_ffff_ffff, 0x0000_ffff_0000_ffff
+  //
+  // intuitively, for i=0 to 15: if bounds[i] > input[i] then 0xffff else 0x0
+  g0 = #VPCMPGT_16u16(bounds, f0);
+  g1 = #VPCMPGT_16u16(bounds, f1);
+
+  // from Intel intrinsics: "Convert packed signed 16-bit integers from a and b to packed 8-bit integers using signed saturation"
+  // intuitively, each u16 ffff -> ff and 0000 -> 00
+  // g0 = g0[0..7] || g1[0..7] || g0[8..15] || g1[8..15], where each u16 "goes to" u8
+  g0 = #VPACKSS_16u16(g0, g1);
+
+  // from Intel intrinsics: "Create mask from the most significant bit of each 8-bit element in a, and store the result in dst."
+  good = #VPMOVMSKB_u256u64(g0);
+
+  good = #protect(good, ms);
+
+  // at this point, the bit count of good contains the number of 'good' elements
+
+  // g0
+  t0_0 = good;
+  t0_0 &= 0xFF; // g0[0..7]
+
+  shuffle_0 = (256u) #VMOV(sst[u64 (int)t0_0]);
+  ?{}, t0_0 = #POPCNT_64(t0_0);
+  t0_0 += counter;  
+
+  t0_1 = good;
+  t0_1 >>= 16;
+  t0_1 &= 0xFF; // g0[8..15]
+  shuffle_0_1 = #VMOV(sst[u64 (int)t0_1]);
+  ?{}, t0_1 = #POPCNT_64(t0_1);
+  t0_1 += t0_0;
+
+  // g1
+  t1_0 = good;
+  t1_0 >>= 8;
+  t1_0 &= 0xFF; // g1[0..7]
+  shuffle_1 = (256u) #VMOV(sst[u64 (int)t1_0]);
+  ?{}, t1_0 = #POPCNT_64(t1_0);
+  t1_0 += t0_1;
+
+  t1_1 = good;
+  t1_1 >>= 24;
+  t1_1 &= 0xFF; // g1[8..15]
+  shuffle_1_1 = #VMOV(sst[u64 (int)t1_1]);
+  ?{}, t1_1 = #POPCNT_64(t1_1);
+  t1_1 += t1_0;
+
+  //
+
+  shuffle_0 = #VINSERTI128(shuffle_0, shuffle_0_1, 1);
+  shuffle_1 = #VINSERTI128(shuffle_1, shuffle_1_1, 1);
+
+  //
+
+  shuffle_t = #VPADD_32u8(shuffle_0, ones);
+  shuffle_0 = #VPUNPCKL_32u8(shuffle_0, shuffle_t);
+
+  shuffle_t = #VPADD_32u8(shuffle_1, ones);
+  shuffle_1 = #VPUNPCKL_32u8(shuffle_1, shuffle_t);
+
+  f0 = #VPSHUFB_256(f0, shuffle_0);
+  f1 = #VPSHUFB_256(f1, shuffle_1);
+
+  //
+
+  pol.[u128 2*counter] = (128u)f0;
+  pol.[u128 2*t0_0] = #VEXTRACTI128(f0, 1);
+  pol.[u128 2*t0_1] = (128u)f1;
+  pol.[u128 2*t1_0] = #VEXTRACTI128(f1, 1);
+
+  counter = t1_1;
+
+  return pol, counter;
+}
+
+// safe-write (ensured to write inside the array...)
+inline fn __write_u128_boundchk
+( reg mut ptr u16[MLKEM_N] pol
+, reg u64 ctr
+, reg u128 data
+, #msf reg u64 ms
+) -> reg ptr u16[MLKEM_N], reg u64, #msf reg u64
+{
+  reg u64 data_u64;
+  reg bool condition_8 condition_4 condition_2 condition_1;
+
+  condition_8 = (ctr <= MLKEM_N-8);
+  if ( condition_8 ) {
+    ms = #update_msf(condition_8, ms);
+
+    pol.[u128 2*(int)ctr] = data;
+    ctr += 8;
+  } else
   {
-    for j = 0 to MLKEM_K
-    {
-      transposed = stransposed;
-      if(transposed == 0)
-      {
-        extseed[MLKEM_SYMBYTES] = j;
-        extseed[MLKEM_SYMBYTES+1] = i;
-      }
-      else
-      {
-        extseed[MLKEM_SYMBYTES] = i;
-        extseed[MLKEM_SYMBYTES+1] = j;
-      }
+    ms = #update_msf(!condition_8, ms);
 
-      state = _shake128_absorb34(state, extseed);
+    data_u64 = #MOVV(data);
 
-      ctr = 0;
-      while (ctr < MLKEM_N)
-      {
-        sctr = ctr;
-        state, buf = _shake128_squeezeblock(state, buf);
-        ctr = sctr;
-        ctr, poly  = __rej_uniform(poly, ctr, buf);
-      }
+    condition_4 = (ctr <= MLKEM_N-4);
+    if ( condition_4 ) {
+      ms = #update_msf(condition_4, ms);
 
-      k = 0;
-      reg ptr u16[MLKEM_N] rij;
-      rij = r[i * MLKEM_VECN + j * MLKEM_N : MLKEM_N];
-      while (k < MLKEM_N)
-      {
-        t = poly[(int) k];
-        rij[k] = t;
-        k += 1;
-      }
-      r[i * MLKEM_VECN + j * MLKEM_N : MLKEM_N] = rij;
+      pol.[u64 2*(int)ctr] = data_u64;
+      data_u64 = #VPEXTR_64(data, 1);
+      ctr += 4;
+    } else
+    { ms = #update_msf(!condition_4, ms); }
+
+    condition_2 = (ctr <= MLKEM_N-2);
+    if ( condition_2 ) {
+      ms = #update_msf(condition_2, ms);
+
+      pol.[u32 2*(int)ctr] = (32u) data_u64;
+      data_u64 >>= 32;
+      ctr += 2;
+    } else
+    { ms = #update_msf(!condition_2, ms); }
+
+    condition_1 = (ctr <= MLKEM_N-1);
+    if ( condition_1 ) {
+      ms = #update_msf(condition_1, ms);
+
+      pol.[u16 2*(int)ctr] = (16u) data_u64;
+      ctr += 1;
+    } else
+    { ms = #update_msf(!condition_1, ms); }
+  }
+
+  return pol, ctr, ms;
+}
+
+inline fn __gen_matrix_buf_rejection_filter24
+( reg mut ptr u16[MLKEM_N] pol
+, reg u64 counter
+, reg const ptr u64[BUF_size] buf
+, reg u64 buf_offset // in bytes
+
+, reg u256 load_shuffle mask bounds
+, reg ptr u8[2048] sst
+, reg u256 ones
+, #msf reg u64 ms
+) -> reg ptr u16[MLKEM_N], reg u64, #msf reg u64
+{
+  reg u256 f0 g0 g1;
+  reg u256 shuffle_0 shuffle_t;
+  reg u128 shuffle_0_1 t128;
+  reg u64 good t0_0 t0_1;
+
+  f0 = #VPERMQ(buf.[u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
+  f0 = #VPSHUFB_256(f0, load_shuffle);
+  g0 = #VPSRL_16u16(f0, 4);
+  f0 = #VPBLEND_16u16(f0, g0, 0xAA);
+  f0 = #VPAND_256(f0, mask);
+  g0 = #VPCMPGT_16u16(bounds, f0);
+  g1 = #set0_256();
+  g0 = #VPACKSS_16u16(g0, g1);
+  good = #VPMOVMSKB_u256u64(g0);
+
+  good = #protect(good, ms);
+
+  // g0
+  t0_0 = good;
+  t0_0 &= 0xFF; // g0[0..7]
+  shuffle_0 = (256u) #VMOV(sst[u64 (int)t0_0]);
+  ?{}, t0_0 = #POPCNT_64(t0_0);
+  t0_0 += counter;
+
+  t0_1 = good;
+  t0_1 >>= 16;
+  t0_1 &= 0xFF; // g0[8..15]
+  shuffle_0_1 = #VMOV(sst[u64 (int)t0_1]);
+  ?{}, t0_1 = #POPCNT_64(t0_1);
+  t0_1 += t0_0;
+
+  //
+  shuffle_0 = #VINSERTI128(shuffle_0, shuffle_0_1, 1);
+  shuffle_t = #VPADD_32u8(shuffle_0, ones);
+  shuffle_0 = #VPUNPCKL_32u8(shuffle_0, shuffle_t);
+  f0 = #VPSHUFB_256(f0, shuffle_0);
+  //
+
+  t128 = (128u) f0;
+  pol, counter, ms = __write_u128_boundchk(pol, counter, t128, ms);
+  
+  t128 = #VEXTRACTI128(f0, 1);
+  pol, counter, ms = __write_u128_boundchk(pol, t0_0, t128, ms);
+
+  counter = t0_1;
+  
+  return pol, counter, ms;
+}
+
+
+fn _gen_matrix_buf_rejection
+( reg mut ptr u16[MLKEM_N] pol		// polynomial
+, reg u64 counter			// number of coefs. already sampled
+, reg const ptr u64[BUF_size] buf	// whole buffer (size=21+21+25 (+1 pad))
+, reg u64 buf_offset			// start looking at... (bytes)
+
+) -> reg ptr u16[MLKEM_N], reg u64	// pol. and counter
+{
+  reg bool condition_loop;
+  reg ptr u8[2048] sst;
+  reg u256 load_shuffle mask bounds ones;
+  #msf reg u64 ms;
+
+  ms = #init_msf();
+
+  load_shuffle = sample_load_shuffle[u256 0];
+  mask = sample_mask;
+  bounds = sample_q;
+  ones = sample_ones;
+  sst = sample_shuffle_table;
+
+  buf_offset = buf_offset;
+
+  while { condition_loop = comp_u64_l_int_and_u64_l_int(buf_offset, 3*168-48+1, counter, MLKEM_N-32+1); }
+        ( condition_loop )
+  {
+    ms = #update_msf(condition_loop, ms);
+
+    pol, counter = __gen_matrix_buf_rejection_filter48(pol, counter, buf, buf_offset, load_shuffle, mask, bounds, sst, ones, ms);
+    buf_offset += 48;
+  }
+  ms = #update_msf(!condition_loop, ms);
+
+  while { condition_loop = comp_u64_l_int_and_u64_l_int(buf_offset, 3*168-24+1, counter, MLKEM_N+1); }
+        ( condition_loop )
+  {
+    ms = #update_msf(condition_loop, ms);
+
+    pol, counter, ms = __gen_matrix_buf_rejection_filter24(pol, counter, buf, buf_offset, load_shuffle, mask, bounds, sst, ones, ms);
+
+    buf_offset += 24;
+  }
+
+  return pol, counter;
+}
+
+
+u16[2*4*2] gen_matrix_indexes =
+{
+  0x0000, 0x0001, 0x0002, 0x0100, // (0,0) (0,1) (0,2) (1,0)
+  0x0101, 0x0102, 0x0200, 0x0201, // (1,1) (1,2) (2,0) (2,1)
+
+  0x0000, 0x0100, 0x0200, 0x0001, // previous indexes: swapped for transposed
+  0x0101, 0x0201, 0x0002, 0x0102
+};
+
+inline fn gen_matrix_get_indexes(
+  reg u64 b,
+  reg u64 _t)
+  ->
+  reg u16[4]
+{
+  reg u64 t;
+  reg u16[4] idx;
+  reg ptr u16[2*4*2] gmi;
+
+  gmi = gen_matrix_indexes;
+
+  t = _t; t <<= 3; // t * 8
+  b += t;
+
+  idx[0] = gmi[(int) b + 0];
+  idx[1] = gmi[(int) b + 1];
+  idx[2] = gmi[(int) b + 2];
+  idx[3] = gmi[(int) b + 3];
+
+  return idx;
+}
+
+fn _gen_matrix_sample_four_polynomials
+( reg mut ptr u16[4*MLKEM_N] polx4
+, reg mut ptr u64[4*BUF_size] bufx4
+, reg ptr u8[32] rho
+, reg u64 mat_entry
+, reg u64 transposed
+) -> reg ptr u16[4*MLKEM_N], reg ptr u64[4*BUF_size]
+{
+  inline int i;
+  reg ptr u64[BUF_size] buf;
+  reg ptr u16[MLKEM_N] pol;
+  stack u256[25] state;
+  reg ptr u256[25] stx4;
+  reg u256[7] stavx2;
+  reg u16[4] indexes;
+  reg u64 counter buf_offset;
+
+  indexes = gen_matrix_get_indexes(mat_entry, transposed);
+  
+  state = xof_init_x4(rho, indexes);
+  stx4 = state;
+  buf_offset = 0;
+  while (buf_offset < 3*168) {
+    stx4 = _keccakf1600_4x(stx4);
+    bufx4 = __st4x_unpack_at( bufx4, stx4, buf_offset );
+    buf_offset += 168;
+  }
+
+  for i = 0 to 4
+  {
+    buf = bufx4[i*BUF_size:BUF_size];
+    buf_offset = 0;
+    pol = polx4[i*MLKEM_N:MLKEM_N];
+    counter = 0;
+    pol, counter = _gen_matrix_buf_rejection(pol, counter, buf, buf_offset);
+    buf_offset = 2*168;
+    while (counter < MLKEM_N) {
+      stavx2 = _stavx2_pack_at(buf, buf_offset);
+      stavx2 = _keccakf1600_avx2(stavx2);
+      buf = _stavx2_unpack_at(buf, buf_offset, stavx2);
+      pol, counter = _gen_matrix_buf_rejection(pol, counter, buf, buf_offset);
     }
+    polx4[i*MLKEM_N:MLKEM_N] = pol;
+    bufx4[i*BUF_size:BUF_size] = buf;
   }
+  
+  return polx4, bufx4;      
+}
+
+inline fn __gen_matrix_sample_one_polynomial
+( reg mut ptr u16[MLKEM_N] pol
+, reg mut ptr u64[BUF_size] buf
+, reg ptr u8[32] rho
+, reg u16 rc
+) -> reg ptr u16[MLKEM_N], reg ptr u64[BUF_size]
+{
+  reg u256[7] stavx2;
+  reg u64 counter buf_offset;
+  
+  stavx2 = xof_init_avx2(rho, rc);
+  buf_offset = 0;
+  while (buf_offset < 3*168) {
+    stavx2 = _keccakf1600_avx2(stavx2);
+    buf = _stavx2_unpack_at( buf, buf_offset, stavx2 );
+    buf_offset += 168;
+  }
+  buf_offset = 0;
+  counter = 0;
+  pol, counter = _gen_matrix_buf_rejection(pol, counter, buf, buf_offset);
+
+  buf_offset = 2*168;
+  while (counter < MLKEM_N) {
+    stavx2 = _stavx2_pack_at(buf, buf_offset);
+    stavx2 = _keccakf1600_avx2(stavx2);
+    buf = _stavx2_unpack_at(buf, buf_offset, stavx2);
+    pol, counter = _gen_matrix_buf_rejection(pol, counter, buf, buf_offset);
+  }
+
+  return pol, buf;      
+}
+
+
+
+fn _gen_matrix_avx2
+( reg ptr u16[MLKEM_K * MLKEM_K * MLKEM_N] matrix
+, reg ptr u8[32] rho
+, #spill_to_mmx reg u64 transposed
+) -> reg ptr u16[MLKEM_K * MLKEM_K * MLKEM_N]
+{
+  // local variables
+  inline int i j;
+  stack u64[4*BUF_size] bufx4_s;
+  reg ptr u64[4*BUF_size] bufx4;
+  reg ptr u64[BUF_size] buf;
+  reg ptr u16[4*MLKEM_N] polx4;
+  reg ptr u16[MLKEM_N] pol;
+  reg u64 mat_entry;
+  reg u16 rc;
+
+    () = #spill(transposed);
+
+  bufx4 = bufx4_s;
+
+  for i = 0 to 2
+  {
+    mat_entry = 4*i;
+    polx4 = matrix[4*i*MLKEM_N:4*MLKEM_N];
+    () = #unspill(transposed);
+    polx4, bufx4 = _gen_matrix_sample_four_polynomials(polx4, bufx4, rho, mat_entry, transposed);
+    matrix[i*4*MLKEM_N:4*MLKEM_N] = polx4;
+  }
+
+  
+  // sample the last one, (2,2), using scalar code
+  buf = bufx4[0:BUF_size];
+  pol = matrix[8*MLKEM_N:MLKEM_N];
+  rc = 0x0202;
+  pol, _ = __gen_matrix_sample_one_polynomial(pol, buf, rho, rc);
+
+  matrix[8*MLKEM_N:MLKEM_N] = pol;
+  bufx4_s = bufx4;
 
   for i = 0 to MLKEM_K
-  {
-    for j = 0 to MLKEM_K
-    {
-      r[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N] = _nttunpack(r[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N]);
+  { for j = 0 to MLKEM_K
+    { matrix[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N] = _nttunpack(matrix[i*MLKEM_VECN+j*MLKEM_N:MLKEM_N]);
     }
   }
 
-  return r;
+  return matrix;
 }
+
