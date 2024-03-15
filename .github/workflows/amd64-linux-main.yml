@@ -17,10 +17,17 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 default
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: make -j$JOBS -C src/ CI=1 default
+
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C src/ CI=1 reporter
+        run: make -C src/ CI=1 reporter
       - name: return error if there are any errors
         run: make -C src/ CI=1 err
 
@@ -40,10 +47,17 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+
       - name: compile and run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C test/ CI=1 default
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: make -j$JOBS -C test/ CI=1 default
+
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C test/ CI=1 reporter
+        run: make -C test/ CI=1 reporter
       - name: return error if there are any errors
         run: make -C test/ CI=1 err
 
@@ -63,14 +77,20 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 default
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: make -j$JOBS -C src/   CI=1 default
 
       - name: run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 DEFINE='-DTIMINGS=10' run
+        run: make -j$JOBS -C bench/ CI=1 DEFINE='-DTIMINGS=10' run
 
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 reporter
+        run: make -C bench/ CI=1 reporter
 
       - name: return error if there are any errors
         run: make -C bench/ CI=1 err
@@ -91,14 +111,20 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+
       - name: compile
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/   CI=1 default
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: make -j$JOBS -C src/   CI=1 default
 
       - name: run
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
+        run: make -j$JOBS -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
 
       - name: print logs
-        run: JASMIN=$(which_jasminc) make -C bench/ CI=1 reporter
+        run: make -C bench/ CI=1 reporter
 
       - name: return error if there are any errors
         run: make -C bench/ CI=1 err
@@ -119,12 +145,22 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
+
       - name: extract and check
-        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make -j$JOBS -C proof/ CI=1 check-extracted
-      - name: dist
-        run: ./scripts/ci/releaser/jdist-proof
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: |
+            # extract and check
+            make -j$JOBS -C proof/ CI=1 check-extracted
+            # dist
+            ./scripts/ci/releaser/jdist-proof
+
       - name: print logs
-        run: JASMIN=$(which_jasminc) EASYCRYPT=$(which_easycrypt) ECARGS=$(which_eclib) make -C proof/ CI=1 reporter
+        run: make -C proof/ CI=1 reporter
+
       - name: return error if there are any errors
         run: make -C proof/ CI=1 err
 
@@ -151,14 +187,20 @@ jobs:
       - name: checkout
         uses: actions/checkout@v3
 
-      - name: compile amd64
-        run: JASMIN=$(which_jasminc) make -j$JOBS -C src/ CI=1 default
+      - uses: DeterminateSystems/magic-nix-cache-action@v4
 
       - name: dist amd64
-        run: JASMIN=$(which_jasminc) ./scripts/ci/releaser/jdist-src-v1 amd64
-
-      - name: check dist amd64
-        run: JASMIN=$(which_jasminc) ./scripts/ci/releaser/jdist-src-test-v1 amd64
+        uses: workflow/nix-shell-action@v3.3.0
+        with:
+          flakes: .
+          flakes-from-devshell: true
+          script: |
+            # compile amd64
+            make -j$JOBS -C src/ CI=1 default
+            # dist amd64
+            ./scripts/ci/releaser/jdist-src-v1 amd64
+            # check dist amd64
+            ./scripts/ci/releaser/jdist-src-test-v1 amd64
 
       - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
         if: always()
