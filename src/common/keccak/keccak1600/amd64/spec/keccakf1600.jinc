@@ -1,5 +1,6 @@
 
 require "keccakf1600_globals.jinc"
+from Jade require "common/doit.jinc" //__ROL64
 
 inline fn __index_spec(inline int x y) -> inline int
 {
@@ -53,7 +54,9 @@ inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
 
   for x = 0 to 5 {
     d[x] = c[(x + 1) % 5];
-    _, _, d[x] = #ROL_64(d[x], 1);
+    
+    d[x] = __ROL64(d[x], 1);
+
     d[x] ^= c[(x + 4) % 5];
   }
 
@@ -70,12 +73,16 @@ inline fn __theta_spec(stack u64[25] a) -> stack u64[25]
 inline fn __rho_spec(stack u64[25] a) -> stack u64[25]
 {
   inline int x y i z;
+  reg u64 t;
 
   for x = 0 to 5 {
     for y = 0 to 5 {
       i = __index_spec(x, y);
       z = __keccak_rho_offsets_spec(i);
-      _, _, a[i] = #ROL_64(a[i], z);
+
+      t = a[i];
+      t = __ROL64(t, z);
+      a[i] = t;
     }
   }
 

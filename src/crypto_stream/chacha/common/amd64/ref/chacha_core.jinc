@@ -1,3 +1,4 @@
+from Jade require "common/doit.jinc" //__ROL32
 
 // the following implementation requires:
 // - (even) param int CHACHA_ROUNDS;
@@ -22,7 +23,7 @@ inline fn __copy_state_ref(stack u32[16] st) -> reg u32[16], stack u32
 }
 
 
-///////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////// 
 
 
 // not exported; may be useful as spec;
@@ -30,7 +31,7 @@ inline fn __line_ref(reg u32[16] k, inline int a b c r) -> reg u32[16]
 {
   k[a] += k[b];
   k[c] ^= k[a];
-  _, _, k[c] = #ROL_32(k[c], r);
+  k[c] = __ROL32x(k[c], r);
   return k;
 }
 
@@ -111,9 +112,9 @@ inline fn __half_round_inline_ref(
 
   k[d0] ^= k[a0];
   k[d1] ^= k[a1];
-
-  _, _, k[d0] = #ROL_32(k[d0], 16);
-  _, _, k[d1] = #ROL_32(k[d1], 16);
+  
+  k[d0] = __ROL32x(k[d0], 16);
+  k[d1] = __ROL32x(k[d1], 16);
 
   //k = line(k, c, d, b, 12);
   k[c0] += k[d0];
@@ -122,9 +123,9 @@ inline fn __half_round_inline_ref(
   k[b0] ^= k[c0];
   k[b1] ^= k[c1];
 
-  _, _, k[b0] = #ROL_32(k[b0], 12);
-  _, _, k[b1] = #ROL_32(k[b1], 12);
-
+  k[b0] = __ROL32x(k[b0], 12);
+  k[b1] = __ROL32x(k[b1], 12);
+  
   //k = line(k, a, b, d, 8);
   k[a0] += k[b0];
   k[a1] += k[b1];
@@ -132,8 +133,8 @@ inline fn __half_round_inline_ref(
   k[d0] ^= k[a0];
   k[d1] ^= k[a1];
 
-  _, _, k[d0] = #ROL_32(k[d0], 8);
-  _, _, k[d1] = #ROL_32(k[d1], 8);
+  k[d0] = __ROL32x(k[d0], 8);
+  k[d1] = __ROL32x(k[d1], 8);
 
   //k = line(k, c, d, b, 7);
   k[c0] += k[d0];
@@ -142,22 +143,43 @@ inline fn __half_round_inline_ref(
   k[b0] ^= k[c0];
   k[b1] ^= k[c1];
 
-  _, _, k[b0] = #ROL_32(k[b0], 7);
-  _, _, k[b1] = #ROL_32(k[b1], 7);
+  k[b0] = __ROL32x(k[b0], 7);
+  k[b1] = __ROL32x(k[b1], 7);
 
   return k;
 }
 
 
 // used;
-inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k14 k15) -> reg u32[16], stack u32, stack u32
+//
+//                                                                             
+// The function below requires the spillage of some state on the stack
+// this is due to the use of an auxilliary register in the implementation
+// of __ROL32x.
+//         ┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐                   
+//         │ 0│ 1│ 2│ 3│ 4│ 5│ 6│ 7│ 8│ 9│10│11│12│13│14│15│  + - Value used   
+// ┌───────┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                   
+// │       │ +│  │ +│  │ +│ S│ +│  │ +│  │ +│  │ +│  │ +│ S│  S - Stack spills 
+// │ Round ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                   
+// │       │  │ +│  │ +│ S│ +│  │ +│  │ +│  │ +│  │ +│ S│ +│                   
+// ├───────┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                   
+// │       │ +│ +│  │  │ S│ +│ +│  │  │  │ +│ +│ +│  │ S│ +│                   
+// │ Round ├──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┼──┤                   
+// │       │  │  │ +│ +│ +│ S│  │ +│ +│ +│  │  │  │ +│ +│ S│                   
+// └───────┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘                   
+//
+inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k4 k5 k14 k15) -> reg u32[16], stack u32, stack u32, stack u32, stack u32
 {
   k[14] = k14;
+  k[4] = k4;
 
   k = __half_round_inline_ref(k, 0, 4, 8, 12,
                                  2, 6, 10, 14);
   k14 = k[14];
+  k4 = k[4];
   k[15] = k15;
+  k[5] = k5;
+  
 
   k = __half_round_inline_ref(k, 1, 5, 9, 13,
                                  3, 7, 11, 15);
@@ -166,35 +188,42 @@ inline fn __double_round_inline_ref(reg u32[16] k, stack u32 k14 k15) -> reg u32
                                  0, 5, 10, 15);
 
   k15 = k[15];
+  k5 = k[5];
   k[14] = k14;
+  k[4] = k4;
 
   k = __half_round_inline_ref(k, 2, 7, 8, 13,
                                  3, 4, 9, 14);
 
   k14 = k[14];
+  k4 = k[4];
 
-  return k, k14, k15;
+  return k, k4, k5, k14, k15;
 }
 
 
 // used;
 inline fn __rounds_inline_ref(reg u32[16] k, stack u32 k15) -> reg u32[16], stack u32
 {
-  stack u32 s_c k14;
+  stack u32 s_c k4 k5 k14;
   reg u32 c;
 
   k14 = k[14];
+  k4 = k[4];
+  k5 = k[5];
   c = (CHACHA_ROUNDS/2);
 
   while
   { s_c = c;
     
-    k, k14, k15 = __double_round_inline_ref(k, k14, k15);
+    k, k4, k5, k14, k15 = __double_round_inline_ref(k, k4, k5, k14, k15);
 
     c = s_c;
     (_,_,_,_,c) = #DEC_32(c);
   } (c > 0)
 
+  k[4] = k4;
+  k[5] = k5;
   k[14] = k14;
   return k, k15;
 }
