@@ -21,7 +21,7 @@ stdenv.mkDerivation {
   ];
 
   buildPhase = ''
-    make FAIL_ON_ERROR=1 -C ../src/ -j$(nproc)
+    make FAIL_ON_ERROR=1 -j$(nproc)
   '';
 
   installPhase = ''
