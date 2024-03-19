@@ -84,6 +84,63 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   return out;
 }
 
+#[returnaddress="stack"]
+fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
+{
+  reg u256[7] state;
+  stack u64[28] s_state;
+  stack u64[25] a_jagged_p;
+  reg u64 t l;
+  reg u8 c;
+  inline int i;
+
+  a_jagged_p = KECCAK_A_JAGGED;
+  s_state = __init_s_state_avx2();
+
+  state[0] = #VPBROADCAST_4u64(in[u64 0]);
+
+  for i=1 to 16
+  {
+    t = in[u64 i];
+    l = a_jagged_p[i];
+    s_state[(int) l] = t;
+  }
+
+  c = in[u8 128];
+  l = a_jagged_p[(int) 16];
+  l <<= 3;
+  s_state[u8 (int)l] = c;
+
+  for i = 129 to 134{
+    c = in[i];
+    l += 1;
+    s_state[u8 (int)l] = c;
+  }
+
+  l += 1;
+  s_state[u8 (int)l] = 0x06;
+
+  l = a_jagged_p[(SHA3_256_RATE-1)/8];
+  l <<= 3;
+  t = SHA3_256_RATE - 1; t &= 0x7;
+  l += t;
+  s_state[u8 (int)l] ^= 0x80;
+
+  for i=1 to 7 { state[i] = s_state[u256 i]; }
+  
+  state = __keccakf1600_avx2(state);
+
+  for i=0 to 7 { s_state[u256 i] = state[i]; }
+
+  for i=0 to 4
+  {
+    l = a_jagged_p[i];
+    t = s_state[(int)l];
+    out[u64 i] = t;
+  }
+
+  return out;
+}
 
 #[returnaddress="stack"]
 fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)

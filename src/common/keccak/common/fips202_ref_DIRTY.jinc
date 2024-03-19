@@ -235,6 +235,40 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   return out;
 }
 
+
+#[returnaddress="stack"]
+fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
+{
+  stack u64[25] state;
+  stack ptr u8[32] s_out;
+  reg u64 t64;
+  inline int i;
+
+  s_out = out;
+
+  state = __keccak_init_ref1(state);
+
+  for i=0 to 134
+  {
+    state[u8 i] = in[i];
+  }
+
+  state[u8 134] ^= 0x06;
+  state[u8 SHA3_256_RATE - 1] = 0x80;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+
+  for i=0 to 4
+  {
+    t64 = state[i];
+    out[u64 i] = t64;
+  }
+
+  return out;
+}
+
 #[returnaddress="stack"]
 fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 {
