@@ -2,90 +2,6 @@
 // notes: "16" instead of BYTES_SEED_A on purpose
 // compilation should fail if BYTES_SEED_A changes
 
-fn _shake128_gen_A_opt(
-  #spill_to_mmx reg ptr u8[2 * N * 8] out, // note: this implementation should work for N multiple of 4
-  #spill_to_mmx reg u64 out_offset,        // out_offset in bytes
-  #spill_to_mmx reg ptr u8[16+2+6] index_seed_padding)
-  ->
-  reg ptr u8[2 * N * 8],
-  reg u64
-{
-  #spill_to_mmx reg u64 i;
-
-  stack u64[25] s_state;
-  reg ptr u64[25] state;
-  reg u64 j t0 t1 t2 zero;
-  reg u8 v0;
-
-  state = s_state;  
-
-  t0 = index_seed_padding[u64 0];
-  t1 = index_seed_padding[u64 1];
-  t2 = index_seed_padding[u64 2];
-  ?{}, zero = #set0();
-
-  state[0] = t0;
-  state[1] = t1;
-  state[2] = t2;
-
-  i = 3;
-  while (i < 25)
-  { state[i] = zero;
-    i += 1;
-  }
-
-  state[u8 167] = 0x80;
-
-  // out_offset in u64 words
-  out_offset >>= 3;
-
-  // notes:
-  // - i is incremented in the inner loop 
-  // - this function needs to output 2*N bytes
-  // - each iteration produces 168 bytes, but is incremented in "u64 mode" (by 21)
-  // - for N=640, 1280 bytes are needed, in 7 iterations, we produce 1176 bytes
-  //   and i will be 147.
-  i = 0;
-  while (i < (2*N)/168)
-  {
-      () = #spill(i, out, out_offset);
-
-    state = __keccakf1600_ref1(state);
-
-      () = #unspill(i, out, out_offset);
-
-    j = 0;
-    while (j < 21)
-    { t0 = state[j];
-      out[u64 out_offset] = t0;
-      out_offset += 1;
-      j += 1;
-    }
-
-    i += 1;
-  }
-
-    () = #spill(i, out, out_offset);
-
-  state = __keccakf1600_ref1(state);
-
-    () = #unspill(i, out, out_offset);
-
-  out_offset <<= 3; // in bytes again
-  i *= 168;
-  j = 0;
-  while (i < 2*N)
-  {
-    v0 = state[u8 (int)j];
-    out[(int)out_offset] = v0;
-    out_offset += 1;
-    i += 1;
-    j += 1;
-  }
-
-  return out, out_offset;
-}
-
 inline fn __pad_seedA(reg ptr u8[16] seedA) -> reg ptr u8[2 + 16 + 6] {
   reg u64 i j;
   stack u8[2+16+ 6] s_index_seed_padding;
@@ -153,7 +69,7 @@ fn __AS_plus_E_opt(
       () = #spill(i, j);
 
       index_seed_padding[u16 0] = (16u) ij;
-      A, A_offset = _shake128_gen_A_opt(A, A_offset, index_seed_padding);
+      A, A_offset = __shake128_gen_A_opt(A, A_offset, index_seed_padding);
 
       () = #unspill(i, j);
       j += 1;
@@ -246,7 +162,7 @@ fn __SA_plus_E_opt(
       () = #spill(i, j);
 
       index_seed_padding[u16 0] = (16u) ij;
-      A, A_offset = _shake128_gen_A_opt(A, A_offset, index_seed_padding);
+      A, A_offset = __shake128_gen_A_opt(A, A_offset, index_seed_padding);
 
       () = #unspill(i, j);
       j += 1;
