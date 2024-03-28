@@ -1,0 +1,37 @@
+from Jade require "crypto_kem/frodo/common/frodo640_params.jinc"
+from Jade require "crypto_kem/frodo/frodo640shake/amd64/ref/kem.jinc"
+
+export fn jade_kem_frodo_frodo640shake_amd64_ref_keypair_derand(#public reg u64 pkp skp coinsp) -> #public reg u64 {
+    reg u64 r;
+    _frodo_amd64_ref_keypair_derand(pkp, skp, coinsp);
+    ?{}, r = #set0();
+    return r;
+}
+
+export fn jade_kem_frodo_frodo640shake_amd64_ref_keypair(#public reg u64 pkp skp) -> #public reg u64 {
+    reg u64 r;
+    _frodo_amd64_ref_keypair(pkp, skp);
+    ?{}, r = #set0();
+    return r;
+}
+
+export fn jade_kem_frodo_frodo640shake_amd64_ref_enc_derand(#public reg u64 ctp ssp pkp coinsp) -> #public reg u64 {
+    reg u64 r;
+    _frodo_amd64_ref_enc_derand(ctp, ssp, pkp, coinsp);
+    ?{}, r = #set0();
+    return r;
+}
+
+export fn jade_kem_frodo_frodo640shake_amd64_ref_enc(#public reg u64 ctp ssp pkp) -> #public reg u64 {
+    reg u64 r;
+    _frodo_amd64_ref_enc(ctp, ssp, pkp);
+    ?{}, r = #set0();
+    return r;
+}
+
+export fn jade_kem_frodo_frodo640shake_amd64_ref_dec(#public reg u64 ssp ctp skp) -> #public reg u64 {
+    reg u64 r;
+    _frodo_amd64_ref_dec(ssp, ctp, skp);
+    ?{}, r = #set0();
+    return r;
+}

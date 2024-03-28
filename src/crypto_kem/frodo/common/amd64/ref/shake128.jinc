@@ -1,0 +1,388 @@
+from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
+
+param int SHAKE128_RATE = 168;
+
+#[returnaddress="stack"]
+fn __shake128_gen_A(reg ptr u8[2 * N] out, reg const ptr u8[2 + BYTES_SEED_A] in) -> stack u8[2 * N]
+{
+  stack ptr u8[2 * N] s_out;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  inline int INLEN OUTLEN OUTRND i k;
+  reg u64 j; stack u64 s_j;
+
+  INLEN = 2 + BYTES_SEED_A;
+  OUTLEN = 2 * N;
+  OUTRND = OUTLEN / SHAKE128_RATE;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  for i = 0 to INLEN {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+  state[u8 INLEN] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  for i = 0 to OUTRND {
+    s_out = out; s_j = j;
+
+    state = __keccakf1600_ref1(state);
+
+    out = s_out; j = s_j;
+
+    j = 0;
+    while (j < SHAKE128_RATE) {
+        for k = 0 to 4 {
+            out[(int)j + k + i * SHAKE128_RATE] = state[u8 (int)j + k];
+        }
+        j += 4;
+    }
+  }
+
+  s_out = out; s_j = j;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+
+  j = 0;
+  while (j < OUTLEN % SHAKE128_RATE) {
+    for k = 0 to 4 {
+        out[(int)j + k + OUTRND * SHAKE128_RATE] = state[u8 (int)j + k];
+    }
+    j += 4;
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn __shake128_seed_A(reg ptr u8[BYTES_SEED_A] out, reg const ptr u8[BYTES_SEED_A] in) -> stack u8[BYTES_SEED_A]
+{
+  stack ptr u8[BYTES_SEED_A] s_out;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  inline int INLEN OUTLEN i;
+
+  INLEN = BYTES_SEED_A; OUTLEN = BYTES_SEED_A;
+
+  s_out = out;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  for i = 0 to INLEN {
+    c = in[i];
+    state[u8 i] ^= c;
+  }
+  state[u8 INLEN] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+
+  for i = 0 to OUTLEN {
+    out[i] = state[u8 i];
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn __shake128_r(reg ptr u8[4 * NNBAR] out, reg const ptr u8[1 + BYTES_SEED_SE] in) -> stack u8[4 * NNBAR]
+{
+  stack ptr u8[4 * NNBAR] s_out;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  inline int INLEN OUTLEN OUTRND k;
+  reg u64 i j;
+  stack u64 s_i s_j;
+
+  INLEN = 1 + BYTES_SEED_SE;
+  OUTLEN = 4 * NNBAR;
+  OUTRND = OUTLEN / SHAKE128_RATE;
+
+  s_out = out;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  for k = 0 to INLEN { 
+    c = in[k];
+    state[u8 k] ^= c;
+  }
+
+  state[u8 INLEN] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  i = 0;
+  while (i < OUTRND * SHAKE128_RATE) {
+    s_i = i; s_j = j; s_out = out;
+
+    state = __keccakf1600_ref1(state);
+
+    out = s_out; i = s_i; j = s_j;
+    j = 0;
+
+    while (j < SHAKE128_RATE) {
+      for k = 0 to 4 {
+        out[(int)i + k] = state[u8 (int)j + k];
+      }
+      j += 4;
+      i += 4;
+    }
+  }
+
+  s_i = i; s_j = j; s_out = out;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out; j = s_j;
+  j = 0;
+
+  while (j < OUTLEN % SHAKE128_RATE) {
+    for k = 0 to 4 {
+      out[(int) j + k + OUTRND * SHAKE128_RATE] = state[u8 (int) j + k];
+    }
+    j += 4;
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn __shake128_pkh(reg ptr u8[BYTES_SEC] out, reg const ptr u8[BYTES_PK] in) -> stack u8[BYTES_SEC]
+{
+  stack ptr u8[BYTES_SEC] s_out;
+  stack ptr u8[BYTES_PK] s_in;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  reg u64 i j; stack u64 s_i s_j;
+  inline int INLEN OUTLEN INRND k;
+
+  INLEN = BYTES_PK; OUTLEN = BYTES_SEC;
+  INRND = INLEN / SHAKE128_RATE;
+  s_out = out;
+  s_in = in;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  i = 0;
+  while (i < INRND * SHAKE128_RATE) {
+    in = s_in;
+    j = 0;
+    while (j < SHAKE128_RATE) {
+      for k = 0 to 4 {
+        c = in[(int)i + k];
+        state[u8 (int)j + k] ^= c;
+      }
+
+      i += 4;
+      j += 4;
+    }
+
+    s_in = in; s_i = i; s_j = j;
+    state = __keccakf1600_ref1(state);
+    i = s_i; j = s_j;
+  }
+
+  in = s_in;
+  j = 0;
+  while (j < INLEN % SHAKE128_RATE) {
+    for k = 0 to 4 {
+      c = in[(int)j + INRND * SHAKE128_RATE + k];
+      state[u8 (int)j + k] ^= c;
+    }
+    j += 4;
+  }
+
+  state[u8 INLEN % SHAKE128_RATE] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  s_in = in; s_i = i; s_j = j;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out;
+
+  for k = 0 to OUTLEN {
+    out[k] = state[u8 k];
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn __shake128_SE_k(reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out, reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) -> stack u8[BYTES_SEED_SE + BYTES_SEC] {
+  stack ptr u8[BYTES_SEED_SE + BYTES_SEC] s_out;
+  stack ptr u8[2 * BYTES_SEC + BYTES_SALT] s_in;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  inline int INLEN OUTLEN k;
+  reg u64 i; stack u64 s_i;
+
+  INLEN = 2 * BYTES_SEC + BYTES_SALT;
+  OUTLEN = BYTES_SEED_SE + BYTES_SEC;
+
+  s_out = out; s_in = in;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  in = s_in;
+  for k = 0 to INLEN {
+    c = in[k];
+    state[u8 k] ^= c;
+  }
+
+  state[u8 INLEN] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  s_in = in; s_i = i;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out; i = s_i;
+  i = 0;
+
+  for k = 0 to OUTLEN {
+    out[k] = state[u8 k];
+  }
+
+  return out;
+}
+
+
+#[returnaddress="stack"]
+fn __shake128_encap_r(reg ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] out, reg const ptr u8[1 + BYTES_SEED_SE] in) -> stack u8[2 * (2 * NNBAR + NBAR * NBAR)] {
+  stack ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] s_out;
+  stack ptr u8[1 + BYTES_SEED_SE] s_in;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  inline int INLEN OUTLEN OUTRND k;
+  reg u64 i j; stack u64 s_i s_j;
+
+  INLEN = 1 + BYTES_SEED_SE;
+  OUTLEN = 2 * (2 * NNBAR + NBAR * NBAR);
+  OUTRND = OUTLEN / SHAKE128_RATE;
+
+  s_out = out;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  for k = 0 to INLEN {
+    c = in[k];
+    state[u8 k] ^= c;
+  }
+
+  state[u8 INLEN] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  s_in = in;
+
+  i = 0;
+  while (i < OUTRND * SHAKE128_RATE) {
+    s_out = out; s_i = i; s_j = j;
+
+    state = __keccakf1600_ref1(state);
+
+    out = s_out; i = s_i; j = s_j;
+    j = 0;
+    while (j < SHAKE128_RATE) {
+      for k = 0 to 4 {
+        out[(int)i + k] = state[u8 (int)j + k];
+      }
+      i += 4;
+      j += 4;
+    }
+  }
+
+  s_out = out; s_i = i; s_j = j;
+  state = __keccakf1600_ref1(state);
+  out = s_out; i = s_i; j = s_j;
+
+  j = 0;
+  while (j < OUTLEN % SHAKE128_RATE) {
+    for k = 0 to 4 {
+        out[(int) j + OUTRND * SHAKE128_RATE + k] = state[u8 (int)j + k];
+    }
+    j += 4;
+  }
+
+  return out;
+}
+
+#[returnaddress="stack"]
+fn __shake128_ss(reg ptr u8[BYTES_SEC] out, reg const ptr u8[BYTES_CT + BYTES_SEC] in) -> stack u8[BYTES_SEC]
+{
+  stack ptr u8[BYTES_SEC] s_out;
+  stack ptr u8[BYTES_CT + BYTES_SEC] s_in;
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u8 c;
+  reg u64 i j; stack u64 s_i s_j;
+  inline int INLEN OUTLEN INRND k;
+
+  INLEN = BYTES_CT + BYTES_SEC;
+  OUTLEN = BYTES_SEC;
+  INRND = INLEN / SHAKE128_RATE;
+
+  s_out = out; s_in = in;
+
+  state = s_state;
+  state =  __keccak_init_ref1(state);
+
+  i = 0;
+  while (i < INRND * SHAKE128_RATE) {
+    in = s_in;
+    j = 0;
+    while (j < SHAKE128_RATE) {
+      for k = 0 to 4 {
+        c = in[(int)i + k];
+        state[u8 (int)j + k] ^= c;
+      }
+
+      i += 4;
+      j += 4;
+    }
+
+    s_in = in; s_i = i; s_j = j;
+    state = __keccakf1600_ref1(state);
+    i = s_i; j = s_j;
+  }
+
+  in = s_in;
+  s_i = i;
+  j = 0;
+  while (j < INLEN % SHAKE128_RATE) {
+      c = in[(int)j + INRND * SHAKE128_RATE];
+      state[u8 (int)j] ^= c;
+      j += 1;
+  }
+  s_in = in; s_j = j;
+
+  state[u8 INLEN % SHAKE128_RATE] ^= 0x1f;
+  state[u8 SHAKE128_RATE-1] ^= 0x80;
+
+  state = __keccakf1600_ref1(state);
+
+  out = s_out; i = s_i;
+
+  i = 0;
+  for k = 0 to OUTLEN {
+    out[k] = state[u8 k];
+  }
+
+  return out;
+}
