@@ -1,25 +1,32 @@
 fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR / 8] in) -> stack u16[NBAR * NBAR] {
-    inline int i j;
-    reg u64 t tmp tmp2 mask;
+    inline int k;
+    reg u64 i j t tmp tmp2 mask offset;
 
     mask = (1 << EXTRACTED_BITS) - 1;
 
-    for i = 0 to NBAR {
+    i = 0;
+    while (i < NBAR) {
         tmp = 0;
 
-        for j = 0 to EXTRACTED_BITS {
-            tmp2 = (64u)in[i * EXTRACTED_BITS + j];
-            tmp2 <<= 8 * j;
+        for k = 0 to EXTRACTED_BITS {
+            tmp2 = (64u)in[i * EXTRACTED_BITS + k];
+            tmp2 <<= 8 * k;
             tmp |= tmp2;
         }
 
-        for j = 0 to 8 {
+        j = 0;
+        while (j < 8) {
             t = tmp;
             t &= mask;
             t <<= D - EXTRACTED_BITS;
-            out[i*NBAR + j] = (16u)t;
+            offset = #LEA(i*NBAR+j);
+            out[offset] = (16u)t;
             tmp >>= EXTRACTED_BITS;
+
+            j += 1;
         }
+
+        i += 1;
     }
 
     return out;
@@ -27,7 +34,7 @@ fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR
 
 fn __decode(reg ptr u8[EXTRACTED_BITS * NBAR] out, reg ptr u16[NBAR * NBAR] in) -> stack u8[EXTRACTED_BITS * NBAR] {
     reg u32 tmplong tmp mask d;
-    inline int i j;
+    reg u64 i j offset;
 
     d = 1 << (D - EXTRACTED_BITS - 1);
     mask = (1 << EXTRACTED_BITS) - 1;
@@ -35,24 +42,32 @@ fn __decode(reg ptr u8[EXTRACTED_BITS * NBAR] out, reg ptr u16[NBAR * NBAR] in) 
     out = out;
     in = in;
 
-    for i = 0 to NBAR {
+    i = 0;
+    while (i < NBAR) {
         tmplong = 0;
 
-        for j = 0 to 8 {
-            tmp = (32u)in[(int) i * NBAR + j];
+        j = 0;
+        while (j < 8) {
+            offset = #LEA(i * NBAR + 7);
+            offset -= j;
+            tmp = (32u)in[offset];
             tmp += d;
             tmp >>= D - EXTRACTED_BITS;
             tmp &= mask;
 
-            tmp <<= EXTRACTED_BITS * j;
-
+            tmplong <<= EXTRACTED_BITS;
             tmplong |= tmp;
+            j += 1;
         }
 
-        for j = 0 to EXTRACTED_BITS {
-            out[i * EXTRACTED_BITS + j] = (8u)tmplong;
+        j = 0;
+        while (j < EXTRACTED_BITS) {
+            offset = #LEA(i*EXTRACTED_BITS+j);
+            out[offset] = (8u)tmplong;
             tmplong >>= 8;
+            j += 1;
         }
+        i += 1;
     }
 
     return out;

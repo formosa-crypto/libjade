@@ -56,9 +56,8 @@ fn __shake128_r_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 j t0 zero;
-  reg u8 t;
-  inline int k INLEN OUTLEN OUTRND;
+  reg u64 j offset t0 zero;
+  inline int INLEN OUTLEN OUTRND;
 
   INLEN = 1 + BYTES_SEED_SE;
   OUTLEN = 4 * NNBAR;
@@ -70,9 +69,13 @@ fn __shake128_r_opt(
   state[u8 0] = 0x5F;
   state[INLEN/8] = zero;
 
-  for k = 0 to INLEN/8 {
-    t0 = in[u64 k];
-    state.[u64 1 + 8*k] = t0;
+  i = 0;
+  while (i < INLEN/8) {
+    t0 = in[u64 i];
+    offset = #LEA(1+8*i);
+    state.[u64 offset] = t0;
+
+    i += 1;
   }
 
   i = INLEN/8 + 1;
@@ -85,21 +88,23 @@ fn __shake128_r_opt(
   state[u8 SHAKE128_RATE-1] = 0x80;
 
   i = 0;
-  j = 0;
-  while (i < OUTRND) {
+  while (i < OUTRND * SHAKE128_RATE/8) {
     () = #spill(i, j, out);
 
     state = __keccakf1600_ref1(state);
 
     () = #unspill(i, j, out);
 
-    for k = 0 to SHAKE128_RATE/8 {
-        t0 = state[u64 k];
-        out[u64 j + k] = t0;
+    j = 0;
+    while (j < SHAKE128_RATE/8) {
+        t0 = state[u64 j];
+        offset = #LEA(i+j);
+        out[u64 offset] = t0;
+
+        j += 1;
     }
 
-    i += 1;
-    j += SHAKE128_RATE/8;
+    i += SHAKE128_RATE/8;
   }
 
   () = #spill(i, j, out);
@@ -108,9 +113,11 @@ fn __shake128_r_opt(
 
   () = #unspill(i, j, out);
 
-  for k = 0 to (OUTLEN % SHAKE128_RATE) / 8 {
-    t0 = state[u64 k];
-    out[u64 OUTRND*SHAKE128_RATE/8 + k] = t0;
+  i = 0;
+  while (i < (OUTLEN % SHAKE128_RATE) / 8) {
+    t0 = state[u64 i];
+    out[u64 OUTRND*SHAKE128_RATE/8 + i] = t0;
+    i += 1;
   }
 
   return out;
@@ -124,9 +131,8 @@ fn __shake128_pkh_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 j t0 zero;
-  reg u8 t;
-  inline int k INLEN OUTLEN INRND;
+  reg u64 j offset t0 zero;
+  inline int INLEN OUTLEN INRND;
 
   INLEN = BYTES_PK;
   INRND = INLEN/SHAKE128_RATE;
@@ -144,11 +150,14 @@ fn __shake128_pkh_opt(
 
   () = #spill(out);
 
-  i = 0; j = 0;
-  while (i < INRND) {
-    for k = 0 to SHAKE128_RATE/8 {
-        t0 = in[u64 j + k];
-        state[u64 k] ^= t0;
+  i = 0;
+  while (i < INRND * SHAKE128_RATE/8) {
+    j = 0;
+    while (j < SHAKE128_RATE/8) {
+        offset = #LEA(i+j);
+        t0 = in[u64 offset];
+        state[u64 j] ^= t0;
+        j += 1;
     }
 
     () = #spill(i, j);
@@ -157,13 +166,15 @@ fn __shake128_pkh_opt(
 
     () = #unspill(i, j);
 
-    i += 1;
-    j += SHAKE128_RATE/8;
+    i += SHAKE128_RATE/8;
   }
 
-  for k = 0 to (INLEN % SHAKE128_RATE)/8 {
-    t0 = in[u64 INRND * SHAKE128_RATE/8 + k];
-    state[u64 k] ^= t0;
+  i = 0;
+  while (i < (INLEN % SHAKE128_RATE)/8) {
+    t0 = in[u64 INRND * SHAKE128_RATE/8 + i];
+    state[u64 i] ^= t0;
+
+    i += 1;
   }
 
   state[u8 INLEN%SHAKE128_RATE] ^= 0x1f;
@@ -175,8 +186,10 @@ fn __shake128_pkh_opt(
 
   () = #unspill(i, j, out);
 
-  for k = 0 to OUTLEN/8 {
-    out[u64 k] = state[u64 k];
+  i = 0;
+  while (i < OUTLEN/8) {
+    out[u64 i] = state[u64 i];
+    i += 1;
   }
 
   return out;
@@ -190,17 +203,20 @@ fn __shake128_SE_k_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 t0 zero;
-  inline int k INLEN OUTLEN;
+  reg u64 offset t0 zero;
+  inline int INLEN OUTLEN;
 
   INLEN = 2 * BYTES_SEC + BYTES_SALT;
   OUTLEN = BYTES_SEED_SE + BYTES_SEC;
 
   state = s_state;
 
-  for k = 0 to INLEN/8 {
-    t0 = in.[u64 8*k];
-    state[k] = t0;
+  i = 0;
+  while (i < INLEN/8) {
+    t0 = in[u64 i];
+    state[i] = t0;
+
+    i += 1;
   }
   ?{}, zero = #set0();
 
@@ -219,9 +235,13 @@ fn __shake128_SE_k_opt(
 
   () = #unspill(out);
 
-  for k = 0 to OUTLEN/8 {
-    t0 = state[u64 k];
-    out.[u64 1 + 8*k] = t0;
+  i = 0;
+  while (i < OUTLEN/8) {
+    t0 = state[u64 i];
+    offset = #LEA(1+8*i);
+    out.[u64 offset] = t0;
+
+    i += 1;
   }
 
   return out;
@@ -235,7 +255,7 @@ fn __shake128_encap_r_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 j t0 zero;
+  reg u64 j offset t0 zero;
   reg u8 t;
   inline int k INLEN OUTLEN OUTRND;
 
@@ -249,9 +269,11 @@ fn __shake128_encap_r_opt(
   state[u8 0] = 0x5F;
   state[INLEN/8] = zero;
 
-  for k = 0 to INLEN/8 {
-    t0 = in[u64 k];
-    state[u64 k] = t0;
+  i = 0;
+  while (i < INLEN/8) {
+    t0 = in[u64 i];
+    state[u64 i] = t0;
+    i += 1;
   }
   
   for k = 0 to INLEN%8 {
@@ -269,21 +291,23 @@ fn __shake128_encap_r_opt(
   state[u8 SHAKE128_RATE-1] = 0x80;
 
   i = 0;
-  j = 0;
-  while (i < OUTRND) {
-    () = #spill(i, j, out);
+  while (i < OUTRND * SHAKE128_RATE/8) {
+    () = #spill(i, out);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j, out);
+    () = #unspill(i, out);
 
-    for k = 0 to SHAKE128_RATE/8 {
-        t0 = state[u64 k];
-        out[u64 j + k] = t0;
+    j = 0;
+    while (j < SHAKE128_RATE/8) {
+        t0 = state[u64 j];
+        offset = #LEA(i+j);
+        out[u64 offset] = t0;
+
+        j += 1;
     }
 
-    i += 1;
-    j += SHAKE128_RATE/8;
+    i += SHAKE128_RATE/8;
   }
 
   () = #spill(i, j, out);
@@ -292,9 +316,12 @@ fn __shake128_encap_r_opt(
 
   () = #unspill(i, j, out);
 
-  for k = 0 to (OUTLEN % SHAKE128_RATE) / 8 {
-    t0 = state[u64 k];
-    out[u64 OUTRND*SHAKE128_RATE/8 + k] = t0;
+  i = 0;
+  while (i < (OUTLEN % SHAKE128_RATE) / 8) {
+    t0 = state[u64 i];
+    out[u64 OUTRND*SHAKE128_RATE/8 + i] = t0;
+
+    i += 1;
   }
 
   return out;
@@ -308,9 +335,8 @@ fn __shake128_ss_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 j t0 zero;
-  reg u8 t;
-  inline int k INLEN OUTLEN INRND;
+  reg u64 j offset t0 zero;
+  inline int INLEN OUTLEN INRND;
 
   INLEN = BYTES_CT + BYTES_SEC;
   INRND = INLEN/SHAKE128_RATE;
@@ -328,11 +354,15 @@ fn __shake128_ss_opt(
 
   () = #spill(out);
 
-  i = 0; j = 0;
-  while (i < INRND) {
-    for k = 0 to SHAKE128_RATE/8 {
-        t0 = in[u64 j + k];
-        state[u64 k] ^= t0;
+  i = 0;
+  while (i < INRND*SHAKE128_RATE/8) {
+    j = 0;
+    while (j < SHAKE128_RATE/8) {
+        offset = #LEA(i+j);
+        t0 = in[u64 offset];
+        state[u64 j] ^= t0;
+
+        j += 1;
     }
 
     () = #spill(i, j);
@@ -341,13 +371,15 @@ fn __shake128_ss_opt(
 
     () = #unspill(i, j);
 
-    i += 1;
-    j += SHAKE128_RATE/8;
+    i += SHAKE128_RATE/8;
   }
 
-  for k = 0 to (INLEN % SHAKE128_RATE)/8 {
-    t0 = in[u64 INRND * SHAKE128_RATE/8 + k];
-    state[u64 k] ^= t0;
+  i = 0;
+  while (i < (INLEN % SHAKE128_RATE)/8) {
+    t0 = in[u64 INRND * SHAKE128_RATE/8 + i];
+    state[u64 i] ^= t0;
+
+    i += 1;
   }
 
   state[u8 INLEN%SHAKE128_RATE] ^= 0x1f;
@@ -359,8 +391,10 @@ fn __shake128_ss_opt(
 
   () = #unspill(i, j, out);
 
-  for k = 0 to OUTLEN/8 {
-    out[u64 k] = state[u64 k];
+  i = 0;
+  while (i < OUTLEN/8) {
+    out[u64 i] = state[u64 i];
+    i += 1;
   }
 
   return out;

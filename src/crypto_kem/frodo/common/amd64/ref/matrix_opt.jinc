@@ -125,7 +125,6 @@ fn __AS_plus_E_opt(
   inline int p;
   #spill_to_mmx reg u64 i j ij jN q;
   reg u32[8] sum;
-  reg u16 t16;
   reg u32 mul sp;
 
   index_seed_padding = __pad_seedA(seedA);
@@ -309,19 +308,22 @@ fn __SB_plus_E_opt(
   #spill_to_mmx reg ptr u16[NBAR * NBAR] V,  // initial value is set to E's to avoid copy
   #spill_to_mmx reg ptr u16[NNBAR] S B)
 -> reg ptr u16[NBAR * NBAR] {
-    reg u64 k B_offset;
+    reg u64 i j k iN V_offset offset;
     reg u32 sum mul t32;
-    inline int i j l;
 
-    for i = 0 to NBAR {
-        for j = 0 to NBAR {
+    i = 0; iN = 0;
+    while (i < NBAR) {
+        j = 0;
+        while (j < NBAR) {
             k = 0;
-            sum = (32u)V[i * NBAR + j];
+            V_offset = #LEA(i*NBAR+j);
+            sum = (32u)V[V_offset];
             while (k < N) {
-                mul = (32u)S[i * N + k];
+                offset = #LEA(iN+k);
+                mul = (32u)S[offset];
 
-                B_offset = #LEA(j + NBAR*k);
-                t32 = (32u)B[B_offset];
+                offset = #LEA(j + NBAR*k);
+                t32 = (32u)B[offset];
                 mul *= t32;
 
                 sum += mul;
@@ -329,8 +331,12 @@ fn __SB_plus_E_opt(
             }
 
             sum &= (1 << D) - 1;
-            V[i * NBAR + j] = (16u)sum; 
+            V[V_offset] = (16u)sum;
+
+            j += 1;
         }
+        i += 1;
+        iN += N;
     }
 
     return V;
@@ -340,20 +346,22 @@ fn __mul_BS_opt(
   #spill_to_mmx reg ptr u16[NBAR * NBAR] M,
   #spill_to_mmx reg ptr u16[NNBAR]B S)
 -> reg ptr u16[NBAR * NBAR] {
-    reg u64 k S_offset;
+    reg u64 i j k iN jN offset;
     reg u32 sum mul t32;
-    inline int i j;
 
-    for i = 0 to NBAR {
-        for j = 0 to NBAR {
+    i = 0; iN = 0;
+    while (i < NBAR) {
+        j = 0; jN = 0;
+        while (j < NBAR) {
             sum = 0;
 
             k = 0;
             while (k < N) {
-                mul = (32u)B[i * N + k];
+                offset = #LEA(iN+k);
+                mul = (32u)B[offset];
 
-                S_offset = #LEA(j*N+k);
-                t32 = (32u)S[S_offset];
+                offset = #LEA(jN+k);
+                t32 = (32u)S[offset];
                 mul *= t32;
 
                 sum += mul;
@@ -361,8 +369,15 @@ fn __mul_BS_opt(
                 k += 1;
             }
             sum &= (1 << D) - 1;
-            M[i * NBAR + j] = (16u)sum;
+            offset = #LEA(i*NBAR+j);
+            M[offset] = (16u)sum;
+
+            j += 1;
+            jN += N;
         }
+
+        i += 1;
+        iN += N;
     }
 
     return M;

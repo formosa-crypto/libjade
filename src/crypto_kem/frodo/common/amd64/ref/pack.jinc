@@ -1,5 +1,5 @@
 fn __pack_B(reg ptr u8[D * N]out, reg ptr u16[NNBAR] in) -> stack u8[D * N] {
-    reg u64 i j;
+    reg u64 i j l offset;
     inline int k MID TERM Mask;
     reg u64 ac tmp;
     reg u16 acm tm;
@@ -18,11 +18,15 @@ fn __pack_B(reg ptr u8[D * N]out, reg ptr u16[NNBAR] in) -> stack u8[D * N] {
         acm = 0;
 
         // aggregate 1st half (16 * 4 bits) into 4 * D bits in ac
-        for k = 0 to 4 {
-            tmp = (64u)in[(int)i + k];
+        l = 0;
+        while (l < 4) {
+            offset = #LEA(i + l);
+            tmp = (64u)in[offset];
             tmp &= Mask;
             ac <<= D;
             ac |= tmp;
+
+            l += 1;
         }
 
         // aggregate the 1st half of the MID in acm from ac
@@ -35,23 +39,37 @@ fn __pack_B(reg ptr u8[D * N]out, reg ptr u16[NNBAR] in) -> stack u8[D * N] {
         }
 
         // process the 1st TERM in ac
-        for k = 0 to TERM {
-            out[(int)j + TERM - 1 - k] = ac;
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(j + TERM - 1);
+            offset -= l;
+            out[offset] = ac;
             ac >>= 8;
+
+            l += 1;
         }
 
         // aggregate 2nd half (16 * 4 bits) into 4 * D bits in ac
-        for k = 0 to 4 {
-            tmp = (64u)in[(int)i + 4 + k];
+        l = 0;
+        while (l < 4) {
+            offset = #LEA(i + 4 + l);
+            tmp = (64u)in[offset];
             tmp &= Mask;
             ac <<= D;
             ac |= tmp;
+
+            l += 1;
         }
 
         // process the 2nd TERM in ac
-        for k = 0 to TERM {
-            out[(int)j + D - 1 - k] = ac;
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(j + D - 1);
+            offset -= l;
+            out[offset] = ac;
             ac >>= 8;
+
+            l += 1;
         }
 
         // aggregate the 2nd half of the MID in acm from ac
@@ -64,9 +82,14 @@ fn __pack_B(reg ptr u8[D * N]out, reg ptr u16[NNBAR] in) -> stack u8[D * N] {
             ac >>= 4;
         }
 
-        for k = 0 to MID {
-            out[(int)j + TERM + MID - 1 - k] = acm;
+        l = 0;
+        while (l < MID) {
+            offset = #LEA(j + TERM + MID - 1);
+            offset -= l;
+            out[offset] = acm;
             acm >>= 8;
+
+            l += 1;
         }
 
         i += 8;
@@ -79,7 +102,7 @@ fn __pack_B(reg ptr u8[D * N]out, reg ptr u16[NNBAR] in) -> stack u8[D * N] {
 fn __unpack_B(reg ptr u16[NNBAR]out, reg ptr u8[D * N]in) -> stack u16[NNBAR] {
     inline int k TERM MID MASK;
 
-    reg u64 i j ac tmp;
+    reg u64 i j l ac tmp offset;
     reg u16 acm tm;
 
     // D = TERM + MID + TERM
@@ -98,10 +121,14 @@ fn __unpack_B(reg ptr u16[NNBAR]out, reg ptr u8[D * N]in) -> stack u16[NNBAR] {
         acm = 0;
 
         // accumulate the MID bytes (8/16 for D = 15/16) in acm (u16)
-        for k = 0 to MID {
-            tm = (16u)in[(int)i + TERM + k];
+        l = 0;
+        while (l < MID) {
+            offset = #LEA(i + TERM + l);
+            tm = (16u)in[offset];
             acm <<= 8;
             acm |= tm;
+
+            l += 1;
         }
 
         // aggregate 2nd half of MID from acm in ac
@@ -114,25 +141,38 @@ fn __unpack_B(reg ptr u16[NNBAR]out, reg ptr u8[D * N]in) -> stack u16[NNBAR] {
         }
 
         // accumulate 2nd TERM bytes in ac
-        for k = 0 to TERM {
-            tmp = (64u)in[(int)i + TERM + MID + k];
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(i + TERM + MID + l);
+            tmp = (64u)in[offset];
             ac <<= 8;
             ac |= tmp;
+
+            l += 1;
         }
 
         // result in 4 * D bits in 2nd half of output
-        for k = 0 to 4 {
+        l = 0;
+        while (l < 4) {
             tm = ac;
             tm &= MASK;
-            out[(int)j + 7 - k] = tm;
+            offset = #LEA(j + 7);
+            offset -= l;
+            out[offset] = tm;
             ac >>= D;
+
+            l += 1;
         }
 
         // accumulate 1st TERM bytes in ac
-        for k = 0 to TERM {
-            tmp = (64u)in[(int)i + k];
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(i + l);
+            tmp = (64u)in[offset];
             ac <<= 8;
             ac |= tmp;
+
+            l += 1;
         }
 
         // aggregate 2nd half of MID from acm to ac
@@ -146,12 +186,17 @@ fn __unpack_B(reg ptr u16[NNBAR]out, reg ptr u8[D * N]in) -> stack u16[NNBAR] {
         }
 
         // result in 4 * D bits in 1st half of output
-        for k = 0 to 4 {
-            // disable implicit scaling for handling little endianess
+        l = 0;
+        while (l < 4) {
+            // disable implicit scaling for handling little endianness
+            offset = #LEA(j + 3);
+            offset -= l;
             tm = ac;
             tm &= MASK;
-            out[(int)j + 3 - k] = tm;
+            out[offset] = tm;
             ac >>= D;
+
+            l += 1;
         }
 
         i += D;
@@ -162,7 +207,7 @@ fn __unpack_B(reg ptr u16[NNBAR]out, reg ptr u8[D * N]in) -> stack u16[NNBAR] {
 }
 
 fn __pack_C(reg ptr u8[D * NBAR]out, reg ptr u16[NBAR * NBAR] in) -> stack u8[D * NBAR] {
-    reg u64 i j;
+    reg u64 i j l offset;
     inline int k MID TERM Mask;
     reg u64 ac tmp;
     reg u16 acm tm;
@@ -181,11 +226,15 @@ fn __pack_C(reg ptr u8[D * NBAR]out, reg ptr u16[NBAR * NBAR] in) -> stack u8[D 
         acm = 0;
 
         // aggregate 1st half (16 * 4 bits) into 4 * D bits in ac
-        for k = 0 to 4 {
-            tmp = (64u)in[(int)i + k];
+        l = 0;
+        while (l < 4) {
+            offset = #LEA(i + l);
+            tmp = (64u)in[offset];
             tmp &= Mask;
             ac <<= D;
             ac |= tmp;
+
+            l += 1;
         }
 
         // aggregate the 1st half of the MID in acm from ac
@@ -198,23 +247,37 @@ fn __pack_C(reg ptr u8[D * NBAR]out, reg ptr u16[NBAR * NBAR] in) -> stack u8[D 
         }
 
         // process the 1st TERM in ac
-        for k = 0 to TERM {
-            out[(int)j + TERM - 1 - k] = ac;
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(j + TERM - 1);
+            offset -= l;
+            out[offset] = ac;
             ac >>= 8;
+
+            l += 1;
         }
 
         // aggregate 2nd half (16 * 4 bits) into 4 * D bits in ac
-        for k = 0 to 4 {
-            tmp = (64u)in[(int)i + 4 + k];
+        l = 0;
+        while (l < 4) {
+            offset = #LEA(i + 4 + l);
+            tmp = (64u)in[offset];
             tmp &= Mask;
             ac <<= D;
             ac |= tmp;
+
+            l += 1;
         }
 
         // process the 2nd TERM in ac
-        for k = 0 to TERM {
-            out[(int)j + D - 1 - k] = ac;
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(j + D - 1);
+            offset -= l;
+            out[offset] = ac;
             ac >>= 8;
+
+            l += 1;
         }
 
         // aggregate the 2nd half of the MID in acm from ac
@@ -227,9 +290,14 @@ fn __pack_C(reg ptr u8[D * NBAR]out, reg ptr u16[NBAR * NBAR] in) -> stack u8[D 
             ac >>= 4;
         }
 
-        for k = 0 to MID {
-            out[(int)j + TERM + MID - 1 - k] = acm;
+        l = 0;
+        while (l < MID) {
+            offset = #LEA(j + TERM + MID - 1);
+            offset -= l;
+            out[offset] = acm;
             acm >>= 8;
+
+            l += 1;
         }
 
         i += 8;
@@ -242,7 +310,7 @@ fn __pack_C(reg ptr u8[D * NBAR]out, reg ptr u16[NBAR * NBAR] in) -> stack u8[D 
 fn __unpack_C(reg ptr u16[NBAR * NBAR]out, reg ptr u8[D * NBAR]in) -> stack u16[NBAR * NBAR] {
     inline int k TERM MID MASK;
 
-    reg u64 i j ac tmp;
+    reg u64 i j l ac tmp offset;
     reg u16 acm tm;
 
     // D = TERM + MID + TERM
@@ -261,10 +329,14 @@ fn __unpack_C(reg ptr u16[NBAR * NBAR]out, reg ptr u8[D * NBAR]in) -> stack u16[
         acm = 0;
 
         // accumulate the MID bytes (8/16 for D = 15/16) in acm (u16)
-        for k = 0 to MID {
-            tm = (16u)in[(int)i + TERM + k];
+        l = 0;
+        while (l < MID) {
+            offset = #LEA(i + TERM + l);
+            tm = (16u)in[offset];
             acm <<= 8;
             acm |= tm;
+
+            l += 1;
         }
 
         // aggregate 2nd half of MID from acm in ac
@@ -277,25 +349,38 @@ fn __unpack_C(reg ptr u16[NBAR * NBAR]out, reg ptr u8[D * NBAR]in) -> stack u16[
         }
 
         // accumulate 2nd TERM bytes in ac
-        for k = 0 to TERM {
-            tmp = (64u)in[(int)i + TERM + MID + k];
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(i + TERM + MID + l);
+            tmp = (64u)in[offset];
             ac <<= 8;
             ac |= tmp;
+
+            l += 1;
         }
 
         // result in 4 * D bits in 2nd half of output
-        for k = 0 to 4 {
+        l = 0;
+        while (l < 4) {
+            offset = #LEA(j + 7);
+            offset -= l;
             tm = ac;
             tm &= MASK;
-            out[(int)j + 7 - k] = tm;
+            out[offset] = tm;
             ac >>= D;
+
+            l += 1;
         }
 
         // accumulate 1st TERM bytes in ac
-        for k = 0 to TERM {
-            tmp = (64u)in[(int)i + k];
+        l = 0;
+        while (l < TERM) {
+            offset = #LEA(i + l);
+            tmp = (64u)in[offset];
             ac <<= 8;
             ac |= tmp;
+
+            l += 1;
         }
 
         // aggregate 2nd half of MID from acm to ac
@@ -309,12 +394,17 @@ fn __unpack_C(reg ptr u16[NBAR * NBAR]out, reg ptr u8[D * NBAR]in) -> stack u16[
         }
 
         // result in 4 * D bits in 1st half of output
-        for k = 0 to 4 {
-            // disable implicit scaling for handling little endianess
+        l = 0;
+        while (l < 4) {
+            // disable implicit scaling for handling little endianness
+            offset = #LEA(j + 3);
+            offset -= l;
             tm = ac;
             tm &= MASK;
-            out[(int)j + 3 - k] = tm;
+            out[offset] = tm;
             ac >>= D;
+
+            l += 1;
         }
 
         i += D;
