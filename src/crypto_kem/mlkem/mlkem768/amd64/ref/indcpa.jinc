@@ -10,6 +10,8 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES] randomn
   stack u16[MLKEM_VECN] e pkpv skpv;
   stack u8[64] buf;
   stack u8[MLKEM_SYMBYTES] publicseed noiseseed;
+  reg ptr u8[MLKEM_SYMBYTES] r_noiseseed;
+  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
   stack u8[32] inbuf;
   reg u64 t64;
   reg u64 zero;
@@ -32,28 +34,31 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES] randomn
 
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = buf[u64 i];
+    #declassify t64 = buf[u64 i];
     publicseed[u64 i] = t64;
     t64 = buf[u64 i + MLKEM_SYMBYTES/8];
     noiseseed[u64 i] = t64;
   }
 
+  r_noiseseed = noiseseed; // currently, it is not possible to load stack to mmx, so: first to register, and then to mmx
+  s_noiseseed = r_noiseseed;
+
   zero = 0; 
   a = __gen_matrix(publicseed, zero);
 
   nonce = 0;
-  skpv[0:MLKEM_N] = _poly_getnoise(skpv[0:MLKEM_N], noiseseed, nonce);
+  skpv[0:MLKEM_N] = _poly_getnoise(skpv[0:MLKEM_N], s_noiseseed, nonce);
   nonce = 1;
-  skpv[MLKEM_N:MLKEM_N] = _poly_getnoise(skpv[MLKEM_N:MLKEM_N], noiseseed, nonce);
+  skpv[MLKEM_N:MLKEM_N] = _poly_getnoise(skpv[MLKEM_N:MLKEM_N], s_noiseseed, nonce);
   nonce = 2;
-  skpv[2*MLKEM_N:MLKEM_N] = _poly_getnoise(skpv[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
+  skpv[2*MLKEM_N:MLKEM_N] = _poly_getnoise(skpv[2*MLKEM_N:MLKEM_N], s_noiseseed, nonce);
 
   nonce = 3;
-  e[0:MLKEM_N] = _poly_getnoise(e[0:MLKEM_N], noiseseed, nonce);
+  e[0:MLKEM_N] = _poly_getnoise(e[0:MLKEM_N], s_noiseseed, nonce);
   nonce = 4;
-  e[MLKEM_N:MLKEM_N] = _poly_getnoise(e[MLKEM_N:MLKEM_N], noiseseed, nonce);
+  e[MLKEM_N:MLKEM_N] = _poly_getnoise(e[MLKEM_N:MLKEM_N], s_noiseseed, nonce);
   nonce = 5;
-  e[2*MLKEM_N:MLKEM_N] = _poly_getnoise(e[2*MLKEM_N:MLKEM_N], noiseseed, nonce);
+  e[2*MLKEM_N:MLKEM_N] = _poly_getnoise(e[2*MLKEM_N:MLKEM_N], s_noiseseed, nonce);
 
   skpv = __polyvec_ntt(skpv);
   e    = __polyvec_ntt(e);
@@ -70,6 +75,8 @@ fn __indcpa_keypair(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES] randomn
 
   pkp = spkp;
   skp = sskp;
+
+  _ = #init_msf(); // temporary fix
 
   __polyvec_tobytes(skp, skpv);
   __polyvec_tobytes(pkp, pkpv);
@@ -93,7 +100,7 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
   reg u64 i t64;
   reg u64 ctp;
   reg u8 nonce;
-  stack ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
 
   s_noiseseed = noiseseed;
 
@@ -103,7 +110,7 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
   pkp += MLKEM_POLYVECBYTES;
   while (i < MLKEM_SYMBYTES/8)
   {
-    t64 = (u64)[pkp];
+    #declassify t64 = (u64)[pkp];
     publicseed.[u64 8 * (int)i] = t64;
     pkp += 8;
     i += 1;
@@ -152,6 +159,9 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLK
   v  = __poly_reduce(v);
 
   ctp = sctp;
+
+  _ = #init_msf(); // temporary fix
+
   __polyvec_compress(ctp, bp);
   ctp += MLKEM_POLYVECCOMPRESSEDBYTES;
   v = _poly_compress(ctp, v);
@@ -167,7 +177,7 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   reg u64 i t64;
   reg u8 nonce;
   stack ptr u8[MLKEM_CT_LEN] sctp;
-  stack ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
 
   s_noiseseed = noiseseed;
   sctp = ctp;
@@ -178,7 +188,7 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   pkp += MLKEM_POLYVECBYTES;
   while (i < MLKEM_SYMBYTES/8)
   {
-    t64 = (u64)[pkp];
+    #declassify t64 = (u64)[pkp];
     publicseed.[u64 8*(int)i] = t64;
     pkp += 8;
     i += 1;
@@ -227,6 +237,9 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   v  = __poly_reduce(v);
 
   ctp = sctp;
+
+  _ = #init_msf();
+
   ctp[0:MLKEM_POLYVECCOMPRESSEDBYTES] = __i_polyvec_compress(ctp[0:MLKEM_POLYVECCOMPRESSEDBYTES], bp);
   ctp[MLKEM_POLYVECCOMPRESSEDBYTES:MLKEM_POLYCOMPRESSEDBYTES], v = _i_poly_compress(ctp[MLKEM_POLYVECCOMPRESSEDBYTES:MLKEM_POLYCOMPRESSEDBYTES], v);
 
