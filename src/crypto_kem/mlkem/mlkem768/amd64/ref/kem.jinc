@@ -4,11 +4,11 @@ require "verify.jinc"
 inline
 fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES*2] randomnessp)
 {
-  stack ptr u8[MLKEM_SYMBYTES*2] s_randomnessp;
+  #mmx reg ptr u8[MLKEM_SYMBYTES*2] s_randomnessp;
   reg ptr u8[MLKEM_SYMBYTES] randomnessp1 randomnessp2;
 
   stack u8[32] h_pk;
-  stack u64 s_skp s_pkp;
+  #mmx reg u64 s_skp s_pkp;
   reg u64 t64;
   inline int i;
 
@@ -17,13 +17,11 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
   s_skp = skp;
 
   randomnessp1 = randomnessp[0:MLKEM_SYMBYTES];
-  __indcpa_keypair(pkp, skp, randomnessp1);
+  __indcpa_keypair(s_pkp, s_skp, randomnessp1);
 
   skp = s_skp;
   skp += MLKEM_POLYVECBYTES;
   pkp = s_pkp;
-
-  _ = #init_msf(); // temporary fix
 
   for i=0 to MLKEM_INDCPA_PUBLICKEYBYTES/8
   {
@@ -35,13 +33,9 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
   s_skp = skp;
   pkp = s_pkp;
 
-  _ = #init_msf(); // temporary fix
-
   t64 = MLKEM_POLYVECBYTES + MLKEM_SYMBYTES;
   h_pk = _isha3_256(h_pk, pkp, t64);
   skp = s_skp;
-
-  _ = #init_msf(); // temporary fix
 
   for i=0 to 4
   {
@@ -52,8 +46,6 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
 
   randomnessp = s_randomnessp;
   randomnessp2 = randomnessp[MLKEM_SYMBYTES:MLKEM_SYMBYTES];
-
-  _ = #init_msf(); // temporary fix
 
   for i=0 to MLKEM_SYMBYTES/8
   {
@@ -69,7 +61,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
   inline int i;
 
   stack u8[MLKEM_SYMBYTES * 2] kr buf;
-  stack u64 s_pkp s_ctp s_shkp;
+  #mmx reg u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
 
   s_pkp = pkp;
@@ -84,8 +76,6 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
 
   pkp = s_pkp;
 
-  _ = #init_msf(); // temporary fix
-
   t64 = MLKEM_PUBLICKEYBYTES;
   buf[MLKEM_SYMBYTES:MLKEM_SYMBYTES] = _isha3_256(buf[MLKEM_SYMBYTES:MLKEM_SYMBYTES], pkp, t64);
 
@@ -93,13 +83,9 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
 
   pkp = s_pkp;
 
-  _ = #init_msf(); // temporary fix
-
   __indcpa_enc(s_ctp, buf[0:MLKEM_SYMBYTES], pkp, kr[MLKEM_SYMBYTES:MLKEM_SYMBYTES]);
 
   shkp = s_shkp;
-
-  _ = #init_msf(); // temporary fix
 
   for i=0 to MLKEM_SYMBYTES/8
   {
@@ -114,7 +100,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
   stack u8[MLKEM_CT_LEN] ctpc;
   stack u8[2*MLKEM_SYMBYTES] kr buf;
-  stack u64 s_skp s_ctp s_shkp s_cnd;
+  #mmx reg u64 s_skp s_ctp s_shkp s_cnd;
   reg u64 pkp hp zp t64 cnd;
   inline int i;
 
@@ -139,13 +125,9 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   pkp = s_skp;
   pkp += 12 * MLKEM_K * MLKEM_N>>3;
 
-  _ = #init_msf(); // temporary fix
-
   ctpc = __iindcpa_enc(ctpc, buf[0:MLKEM_SYMBYTES], pkp, kr[MLKEM_SYMBYTES:MLKEM_SYMBYTES]);
 
   ctp = s_ctp;
-
-  _ = #init_msf(); // temporary fix
 
   cnd = __verify(ctp, ctpc);
   s_cnd = cnd;
@@ -160,8 +142,6 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   shkp = s_shkp;
   cnd = s_cnd;
-
-  _ = #init_msf(); // temporary fix
 
    __cmov(shkp, kr[0:MLKEM_SYMBYTES], cnd); 
 }
