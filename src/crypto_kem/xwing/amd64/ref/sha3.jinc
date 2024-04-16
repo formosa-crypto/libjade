@@ -1,0 +1,44 @@
+
+fn _xwing_sha3(
+  #spill_to_mmx
+  reg u64 k,         // writes: 32 bytes
+  reg u64 k1,        // reads:  32 bytes
+  reg ptr u8[32] k2, // reads:  32 bytes
+  reg u64 c2,        // reads:  32 bytes
+  reg u64 pk2)       // reads:  32 bytes
+{
+  stack u64[25] state;
+  inline int i;
+
+  () = #spill(k);
+
+  // copy label
+  for i=0 to 6
+  { state[u8 i] = XWING_LABEL[i]; }
+
+  // copy k1, k2, c2, pk2
+  for i=0 to 4
+  { state.[6 + 0  + i*8] = (u64)[k1 + i*8];
+    state.[6 + 32 + i*8] = k2[u64 i];
+    state.[6 + 64 + i*8] = (u64)[c2 + i*8];
+    state.[6 + 96 + i*8] = (u64)[pk2 + i*8];
+  }
+  // 6 + 96 + 3*8 = 126 (and +8 byte write, 134)
+
+  // zero the remaining state
+  state.[u16 134] = 0;
+  for i=17 to 25
+  { state[i] = 0; }
+
+  state[u8 134] ^= 0x06;
+  state[u8 SHA3_256_RATE - 1] = 0x80;
+
+  // it uses the same keccakf1600 as mlkem768
+  state = _keccakf1600_(state);
+
+  () = #unspill(k);
+
+  for i=0 to 4
+  { (u64)[k + 8*i] = state[i]; }
+}
+
