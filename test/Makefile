@@ -96,7 +96,7 @@ RDIR        = $(subst $(BIN)/,,$(@D))
 
 OPERATION   = $(subst crypto_,,$(word 1, $(subst /, ,$(RDIR))))
 OPERATION1  = $(shell echo $(OPERATION) | tr a-z A-Z)
-NAMESPACE0  = $(subst $(OPERATION)_,,$(subst crypto_,,$(subst -,_,$(subst /,_,$(RDIR)))))
+NAMESPACE0  = $(subst crypto_$(OPERATION)_,,$(subst -,_,$(subst /,_,$(RDIR))))
 NAMESPACE   = jade_$(OPERATION)_$(NAMESPACE0)
 NAMESPACE1  = JADE_$(OPERATION1)_$(NAMESPACE0)
 
@@ -155,6 +155,14 @@ include Makefile.partial_implementations
 	$(MAKE) -C $(IDIR) || true
 	$(CIC)
 	$(COMPILE) || true
+
+# --------------------------------------------------------------------
+# notes: the following set of rules will be generalized
+
+bin/crypto_kem/mlkem/mlkem768/amd64/ref/test_vectors:  __phony | bin/crypto_kem/mlkem/mlkem768/amd64/ref/ bin/crypto_kem/mlkem/mlkem768/amd64/ref/$(CID)
+	$(MAKE) -C $(IDIR) || true
+	$(CIC)
+	$(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) -I crypto_kem/mlkem/mlkem768/ crypto_kem/test_vectors.c $(PRINT) $(ASM) $(RANDSRC) $(CIL)
 
 # --------------------------------------------------------------------
 $(OUT):
