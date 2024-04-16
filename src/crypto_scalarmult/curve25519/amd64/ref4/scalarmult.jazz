@@ -4,18 +4,10 @@ require "curve25519.jinc"
 export fn jade_scalarmult_curve25519_amd64_ref4(#spill_to_mmx reg u64 qp np pp) -> reg u64
 {
   reg u64 r;
-  reg u64[4] q n p;
 
   _ = #init_msf();
 
-  ()  = #spill(qp);
-  n   = __load4(np);
-  p   = __load4(pp);
-
-  q = __curve25519_ref4(n, p);
-
-  ()  = #unspill(qp);
-  __store4(qp, q);
+  __curve25519_ref4_ptr(qp, np, pp);
 
   ?{}, r = #set0();
   return r;
@@ -24,17 +16,10 @@ export fn jade_scalarmult_curve25519_amd64_ref4(#spill_to_mmx reg u64 qp np pp) 
 export fn jade_scalarmult_curve25519_amd64_ref4_base(#spill_to_mmx reg u64 qp np) -> reg u64
 {
   reg u64 r;
-  reg u64[4] q n;
 
   _ = #init_msf();
 
-  ()  = #spill(qp);
-  n   = __load4(np);
-
-  q = __curve25519_ref4_base(n);
-
-  ()  = #unspill(qp);
-  __store4(qp, q);
+  __curve25519_ref4_base_ptr(qp, np);
 
   ?{}, r = #set0();
   return r;
