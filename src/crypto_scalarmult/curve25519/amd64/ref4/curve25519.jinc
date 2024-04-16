@@ -155,6 +155,22 @@ inline fn __curve25519_ref4(reg u64[4] _k _u) -> reg u64[4]
   return r;
 }
 
+inline fn __curve25519_ref4_ptr(#spill_to_mmx reg u64 rp, reg u64 kp up)
+{
+  reg u64[4] r k u;
+
+  ()  = #spill(rp);
+
+  k = __load4(kp);
+  u = __load4(up);
+  r = __curve25519_ref4(k, u);
+
+  ()  = #unspill(rp);
+
+  __store4(rp, r);
+}
+
+
 inline fn __curve25519_ref4_base(reg u64[4] _k) -> reg u64[4]
 {
   stack u8[32] k;
@@ -166,4 +182,19 @@ inline fn __curve25519_ref4_base(reg u64[4] _k) -> reg u64[4]
 
   return r;
 }
+
+inline fn __curve25519_ref4_base_ptr(#spill_to_mmx reg u64 rp, reg u64 kp)
+{
+  reg u64[4] r k;
+
+  () = #spill(rp);
+
+  k = __load4(kp);
+  r = __curve25519_ref4_base(k);
+
+  ()  = #unspill(rp);
+
+  __store4(rp, r);
+}
+
 
