@@ -1,33 +1,50 @@
-from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
 from Jade require "crypto_scalarmult/curve25519/amd64/ref4/curve25519.jinc"
 
-#[returnaddress="stack"]
-fn scalarmult_base(reg u64 qp np)
+fn xwing_x25519_base_p_rp(#spill_to_mmx reg u64 qp, reg ptr u8[32] _n)
 {
-  stack u64 qps;
   reg u64[4] q n;
+  inline int i;
 
-  qps = qp;
-  n   = __load4(np);
+  () = #spill(qp);
+  for i=0 to 4 { n[i] = _n[u64 i]; }
 
-  q = __curve25519_ref4_base(n);
+  q = _curve25519_ref4_base(n); // q = nG
 
-  qp = qps;
+  () = #unspill(qp);
   __store4(qp, q);
 }
 
-#[returnaddress="stack"]
-fn scalarmult(reg u64 qp np pp)
+fn xwing_x25519_rp_rp_p(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n, reg u64 pp) -> reg ptr u8[32]
 {
-  stack u64 qps;
   reg u64[4] q n p;
+  inline int i;
 
-  qps = qp;
-  n   = __load4(np);
-  p   = __load4(pp);
+  () = #spill(_q);
+  for i=0 to 4 { n[i] = _n[u64 i]; }
+  for i=0 to 4 { p[i] = (u64)[pp + 8*i]; }
 
-  q = __curve25519_ref4(n, p);
+  q = _curve25519_ref4(n, p); // q = nP
 
-  qp = qps;
-  __store4(qp, q);
+  () = #unspill(_q);
+  for i=0 to 4 { _q[u64 i] = q[i]; }
+
+  return _q;
 }
+
+fn xwing_x25519_rp_p_p(#spill_to_mmx reg ptr u8[32] _q, reg u64 np, reg u64 pp) -> reg ptr u8[32]
+{
+  reg u64[4] q n p;
+  inline int i;
+
+  () = #spill(_q);
+  for i=0 to 4 { n[i] = (u64)[np + 8*i]; }
+  for i=0 to 4 { p[i] = (u64)[pp + 8*i]; }
+
+  q = _curve25519_ref4(n, p); // q = nP
+
+  () = #unspill(_q);
+  for i=0 to 4 { _q[u64 i] = q[i]; }
+
+  return _q;
+}
+

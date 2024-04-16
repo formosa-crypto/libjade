@@ -1,7 +1,7 @@
 name: X-Wing
 type: kem
-checksumsmall: 844bca7a113f642135f10d7ab047f8fbc137a6d0c7bbe64dbde0b48c46681872
-checksumbig: 05451934bd516a3b885896e7e448d9739ed1ccc67339f438db230bd479f026bb
+checksumsmall: d80f0bfdf6d38a189cfffe48c048973521c02456bde1934475c38e0819c4afae
+checksumbig: 607234d1da70d4441c64c8bb3deff3f22728a38942500457c92dbcdaf393d0c0
 claimed-nist-level: 3
 claimed-security: IND-CCA2
 length-public-key: 1216
