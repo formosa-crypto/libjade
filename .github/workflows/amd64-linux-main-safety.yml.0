@@ -12,7 +12,7 @@ jobs:
     timeout-minutes: 4320
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: DeterminateSystems/magic-nix-cache-action@v4
 
@@ -27,7 +27,7 @@ jobs:
 
       - name: libjade-logs-safety.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-safety.tar.gz
           path: src/libjade-logs-src.tar.gz

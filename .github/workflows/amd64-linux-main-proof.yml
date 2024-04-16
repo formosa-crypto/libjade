@@ -15,7 +15,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-main]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: DeterminateSystems/magic-nix-cache-action@v4
 
@@ -38,14 +38,14 @@ jobs:
 
       - name: libjade-logs-proof.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-proof.tar.gz
           path: proof/libjade-logs-proof.tar.gz
 
       - name: libjade-dist-proof.tar.gz - contains all EasyCrypt files and test.config
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-dist-proof.tar.gz
           path: libjade-dist-proof.tar.gz
