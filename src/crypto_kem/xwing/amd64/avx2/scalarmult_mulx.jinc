@@ -1,0 +1,33 @@
+from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/mulx/curve25519.jinc"
+
+#[returnaddress="stack"]
+fn scalarmult_base(reg u64 qp np)
+{
+  stack u64 qps;
+  reg u64[4] q n;
+
+  qps = qp;
+  n   = __load4(np);
+
+  q = __curve25519_mulx_base(n);
+
+  qp = qps;
+  __store4(qp, q);
+}
+
+#[returnaddress="stack"]
+fn scalarmult(reg u64 qp np pp)
+{
+  stack u64 qps;
+  reg u64[4] q n p;
+
+  qps = qp;
+  n   = __load4(np);
+  p   = __load4(pp);
+
+  q = __curve25519_mulx(n, p);
+
+  qp = qps;
+  __store4(qp, q);
+}

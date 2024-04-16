@@ -14,6 +14,21 @@ fn __tostack64u8(reg ptr u8[64] out, reg u64 inp) -> reg ptr u8[64]
 }
 
 inline 
+fn __tostack96u8(reg ptr u8[96] out, reg u64 inp) -> reg ptr u8[96] 
+{
+  reg u8 t;
+  inline int i;
+
+  for i=0 to 96 
+  {
+    t = (u8)[inp + i];
+    out[i] = t;
+  }
+  return out;
+}
+
+
+inline 
 fn __tostack32u8(reg ptr u8[32] out, reg u64 inp) -> reg ptr u8[32] 
 {
   reg u8 t;
@@ -35,6 +50,32 @@ fn __fromstack32u8(reg u64 outp, reg ptr u8[32] in)
   inline int i;
 
   for i=0 to 32
+  {
+    t = in[i];
+    (u8)[outp + i] = t;
+  }
+}
+
+inline 
+fn __fromstack134u8(reg u64 outp, reg ptr u8[134] in)
+{
+  reg u8 t;
+  inline int i;
+
+  for i=0 to 134
+  {
+    t = in[i];
+    (u8)[outp + i] = t;
+  }
+}
+
+inline 
+fn __fromstack64u8(reg u64 outp, reg ptr u8[64] in)
+{
+  reg u8 t;
+  inline int i;
+
+  for i=0 to 64
   {
     t = in[i];
     (u8)[outp + i] = t;

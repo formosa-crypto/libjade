@@ -1,0 +1,170 @@
+from Jade require "crypto_kem/kyber/kyber768/amd64/ref/kem.jinc"
+from Jade require "common/keccak/common/fips202_ref_DIRTY.jinc"
+from Jade require "common/tofromstack.jinc"
+require "params.jinc"
+require "scalarmult.jinc"
+
+#[returnaddress="stack"]
+fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[3*XWING_SYMBYTES] randomnessp)
+{
+    () = #spill(pkp, skp, randomnessp);
+
+    _crypto_kem_keypair_derand_jazz(pkp, skp, randomnessp[0:2*MLKEM_SYMBYTES]);
+    
+    () = #unspill(pkp, skp);
+
+    skp += MLKEM_SECRETKEYBYTES;
+    pkp += MLKEM_PUBLICKEYBYTES;
+
+    () = #unspill(randomnessp);
+
+    __fromstack32u8(skp, randomnessp[2*XWING_SYMBYTES:XWING_SYMBYTES]);
+    
+    () = #spill(pkp, skp);
+    scalarmult_base(pkp, skp);
+
+    () = #unspill(pkp, skp);
+
+    skp += X25519_PUBLICKEYBYTES;
+
+    inline int i;
+    for i=0 to X25519_PUBLICKEYBYTES {
+        (u8)[skp + i] = (u8)[pkp + i];
+    }
+}
+
+#[returnaddress="stack"]
+fn _crypto_xkem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[2*XWING_SYMBYTES] randomnessp)
+{
+    stack u8[32] m_shkp d_shkp dh_ctp;
+    stack u64 s_shkp;
+
+    s_shkp = shkp;
+
+    () = #spill(pkp, ctp, shkp, randomnessp);
+    _crypto_kem_enc_derand_jazz(ctp, shkp, pkp, randomnessp[0:32]);
+    
+    () = #unspill(pkp, ctp, shkp);
+
+    m_shkp = __tostack32u8(m_shkp, shkp);
+
+    pkp += MLKEM_PUBLICKEYBYTES;
+    ctp += MLKEM_CIPHERTEXTBYTES;
+
+    () = #spill(pkp);
+    () = #unspill(randomnessp);
+
+    __fromstack32u8(shkp, randomnessp[XWING_SYMBYTES:XWING_SYMBYTES]);
+
+    () = #spill(ctp, shkp);
+    scalarmult_base(ctp, shkp);
+    () = #unspill(ctp, shkp);
+
+
+    reg u64 dh_ekp;
+    dh_ekp = shkp;
+
+    dh_ctp = __tostack32u8(dh_ctp, ctp);
+    d_shkp = __tostack32u8(d_shkp, shkp);
+
+    () = #unspill(pkp);    
+    shkp = s_shkp;
+
+    () = #spill(shkp, pkp);
+    scalarmult(shkp, dh_ekp, pkp);
+    () = #unspill(shkp, pkp);
+
+    d_shkp = __tostack32u8(d_shkp, shkp);
+    
+    stack u8[XWING_PRFINPUT] buf;
+    stack u8[XWING_SYMBYTES] s_dh_pkp;
+
+    s_dh_pkp = __tostack32u8(s_dh_pkp, pkp);
+    
+    inline int i j k l p;
+
+    for i=0 to 6{
+        buf[i] = label[i];
+    }
+
+    for i=0 to XWING_SYMBYTES{
+        l = i + 6;
+        j = l + MLKEM_SSBYTES;
+        k = j + X25519_CIPHERTEXTBYTES;
+        p = k +  X25519_PUBLICKEYBYTES; 
+        buf[l] = m_shkp[i];
+        buf[j] = d_shkp[i];
+        buf[k] = dh_ctp[i];
+        buf[p] = s_dh_pkp[i];
+    }
+    
+    reg ptr u8[32] outp;
+    stack u8[32] out;
+    outp = out;
+
+    outp = _sha3_256_134(outp, buf);
+    __fromstack32u8(shkp, outp);
+}
+
+inline
+fn __crypto_xkem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
+{
+    stack u64 s_shkp;
+    s_shkp = shkp;
+
+    () = #spill(shkp, ctp, skp);
+    __crypto_kem_dec_jazz(shkp, ctp, skp);
+    () = #unspill(shkp, ctp, skp);
+
+    ctp += MLKEM_CIPHERTEXTBYTES;
+    skp += MLKEM_SECRETKEYBYTES;
+
+    stack u8[MLKEM_SSBYTES] mlkem_shkp;
+    mlkem_shkp = __tostack32u8(mlkem_shkp, shkp);
+
+    () = #spill(shkp, skp, ctp);
+    scalarmult(shkp, skp, ctp);
+    () = #unspill(shkp, skp, ctp);
+
+    shkp = s_shkp;
+
+    stack u8[X25519_SECRETKEYBYTES + X25519_PUBLICKEYBYTES] s_dh_kp;
+    stack u8[X25519_SSBYTES] s_dh_shkp dh_skp dh_ctp dh_pkp;
+
+
+    s_dh_shkp = __tostack32u8(s_dh_shkp, shkp);
+    dh_ctp = __tostack32u8(dh_ctp, ctp);
+    s_dh_kp = __tostack64u8(s_dh_kp, skp);
+    
+    dh_skp = s_dh_kp[0:X25519_SECRETKEYBYTES];
+    dh_pkp = s_dh_kp[X25519_SECRETKEYBYTES:X25519_PUBLICKEYBYTES];
+
+    stack u8[XWING_PRFINPUT] buf;
+
+    inline int i j k l p;
+
+    for i=0 to 6{
+        buf[i] = label[i];
+    }
+
+    for i=0 to XWING_SYMBYTES{
+        l = i + 6;
+        j = l + MLKEM_SSBYTES;
+        k = j + X25519_CIPHERTEXTBYTES;
+        p = k +  X25519_PUBLICKEYBYTES; 
+        buf[l] = mlkem_shkp[i];
+        buf[j] = s_dh_shkp[i];
+        buf[k] = dh_ctp[i];
+        buf[p] = dh_pkp[i];
+    }
+
+    shkp = s_shkp;
+    
+    reg ptr u8[32] outp;
+    stack u8[32] out;
+    outp = out;
+
+    outp = _sha3_256_134(outp, buf);
+    __fromstack32u8(shkp, outp);
+
+}
