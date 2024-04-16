@@ -86,7 +86,6 @@ fn __barrett_reduce(reg u16 a) -> reg u16
   //t = #SAR_32(t, 26);
   t >>s= 26;
   t *= KYBER_Q;
-  r = t;
   r = a;
   r -= t;
   return r;
