@@ -94,8 +94,8 @@ inline fn __montgomery_ladder5(
 {
   stack u64[5] us x2 x3 z3;
   reg u64[5] z2r;
-  stack u64 ctrs swapped;
-  reg u64 ctr;
+  stack u64 swapped;
+  #spill_to_mmx reg u64 ctr;
 
   (x2,z2r,x3,z3) = __init_points5(u); 
   us = #copy(u);
@@ -106,12 +106,12 @@ inline fn __montgomery_ladder5(
   while
   {
     ctr -= 1;
-    ctrs = ctr;
+    () = #spill(ctr);
 
     (x2, z2r, x3, z3, swapped) = 
       __montgomery_ladder_step5(k, us, x2, z2r, x3, z3, swapped, ctr);
 
-    ctr = ctrs;
+    () = #unspill(ctr);
   } (ctr > 0)
 
   return x2, z2r;
