@@ -1,0 +1,26 @@
+name: X-Wing
+type: kem
+checksumsmall: d80f0bfdf6d38a189cfffe48c048973521c02456bde1934475c38e0819c4afae
+checksumbig: 607234d1da70d4441c64c8bb3deff3f22728a38942500457c92dbcdaf393d0c0
+claimed-nist-level: 3
+claimed-security: IND-CCA2
+length-public-key: 1216
+length-ciphertext: 1120
+length-secret-key: 2464
+length-shared-secret: 32
+principal-submitters:
+  - TODO
+auxiliary-submitters:
+  - TODO
+implementations:
+    - name: amd64/ref
+      version: TODO
+      supported_platforms:
+        - architecture: x86_64
+          operating_systems:
+              - Linux
+              - Darwin
+          required_flags: # FIXME
+              - avx2
+              - bmi2
+              - popcnt

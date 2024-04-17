@@ -1,0 +1,133 @@
+// paper: https://eprint.iacr.org/2024/039.pdf
+// note: the require from mlkem768 is missing on purpose
+
+require "params.jinc"
+require "scalarmult.jinc"
+require "sha3.jinc"
+
+// sct: at this level there are no more #mmx register to spend
+//      as such, after unspill, an init_msf (lfence) is needed
+//      to "promote" transient variables to public; in this
+//      particular case, there is no advantage in patching the
+//      implementations to preserve the misspeculation register.
+//      Some performance data next.
+//
+// - cpu cycles of the following code without lfences, 11700K:
+//   keypair       , 345740
+//   keypair_derand, 343532
+//   enc           , 518594
+//   enc_derand    , 516238
+//   dec           , 462404
+//
+// - and with the lfences, 11700K:
+//   keypair       , 345744
+//   keypair_derand, 343496
+//   enc           , 518260
+//   enc_derand    , 515878
+//   dec           , 462904
+//
+// So, minus the usual noise, its pretty much the same
+
+
+// note: 
+// - (MLKEM_SYMBYTES*2) was copy pasted from params.jinc file from mlkem768 implementation
+// - for simplicity and efficiency of the last for loop, 32 is hardcoded: if the caller of
+//   of this function provides something different from (MLKEM_SYMBYTES*2) + 32 then 
+//   then the compilation should fail.
+
+fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp skp, reg ptr u8[(MLKEM_SYMBYTES*2) + 32] randomness)
+{
+  inline int i;
+  reg u64 pk2;
+  reg ptr u8[32] sk2;
+
+  // spill all
+  () = #spill(pkp, skp, randomness);
+
+  // (sk1, pk1) <- KEM.KeyGen() // skp, pkp <- KEM.KeyGen(randomness[0:64])
+  __crypto_kem_keypair_jazz(pkp, skp, randomness[0:(MLKEM_SYMBYTES*2)]);
+
+  // sk2 <-$ // randomness[64:32]
+  // pk2 <- exp(G, sk2)
+    ()  = #unspill(pkp, randomness); _ = #init_msf();
+    pk2 = #LEA(pkp + MLKEM_PUBLICKEYBYTES);
+  xwing_x25519_base_p_rp(pk2, randomness[(MLKEM_SYMBYTES*2):32]);
+
+  // pk <- (pk1, pk2)
+  // done.
+
+  // sk <- (sk1, sk2, pk2)
+    ()  = #unspill(pkp, skp, randomness); _ = #init_msf();
+    sk2 = randomness[(MLKEM_SYMBYTES*2):32];
+    pk2 = #LEA(pkp + MLKEM_PUBLICKEYBYTES);
+
+  for i=0 to 4 // assumes: sk2 with 32 bytes; pk2 with 32 bytes
+  { (u64)[skp + MLKEM_SECRETKEYBYTES + i*8] = sk2[u64 i];
+    (u64)[skp + MLKEM_SECRETKEYBYTES + 32 + i*8] = (u64)[pk2 + i*8];
+  }
+}
+
+
+fn _crypto_xkem_enc_derand_jazz(reg u64 ctp shkp pkp, reg ptr u8[MLKEM_SYMBYTES + 32] randomness)
+{
+  reg u64 k k1 c2 pk2;
+  reg ptr u8[32] ske;
+  stack u8[32] k2;
+
+  // spill all
+  () = #spill(pkp, ctp, shkp, randomness);
+
+  // k1, c1 <- KEM.Enc(pk1) // shkp+0 (as aux), ctp+0 <- KEM.Enc(pkp+0, randomness[0:32])
+  __crypto_kem_enc_jazz(ctp, shkp, pkp, randomness[0:32]);
+
+  // ske <-$ // randomness[32:32]
+  // c2 <- exp(G, ske) // ctp+MLKEM_CIPHERTEXTBYTES <- exp(G, randomness[32:32])
+    ()  = #unspill(ctp, randomness); _ = #init_msf();
+    c2  = #LEA(ctp + MLKEM_CIPHERTEXTBYTES);
+    ske = randomness[MLKEM_SYMBYTES:32];
+  xwing_x25519_base_p_rp(c2, ske);
+
+  // k2 <- exp(pk2, ske) // k2 <- exp(pkp + MLKEM_PUBLICKEYBYTES, randomness[32:32])
+    ()  = #unspill(randomness, pkp); _ = #init_msf();
+    ske = randomness[MLKEM_SYMBYTES:32];
+    pk2 = #LEA(pkp + MLKEM_PUBLICKEYBYTES);
+  k2 = xwing_x25519_rp_rp_p(k2, ske, pk2);
+
+  // k <- H(label || k1 || k2 || c2 || pk2)
+    ()   = #unspill(shkp, ctp, pkp); _ = #init_msf();
+     k   = shkp;
+     k1  = shkp;
+     c2  = #LEA(ctp + MLKEM_CIPHERTEXTBYTES);
+     pk2 = #LEA(pkp + MLKEM_PUBLICKEYBYTES);
+  _xwing_sha3(k, k1, k2, c2, pk2);
+}
+
+
+fn _crypto_xkem_dec_jazz(reg u64 shkp ctp skp)
+{
+  reg u64 k k1 c2 sk2 pk2;
+  stack u8[32] k2;
+
+  // spill all
+  () = #spill(shkp, ctp, skp);
+
+  // (sk1, sk2, pk2) <- sk
+  // (c1, c2) <- c
+  // k1 <- KEM.Dec(c1, sk1) // shkp+0 (as aux) <- KEM.Dec(ctp, skp)
+  __crypto_kem_dec_jazz(shkp, ctp, skp);
+
+  // k2 <- exp(c2, sk2) // k2 <- exp(ctp + MLKEM_CIPHERTEXTBYTES, skp + MLKEM_SECRETKEYBYTES);
+    () = #unspill(skp, ctp); _ = #init_msf();
+    sk2 = #LEA(skp + MLKEM_SECRETKEYBYTES);
+    c2  = #LEA(ctp + MLKEM_CIPHERTEXTBYTES);
+  k2 = xwing_x25519_rp_p_p(k2, sk2, c2);
+
+  // k <- H(label || k1 || k2 || c2 || pk2)
+    ()  = #unspill(shkp, ctp, skp); _ = #init_msf();
+    k   = shkp;
+    k1  = shkp;
+    c2  = #LEA(ctp + MLKEM_CIPHERTEXTBYTES);
+    pk2 = #LEA(skp + MLKEM_SECRETKEYBYTES + 32);
+  _xwing_sha3(k, k1, k2, c2, pk2);
+}
+
