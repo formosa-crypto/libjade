@@ -29,6 +29,8 @@ ASM     := $(shell find $(SRC) -name '*.s')
 API     := $(addsuffix include/api.h, $(dir $(ASM)))
 OBJ     := $(ASM:%.s=%.o)
 
+FAIL_ON_ERROR ?= 0
+
 # --------------------------------------------------------------------
 ifeq ($(CI),1)
 .PHONY: backward_compatibility
@@ -56,7 +58,7 @@ __libjade: $(OBJ)
 	echo "" | cat - $(API) > libjade.h
 
 $(JAZZ):
-	$(MAKE) -C $@ || true
+	$(MAKE) -C $@ || !(($(FAIL_ON_ERROR)))
 
 # --------------------------------------------------------------------
 
