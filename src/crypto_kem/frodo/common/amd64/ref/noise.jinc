@@ -1,0 +1,88 @@
+fn __sample_2NNBAR(reg ptr u16[2 * NNBAR] s) -> stack u16[2 * NNBAR] {
+    reg ptr u16[CDF_TABLE_LEN] cdftp;
+    cdftp = CDF_TABLE;
+
+    reg u64 i j;
+    reg u16 sample prnd sign;
+
+    i = 0;
+    while (i < 2 * NNBAR) {
+        sample = 0;
+
+        // prnd = s[i] >> 1
+        prnd = s[i];
+        prnd >>= 1;
+
+        // sign = s[i] & 0x1
+        sign = s[i];
+        sign &= 0x1;
+
+        // no need to compare with the last value
+        j = 0;
+        while (j < CDF_TABLE_LEN - 1) {
+            // sample += (CDF_TABLE[j] - prnd) >> 15
+
+            reg u16 tmp_sample;
+            tmp_sample = cdftp[j];
+            tmp_sample -= prnd;
+            tmp_sample >>= 15;
+            sample += tmp_sample;
+
+            j += 1;
+        }
+
+        // s[i] = ((-sign) ^ sample) + sign
+        s[i] = 0;
+        s[i] -= sign;
+        s[i] ^= sample;
+        s[i] += sign;
+
+        i += 1;
+    }
+
+    return s;
+}
+
+fn __sample_NBAR2(reg ptr u16[NBAR * NBAR] s) -> stack u16[NBAR * NBAR] {
+    reg ptr u16[CDF_TABLE_LEN] cdftp;
+    cdftp = CDF_TABLE;
+
+    reg u64 i j;
+    reg u16 sample prnd sign;
+    i = 0;
+    while (i < NBAR * NBAR) {
+        sample = 0;
+
+        // prnd = s[i] >> 1
+        prnd = s[i];
+        prnd >>= 1;
+
+        // sign = s[i] & 0x1
+        sign = s[i];
+        sign &= 0x1;
+
+        // no need to compare with the last value
+        j = 0;
+        while (j < CDF_TABLE_LEN - 1) {
+            // sample += (CDF_TABLE[j] - prnd) >> 15
+
+            reg u16 tmp_sample;
+            tmp_sample = cdftp[j];
+            tmp_sample -= prnd;
+            tmp_sample >>= 15;
+            sample += tmp_sample;
+
+            j += 1;
+        }
+
+        // s[i] = ((-sign) ^ sample) + sign
+        s[i] = 0;
+        s[i] -= sign;
+        s[i] ^= sample;
+        s[i] += sign;
+
+        i += 1;
+    }
+
+    return s;
+}

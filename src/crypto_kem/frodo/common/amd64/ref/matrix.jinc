@@ -1,0 +1,108 @@
+fn __matrix_add(reg ptr u16[NBAR * NBAR] a b) -> stack u16[NBAR * NBAR] {
+    reg u64 i;
+    reg u16 tmp;
+
+    i = 0;
+    while (i < NBAR * NBAR) {
+        tmp = a[i];
+        tmp += b[i];
+        tmp &= (1 << D) - 1;
+        a[i] = tmp;
+        i += 1;
+    } 
+
+    return a;
+}
+
+#[returnaddress="stack"]
+// a = b - a
+fn __matrix_sub(reg ptr u16[NBAR * NBAR] a b) -> stack u16[NBAR * NBAR] {
+    reg u64 i;
+    reg u16 tmp;
+
+    i = 0;
+    while (i < NBAR * NBAR) {
+        tmp = b[i];
+        tmp -= a[i];
+        tmp &= (1 << D) - 1;
+        a[i] = tmp;
+        i += 1;
+    }
+
+    return a;
+}
+
+#[returnaddress="stack"]
+fn __ct_verify_NNBAR(reg ptr u16[NNBAR] a b) -> stack u8 {
+    reg u64 i;
+    reg u16 ac tmp;
+    reg u8 r;
+
+    i = 0;
+    ac = 0;
+    while (i < NNBAR) {
+        tmp = a[(int) i];
+        tmp ^= b[(int)i];
+        ac |= tmp;
+        i += 1;
+    }
+
+    tmp = ac * -1;
+    ac |= tmp;
+    ac >>= 15;
+    ac *= (-1);
+
+    r = (8u)ac;
+
+    return r;
+}
+
+#[returnaddress="stack"]
+fn __ct_verify_NBAR2(reg ptr u16[NBAR * NBAR] a b) -> stack u8 {
+    reg u64 i;
+    reg u16 ac tmp;
+    reg u8 r;
+
+    i = 0;
+    ac = 0;
+    while (i < NBAR * NBAR) {
+        tmp = a[(int) i];
+        tmp ^= b[(int)i];
+        ac |= tmp;
+        i += 1;
+    }
+
+    tmp = ac * -1;
+    ac |= tmp;
+    ac >>= 15;
+    ac *= (-1);
+
+    r = (8u) ac;
+
+    return r;
+}
+
+#[returnaddress="stack"]
+fn __ct_select(reg ptr u8[BYTES_SEC] out a b, reg u8 selector) -> stack u8[BYTES_SEC] {
+    reg u64 i;
+
+    reg u8 n_selector tmp;
+
+    n_selector = selector;
+    n_selector ^= 0xFF;
+
+    i = 0;
+    while (i < BYTES_SEC) {
+        tmp = a[i];
+        tmp &= n_selector;
+        out[i] = tmp;
+
+        tmp = b[i];
+        tmp &= selector;
+        out[i] |= tmp;
+
+        i += 1;
+    }
+
+    return out;
+}
