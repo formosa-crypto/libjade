@@ -1,9 +1,8 @@
-from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/shake128_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/encode.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/noise.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix.jinc"
-from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_opt.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_mul_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
 
 // coins = s || seed SE || z

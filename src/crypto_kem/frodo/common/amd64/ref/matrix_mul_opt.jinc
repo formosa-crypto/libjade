@@ -1,4 +1,3 @@
-
 // notes: "16" instead of BYTES_SEED_A on purpose
 // compilation should fail if BYTES_SEED_A changes
 

@@ -12,8 +12,7 @@ fn __shake128_gen_A_opt(
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 j offset t0 zero;
-  reg u16 t16;
+  reg u64 j t0 zero;
   inline int k INLEN OUTLEN OUTRND;
 
   INLEN = BYTES_SEED_A + 2;
