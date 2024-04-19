@@ -21,20 +21,20 @@ fn __frodo_amd64_ref_keypair_derand(
     // s || seedA || b || S_T || pkh
     stack u8[BYTES_SK] sk;
 
-    () = #spill(i, j, pkp, skp);
+    () = #spill(pkp, skp);
 
     for k = 0 to BYTES_SEC/8 {
         sk[u64 k] = coins[u64 k];
     }
 
     // gen seedA
+    () = #spill(coins); // stack_coins = coins
     pk[0:BYTES_SEED_A] = __shake128_seed_A_opt(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
 
     // gen S || E
+    () = #unspill(coins); // coins = stack_coins
     SE = __shake128_r_opt(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
     SE = __sample_2NNBAR(SE);
-
-    () = #spill(coins);
 
     // B = A*S+E
     B = __AS_plus_E_opt(B, pk[0:BYTES_SEED_A], SE[0:NNBAR], SE[NNBAR:NNBAR]);
@@ -42,7 +42,6 @@ fn __frodo_amd64_ref_keypair_derand(
     // pack
     pk[BYTES_SEED_A:D * N] = __pack_B(pk[BYTES_SEED_A:D * N], B);
 
-    () = #unspill(i);
     i = 0;
     while (i < BYTES_PK/8) {
         sk[u64 BYTES_SEC/8 + i] = pk[u64 i];
@@ -54,11 +53,11 @@ fn __frodo_amd64_ref_keypair_derand(
         sk[u64 BYTES_SEC/8 + BYTES_PK/8 + i] = SE[u64 i];
         i += 1;
     }
-    () = #spill(i);
 
     sk[BYTES_SEC + BYTES_PK + 2 * NNBAR : BYTES_SEC] = __shake128_pkh_opt(sk[BYTES_SEC + BYTES_PK + 2 * NNBAR:BYTES_SEC], pk);
 
-    () = #unspill(i, j, pkp, skp);
+    () = #unspill(pkp, skp);
+    _ = #init_msf();
     i = 0; j = 0;
     while (i < BYTES_PK/8) {
         [pkp + j] = pk[u64 i];
@@ -102,9 +101,6 @@ fn __frodo_amd64_ref_enc_derand(
     reg ptr u16[NBAR * NBAR] V;
     stack u8[BYTES_SEC] ss;
 
-    pkp = pkp;
-    () = #spill(ctp, ssp, i, j);
-
     // gen u || salt
     for k = 0 to (BYTES_SEC + BYTES_SALT)/8 {
         pkh_u_salt[u64 BYTES_SEC/8 + k] = coins[u64 k];
@@ -114,7 +110,6 @@ fn __frodo_amd64_ref_enc_derand(
         ct_k[u64 (D * N + D * NBAR)/8 + k] = pkh_u_salt[u64 (BYTES_SEC * 2)/8 + k];
     }
 
-    () = #unspill(i, j);
     // read pk
     i = 0; j = 0;
     while (i < BYTES_PK/8) {
@@ -122,7 +117,8 @@ fn __frodo_amd64_ref_enc_derand(
         i += 1;
         j += 8;
     }
-    () = #spill(i, j);
+
+    () = #spill(ctp, ssp, i, j);
 
     // pkh
     pkh_u_salt[0:BYTES_SEC] = __shake128_pkh_opt(pkh_u_salt[0:BYTES_SEC], pk);
@@ -145,6 +141,7 @@ fn __frodo_amd64_ref_enc_derand(
 
     // B' = S'A + E''
     Bp = SEE[NNBAR:NNBAR];
+
     Bp = __SA_plus_E_opt(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR]);
 
     // c1 <- Pack(B')
@@ -169,6 +166,7 @@ fn __frodo_amd64_ref_enc_derand(
 
     () = #unspill(i, j, ctp, ssp);
     i = 0; j = 0;
+    _ = #init_msf();
     while (i < BYTES_CT/8) {
         [ctp + j] = ct_k[u64 i];
         i += 1;
@@ -296,6 +294,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
 
     ss = __shake128_ss_opt(ss, ct_k);
 
+    _ = #init_msf();
     ssp = s_ssp;
     for k = 0 to BYTES_SEC/8 {
         [ssp + 8*k] = ss[u64 k];
@@ -315,7 +314,7 @@ fn _frodo_amd64_ref_keypair(reg u64 pkp skp) {
 
 fn _frodo_amd64_ref_keypair_derand(reg u64 pkp skp coinsp) {
     #public stack u8[BYTES_SEED_A + BYTES_SEED_SE + BYTES_SEC] coins;
-    reg u64 i; stack u64 s_i;
+    reg u64 i;
 
     pkp = pkp;
     skp = skp;
@@ -326,7 +325,6 @@ fn _frodo_amd64_ref_keypair_derand(reg u64 pkp skp coinsp) {
         i += 1;
     }
 
-    s_i = i;
     __frodo_amd64_ref_keypair_derand(pkp, skp, coins);
 }
 

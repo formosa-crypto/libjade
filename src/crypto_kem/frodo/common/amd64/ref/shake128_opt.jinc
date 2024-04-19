@@ -233,11 +233,11 @@ fn __shake128_pkh_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE128_RATE/8;
   }
@@ -438,11 +438,11 @@ fn __shake128_ss_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE128_RATE/8;
   }

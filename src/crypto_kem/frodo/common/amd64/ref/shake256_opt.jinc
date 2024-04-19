@@ -89,11 +89,11 @@ fn __shake256_r_opt(
 
   i = 0;
   while (i < OUTRND * SHAKE256_RATE/8) {
-    () = #spill(i, j, out);
+    () = #spill(i, out);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j, out);
+    () = #unspill(i, out);
 
     j = 0;
     while (j < SHAKE256_RATE/8) {
@@ -107,11 +107,11 @@ fn __shake256_r_opt(
     i += SHAKE256_RATE/8;
   }
 
-  () = #spill(i, j, out);
+  () = #spill(i, out);
 
   state = __keccakf1600_ref1(state);
 
-  () = #unspill(i, j, out);
+  () = #unspill(i, out);
 
   i = 0;
   while (i < (OUTLEN % SHAKE256_RATE) / 8) {
@@ -160,11 +160,11 @@ fn __shake256_pkh_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE256_RATE/8;
   }
@@ -365,11 +365,11 @@ fn __shake256_ss_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE256_RATE/8;
   }
