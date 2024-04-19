@@ -1,44 +1,20 @@
-from Jade require "crypto_kem/frodo/common/amd64/ref/shake256.jinc"
-from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/shake128_opt.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/shake256_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/encode.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/noise.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix.jinc"
-from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_opt.jinc"
+from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_mul_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
 
-#[returnaddress="stack"]
-fn __gen_SE(reg ptr u16[2 * NNBAR] SE, reg ptr u8[BYTES_SEED_SE] r) -> stack u16[2 * NNBAR] {
-    stack u8[1 + BYTES_SEED_SE] seed_se;
-    reg u64 i; stack u64 s_i;
-
-    r = r;
-    i = 0;
-    while (i < BYTES_SEED_SE) {
-        seed_se[(int)i + 1] = r[(int)i];
-        i += 1;
-    }
-    s_i = i;
-
-    // S || E
-    seed_se[0] = 0x5F;
-
-    SE = __shake256_r(SE, seed_se);
-    SE = __sample_2NNBAR(SE);
-
-    return SE;
-}
-
 // coins = s || seed SE || z
-fn __frodo_amd64_ref_keypair_derand(reg u64 pkp skp, reg ptr u8[BYTES_SEED_A + BYTES_SEED_SE + BYTES_SEC] coins) {
+fn __frodo_amd64_ref_keypair_derand(
+  reg u64 pkp skp,
+  #spill_to_mmx reg ptr u8[BYTES_SEED_A + BYTES_SEED_SE + BYTES_SEC] coins) {
     stack u16[2 * NNBAR] SE;
     stack u16[NNBAR] B;
 
-    stack u64 s_pkp s_skp;
-    reg u64 i; stack u64 s_i;
-
-    s_pkp = pkp;
-    s_skp = skp;
-    coins = coins;
+    inline int k;
+    reg u64 i j;
 
     // seedA || b
     stack u8[BYTES_PK] pk;
@@ -46,59 +22,65 @@ fn __frodo_amd64_ref_keypair_derand(reg u64 pkp skp, reg ptr u8[BYTES_SEED_A + B
     // s || seedA || b || S_T || pkh
     stack u8[BYTES_SK] sk;
 
+    () = #spill(i, j, pkp, skp);
+
+    for k = 0 to BYTES_SEC/8 {
+        sk[u64 k] = coins[u64 k];
+    }
+
     // gen seedA
-    pk[0:BYTES_SEED_A] = __shake256_seed_A(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
+    pk[0:BYTES_SEED_A] = __shake256_seed_A_opt(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
 
     // gen S || E
-    SE = __gen_SE(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
+    SE = __shake256_r_opt(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
+    SE = __sample_2NNBAR(SE);
+
+    () = #spill(coins);
 
     // B = A*S+E
-    B = __AS_plus_E(B, pk[0:BYTES_SEED_A], SE[0:NNBAR], SE[NNBAR:NNBAR]);
+    B = __AS_plus_E_opt(B, pk[0:BYTES_SEED_A], SE[0:NNBAR], SE[NNBAR:NNBAR]);
 
     // pack
     pk[BYTES_SEED_A:D * N] = __pack_B(pk[BYTES_SEED_A:D * N], B);
 
-    //
-    i = s_i; i = 0;
-    while (i < BYTES_SEC) {
-        sk[(int) i] = coins[(int)i];
+    () = #unspill(i);
+    i = 0;
+    while (i < BYTES_PK/8) {
+        sk[u64 BYTES_SEC/8 + i] = pk[u64 i];
         i += 1;
     }
 
     i = 0;
-    while (i < BYTES_PK) {
-        sk[BYTES_SEC + (int)i] = pk[(int)i];
+    while (i < 2 * NNBAR / 8) {
+        sk[u64 BYTES_SEC/8 + BYTES_PK/8 + i] = SE[u64 i];
         i += 1;
     }
+    () = #spill(i);
 
-    i = 0;
-    while (i < 2 * NNBAR) {
-        sk[BYTES_SEC + BYTES_PK + (int)i] = SE.[u8 (int)i];
+    sk[BYTES_SEC + BYTES_PK + 2 * NNBAR : BYTES_SEC] = __shake256_pkh_opt(sk[BYTES_SEC + BYTES_PK + 2 * NNBAR:BYTES_SEC], pk);
+
+    () = #unspill(i, j, pkp, skp);
+    i = 0; j = 0;
+    while (i < BYTES_PK/8) {
+        [pkp + j] = pk[u64 i];
         i += 1;
-    }
-    s_i = i;
-
-    sk[BYTES_SEC + BYTES_PK + 2 * NNBAR : BYTES_SEC] = __shake256_pkh(sk[BYTES_SEC + BYTES_PK + 2 * NNBAR:BYTES_SEC], pk);
-
-    pkp = s_pkp;
-    i = 0;
-    while (i < BYTES_PK) {
-        (u8)[pkp + i] = pk[(int) i];
-        i += 1;
+        j += 8;
     }
 
-    skp = s_skp;
-    i = 0;
-    while (i < BYTES_SK) {
-        (u8)[skp + i] = sk[(int) i];
+    i = 0; j = 0;
+    while (i < BYTES_SK/8) {
+        [skp + j] = sk[u64 i];
         i += 1;
+        j += 8;
     }
 }
 
 #[returnaddress="stack"]
-fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTES_SALT] coins) {
-    reg u64 i j; stack u64 s_i s_j;
-    stack u64 s_ctp s_ssp;
+fn __frodo_amd64_ref_enc_derand(
+  reg u64 ctp ssp pkp,
+  #spill_to_mmx reg ptr u8[BYTES_SEC + BYTES_SALT] coins) {
+    reg u64 i j;
+    inline int k;
 
     // seedA || b
     #public stack u8[BYTES_PK] pk;
@@ -115,53 +97,47 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     // S' || E' || E''
     stack u16[2 * NNBAR + NBAR * NBAR] SEE;
 
-    stack u16[NNBAR] B Bp;
-    stack u16[NBAR * NBAR] V C;
+    stack u16[NNBAR] B;
+    reg ptr u16[NNBAR] Bp;
+    stack u16[NBAR * NBAR] C;
+    reg ptr u16[NBAR * NBAR] V;
     stack u8[BYTES_SEC] ss;
 
     pkp = pkp;
-    s_ctp = ctp;
-    s_ssp = ssp;
-    coins = coins;
-    s_j = j;
+    () = #spill(ctp, ssp, i, j);
 
     // gen u || salt
-    i = 0;
-    while (i < BYTES_SEC + BYTES_SALT) {
-        pkh_u_salt[BYTES_SEC + (int)i] = coins[(int)i];
-        i += 1;
+    for k = 0 to (BYTES_SEC + BYTES_SALT)/8 {
+        pkh_u_salt[u64 BYTES_SEC/8 + k] = coins[u64 k];
     }
 
-    i = 0;
-    while (i < BYTES_SALT) {
-        ct_k[D * N + D * NBAR + (int)i] = pkh_u_salt[BYTES_SEC * 2 + (int)i];
-        i += 1;
+    for k = 0 to BYTES_SALT/8 {
+        ct_k[u64 (D * N + D * NBAR)/8 + k] = pkh_u_salt[u64 (BYTES_SEC * 2)/8 + k];
     }
 
+    () = #unspill(i, j);
     // read pk
-    i = 0;
-    while (i < BYTES_PK) {
-        #declassify pk[(int)i] = (u8) [pkp + i];
+    i = 0; j = 0;
+    while (i < BYTES_PK/8) {
+        #declassify pk[u64 i] = [pkp + j];
         i += 1;
+        j += 8;
     }
-    s_i = i;
+    () = #spill(i, j);
 
     // pkh
-    pkh_u_salt[0:BYTES_SEC] = __shake256_pkh(pkh_u_salt[0:BYTES_SEC], pk);
+    pkh_u_salt[0:BYTES_SEC] = __shake256_pkh_opt(pkh_u_salt[0:BYTES_SEC], pk);
 
     // seedSE || k
-    seedSE_k[1 : BYTES_SEED_SE + BYTES_SEC] = __shake256_SE_k(seedSE_k[1:BYTES_SEED_SE + BYTES_SEC], pkh_u_salt);
+    seedSE_k = __shake256_SE_k_opt(seedSE_k, pkh_u_salt);
 
     // copy k
-    i = s_i; i = 0;
-    while (i < BYTES_SEC) {
-        ct_k[BYTES_CT + (int)i] = seedSE_k[1 + BYTES_SEED_SE + (int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC/8 {
+        ct_k[u64 BYTES_CT/8 + k] = seedSE_k.[u64 1 + BYTES_SEED_SE + 8*k];
     }
-    s_i = i;
 
     // gen input bit string for sampling S and E
-    SEE = __shake256_encap_r(SEE, seedSE_k[0 : 1 + BYTES_SEED_SE]);
+    SEE = __shake256_encap_r_opt(SEE, seedSE_k[0 : 1 + BYTES_SEED_SE]);
 
     // S' || E'
     SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
@@ -169,7 +145,8 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
 
     // B' = S'A + E''
-    Bp = __SA_plus_E_opt(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
+    Bp = SEE[NNBAR:NNBAR];
+    Bp = __SA_plus_E_opt(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR]);
 
     // c1 <- Pack(B')
     ct_k[0:D * N] = __pack_B(ct_k[0:D * N], Bp);
@@ -178,7 +155,8 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     B = __unpack_B(B, pk[BYTES_SEED_A:D * N]);
 
     // V = S'B + E''
-    V = __SB_plus_E(V, SEE[0:NNBAR], B, SEE[NNBAR * 2:NBAR * NBAR]);
+    V = SEE[NNBAR*2:NBAR*NBAR];
+    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
 
     // C = V + Encode(u)
     C = __encode(C, pkh_u_salt[BYTES_SEC:BYTES_SEC]);
@@ -188,20 +166,18 @@ fn __frodo_amd64_ref_enc_derand(reg u64 ctp ssp pkp, reg ptr u8[BYTES_SEC + BYTE
     ct_k[D * N: D * NBAR] = __pack_C(ct_k[D * N: D * NBAR], C);
 
     // ss <- shake(c1 || c2 || salt || k)
-    ss = __shake256_ss(ss, ct_k);
+    ss = __shake256_ss_opt(ss, ct_k);
 
-    i = s_i; i = 0;
-    ctp = s_ctp;
-    ssp = s_ssp;
-    while (i < BYTES_CT) {
-        (u8)[ctp + i] = ct_k[(int)i];
+    () = #unspill(i, j, ctp, ssp);
+    i = 0; j = 0;
+    while (i < BYTES_CT/8) {
+        [ctp + j] = ct_k[u64 i];
         i += 1;
+        j += 8;
     }
 
-    i = 0;
-    while (i < BYTES_SEC) {
-        (u8)[ssp + i] = ss[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC/8 {
+        [ssp + 8*k] = ss[u64 k];
     }
 }
 
@@ -211,8 +187,10 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     stack u8[2 * NNBAR] ST;
     stack u8[BYTES_SEC] s;
     stack u8[BYTES_CT + BYTES_SEC] ct_k;
-    stack u16[NNBAR] B Bp Bpp;
-    stack u16[NBAR * NBAR] M C Cp V;
+    stack u16[NNBAR] B Bp;
+    reg ptr u16[NNBAR] Bpp;
+    stack u16[NBAR * NBAR] M C Cp;
+    reg ptr u16[NBAR * NBAR] V;
     stack u8[BYTES_SEC * 2 + BYTES_SALT] pkh_u_salt;
     stack u8[1 + BYTES_SEED_SE + BYTES_SEC] seedSE_k;
     stack u8[BYTES_SEC] ss;
@@ -220,55 +198,54 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     // S' || E' || E''
     stack u16[2 * NNBAR + NBAR * NBAR] SEE;
 
-    stack u64 s_ssp s_ctp s_skp;
     reg u8 s1 s2;
-    reg u64 i; stack u64 s_i;
+    reg u64 i j t;
+    stack u64 s_ssp s_skp;
+    inline int k;
 
-    s_ssp = ssp;
     ctp = ctp;
     skp = skp;
-
-    // read ct
-    i = 0;
-    while (i < BYTES_CT) {
-        ct_k[(int) i] = (u8)[ctp + i];
-        i += 1;
-    }
-    s_ctp = ctp;
-
-    i = 0;
-    while (i < BYTES_SEC) {
-        s[(int) i] = (u8)[skp + i];
-        i += 1;
-    }
-
-    i = 0;
-    while (i < BYTES_PK) {
-        #declassify pk[(int)i] = (u8)[skp + BYTES_SEC + i];
-        i += 1;
-    }
-
-    i = 0;
-    while (i < 2 * NNBAR) {
-        ST[(int)i] = (u8)[skp + BYTES_SEC + BYTES_PK + i];
-        i += 1;
-    }
+    s_ssp = ssp;
 
     // copy pkh
-    i = 0;
-    while (i < BYTES_SEC) {
-        pkh_u_salt[(int)i] = (u8)[skp + BYTES_SK - BYTES_SEC + i];
-        i += 1;
+    for k = 0 to BYTES_SEC/8 {
+        pkh_u_salt[u64 k] = [skp + BYTES_SK - BYTES_SEC + 8*k];
     }
     s_skp = skp;
 
-    // copy salt
-    i = 0;
-    while (i < BYTES_SALT) {
-        pkh_u_salt[BYTES_SEC * 2 + (int)i] = ct_k[BYTES_CT - BYTES_SALT + (int)i];
+    // read ct
+    i = 0; j = 0;
+    while (i < BYTES_CT/8) {
+        t = [ctp + j];
+        ct_k[u64 i] = t;
         i += 1;
+        j += 8;
     }
-    s_i = i;
+
+    for k = 0 to BYTES_SEC/8 {
+        s[u64 k] = [skp + 8*k];
+    }
+
+    i = 0; j = 0;
+    while (i < BYTES_PK/8) {
+        #declassify pk[u64 i] = [skp + BYTES_SEC + j];
+        i += 1;
+        j += 8;
+    }
+
+    i = 0; j = 0;
+    while (i < 2 * NNBAR/8) {
+        ST[u64 i] = [skp + BYTES_SEC + BYTES_PK + j];
+        i += 1;
+        j += 8;
+    }
+
+    () = #spill(i);
+
+    // copy salt
+    for k = 0 to BYTES_SALT/8 {
+        pkh_u_salt[u64 (BYTES_SEC * 2)/8 + k] = ct_k[u64 (BYTES_CT - BYTES_SALT)/8 + k];
+    }
 
     // B' <- Unpack(c1)
     Bp = __unpack_B(Bp, ct_k[0:D * N]);
@@ -276,15 +253,15 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     C = __unpack_C(C, ct_k[D * N:D * NBAR]);
 
     // M = C - B'S
-    M = __mul_BS(M, Bp, ST);
+    M = __mul_BS_opt(M, Bp, ST);
     M = __matrix_sub(M, C);
 
     pkh_u_salt[BYTES_SEC:BYTES_SEC] = __decode(pkh_u_salt[BYTES_SEC:BYTES_SEC], M);
 
     seedSE_k[0] = 0x96;
-    seedSE_k[1:BYTES_SEED_SE + BYTES_SEC] = __shake256_SE_k(seedSE_k[1:BYTES_SEED_SE + BYTES_SEC], pkh_u_salt);
+    seedSE_k = __shake256_SE_k_opt(seedSE_k, pkh_u_salt);
 
-    SEE = __shake256_encap_r(SEE, seedSE_k[0: 1 + BYTES_SEED_SE]);
+    SEE = __shake256_encap_r_opt(SEE, seedSE_k[0: 1 + BYTES_SEED_SE]);
 
     // S' || E'
     SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
@@ -292,20 +269,22 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
 
     // B'' = S'A + E'
-    Bpp = __SA_plus_E_opt(Bpp, pk[0:BYTES_SEED_A], SEE[0:NNBAR], SEE[NNBAR:NNBAR]);
+    Bpp = SEE[NNBAR:NNBAR];
+    Bpp = __SA_plus_E_opt(Bpp, pk[0:BYTES_SEED_A], SEE[0:NNBAR]);
 
     // B'' (mod q)
-    i = s_i;
+    () = #unspill(i);
     i = 0;
     while (i < NNBAR) {
-        Bpp[(int)i] &= (1 << D) - 1;
+        Bpp[i] &= (1 << D) - 1;
         i += 1;
     }
 
     //
-    B = __unpack_B(B ,pk[BYTES_SEED_A:BYTES_PK - BYTES_SEED_A]);
+    B = __unpack_B(B, pk[BYTES_SEED_A:BYTES_PK - BYTES_SEED_A]);
 
-    V = __SB_plus_E(V, SEE[0:NNBAR], B, SEE[NNBAR * 2:NBAR * NBAR]);
+    V = SEE[NNBAR*2:NBAR*NBAR];
+    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
 
     Cp = __encode(Cp, pkh_u_salt[BYTES_SEC:BYTES_SEC]);
     Cp = __matrix_add(Cp, V);
@@ -316,14 +295,11 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
 
     ct_k[BYTES_CT:BYTES_SEC] = __ct_select(ct_k[BYTES_CT:BYTES_SEC], seedSE_k[1+BYTES_SEED_SE:BYTES_SEC], s, s1);
 
-    ss = __shake256_ss(ss, ct_k);
+    ss = __shake256_ss_opt(ss, ct_k);
 
     ssp = s_ssp;
-    i = s_i;
-    i = 0;
-    while (i < BYTES_SEC) {
-        (u8)[ssp + i] = ss[(int)i];
-        i += 1;
+    for k = 0 to BYTES_SEC/8 {
+        [ssp + 8*k] = ss[u64 k];
     }
 }
 

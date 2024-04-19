@@ -8,8 +8,9 @@ fn __encode(reg ptr u16[NBAR * NBAR]out, reg ptr u8[EXTRACTED_BITS * NBAR * NBAR
     while (i < NBAR) {
         tmp = 0;
 
+        offset = i * EXTRACTED_BITS;
         for k = 0 to EXTRACTED_BITS {
-            tmp2 = (64u)in[i * EXTRACTED_BITS + k];
+            tmp2 = (64u)in[offset + k];
             tmp2 <<= 8 * k;
             tmp |= tmp2;
         }
@@ -61,11 +62,12 @@ fn __decode(reg ptr u8[EXTRACTED_BITS * NBAR] out, reg ptr u16[NBAR * NBAR] in) 
         }
 
         j = 0;
+        offset = i*EXTRACTED_BITS;
         while (j < EXTRACTED_BITS) {
-            offset = #LEA(i*EXTRACTED_BITS+j);
             out[offset] = (8u)tmplong;
             tmplong >>= 8;
             j += 1;
+            offset += 1;
         }
         i += 1;
     }
