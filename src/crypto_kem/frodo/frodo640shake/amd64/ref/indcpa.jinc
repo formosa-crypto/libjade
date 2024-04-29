@@ -1,0 +1,38 @@
+
+inline
+fn __indcpa_keypair_derand(
+  #spill_to_mmx reg ptr u8[BYTES_SEED_A + BYTES_SEED_SE] coins
+) -> stack u8[BYTES_PK], stack u8[2*NNBAR] {
+    stack u8[BYTES_PK] pk; // seedA || b
+    stack u8[2*NNBAR] sk; // S_T
+    stack u16[2 * NNBAR] SE;
+    stack u16[NNBAR] B;
+
+    reg u64 i;
+
+    i = 0;
+    while (i < BYTES_SEED_A/8) {
+        pk[u64 i] = coins[u64 i];
+        i += 1;
+    }
+
+    () = #spill(coins);
+    // gen S || E
+    SE = __shake128_r_opt(SE, coins[BYTES_SEED_A:BYTES_SEED_SE]);
+
+    SE = __sample_2NNBAR(SE);
+
+    // B = A*S+E
+    B = __AS_plus_E_opt(B, pk[0:BYTES_SEED_A], SE[0:NNBAR], SE[NNBAR:NNBAR]);
+
+    // pack
+    pk[BYTES_SEED_A:D * N] = __pack_B(pk[BYTES_SEED_A:D * N], B);
+
+    i = 0;
+    while (i < 2 * NNBAR / 8) {
+        sk[u64 i] = SE[u64 i];
+        i += 1;
+    }
+
+    return pk, sk;
+}

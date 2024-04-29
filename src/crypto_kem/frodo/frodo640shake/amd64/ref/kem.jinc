@@ -4,72 +4,66 @@ from Jade require "crypto_kem/frodo/common/amd64/ref/noise.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/matrix_mul_opt.jinc"
 from Jade require "crypto_kem/frodo/common/amd64/ref/pack.jinc"
+require "./indcpa.jinc"
 
 // coins = s || seed SE || z
+inline
 fn __frodo_amd64_ref_keypair_derand(
   reg u64 pkp skp,
-  #spill_to_mmx reg ptr u8[BYTES_SEED_A + BYTES_SEED_SE + BYTES_SEC] coins) {
-    stack u16[2 * NNBAR] SE;
-    stack u16[NNBAR] B;
-
-    inline int k;
-    reg u64 i j;
+  #spill_to_mmx reg ptr u8[BYTES_SEC + BYTES_SEED_SE + BYTES_SEED_A] coins) {
+    reg u64 i;
 
     // seedA || b
     stack u8[BYTES_PK] pk;
+    stack u8[BYTES_SEED_A + BYTES_SEED_SE] indcoins;
+    stack u8[BYTES_SEC] pkh;
 
-    // s || seedA || b || S_T || pkh
-    stack u8[BYTES_SK] sk;
+    // S_T
+    stack u8[2*NNBAR] sk;
 
-    () = #spill(pkp, skp);
-
-    for k = 0 to BYTES_SEC/8 {
-        sk[u64 k] = coins[u64 k];
+    i = 0;
+    while (i < BYTES_SEC/8) {
+        [skp + i*8] = coins[u64 i];
+        i += 1;
     }
 
-    // gen seedA
-    () = #spill(coins); // stack_coins = coins
-    pk[0:BYTES_SEED_A] = __shake128_seed_A_opt(pk[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
+    // copy seedSE
+    i = 0;
+    while (i < BYTES_SEED_SE/8) {
+        indcoins[u64 BYTES_SEED_A/8 + i] = coins[u64 BYTES_SEC/8 + i];
+        i += 1;
+    }
 
-    // gen S || E
-    () = #unspill(coins); // coins = stack_coins
-    SE = __shake128_r_opt(SE, coins[BYTES_SEC:BYTES_SEED_SE]);
-    SE = __sample_2NNBAR(SE);
+    () = #spill(pkp, skp, coins);
+    indcoins[0:BYTES_SEED_A] = __shake128_seed_A_opt(indcoins[0:BYTES_SEED_A], coins[BYTES_SEC + BYTES_SEED_SE:BYTES_SEED_A]);
 
-    // B = A*S+E
-    B = __AS_plus_E_opt(B, pk[0:BYTES_SEED_A], SE[0:NNBAR], SE[NNBAR:NNBAR]);
+    pk, sk = __indcpa_keypair_derand(indcoins);
+    pkh = __shake128_pkh_opt(pkh, pk);
 
-    // pack
-    pk[BYTES_SEED_A:D * N] = __pack_B(pk[BYTES_SEED_A:D * N], B);
+    () = #unspill(pkp, skp);
 
     i = 0;
     while (i < BYTES_PK/8) {
-        sk[u64 BYTES_SEC/8 + i] = pk[u64 i];
+        [skp + BYTES_SEC + i*8] = pk[u64 i];
         i += 1;
     }
 
     i = 0;
     while (i < 2 * NNBAR / 8) {
-        sk[u64 BYTES_SEC/8 + BYTES_PK/8 + i] = SE[u64 i];
+        [skp + BYTES_SEC + BYTES_PK + i*8] = sk[u64 i];
         i += 1;
     }
 
-    sk[BYTES_SEC + BYTES_PK + 2 * NNBAR : BYTES_SEC] = __shake128_pkh_opt(sk[BYTES_SEC + BYTES_PK + 2 * NNBAR:BYTES_SEC], pk);
-
-    () = #unspill(pkp, skp);
-    _ = #init_msf();
-    i = 0; j = 0;
+    i = 0;
     while (i < BYTES_PK/8) {
-        [pkp + j] = pk[u64 i];
+        [pkp + i*8] = pk[u64 i];
         i += 1;
-        j += 8;
     }
 
-    i = 0; j = 0;
-    while (i < BYTES_SK/8) {
-        [skp + j] = sk[u64 i];
+    i = 0;
+    while (i < BYTES_SEC/8) {
+        [skp + BYTES_SK - BYTES_SEC + i*8] = pkh[u64 i];
         i += 1;
-        j += 8;
     }
 }
 
