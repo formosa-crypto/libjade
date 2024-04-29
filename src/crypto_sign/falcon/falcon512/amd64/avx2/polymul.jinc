@@ -1,7 +1,0 @@
-
-require "NTT_params.jinc"
-
-require "vec.jinc"
-require "NTT.jinc"
-
-
