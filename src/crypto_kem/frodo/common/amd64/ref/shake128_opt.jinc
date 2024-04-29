@@ -268,6 +268,57 @@ fn __shake128_pkh_opt(
   return out;
 }
 
+fn __shake128_SE_k_opt2(
+  #spill_to_mmx reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out,
+  #spill_to_mmx reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) 
+-> reg ptr u8[BYTES_SEED_SE + BYTES_SEC] {
+  #spill_to_mmx reg u64 i;
+
+  stack u64[25] s_state;
+  reg ptr u64[25] state;
+  reg u64 t0 zero;
+  inline int INLEN OUTLEN;
+
+  INLEN = 2 * BYTES_SEC + BYTES_SALT;
+  OUTLEN = BYTES_SEED_SE + BYTES_SEC;
+
+  state = s_state;
+
+  i = 0;
+  while (i < INLEN/8) {
+    t0 = in[u64 i];
+    state[i] = t0;
+
+    i += 1;
+  }
+  ?{}, zero = #set0();
+
+  i = INLEN/8;
+  while (i < 25) {
+    state[i] = zero;
+    i += 1;
+  }
+
+  state[u8 INLEN] = 0x1f;
+  state[u8 SHAKE128_RATE-1] = 0x80;
+
+  () = #spill(out);
+
+  state = __keccakf1600_ref1(state);
+
+  () = #unspill(out);
+
+  i = 0;
+  while (i < OUTLEN/8) {
+    t0 = state[u64 i];
+    out[u64 i] = t0;
+    i += 1;
+  }
+
+  return out;
+}
+
+
 fn __shake128_SE_k_opt(
   #spill_to_mmx reg ptr u8[1 + BYTES_SEED_SE + BYTES_SEC] out,
   #spill_to_mmx reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) 

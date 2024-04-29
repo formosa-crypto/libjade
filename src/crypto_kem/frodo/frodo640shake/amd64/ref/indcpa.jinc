@@ -8,11 +8,12 @@ fn __indcpa_keypair_derand(
     stack u16[2 * NNBAR] SE;
     stack u16[NNBAR] B;
 
-    reg u64 i;
+    reg u64 i t;
 
     i = 0;
     while (i < BYTES_SEED_A/8) {
-        pk[u64 i] = coins[u64 i];
+        t = coins[u64 i];
+        pk[u64 i] = t;
         i += 1;
     }
 
@@ -30,9 +31,75 @@ fn __indcpa_keypair_derand(
 
     i = 0;
     while (i < 2 * NNBAR / 8) {
-        sk[u64 i] = SE[u64 i];
+        t = SE[u64 i];
+        sk[u64 i] = t;
         i += 1;
     }
 
     return pk, sk;
+}
+
+inline
+fn __indcpa_enc_derand(
+  #spill_to_mmx reg ptr u8[BYTES_CT - BYTES_SALT] ct,
+  #spill_to_mmx reg ptr u8[BYTES_SEC] u,
+  #spill_to_mmx reg ptr u8[BYTES_PK] pk,
+  #spill_to_mmx reg ptr u8[BYTES_SEED_SE] coins
+) -> reg ptr u8[BYTES_CT - BYTES_SALT] {
+    reg u64 i t;
+
+    // 0x96 || seed_SE
+    stack u8[1 + BYTES_SEED_SE] seedSE;
+    seedSE[0] = 0x96;
+
+    // S' || E' || E''
+    stack u16[2 * NNBAR + NBAR * NBAR] SEE;
+    stack u16[NNBAR] B;
+    reg ptr u16[NNBAR] Bp;
+    stack u16[NBAR * NBAR] C;
+    reg ptr u16[NBAR * NBAR] V;
+
+    // stack u8[BYTES_CT - BYTES_SALT] ct;
+
+    i = 0;
+    while (i < BYTES_SEED_SE/8) {
+        t = coins[u64 i];
+        seedSE.[u64 1 + 8*i] = t;
+        i += 1;
+    }
+
+    // B <- Unpack(b)
+    B = __unpack_B(B, pk[BYTES_SEED_A:D * N]);
+    C = __encode(C, u);
+
+    () = #spill(ct, u, pk, coins);
+
+    // gen input bit string for sampling S and E
+    SEE = __shake128_encap_r_opt(SEE, seedSE);
+
+    // S' || E'
+    SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
+    // E''
+    SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
+
+    // B' = S'A + E''
+    Bp = SEE[NNBAR:NNBAR];
+
+    () = #unspill(pk);
+    Bp = __SA_plus_E_opt(Bp, pk[0:BYTES_SEED_A], SEE[0:NNBAR]);
+
+    // V = S'B + E''
+    V = SEE[NNBAR*2:NBAR*NBAR];
+    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
+
+    // C = V + Encode(u)
+    C = __matrix_add(C, V);
+
+    // c1 <- Pack(B')
+    () = #unspill(ct);
+    ct[0:D * N] = __pack_B(ct[0:D * N], Bp);
+    // c2 <- Pack(C)
+    ct[D * N: D * NBAR] = __pack_C(ct[D * N: D * NBAR], C);
+
+    return ct;
 }
