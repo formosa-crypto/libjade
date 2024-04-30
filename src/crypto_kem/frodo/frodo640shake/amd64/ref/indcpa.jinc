@@ -103,3 +103,25 @@ fn __indcpa_enc_derand(
 
     return ct;
 }
+
+inline
+fn __indcpa_dec(
+  #spill_to_mmx reg ptr u8[BYTES_SEC] pt,
+  #spill_to_mmx reg ptr u8[BYTES_CT - BYTES_SALT] ct,
+  #spill_to_mmx reg ptr u8[2*NNBAR] sk
+) -> reg ptr u8[BYTES_SEC] {
+    stack u16[NNBAR] Bp;
+    stack u16[NBAR * NBAR] M C;
+
+    // B' <- Unpack(c1)
+    Bp = __unpack_B(Bp, ct[0:D * N]);
+    // C <- Unpack(c2)
+    C = __unpack_C(C, ct[D * N:D * NBAR]);
+
+    // M = C - B'S
+    M = __mul_BS_opt(M, Bp, sk);
+    M = __matrix_sub(M, C);
+    pt = __decode(pt, M);
+
+    return pt;
+}

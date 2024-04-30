@@ -152,126 +152,87 @@ fn __frodo_amd64_ref_enc_derand(
     }
 }
 
-#[returnaddress="stack"]
 fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     #public stack u8[BYTES_PK] pk;
     stack u8[2 * NNBAR] ST;
     stack u8[BYTES_SEC] s;
     stack u8[BYTES_CT + BYTES_SEC] ct_k;
-    stack u16[NNBAR] B Bp;
-    reg ptr u16[NNBAR] Bpp;
-    stack u16[NBAR * NBAR] M C Cp;
-    reg ptr u16[NBAR * NBAR] V;
+    stack u8[BYTES_CT - BYTES_SALT] ct2;
     stack u8[BYTES_SEC * 2 + BYTES_SALT] pkh_u_salt;
-    stack u8[1 + BYTES_SEED_SE + BYTES_SEC] seedSE_k;
+    stack u8[BYTES_SEED_SE + BYTES_SEC] seedSE_k;
     stack u8[BYTES_SEC] ss;
 
-    // S' || E' || E''
-    stack u16[2 * NNBAR + NBAR * NBAR] SEE;
-
-    reg u8 s1 s2;
-    reg u64 i j t;
-    stack u64 s_ssp s_skp;
-    inline int k;
+    reg u8 s1;
+    reg u64 i t;
 
     ctp = ctp;
     skp = skp;
-    s_ssp = ssp;
+    ssp = ssp;
 
     // copy pkh
-    for k = 0 to BYTES_SEC/8 {
-        pkh_u_salt[u64 k] = [skp + BYTES_SK - BYTES_SEC + 8*k];
+    i = 0;
+    while (i < BYTES_SEC/8) {
+        t = [skp + BYTES_SK - BYTES_SEC + i*8];
+        pkh_u_salt[u64 i] = t;
+        i += 1;
     }
-    s_skp = skp;
 
     // read ct
-    i = 0; j = 0;
+    i = 0;
     while (i < BYTES_CT/8) {
-        t = [ctp + j];
+        t = [ctp + i*8];
         ct_k[u64 i] = t;
         i += 1;
-        j += 8;
     }
 
-    for k = 0 to BYTES_SEC/8 {
-        s[u64 k] = [skp + 8*k];
+    i = 0;
+    while (i < BYTES_SEC/8) {
+        t = [skp + i*8];
+        s[u64 i] = t;
+        i += 1;
     }
 
-    i = 0; j = 0;
+    i = 0;
     while (i < BYTES_PK/8) {
-        #declassify pk[u64 i] = [skp + BYTES_SEC + j];
+        t = [skp + BYTES_SEC + i*8];
+        #declassify pk[u64 i] = t;
         i += 1;
-        j += 8;
     }
 
-    i = 0; j = 0;
+    i = 0;
     while (i < 2 * NNBAR/8) {
-        ST[u64 i] = [skp + BYTES_SEC + BYTES_PK + j];
+        t = [skp + BYTES_SEC + BYTES_PK + i*8];
+        ST[u64 i] = t;
         i += 1;
-        j += 8;
     }
-
-    () = #spill(i);
 
     // copy salt
-    for k = 0 to BYTES_SALT/8 {
-        pkh_u_salt[u64 (BYTES_SEC * 2)/8 + k] = ct_k[u64 (BYTES_CT - BYTES_SALT)/8 + k];
-    }
-
-    // B' <- Unpack(c1)
-    Bp = __unpack_B(Bp, ct_k[0:D * N]);
-    // C <- Unpack(c2)
-    C = __unpack_C(C, ct_k[D * N:D * NBAR]);
-
-    // M = C - B'S
-    M = __mul_BS_opt(M, Bp, ST);
-    M = __matrix_sub(M, C);
-
-    pkh_u_salt[BYTES_SEC:BYTES_SEC] = __decode(pkh_u_salt[BYTES_SEC:BYTES_SEC], M);
-
-    seedSE_k[0] = 0x96;
-    seedSE_k = __shake128_SE_k_opt(seedSE_k, pkh_u_salt);
-
-    SEE = __shake128_encap_r_opt(SEE, seedSE_k[0: 1 + BYTES_SEED_SE]);
-
-    // S' || E'
-    SEE[0:2 * NNBAR] = __sample_2NNBAR(SEE[0:2 * NNBAR]);
-    // E''
-    SEE[NNBAR * 2:NBAR * NBAR] = __sample_NBAR2(SEE[NNBAR * 2:NBAR * NBAR]);
-
-    // B'' = S'A + E'
-    Bpp = SEE[NNBAR:NNBAR];
-    Bpp = __SA_plus_E_opt(Bpp, pk[0:BYTES_SEED_A], SEE[0:NNBAR]);
-
-    // B'' (mod q)
-    () = #unspill(i);
     i = 0;
-    while (i < NNBAR) {
-        Bpp[i] &= (1 << D) - 1;
+    while (i < BYTES_SALT/8) {
+        t = ct_k[u64 (BYTES_CT - BYTES_SALT)/8 + i];
+        pkh_u_salt[u64 (BYTES_SEC * 2)/8 + i] = t;
         i += 1;
     }
 
-    //
-    B = __unpack_B(B, pk[BYTES_SEED_A:BYTES_PK - BYTES_SEED_A]);
+    pkh_u_salt[BYTES_SEC:BYTES_SEC] = __indcpa_dec(pkh_u_salt[BYTES_SEC:BYTES_SEC], ct_k[0:BYTES_CT - BYTES_SALT], ST);
 
-    V = SEE[NNBAR*2:NBAR*NBAR];
-    V = __SB_plus_E_opt(V, SEE[0:NNBAR], B);
+    () = #spill(ssp);
+    seedSE_k = __shake128_SE_k_opt2(seedSE_k, pkh_u_salt);
+    ct2 = __indcpa_enc_derand(ct2, pkh_u_salt[BYTES_SEC:BYTES_SEC], pk, seedSE_k[0:BYTES_SEED_SE]);
 
-    Cp = __encode(Cp, pkh_u_salt[BYTES_SEC:BYTES_SEC]);
-    Cp = __matrix_add(Cp, V);
+    s1 = __ct_verify(ct_k[0:BYTES_CT - BYTES_SALT], ct2);
 
-    s1 = __ct_verify_NNBAR(Bp, Bpp);
-    s2 = __ct_verify_NBAR2(C, Cp);
-    s1 |= s2;
-
-    ct_k[BYTES_CT:BYTES_SEC] = __ct_select(ct_k[BYTES_CT:BYTES_SEC], seedSE_k[1+BYTES_SEED_SE:BYTES_SEC], s, s1);
+    ct_k[BYTES_CT:BYTES_SEC] = __ct_select(ct_k[BYTES_CT:BYTES_SEC], seedSE_k[BYTES_SEED_SE:BYTES_SEC], s, s1);
 
     ss = __shake128_ss_opt(ss, ct_k);
 
     _ = #init_msf();
-    ssp = s_ssp;
-    for k = 0 to BYTES_SEC/8 {
-        [ssp + 8*k] = ss[u64 k];
+    () = #unspill(ssp);
+    i = 0;
+    while (i < BYTES_SEC/8) {
+        t = ss[u64 i];
+        [ssp + i*8] = t;
+        i += 1;
     }
 }
 
