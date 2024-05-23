@@ -29,8 +29,10 @@ inline fn __unpack_avx(
   r12[u64 o + 2] = l;
 
   l = rt[0];
-  ?{},l = #SHRD(l, rt[1], 52);
-  h = l;
+  l >>= 52;
+  h = rt[1];
+  h <<= 12;
+  l |= h;
   l &= mask26;
   r12[u64 o + 4] = l;
 
@@ -38,8 +40,12 @@ inline fn __unpack_avx(
   l >>= 26;
   l &= mask26;
   r12[u64 o + 6] = l;
+  
   l = rt[1];
-  ?{}, l = #SHRD(l, rt[2], 40);
+  l >>= 40;
+  h = rt[2];
+  h <<= 24;
+  l |= h;
   r12[u64 o + 8] = l;
 
   return r12;
