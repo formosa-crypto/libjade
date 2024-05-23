@@ -34,13 +34,13 @@ implementations_status "${wcard}.error" $error;
 echo "${BOLD}Status: ${NORMAL}"
 
 # print implementations with zero warnings in 'green'
-cat $warning | egrep -E "^0, " | \
+cat $warning | grep -E "^0, " | \
 while read line; do
  echo "${GREEN}${BOLD}OK, ${line}${NORMAL}"
 done
 
 # print implementations with some warnings in 'yellow'
-cat $warning | egrep -vE "^0, " | \
+cat $warning | grep -vE "^0, " | \
 while read line; do
  echo "${YELLOW}${BOLD}W, ${line}${NORMAL}"
 done

@@ -1,5 +1,6 @@
 
 require "sha512_globals.jinc"
+from Jade require "common/doit.jinc" //__ROR64
 
 inline fn __initH_ref() -> stack u64[8]
 {
@@ -51,13 +52,14 @@ inline fn __store_H_ref(reg ptr u64[8] H, reg u64 a b c d e f g h) -> reg ptr u6
 
 inline fn __store_ref(reg u64 out, stack u64[8] H)
 {
-  inline int i;
-  reg u64 v;
+  inline int i j;
 
   for i=0 to 8
-  { v = H[i];
-    v = #BSWAP_64(v);
-    (u64)[out + i*8] = v;
+  { // BSWAP could be used here, but it is not DOIT.
+    for j=0 to 8
+    {
+      (u8)[out + i*8 + j] = H[u8 i*8 + (7 - j)];
+    }
   }
 }
 
@@ -71,10 +73,8 @@ inline fn __SHR_ref(reg u64 x, inline int c) -> reg u64
 
 inline fn __ROTR_ref(reg u64 x, inline int c) -> reg u64
 {
-  reg u64 r;
-  r = x;
-  _, _, r = #ROR_64(r, c);
-  return r;
+  x = __ROR64(x, c);
+  return x;
 }
 
 //(x & y) ^ (!x & z)
@@ -185,8 +185,8 @@ inline fn __Wt_ref(stack u64[80] W, inline int t) -> stack u64[80]
 
 fn _blocks_0_ref(reg ptr u64[8] _H, reg u64 in inlen) -> reg ptr u64[8], reg u64, reg u64
 {
-  inline int t;
-  reg u64 T1 T2 a b c d e f g h r v;
+  inline int t u;
+  reg u64 T1 T2 a b c d e f g h r;
   stack u64[80] W;
   reg ptr u64[80] Kp;
   stack ptr u64[8] Hp;
@@ -202,9 +202,11 @@ fn _blocks_0_ref(reg ptr u64[8] _H, reg u64 in inlen) -> reg ptr u64[8], reg u64
   while(inlen >= 128)
   {
     for t=0 to 16
-    { v = (u64)[in + t*8];
-      v = #BSWAP_64(v);
-      W[t] = v;
+    { // BSWAP could be used here, but it is not DOIT.
+      for u=0 to 8
+      {
+        W[u8 t*8 + u] = (u8)[in + t*8 + (7 - u)];
+      }
     }
     in_s = in;
 
@@ -269,8 +271,8 @@ fn _blocks_0_ref(reg ptr u64[8] _H, reg u64 in inlen) -> reg ptr u64[8], reg u64
 
 fn _blocks_1_ref(reg ptr u64[8] _H, reg ptr u64[32] sblocks, reg u64 nblocks) -> reg ptr u64[8], reg ptr u64[32]
 {
-  inline int t;
-  reg u64 T1 T2 a b c d e f g h r v;
+  inline int t u;
+  reg u64 T1 T2 a b c d e f g h r;
   stack u64[80] W;
   reg ptr u64[80] Kp;
   stack ptr u64[8] Hp;
@@ -290,9 +292,11 @@ fn _blocks_1_ref(reg ptr u64[8] _H, reg ptr u64[32] sblocks, reg u64 nblocks) ->
     s_i = i;
     oblocks = i << 4;
     for t=0 to 16
-    { v = sblocks[(int)oblocks + t];
-      v = #BSWAP_64(v);
-      W[t] = v;
+    { // BSWAP could be used here, but it is not DOIT.
+      for u=0 to 8
+      {
+        W[u8 t*8 + u] = sblocks[u8 oblocks*8 + t*8 + (7 - u)];
+      }
     }
     s_sblocks = sblocks;
 
