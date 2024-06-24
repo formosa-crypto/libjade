@@ -1,4 +1,3 @@
-
 inline
 fn __indcpa_keypair_derand(
   #spill_to_mmx reg ptr u8[BYTES_SEED_A + BYTES_SEED_SE] coins

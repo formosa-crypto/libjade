@@ -1,5 +1,3 @@
-from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
-
 fn __AS_plus_E(reg ptr u16[NNBAR] B, reg ptr u8[BYTES_SEED_A]seedA, reg ptr u16[NNBAR] S E) -> stack u16[NNBAR] {
     stack ptr u16[NNBAR] s_B;
     stack u16[N] A_row;
