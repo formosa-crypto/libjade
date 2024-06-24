@@ -2,7 +2,6 @@ from Jade require "common/keccak/keccak1600/amd64/ref1/keccak1600.jinc"
 
 param int SHAKE256_RATE = 136;
 
-#[returnaddress="stack"]
 fn __shake256_seed_A(reg ptr u8[BYTES_SEED_A] out, reg const ptr u8[BYTES_SEED_A] in) -> stack u8[BYTES_SEED_A]
 {
   stack ptr u8[BYTES_SEED_A] s_out;
@@ -44,7 +43,6 @@ fn __shake256_seed_A(reg ptr u8[BYTES_SEED_A] out, reg const ptr u8[BYTES_SEED_A
   return out;
 }
 
-#[returnaddress="stack"]
 fn __shake256_r(reg ptr u8[4 * NNBAR] out, reg const ptr u8[1 + BYTES_SEED_SE] in) -> stack u8[4 * NNBAR]
 {
   stack ptr u8[4 * NNBAR] s_out;
@@ -106,7 +104,6 @@ fn __shake256_r(reg ptr u8[4 * NNBAR] out, reg const ptr u8[1 + BYTES_SEED_SE] i
   return out;
 }
 
-#[returnaddress="stack"]
 fn __shake256_pkh(reg ptr u8[BYTES_SEC] out, reg const ptr u8[BYTES_PK] in) -> stack u8[BYTES_SEC]
 {
   stack ptr u8[BYTES_SEC] s_out;
@@ -169,7 +166,6 @@ fn __shake256_pkh(reg ptr u8[BYTES_SEC] out, reg const ptr u8[BYTES_PK] in) -> s
   return out;
 }
 
-#[returnaddress="stack"]
 fn __shake256_SE_k(reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out, reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) -> stack u8[BYTES_SEED_SE + BYTES_SEC] {
   stack ptr u8[BYTES_SEED_SE + BYTES_SEC] s_out;
   stack ptr u8[2 * BYTES_SEC + BYTES_SALT] s_in;
@@ -214,7 +210,6 @@ fn __shake256_SE_k(reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out, reg const ptr u8[2
 }
 
 
-#[returnaddress="stack"]
 fn __shake256_encap_r(reg ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] out, reg const ptr u8[1 + BYTES_SEED_SE] in) -> stack u8[2 * (2 * NNBAR + NBAR * NBAR)] {
   stack ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] s_out;
   stack ptr u8[1 + BYTES_SEED_SE] s_in;
@@ -274,7 +269,6 @@ fn __shake256_encap_r(reg ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] out, reg const p
   return out;
 }
 
-#[returnaddress="stack"]
 fn __shake256_ss(reg ptr u8[BYTES_SEC] out, reg const ptr u8[BYTES_CT + BYTES_SEC] in) -> stack u8[BYTES_SEC]
 {
   stack ptr u8[BYTES_SEC] s_out;
