@@ -121,7 +121,7 @@ fn __frodo_amd64_ref_enc_derand(
     pkh_u_salt[0:BYTES_SEC] = __shake128_pkh_opt(pkh_u_salt[0:BYTES_SEC], pk);
 
     // seedSE || k
-    seedSE_k = __shake128_SE_k_opt2(seedSE_k, pkh_u_salt);
+    seedSE_k = __shake128_SE_k_opt(seedSE_k, pkh_u_salt);
 
     () = #unspill(coins);
     ct_k[0:BYTES_CT - BYTES_SALT] = __indcpa_enc_derand(ct_k[0:BYTES_CT - BYTES_SALT], coins[0:BYTES_SEC], pk, seedSE_k[0:BYTES_SEED_SE]);
@@ -217,7 +217,7 @@ fn _frodo_amd64_ref_dec(reg u64 ssp ctp skp) {
     pkh_u_salt[BYTES_SEC:BYTES_SEC] = __indcpa_dec(pkh_u_salt[BYTES_SEC:BYTES_SEC], ct_k[0:BYTES_CT - BYTES_SALT], ST);
 
     () = #spill(ssp);
-    seedSE_k = __shake128_SE_k_opt2(seedSE_k, pkh_u_salt);
+    seedSE_k = __shake128_SE_k_opt(seedSE_k, pkh_u_salt);
     ct2 = __indcpa_enc_derand(ct2, pkh_u_salt[BYTES_SEC:BYTES_SEC], pk, seedSE_k[0:BYTES_SEED_SE]);
 
     s1 = __ct_verify(ct_k[0:BYTES_CT - BYTES_SALT], ct2);

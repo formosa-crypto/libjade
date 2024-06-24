@@ -89,11 +89,11 @@ fn __shake256_r_opt(
 
   i = 0;
   while (i < OUTRND * SHAKE256_RATE/8) {
-    () = #spill(i, out);
+    () = #spill(i, j, out);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, out);
+    () = #unspill(i, j, out);
 
     j = 0;
     while (j < SHAKE256_RATE/8) {
@@ -107,11 +107,11 @@ fn __shake256_r_opt(
     i += SHAKE256_RATE/8;
   }
 
-  () = #spill(i, out);
+  () = #spill(i, j, out);
 
   state = __keccakf1600_ref1(state);
 
-  () = #unspill(i, out);
+  () = #unspill(i, j, out);
 
   i = 0;
   while (i < (OUTLEN % SHAKE256_RATE) / 8) {
@@ -196,14 +196,14 @@ fn __shake256_pkh_opt(
 }
 
 fn __shake256_SE_k_opt(
-  #spill_to_mmx reg ptr u8[1 + BYTES_SEED_SE + BYTES_SEC] out,
+  #spill_to_mmx reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out,
   #spill_to_mmx reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) 
--> reg ptr u8[1 + BYTES_SEED_SE + BYTES_SEC] {
+-> reg ptr u8[BYTES_SEED_SE + BYTES_SEC] {
   #spill_to_mmx reg u64 i;
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 offset t0 zero;
+  reg u64 t0 zero;
   inline int INLEN OUTLEN;
 
   INLEN = 2 * BYTES_SEC + BYTES_SALT;
@@ -238,8 +238,7 @@ fn __shake256_SE_k_opt(
   i = 0;
   while (i < OUTLEN/8) {
     t0 = state[u64 i];
-    offset = #LEA(1+8*i);
-    out.[u64 offset] = t0;
+    out[u64 i] = t0;
 
     i += 1;
   }
