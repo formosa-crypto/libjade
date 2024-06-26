@@ -3,6 +3,9 @@ require "sha3-512.jinc"
 export fn jade_hash_sha3_512_amd64_bmi1(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __sha3_512_bmi1(hash, input, input_length);
   ?{}, r = #set0();
   return r;
