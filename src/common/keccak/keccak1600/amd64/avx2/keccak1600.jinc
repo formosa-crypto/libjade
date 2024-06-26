@@ -33,23 +33,32 @@ inline fn __add_full_block_avx2(
   stack u64[28] s_state,
   reg ptr u64[25] a_jagged_p,
   reg u64 in inlen,
-  reg u64 rate
-) -> reg u256[7], stack u64[28], reg u64, reg u64
+  reg u64 rate,
+  #msf reg u64 ms
+) -> reg u256[7], stack u64[28], reg u64, reg u64, #msf reg u64
 {
 
   inline int i;
   reg u64 j l t rate8;
+  reg bool loop_condition;
 
   rate8 = rate;
   rate8 >>= 3;
   j = 0;
-  while ( j < rate8 )
+  while { loop_condition = ( j < rate8 ); } ( loop_condition )
   {
+    ms = #update_msf(loop_condition, ms);
+
     t = [in + 8*j];
+
     l = a_jagged_p[(int) j];
+    l = #protect(l, ms);
+
     s_state[(int) l] = t;
     j += 1;
+
   }
+  ms = #update_msf(!loop_condition, ms);
 
   //TODO: check & change to #VPBROADCAST_4u64
   t = s_state[0];
@@ -63,7 +72,7 @@ inline fn __add_full_block_avx2(
   in += rate;
   inlen -= rate;
 
-  return state, s_state, in, inlen;
+  return state, s_state, in, inlen, ms;
 }
 
 
@@ -74,42 +83,56 @@ inline fn __add_final_block_avx2(
   reg ptr u64[25] a_jagged_p,
   reg   u64 in inlen,
   reg   u8  trail_byte,
-  reg   u64 rate
-) -> reg u256[7]
+  reg   u64 rate,
+  #msf reg u64 ms
+) -> reg u256[7], #msf reg u64
 {
   inline int i;
   reg u64 j l t inlen8;
   reg u8 c;
+  reg bool loop_condition;
 
   s_state = __init_s_state_avx2();
 
   inlen8 = inlen;
   inlen8 >>= 3;
   j = 0;
-  while ( j < inlen8 )
+
+  while { loop_condition = (j < inlen8); } ( loop_condition )
   {
+    ms = #update_msf(loop_condition, ms);
+
     t = [in + 8*j];
     l = a_jagged_p[(int) j];
+    l = #protect(l, ms);    
+
     s_state[(int) l] = t;
     j += 1;
   }
+  ms = #update_msf(!loop_condition, ms);
+
   l = a_jagged_p[(int) j];
+  l = #protect(l, ms);
+
   l <<= 3;
   j <<= 3;
 
-  while ( j < inlen )
+  while { loop_condition = ( j < inlen ); } ( loop_condition )
   {
+    ms = #update_msf(loop_condition, ms);
     c = (u8)[in + j];
     s_state[u8 (int) l] = c;
     j += 1;
     l += 1;
   }
+  ms = #update_msf(!loop_condition, ms);
 
   s_state[u8 (int) l] = trail_byte;
 
   // j  = (rate-1) >> 3;
   j = rate; j -= 1; j >>= 3;
   l  = a_jagged_p[(int) j];
+  l = #protect(l, ms);
   l <<= 3;
   // l += ((rate-1) & 0x7)
   j = rate; j -= 1; j &= 0x7;
@@ -125,7 +148,7 @@ inline fn __add_final_block_avx2(
   for i = 0 to 7
   { state[i] ^= s_state[u256 i]; }
 
-  return state;
+  return state, ms;
 }
 
 
@@ -134,12 +157,14 @@ inline fn __xtr_full_block_avx2(
   reg u256[7] state,
   reg ptr u64[25] a_jagged_p,
   reg u64 out,
-  reg u64 len
-) -> reg u64
+  reg u64 len,
+  #msf reg u64 ms
+) -> reg u64, #msf reg u64
 {
   inline int i;
   stack u64[28] s_state;
   reg u64 j l t len8;
+  reg bool loop_condition;
 
   for i = 0 to 7
   { s_state[u256 i] = state[i]; }
@@ -147,17 +172,22 @@ inline fn __xtr_full_block_avx2(
   len8 = len;
   len8 >>= 3;
   j = 0;
-  while ( j < len8 )
+  while { loop_condition = ( j < len8 ); } ( loop_condition )
   {
+    ms = #update_msf(loop_condition, ms);
+
     l = a_jagged_p[(int) j];
+    l = #protect(l, ms);    
+
     t = s_state[(int) l];
     [out + 8*j] = t;
     j += 1;
   }
+  ms = #update_msf(!loop_condition, ms);
 
   out += len;
 
-  return out;
+  return out, ms;
 }
 
 
@@ -166,13 +196,15 @@ inline fn __xtr_bytes_avx2(
   reg u256[7] state,
   reg ptr u64[25] a_jagged_p,
   reg u64 out,
-  reg u64 len
+  reg u64 len,
+  #msf reg u64 ms
 ) -> reg u64
 {
   inline int i;
   stack u64[28] s_state;
   reg u64 j l t len8;
   reg u8 c;
+  reg bool loop_condition;
 
   for i = 0 to 7
   { s_state[u256 i] = state[i]; }
@@ -180,13 +212,22 @@ inline fn __xtr_bytes_avx2(
   len8 = len;
   len8 >>= 3;
   j = 0;
-  while ( j < len8 )
-  { l = a_jagged_p[(int) j];
+  while { loop_condition = ( j < len8 ); } ( loop_condition )
+  { 
+    ms = #update_msf(loop_condition, ms);
+
+    l = a_jagged_p[(int) j];
+    l = #protect(l, ms);
+
     t = s_state[(int) l];
     [out + 8*j] = t;
     j += 1;
   }
+  ms = #update_msf(!loop_condition, ms);
+
   l = a_jagged_p[(int)j];
+  l = #protect(l, ms);
+
   j <<= 3;
   l <<= 3;
 
@@ -208,65 +249,75 @@ inline fn __absorb_avx2(
   reg u256[7] state,
   reg u64 in inlen,
   reg u8  trail_byte,
-  reg u64 rate
-) -> reg u256[7]
+  reg u64 rate,
+  #msf reg u64 ms
+) -> reg u256[7], #msf reg u64
 {
   stack u64[28] s_state;
   reg ptr u64[25] a_jagged_p;
+  reg bool loop_condition;
 
   a_jagged_p = KECCAK_A_JAGGED;
   s_state = __init_s_state_avx2();
 
   // intermediate blocks
-  while ( inlen >= rate )
+  while { loop_condition = (inlen >= rate); } (loop_condition)
   {
-    state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
-    state = __keccakf1600_avx2(state);
+    ms = #update_msf(loop_condition, ms);
+
+    state, s_state, in, inlen, ms = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate, ms);
+
+    state, ms = __keccakf1600_avx2(state, ms);
   }
+  ms = #update_msf(!loop_condition, ms);
 
   // final block
-  state = __add_final_block_avx2(state, s_state, a_jagged_p, in, inlen, trail_byte, rate);
+  state, ms = __add_final_block_avx2(state, s_state, a_jagged_p, in, inlen, trail_byte, rate, ms);
 
-  return state;
+  return state, ms;
 }
 
 
-inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate)
+inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate, #msf reg u64 ms)
 {
   reg ptr u64[25] a_jagged_p;
+  reg bool loop_condition;
 
   a_jagged_p = KECCAK_A_JAGGED;
 
   // intermediate blocks
-  while ( outlen > rate )
+  while { loop_condition = (outlen > rate); } ( loop_condition )
   {
-    state = __keccakf1600_avx2(state);
-    out = __xtr_full_block_avx2(state, a_jagged_p, out, rate);
+    ms = #update_msf(loop_condition, ms);
+
+    state, ms = __keccakf1600_avx2(state, ms);
+    out, ms = __xtr_full_block_avx2(state, a_jagged_p, out, rate, ms);
     outlen -= rate;
   }
+  ms = #update_msf(!loop_condition, ms);
 
-  state = __keccakf1600_avx2(state);
-  out = __xtr_bytes_avx2(state, a_jagged_p, out, outlen);
+  state, ms = __keccakf1600_avx2(state, ms);
+  out = __xtr_bytes_avx2(state, a_jagged_p, out, outlen, ms);
 }
 
 
-inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, #msf reg u64 ms)
 {
   reg u256[7] state;
 
   state = __keccak_init_avx2();
 
   // absorb
-  state = __absorb_avx2(state, in, inlen, trail_byte, rate);
+  state, ms = __absorb_avx2(state, in, inlen, trail_byte, rate, ms);
 
   // squeeze
-  __squeeze_avx2(state, out, outlen, rate);
+  __squeeze_avx2(state, out, outlen, rate, ms);
 }
 
 
-fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate, #msf reg u64 ms)
 {
-  __keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate);
+  __keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate, ms);
 }
 
 
