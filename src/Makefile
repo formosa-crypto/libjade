@@ -24,7 +24,7 @@ SRC     := .
 FILTER  ?= $(SRC)/crypto_%
 JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 SAFETY  ?= $(addsuffix safety, $(JAZZ))
-SCT     ?= $(addsuffix sct, $(JAZZ))
+SCT     ?= $(addsuffix check_sct, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -74,9 +74,8 @@ $(SAFETY):
 	$(MAKE) -C $(@D) $(@F) || true
 
 # --------------------------------------------------------------------
-
-.PHONY: sct
-sct: $(SCT)
+.PHONY: check_sct
+check_sct: $(SCT)
 
 $(SCT):
 	$(MAKE) -C $(@D) $(@F) || true

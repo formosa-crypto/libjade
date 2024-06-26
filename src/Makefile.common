@@ -40,8 +40,6 @@ JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
-JASMIN_CT ?= jasmin-ct
-
 # --------------------------------------------------------------------
 include $(SRC)/$(OPERATION)/EcFlags.mk
 
