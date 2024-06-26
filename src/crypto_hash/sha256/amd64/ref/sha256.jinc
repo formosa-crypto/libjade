@@ -192,7 +192,7 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
   stack ptr u32[8] Hp;
   reg ptr u32[8] H;
   reg u64 tr;
-  stack u64 in_s;
+  #mmx reg u64 in_s;
 
   Kp = SHA256_K;
   Hp = _H;
@@ -275,9 +275,9 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
   reg ptr u32[64] Kp;
   stack ptr u32[8] Hp;
   reg ptr u32[8] H;
-  stack ptr u32[32] s_sblocks;
+  #mmx reg ptr u32[32] s_sblocks;
   reg u64 i oblocks tr;
-  stack u64 s_i;
+  #mmx reg u64 s_i;
 
   Kp = SHA256_K;
   Hp = _H;
@@ -395,7 +395,7 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
 inline fn __sha256_ref(reg u64 out in inlen)
 {
   reg u64 bits nblocks;
-  stack u64 s_out s_bits;
+  #mmx reg u64 s_out s_bits;
   stack u32[8] H;
   reg ptr u32[8] Hp;
   stack u32[32] sblocks;
