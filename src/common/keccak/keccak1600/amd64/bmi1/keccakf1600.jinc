@@ -129,7 +129,7 @@ inline fn __round_bmi1(reg ptr u64[25] e a, reg u64 rc) -> reg ptr u64[25]
 inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   reg ptr u64[24] RC;
-  stack ptr u64[24] s_RC;
+  #mmx reg ptr u64[24] s_RC;
   stack u64[25] s_e;
   reg ptr u64[25] e;
   reg u64 c rc;

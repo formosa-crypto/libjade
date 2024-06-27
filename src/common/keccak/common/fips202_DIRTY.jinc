@@ -1,7 +1,5 @@
-param int KECCAK_ROUNDS=24;
-
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600_nomsf.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_nomsf.jinc"
 require "fips202_params.jinc"
 
 #[returnaddress="stack"]
