@@ -1,0 +1,272 @@
+param int KECCAK_ROUNDS=24;
+
+require "keccakf1600_nomsf.jinc"
+
+inline fn __keccak_init_avx2() -> reg u256[7]
+{
+  inline int i;
+  reg u256[7] state;
+
+  for i=0 to 7
+  { state[i] = #set0_256(); }
+
+  return state;
+}
+
+
+inline fn __init_s_state_avx2() -> stack u64[28]
+{
+  inline int i;
+  stack u64[28] s_state;
+  reg u256 zero;
+
+  zero = #set0_256();
+  for i=0 to 7
+  { s_state[u256 i] = zero; }
+
+  return s_state;
+}
+
+
+inline fn __add_full_block_avx2(
+  reg u256[7] state,
+  stack u64[28] s_state,
+  reg ptr u64[25] a_jagged_p,
+  reg u64 in inlen,
+  reg u64 rate
+) -> reg u256[7], stack u64[28], reg u64, reg u64
+{
+
+  inline int i;
+  reg u64 j l t rate8;
+
+  rate8 = rate;
+  rate8 >>= 3;
+  j = 0;
+  while ( j < rate8 )
+  {
+    t = [in + 8*j];
+    l = a_jagged_p[(int) j];
+    s_state[(int) l] = t;
+    j += 1;
+  }
+
+  //TODO: check & change to #VPBROADCAST_4u64
+  t = s_state[0];
+  s_state[1] = t;
+  s_state[2] = t;
+  s_state[3] = t;
+
+  for i = 0 to 7
+  { state[i] ^= s_state[u256 i]; }
+
+  in += rate;
+  inlen -= rate;
+
+  return state, s_state, in, inlen;
+}
+
+
+// TODO: refactor when this feature is available: https://github.com/haslab/libjbn/wiki/Feature-request-%231#procedural-parameters
+inline fn __add_final_block_avx2(
+  reg  u256[7] state,
+  stack u64[28] s_state,
+  reg ptr u64[25] a_jagged_p,
+  reg   u64 in inlen,
+  reg   u8  trail_byte,
+  reg   u64 rate
+) -> reg u256[7]
+{
+  inline int i;
+  reg u64 j l t inlen8;
+  reg u8 c;
+
+  s_state = __init_s_state_avx2();
+
+  inlen8 = inlen;
+  inlen8 >>= 3;
+  j = 0;
+  while ( j < inlen8 )
+  {
+    t = [in + 8*j];
+    l = a_jagged_p[(int) j];
+    s_state[(int) l] = t;
+    j += 1;
+  }
+  l = a_jagged_p[(int) j];
+  l <<= 3;
+  j <<= 3;
+
+  while ( j < inlen )
+  {
+    c = (u8)[in + j];
+    s_state[u8 (int) l] = c;
+    j += 1;
+    l += 1;
+  }
+
+  s_state[u8 (int) l] = trail_byte;
+
+  // j  = (rate-1) >> 3;
+  j = rate; j -= 1; j >>= 3;
+  l  = a_jagged_p[(int) j];
+  l <<= 3;
+  // l += ((rate-1) & 0x7)
+  j = rate; j -= 1; j &= 0x7;
+  l += j;
+
+  s_state[u8 (int) l] ^= 0x80;
+
+  t = s_state[0];
+  s_state[1] = t;
+  s_state[2] = t;
+  s_state[3] = t;
+
+  for i = 0 to 7
+  { state[i] ^= s_state[u256 i]; }
+
+  return state;
+}
+
+
+// obs: @pre: len <= rate_in_bytes
+inline fn __xtr_full_block_avx2(
+  reg u256[7] state,
+  reg ptr u64[25] a_jagged_p,
+  reg u64 out,
+  reg u64 len
+) -> reg u64
+{
+  inline int i;
+  stack u64[28] s_state;
+  reg u64 j l t len8;
+
+  for i = 0 to 7
+  { s_state[u256 i] = state[i]; }
+
+  len8 = len;
+  len8 >>= 3;
+  j = 0;
+  while ( j < len8 )
+  {
+    l = a_jagged_p[(int) j];
+    t = s_state[(int) l];
+    [out + 8*j] = t;
+    j += 1;
+  }
+
+  out += len;
+
+  return out;
+}
+
+
+// obs: @pre: len <= rate_in_bytes
+inline fn __xtr_bytes_avx2(
+  reg u256[7] state,
+  reg ptr u64[25] a_jagged_p,
+  reg u64 out,
+  reg u64 len
+) -> reg u64
+{
+  inline int i;
+  stack u64[28] s_state;
+  reg u64 j l t len8;
+  reg u8 c;
+
+  for i = 0 to 7
+  { s_state[u256 i] = state[i]; }
+
+  len8 = len;
+  len8 >>= 3;
+  j = 0;
+  while ( j < len8 )
+  { l = a_jagged_p[(int) j];
+    t = s_state[(int) l];
+    [out + 8*j] = t;
+    j += 1;
+  }
+  l = a_jagged_p[(int)j];
+  j <<= 3;
+  l <<= 3;
+
+  while ( j < len )
+  {
+    c = s_state[u8 (int) l];
+    (u8)[out + j] = c;
+    j += 1;
+    l += 1;
+  }
+
+  out += len;
+
+  return out;
+}
+
+
+inline fn __absorb_avx2(
+  reg u256[7] state,
+  reg u64 in inlen,
+  reg u8  trail_byte,
+  reg u64 rate
+) -> reg u256[7]
+{
+  stack u64[28] s_state;
+  reg ptr u64[25] a_jagged_p;
+
+  a_jagged_p = KECCAK_A_JAGGED;
+  s_state = __init_s_state_avx2();
+
+  // intermediate blocks
+  while ( inlen >= rate )
+  {
+    state, s_state, in, inlen = __add_full_block_avx2(state, s_state, a_jagged_p, in, inlen, rate);
+    state = __keccakf1600_avx2(state);
+  }
+
+  // final block
+  state = __add_final_block_avx2(state, s_state, a_jagged_p, in, inlen, trail_byte, rate);
+
+  return state;
+}
+
+
+inline fn __squeeze_avx2(reg u256[7] state, reg u64 out outlen rate)
+{
+  reg ptr u64[25] a_jagged_p;
+
+  a_jagged_p = KECCAK_A_JAGGED;
+
+  // intermediate blocks
+  while ( outlen > rate )
+  {
+    state = __keccakf1600_avx2(state);
+    out = __xtr_full_block_avx2(state, a_jagged_p, out, rate);
+    outlen -= rate;
+  }
+
+  state = __keccakf1600_avx2(state);
+  out = __xtr_bytes_avx2(state, a_jagged_p, out, outlen);
+}
+
+
+inline fn __keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+{
+  reg u256[7] state;
+
+  state = __keccak_init_avx2();
+
+  // absorb
+  state = __absorb_avx2(state, in, inlen, trail_byte, rate);
+
+  // squeeze
+  __squeeze_avx2(state, out, outlen, rate);
+}
+
+
+fn _keccak1600_avx2(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
+{
+  __keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate);
+}
+
+
