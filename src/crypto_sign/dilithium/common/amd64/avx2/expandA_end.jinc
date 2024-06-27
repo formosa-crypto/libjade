@@ -8,8 +8,6 @@ fn expandA_aligned(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg]
 	stack u32[Li2_k * Li2_l * Li2_polydeg] matrix;
 
 	stack u64[4] nonces;
-	stack u64[4] coeffs_left;
-	stack u64[4] xof_bytes_left;
 	
 	inline int row col chunk idx lane;
 
@@ -62,8 +60,6 @@ fn expandA_unaligned2(stack u8[32] rho) -> stack u32[Li2_k * Li2_l * Li2_polydeg
 	stack u32[Li2_polydeg] scratch0 scratch1;
 
 	stack u64[4] nonces;
-	stack u64[4] coeffs_left;
-	stack u64[4] xof_bytes_left;
 	
 	inline int row col chunk idx lane;
 

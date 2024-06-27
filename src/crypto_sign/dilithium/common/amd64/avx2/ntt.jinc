@@ -217,9 +217,7 @@ fn ntt_levels0t1(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	// TODO: Interleave loads/stores with arithmetic ops
 
 	reg u256 zeta_qinv zeta;
-	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 poly8;
-
-	inline int ii;
+	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7;
 
 	poly0 = #VMOVDQU_256(poly_ptr.[u256 (32 * (0*4 + offset))]);
 	poly1 = #VMOVDQU_256(poly_ptr.[u256 (32 * (1*4 + offset))]);
@@ -267,8 +265,7 @@ fn ntt_levels2t7(reg ptr u32[256] poly_ptr, reg u256 q, inline int offset)
 	// TODO: Interleave shuffles with butterflies
 
 	reg u256 zeta_qinv0 zeta_qinv1 zeta0 zeta1;
-	reg u256[8] poly;
-	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 poly8 polyx;
+	reg u256 poly0 poly1 poly2 poly3 poly4 poly5 poly6 poly7 polyx;
 		
 	poly0 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 0)]);
 	poly1 = #VMOVDQU_256(poly_ptr.[u256 32 * (8*offset + 1)]);

@@ -105,8 +105,6 @@ fn expandMask_poly_gamma1_217_4x(
 	stack u64 y_packed_filled;
 	stack u64 output_squeeze_counter;
 	stack u256[25] xof;	
-	stack u64[4] coeffs_filled;
-	stack u64[4] xof_offset;
 
 	reg u64 addr v64;
 	reg u64 i j;
@@ -182,8 +180,6 @@ fn expandMask_poly_gamma1_219_4x(
 	stack u64 y_packed_filled;
 	stack u64 output_squeeze_counter;
 	stack u256[25] xof;	
-	stack u64[4] coeffs_filled;
-	stack u64[4] xof_offset;
 
 	reg u64 addr v64;
 	reg u64 i j;
