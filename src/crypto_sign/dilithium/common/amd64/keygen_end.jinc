@@ -14,7 +14,6 @@ fn keygen_inner(reg ptr u8[32] random_zeta)
 	stack u8[32] rho;
 	reg ptr u8[32] rho_rsp;
 	stack u8[64] rho_prime;
-	reg ptr u8[64] rho_prime_rsp;
 	stack u8[32] k;
 	// FFTs
 	stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
@@ -22,9 +21,6 @@ fn keygen_inner(reg ptr u8[32] random_zeta)
 	reg ptr u32[Li2_l * Li2_polydeg] s1_rsp;
 	stack u32[Li2_k * Li2_polydeg] s2;
 	
-	stack u8[SHAKE256_RATE] s256_out;
-
-	stack u32[Li2_k * Li2_polydeg] s2;
 	stack u32[Li2_k * Li2_polydeg] t t1 t0;
 
 	reg ptr u8[Li2_pack_s1len] s1_in_sk;
@@ -36,7 +32,6 @@ fn keygen_inner(reg ptr u8[32] random_zeta)
 	//temp variables
 	reg u64 i;
 	inline int j;
-	reg u32 v32;
 	reg u8 c;
 
 	state = shake256_absorb32(random_zeta);

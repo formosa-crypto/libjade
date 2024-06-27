@@ -109,7 +109,6 @@ fn expandA_chunk(
 	
 	stack u64[4] coeffs_filled;
 	stack u64[4] xof_offset;
-	reg u64 lane;
 
 	reg u256 v256 v256_zero;
 	reg u64 v64;
