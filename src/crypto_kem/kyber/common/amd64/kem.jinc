@@ -50,7 +50,6 @@ fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr 
   stack u8[KYBER_SYMBYTES * 2] buf kr;
   stack u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
-  inline int i;
 
   s_pkp = pkp;
   s_ctp = ctp;

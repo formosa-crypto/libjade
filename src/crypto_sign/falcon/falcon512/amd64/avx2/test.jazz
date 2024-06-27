@@ -10,7 +10,6 @@ fn __decode_public_key_external(reg u64 h pk) -> reg u32 {
     reg u32 failed;
     stack u16[ARRAY_N] h_buff;
     reg u64 i;
-    reg u16 tmp16;
 
     h_buff, failed = __decode_public_key(h_buff, pk);
 

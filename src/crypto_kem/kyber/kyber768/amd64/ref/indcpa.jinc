@@ -92,11 +92,10 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[KYB
 {
   stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_K*KYBER_VECN] aat;
-  stack u16[KYBER_N] k poly epp v poly0 poly1 poly2;
+  stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
-  reg u64 i j t64;
+  reg u64 i t64;
   reg u64 ctp;
-  reg u16 t;
   reg u8 nonce;
 
   pkpv = __polyvec_frombytes(pkp);
@@ -161,10 +160,9 @@ fn __iindcpa_enc(reg ptr u8[KYBER_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
 {
   stack u16[KYBER_VECN] pkpv sp ep bp;
   stack u16[KYBER_K*KYBER_VECN] aat;
-  stack u16[KYBER_N] k poly epp v poly0 poly1 poly2;
+  stack u16[KYBER_N] k epp v;
   stack u8[KYBER_SYMBYTES] publicseed;
-  reg u64 i j t64;
-  reg u16 t;
+  reg u64 i t64;
   reg u8 nonce;
   stack ptr u8[KYBER_CT_LEN] sctp;
 

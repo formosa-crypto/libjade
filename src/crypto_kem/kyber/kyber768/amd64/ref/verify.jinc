@@ -30,7 +30,7 @@ fn __verify(reg u64 ctp, reg ptr u8[KYBER_CT_LEN] ctpc) -> reg u64
 inline
 fn __cmov(reg ptr u8[KYBER_SYMBYTES] dst, reg u64 src cnd) -> reg ptr u8[KYBER_SYMBYTES]
 {
-  reg u8 t1 t2 bcond;
+  reg u8 t1 t2;
   inline int i;
 
   cnd = -cnd;
