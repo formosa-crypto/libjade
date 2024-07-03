@@ -1,7 +1,5 @@
-param int KECCAK_ROUNDS=24;
-
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
-from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600_nomsf.jinc"
+from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_nomsf.jinc"
 require "fips202_params.jinc"
 
 #[returnaddress="stack"]
@@ -338,7 +336,6 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
 inline
 fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7]
 {
-  reg u128 t128;
   stack u64[28] s_state;
   stack u64[25] a_jagged_p;
   reg u64 l t;

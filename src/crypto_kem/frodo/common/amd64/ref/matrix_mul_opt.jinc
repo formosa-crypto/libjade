@@ -1,7 +1,7 @@
 // notes: "16" instead of BYTES_SEED_A on purpose
 // compilation should fail if BYTES_SEED_A changes
 
-inline fn __pad_seedA(reg ptr u8[16] seedA) -> reg ptr u8[2 + 16 + 6] {
+inline fn __pad_seedA(reg ptr u8[16] seedA) -> stack u8[2 + 16 + 6] {
   reg u64 i j;
   stack u8[2+16+ 6] s_index_seed_padding;
   reg u8 v;
@@ -31,10 +31,9 @@ fn __AS_plus_E_opt(
   ->
   reg ptr u16[NNBAR]
 {
-  reg ptr u8[2+16+ 6] index_seed_padding;
+  stack u8[2+16+ 6] index_seed_padding;
 
-  stack u16[N * 8] s_A;
-  reg ptr u16[N * 8] A;
+  stack u16[N * 8] A;
   reg u64 A_offset B_offset S_offset;
 
   inline int p;
@@ -50,14 +49,12 @@ fn __AS_plus_E_opt(
     i += 1;
   }
 
-  () = #spill(E, index_seed_padding);
+  () = #spill(E);
 
-  A = s_A;
   i = 0;
   B_offset = 0;
   while( i < N ) {
     () = #spill(B, S);
-    () = #unspill(index_seed_padding);
 
     A_offset = 0;
     j = 0;
@@ -75,7 +72,6 @@ fn __AS_plus_E_opt(
     }
 
     () = #unspill(B, S);
-    () = #spill(index_seed_padding);
 
     j = 0;
     jN = 0;
@@ -128,10 +124,9 @@ fn __SA_plus_E_opt(
   ->
   reg ptr u16[NNBAR]
 {
-  reg ptr u8[2+16+ 6] index_seed_padding;
+  stack u8[2+16+ 6] index_seed_padding;
 
-  stack u16[N * 8] s_A;
-  reg ptr u16[N * 8] A;
+  stack u16[N * 8] A;
   reg u64 A_offset B_offset S_offset;
 
   inline int p;
@@ -141,23 +136,16 @@ fn __SA_plus_E_opt(
 
   index_seed_padding = __pad_seedA(seedA);
 
-  () = #spill(index_seed_padding);
-
-  A = s_A;
   i = 0;
   while( i < N )
   {
-
-    () = #spill(B, S);
-    () = #unspill(index_seed_padding);
-
-    //
     A_offset = 0;
     j = 0;
+    () = #spill(B, S);
+
     while( j < 8 )
     {
       ij = #LEA(i + j);
-
       () = #spill(i, j);
 
       index_seed_padding[u16 0] = (16u) ij;
@@ -168,7 +156,6 @@ fn __SA_plus_E_opt(
     }
 
     () = #unspill(B, S);
-    () = #spill(index_seed_padding);
 
     //
     j = 0;

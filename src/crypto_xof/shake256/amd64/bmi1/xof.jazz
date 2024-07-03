@@ -3,6 +3,9 @@ require "shake256.jinc"
 export fn jade_xof_shake256_amd64_bmi1(reg u64 output output_length input input_length) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __shake256_bmi1(output, output_length, input, input_length);
   ?{}, r = #set0();
   return r;

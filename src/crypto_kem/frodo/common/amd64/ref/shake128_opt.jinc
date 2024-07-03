@@ -233,11 +233,11 @@ fn __shake128_pkh_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE128_RATE/8;
   }
@@ -269,14 +269,14 @@ fn __shake128_pkh_opt(
 }
 
 fn __shake128_SE_k_opt(
-  #spill_to_mmx reg ptr u8[1 + BYTES_SEED_SE + BYTES_SEC] out,
+  #spill_to_mmx reg ptr u8[BYTES_SEED_SE + BYTES_SEC] out,
   #spill_to_mmx reg const ptr u8[2 * BYTES_SEC + BYTES_SALT] in) 
--> reg ptr u8[1 + BYTES_SEED_SE + BYTES_SEC] {
+-> reg ptr u8[BYTES_SEED_SE + BYTES_SEC] {
   #spill_to_mmx reg u64 i;
 
   stack u64[25] s_state;
   reg ptr u64[25] state;
-  reg u64 offset t0 zero;
+  reg u64 t0 zero;
   inline int INLEN OUTLEN;
 
   INLEN = 2 * BYTES_SEC + BYTES_SALT;
@@ -311,14 +311,13 @@ fn __shake128_SE_k_opt(
   i = 0;
   while (i < OUTLEN/8) {
     t0 = state[u64 i];
-    offset = #LEA(1+8*i);
-    out.[u64 offset] = t0;
-
+    out[u64 i] = t0;
     i += 1;
   }
 
   return out;
 }
+
 
 fn __shake128_encap_r_opt(
   #spill_to_mmx reg ptr u8[2 * (2 * NNBAR + NBAR * NBAR)] out,
@@ -438,11 +437,11 @@ fn __shake128_ss_opt(
         j += 1;
     }
 
-    () = #spill(i, j);
+    () = #spill(i, j, in);
 
     state = __keccakf1600_ref1(state);
 
-    () = #unspill(i, j);
+    () = #unspill(i, j, in);
 
     i += SHAKE128_RATE/8;
   }

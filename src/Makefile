@@ -6,7 +6,9 @@ CC      ?= clang
 CFLAGS  ?= -O3 -Wall -Wextra -Wpedantic -Wvla -Werror -std=c99 \
 	         -Wundef -Wshadow -Wcast-align -Wpointer-arith -Wmissing-prototypes \
 	         -fstrict-aliasing -fno-common -pipe
-JASMIN  ?= jasminc
+
+JASMIN    ?= jasminc
+JASMIN_CT ?= jasmin-ct
 
 # --------------------------------------------------------------------
 CI      ?= 0
@@ -22,7 +24,7 @@ SRC     := .
 FILTER  ?= $(SRC)/crypto_%
 JAZZ    ?=  $(filter $(FILTER), $(filter-out $(addprefix ./,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
 SAFETY  ?= $(addsuffix safety, $(JAZZ))
-SCT     ?= $(addsuffix sct, $(JAZZ))
+SCT     ?= $(addsuffix check_sct, $(JAZZ))
 
 SOURCES ?= $(filter-out ./, $(sort $(dir $(shell find $(SRC) -name 'Makefile'))))
 ASM     := $(shell find $(SRC) -name '*.s')
@@ -72,9 +74,8 @@ $(SAFETY):
 	$(MAKE) -C $(@D) $(@F) || true
 
 # --------------------------------------------------------------------
-
-.PHONY: sct
-sct: $(SCT)
+.PHONY: check_sct
+check_sct: $(SCT)
 
 $(SCT):
 	$(MAKE) -C $(@D) $(@F) || true

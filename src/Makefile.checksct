@@ -3,25 +3,40 @@
 #   functions
 # - it is meant to be included by Makefile.common
 
+# JASMIN_CT belongs here (and not Makefile.common): some options differ from jasminc
+JASMIN_CT ?= jasmin-ct
+
 ifneq ($(OP),)
 
-SCT_FLAGS  ?= 
+# TODO: remove --infer and annotate exported functions
+SCT_FLAGS  ?= --infer
 
-CHECK_SCT_S = ($(JASMINC) -slice $* -checkSCT $(SCT_FLAGS) $< > $@ 2>&1) $(CIT)
-CHECK_SCT   = ($(JASMINC)           -checkSCT $(SCT_FLAGS) $< > $@ 2>&1) $(CIT)
+CHECK_SCT_SLICE        = (JASMINPATH="Jade=$(SRC)" $(JASMIN_CT) --slice $* --sct $(SCT_FLAGS) $< > $@ 2>&1) $(CIT)
+CHECK_SCT_SLICE_STDOUT = (JASMINPATH="Jade=$(SRC)" $(JASMIN_CT) --slice $* --sct $(SCT_FLAGS) $<          ) $(CIT)
 
-SCT_TARGETS  = $(addsuffix .sct, $(FUNCTIONS))
+CHECK_SCT              = (JASMINPATH="Jade=$(SRC)" $(JASMIN_CT)            --sct $(SCT_FLAGS) $< > $@ 2>&1) $(CIT)
+CHECK_SCT_STDOUT       = (JASMINPATH="Jade=$(SRC)" $(JASMIN_CT)            --sct $(SCT_FLAGS) $<          ) $(CIT)
 
-sct: $(SCT_TARGETS)
+SCT_TARGETS         = $(addsuffix .sct, $(FUNCTIONS))
+SCT_TARGETS_STDOUT  = $(addsuffix .stdout, $(SCT_TARGETS))
+
+check_sct: $(SCT_TARGETS)
 
 $(OP).sct : $(OP).jazz $(DEPS_DIR)/$(OP).sct.d | $(DEPS_DIR) $(CI_DIR)
 	$(DEPS)
 	$(CHECK_SCT)
 
+$(OP).sct.stdout : $(OP).jazz | $(CI_DIR)
+	$(CHECK_SCT_STDOUT)
+
 $(SCT_TARGETS):
 %.sct : $(OP).jazz $(DEPS_DIR)/%.sct.d | $(DEPS_DIR) $(CI_DIR)
 	$(DEPS)
-	$(CHECK_SCT_S)
+	$(CHECK_SCT_SLICE)
+
+$(SCT_TARGETS_STDOUT):
+%.sct.stdout : $(OP).jazz | $(CI_DIR)
+	$(CHECK_SCT_SLICE_STDOUT)
 
 DEPFILES := \
  $(DEPFILES) \

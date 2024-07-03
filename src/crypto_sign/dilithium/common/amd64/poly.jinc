@@ -38,9 +38,6 @@ fn poly_subtract(reg ptr u32[Li2_polydeg] f g difference)
 fn poly_accumulate(reg ptr u32[Li2_polydeg] f sum)
 	-> reg ptr u32[Li2_polydeg]
 {
-	reg u32 temp;
-	stack u32 x1 x2 y;
-
 	reg u32 v32 result;
 
 	reg u64 i;

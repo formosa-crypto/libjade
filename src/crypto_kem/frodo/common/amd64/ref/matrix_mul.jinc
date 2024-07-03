@@ -1,6 +1,3 @@
-from Jade require "crypto_kem/frodo/common/amd64/ref/shake128.jinc"
-
-#[returnaddress="stack"]
 fn __AS_plus_E(reg ptr u16[NNBAR] B, reg ptr u8[BYTES_SEED_A]seedA, reg ptr u16[NNBAR] S E) -> stack u16[NNBAR] {
     stack ptr u16[NNBAR] s_B;
     stack u16[N] A_row;
@@ -64,7 +61,6 @@ fn __AS_plus_E(reg ptr u16[NNBAR] B, reg ptr u8[BYTES_SEED_A]seedA, reg ptr u16[
     return B;
 }
 
-#[returnaddress="stack"]
 fn __SA_plus_E(reg ptr u16[NNBAR] B, reg ptr u8[BYTES_SEED_A]seedA, reg ptr u16[NNBAR] S E) -> stack u16[NNBAR] {
     stack ptr u16[NNBAR] s_B;
     stack u16[N] A_row;
@@ -123,7 +119,6 @@ fn __SA_plus_E(reg ptr u16[NNBAR] B, reg ptr u8[BYTES_SEED_A]seedA, reg ptr u16[
     return B;
 }
 
-#[returnaddress="stack"]
 fn __SB_plus_E(reg ptr u16[NBAR * NBAR] V, reg ptr u16[NNBAR] S B, reg ptr u16[NBAR * NBAR] E) -> stack u16[NBAR * NBAR] {
     reg u64 k tj;
     reg u16 tmp ac;
@@ -160,7 +155,6 @@ fn __SB_plus_E(reg ptr u16[NBAR * NBAR] V, reg ptr u16[NNBAR] S B, reg ptr u16[N
     return V;
 }
 
-#[returnaddress="stack"]
 fn __mul_BS(reg ptr u16[NBAR * NBAR] M, reg ptr u16[NNBAR]B S) -> stack u16[NBAR * NBAR] {
     reg u64 k tj;
     reg u16 tmp;

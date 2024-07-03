@@ -19,7 +19,6 @@ fn polyeta_2_pack(reg ptr u32[Li2_polydeg] s1, reg ptr u8[Li2_pack_eta_2_len] de
 	inline int _eta;
 	reg u32 dest0 dest1 dest2;
 	reg u32 t1 t2 t3 t4 t5 t6 t7;
-	reg u32 coeff;
 	reg u64 i addr;
 
 	_eta = 2;
@@ -81,7 +80,6 @@ fn polyeta_4_pack(reg ptr u32[Li2_polydeg] s1, reg ptr u8[Li2_pack_eta_4_len] de
 	-> reg ptr u8[Li2_pack_eta_4_len]
 {
 	inline int _eta;
-	reg u8 value;
 
 	reg u32 lo hi;
 	reg u32 coeff;
@@ -117,7 +115,7 @@ fn polyeta_2_unpack(reg ptr u32[Li2_polydeg] r, reg ptr u8[Li2_pack_eta_2_len] a
 	inline int _eta;
 	reg u64 i;
 	reg u32 a0 a1 a2;
-	reg u32 c32_0 c32_1;
+	reg u32 c32_0;
 	reg u32 coeff;
 	reg u64 dest_addr src_addr;
 
@@ -715,7 +713,6 @@ fn polyt0_pack(reg ptr u32[Li2_polydeg] t0, reg ptr u8[Li2_pack_t0len] dest)
 	reg u64 addr;
 
 	reg u32 v32;
-	stack u32 v32s;
 
 	reg u8 c c1;
 

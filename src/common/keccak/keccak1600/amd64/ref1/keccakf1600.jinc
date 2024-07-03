@@ -130,23 +130,20 @@ inline fn __round_ref1(reg ptr u64[25] e a, reg u64 rc) -> reg ptr u64[25]
 inline fn __keccakf1600_ref1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   reg ptr u64[24] RC;
-  stack ptr u64[24] s_RC;
   stack u64[25] s_e;
   reg ptr u64[25] e;
+
   reg u64 c rc;
 
   RC = KECCAK1600_RC;
-  s_RC = RC;
   e = s_e;
 
   c = 0;
   while (c < KECCAK_ROUNDS - 1)
   {
-    RC = s_RC;
     rc = RC[(int) c];
     e = __round_ref1(e, a, rc);
 
-    RC = s_RC;
     rc = RC[(int) c + 1];
     a = __round_ref1(a, e, rc);
 
