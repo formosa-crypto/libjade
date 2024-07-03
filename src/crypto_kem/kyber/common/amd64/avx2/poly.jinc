@@ -208,11 +208,7 @@ fn _poly_compress(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
 {
   inline int i;
   reg u256 f0 f1 f2 f3 v shift1 mask shift2 permidx;
-  reg u128 t0 t1 t3;
   reg ptr u16[16] x16p;
-  reg u64 t64;
-  reg u32 t32;
-  reg u16 t16;
 
   a = _poly_csubq(a);
 
@@ -258,11 +254,7 @@ fn _poly_compress_1(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_
 {
   inline int i;
   reg u256 f0 f1 f2 f3 v shift1 mask shift2 permidx;
-  reg u128 t0 t1 t3;
   reg ptr u16[16] x16p;
-  reg u64 t64;
-  reg u32 t32;
-  reg u16 t16;
 
   a = _poly_csubq(a);
 
@@ -451,7 +443,7 @@ u8[16] pfm_idx_s = {0, 1, 4, 5, 8, 9, 12, 13,
 fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 {
   inline int i;
-  reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
+  reg u256 f g0 g1 g2 g3 h0 h1 h2 h3;
   reg u256 shift idx hqs;
   reg ptr u16[16] x16p;
 
@@ -499,7 +491,7 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 fn _poly_frommsg_1(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_INDCPA_MSGBYTES] ap) -> stack u16[KYBER_N]
 {
   inline int i;
-  reg u256 f g0 g1 g2 g3 g4 h0 h1 h2 h3;
+  reg u256 f g0 g1 g2 g3 h0 h1 h2 h3;
   reg u256 shift idx hqs;
   reg ptr u16[16] x16p;
 
@@ -879,7 +871,7 @@ inline
 fn __invntt___butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16) 
     -> reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256, reg u256
 {
-  reg u256 t0 t1 t2 t3 t4 t5 t6 t7;
+  reg u256 t0 t1 t2 t3;
 
   t0  = #VPSUB_16u16(rl0, rh0);
   t1  = #VPSUB_16u16(rl1, rh1);
@@ -921,7 +913,6 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
   reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16 flox16 fhix16;
   reg ptr u16[400] zetasp;
-  reg ptr u16[16] qx16p;
   inline int i;
 
   zetasp = jzetas_inv_exp;
@@ -1119,8 +1110,6 @@ fn __butterfly64x(reg u256 rl0 rl1 rl2 rl3 rh0 rh1 rh2 rh3 zl0 zl1 zh0 zh1 qx16)
 fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 {
   reg u256 zeta0 zeta1 zeta2 zeta3 r0 r1 r2 r3 r4 r5 r6 r7 qx16 vx16;
-  reg u32 t;
-  reg u16 w;
   reg ptr u16[400] zetasp;
   inline int i;
 

@@ -28,9 +28,6 @@ fn use_hint(reg u32 a hint)
 inline
 fn expandMask_poly_4x(reg ptr u32[4 * Li2_polydeg] f_4x, reg ptr u8[64] rho_prime, stack u16 kappa)
 	-> reg ptr u32[4 * Li2_polydeg] {
-	reg u64 i;
-	reg u32 v32;
-
 	f_4x = expandMask_poly_gamma1_217_4x(f_4x, rho_prime, kappa);
 	return f_4x;
 }

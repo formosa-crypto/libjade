@@ -23,7 +23,7 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
     reg u64 i j;
     reg u8 done fail status;
     reg bool tmp;
-    reg u32 zero one;
+    reg u32 zero;
     reg u64 k hints_elem_offset idx idx1 idx2 idxtmp;
     reg u64 hints_cumpop; // cumulative popcount of hints
 
@@ -119,10 +119,9 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
     reg u32 r_status;
     stack u32 status;
     stack u8 z_normcheck_fail c_tilde_result;
-    reg u64 i j;
+    reg u64 i;
     reg u8 byte;
-    reg u8 k l hints_popcount hints_popcount_fail done;
-    reg u64 hint_index;
+    reg u8 hints_popcount_fail;
 
     reg ptr u8[Li2_SIGN_LEN] sig_rsp;
     reg ptr u8[Li2_PK_LEN] pk_rsp;
@@ -130,7 +129,7 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
     stack u64[25] keccak_state;
     reg ptr u64[25] keccak_state_rsp;
     stack u8[32] tr c_tilde c_tilde2;
-    reg ptr u8[32] tr_rsp c_tilde_rsp c_tilde2_rsp;
+    reg ptr u8[32] tr_rsp;
     stack u8[64] mu;
 
     stack u32[Li2_k * Li2_l * Li2_polydeg] fft_matA;
@@ -144,8 +143,6 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
     reg ptr u8[Li2_pack_t1len] t1_buf;
     reg ptr u8[Li2_omega + Li2_k] hints_buf;
 
-    reg u32 coeff;
-       
     inline int ii;
 
     //status = 0xFF;
@@ -230,10 +227,8 @@ inline
 fn verify(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg u32 {
     stack u8[Li2_PK_LEN] pk;
     reg ptr u8[Li2_PK_LEN] pk_rsp;
-    stack ptr u8[Li2_PK_LEN] pk_ssp;
     stack u8[Li2_SIGN_LEN] sig;
     reg ptr u8[Li2_SIGN_LEN] sig_rsp;
-    stack ptr u8[Li2_SIGN_LEN] sig_ssp;
 
     reg u8 byte;
     reg u64 i;

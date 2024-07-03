@@ -13,8 +13,6 @@ fn expandMask_buffered(
 
 	reg u32 v32;
 
-	reg ptr u32[Li2_polydeg] poly;
-
 	?{}, polys_generated = #set0_64();
 	while (polys_generated < Li2_l) {
 		if buffer_offset >= 4 {

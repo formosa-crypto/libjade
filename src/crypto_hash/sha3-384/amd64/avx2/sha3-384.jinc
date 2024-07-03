@@ -1,6 +1,6 @@
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600.jinc"
 
-inline fn __sha3_384_avx2(reg u64 out in inlen)
+inline fn __sha3_384_avx2(reg u64 out in inlen, #msf reg u64 ms)
 {
   reg u64 outlen rate;
   reg u8 trail_byte;
@@ -9,7 +9,7 @@ inline fn __sha3_384_avx2(reg u64 out in inlen)
   trail_byte = 0x6;
   rate = (832/8);
 
-  _keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate);
+  _keccak1600_avx2(out, outlen, in, inlen, trail_byte, rate, ms);
 }
 
 

@@ -12,7 +12,7 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
   stack u8[64] buf;
   stack u8[KYBER_SYMBYTES] publicseed noiseseed;
   reg u64 t64;
-  reg u8 nonce, c;
+  reg u8 nonce;
   inline int i;
 
   spkp = pkp;

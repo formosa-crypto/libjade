@@ -35,6 +35,7 @@ endif
 JEXT    ?= jazz
 override JFLAGS += -noinsertarraycopy
 JINCLUDE = -I Jade:$(SRC)
+
 JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)

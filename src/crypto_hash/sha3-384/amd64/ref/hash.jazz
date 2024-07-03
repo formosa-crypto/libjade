@@ -3,6 +3,9 @@ require "sha3-384.jinc"
 export fn jade_hash_sha3_384_amd64_ref(reg u64 hash input input_length) -> reg u64
 {
   reg u64 r;
+
+  _ = #init_msf();
+
   __sha3_384_ref(hash, input, input_length);
   ?{}, r = #set0();
   return r;
