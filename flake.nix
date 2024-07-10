@@ -35,6 +35,7 @@
             packages = [
               ec.with_provers
               pkgs.why3
+              pkgs.valgrind
             ];
 
             ECARGS = "-I Jasmin:${jasmin}/eclib";
