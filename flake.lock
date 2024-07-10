@@ -81,17 +81,17 @@
     "jasmin": {
       "flake": false,
       "locked": {
-        "lastModified": 1712566927,
-        "narHash": "sha256-sRegD+ecNeKUf0STO/2WRST2+CoEqdBdCAd478/zI8o=",
+        "lastModified": 1720533296,
+        "narHash": "sha256-GKqk5pYrq9oz7njTpaASlA5JVIcf6RQYcsSc6X/y6NA=",
         "owner": "jasmin-lang",
         "repo": "jasmin",
-        "rev": "e84c0c59b4f4e005f2be4de5fdfbcaf1e3e2f975",
+        "rev": "e4640e7dcdb01d1ba63617a5d78456e1209d699c",
         "type": "github"
       },
       "original": {
         "owner": "jasmin-lang",
         "repo": "jasmin",
-        "rev": "e84c0c59b4f4e005f2be4de5fdfbcaf1e3e2f975",
+        "rev": "e4640e7dcdb01d1ba63617a5d78456e1209d699c",
         "type": "github"
       }
     },
@@ -129,16 +129,16 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1713362983,
-        "narHash": "sha256-glRKaESbOIEQRU5aZZu/T18rNaqNnBKDVag1EsfylpQ=",
+        "lastModified": 1720621723,
+        "narHash": "sha256-cZKWxDhaoEZZa6VCXOGWA5A6OEqtzZ2O9veKW5XYjW4=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "8bc628c7d96aa5cf767bad443091f39aed0cbad0",
+        "rev": "89bc15e14e6d045136baf82b388af2986eaad1e9",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "release-23.11",
+        "ref": "release-24.05",
         "type": "indirect"
       }
     },
