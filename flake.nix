@@ -4,7 +4,7 @@
   inputs = {
     nixpkgs.url = "nixpkgs/release-24.05";
 
-    easycrypt.url = "github:EasyCrypt/easycrypt/4201fddc14b81d2a69a33f034c9c7db4dfd58d0e";
+    easycrypt.url = "github:EasyCrypt/easycrypt/a9e31ff5f758ef62453d76de382a10ee718afc51";
     jasmin = {
       url = "github:jasmin-lang/jasmin/e4640e7dcdb01d1ba63617a5d78456e1209d699c";
       flake = false;
@@ -35,7 +35,7 @@
             packages = [
               ec.with_provers
               pkgs.why3
-              pkgs.valgrind
+              (pkgs.lib.optional pkgs.stdenv.isLinux pkgs.valgrind)
             ];
 
             ECARGS = "-I Jasmin:${jasmin}/eclib";
