@@ -16,13 +16,13 @@
     };
   };
 
-  outputs = inputs@{ flake-parts, easycrypt, jasmin, ... }:
+  outputs = inputs@{ self, flake-parts, easycrypt, jasmin, ... }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       imports = [ ];
       systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
       perSystem = { pkgs, system, self', ... }:
         let
-          ec = easycrypt.packages.${system};
+          ec = easycrypt.packages.${system}.default;
           jasminc = pkgs.callPackage "${jasmin}/default.nix" { inherit pkgs; };
         in
         {
@@ -32,10 +32,15 @@
             name = "libjade";
             src = self'.packages.default.src;
 
-            packages = [
-              ec.with_provers
+            packages = self.packages.${system}.default.nativeBuildInputs ++ [
+              ec
+              pkgs.cvc4
+              pkgs.cvc5
+              pkgs.z3
               pkgs.why3
               (pkgs.lib.optional pkgs.stdenv.isLinux pkgs.valgrind)
+              pkgs.emacs
+              pkgs.emacsPackages.proof-general
             ];
 
             ECARGS = "-I Jasmin:${jasmin}/eclib";
