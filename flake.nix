@@ -2,43 +2,53 @@
   description = "Libjade";
 
   inputs = {
-    nixpkgs.url = "nixpkgs/release-23.11";
-    easycrypt.url = "github:EasyCrypt/easycrypt/4201fddc14b81d2a69a33f034c9c7db4dfd58d0e";
+    nixpkgs.url = "nixpkgs/release-24.05";
+
+    easycrypt.url = "github:EasyCrypt/easycrypt/a9e31ff5f758ef62453d76de382a10ee718afc51";
     jasmin = {
-      url = "github:jasmin-lang/jasmin/e84c0c59b4f4e005f2be4de5fdfbcaf1e3e2f975";
+      url = "github:jasmin-lang/jasmin/e4640e7dcdb01d1ba63617a5d78456e1209d699c";
       flake = false;
+    };
+
+    flake-parts = {
+      url = "github:hercules-ci/flake-parts";
+      inputs.nixpkgs-lib.follows = "nixpkgs";
     };
   };
 
-  outputs = { self, nixpkgs, easycrypt, jasmin, ... }:
-    let
-      system = "x86_64-linux";
-      pkgs = nixpkgs.legacyPackages.${system};
-      jasminc = pkgs.callPackage "${jasmin}/default.nix" { inherit pkgs; };
-      ec = easycrypt.packages.${system}.default;
-    in
-    {
-      packages.${system}.default = pkgs.callPackage ./default.nix { inherit pkgs jasminc; };
+  outputs = inputs@{ self, flake-parts, easycrypt, jasmin, ... }:
+    flake-parts.lib.mkFlake { inherit inputs; } {
+      imports = [ ];
+      systems = [ "x86_64-linux" "aarch64-linux" "aarch64-darwin" "x86_64-darwin" ];
+      perSystem = { pkgs, system, self', ... }:
+        let
+          ec = easycrypt.packages.${system}.default;
+          jasminc = pkgs.callPackage "${jasmin}/default.nix" { inherit pkgs; };
+        in
+        {
+          packages.default = pkgs.callPackage ./default.nix { inherit pkgs jasminc; };
 
-      devShells.${system}.default = pkgs.mkShell {
-        name = "libjade";
-        src = self.packages.${system}.default.src;
+          devShells.default = pkgs.mkShell {
+            name = "libjade";
+            src = self'.packages.default.src;
 
-        packages = self.packages.${system}.default.nativeBuildInputs ++
-          [
-            ec
-            pkgs.valgrind
-            pkgs.cvc4
-            pkgs.cvc5
-            pkgs.z3
-          ];
+            packages = self.packages.${system}.default.nativeBuildInputs ++ [
+              ec
+              pkgs.cvc4
+              pkgs.cvc5
+              pkgs.z3
+              pkgs.why3
+              (pkgs.lib.optional pkgs.stdenv.isLinux pkgs.valgrind)
+              pkgs.emacs
+              pkgs.emacsPackages.proof-general
+            ];
 
-        EASYCRYPT = "${ec}/bin/easycrypt";
-        ECARGS = "-I Jasmin:${jasmin}/eclib";
+            ECARGS = "-I Jasmin:${jasmin}/eclib";
 
-        shellHook = ''
-          easycrypt why3config
-        '';
-      };
+            shellHook = ''
+              easycrypt why3config
+            '';
+          };
+        };
     };
 }
