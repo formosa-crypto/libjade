@@ -15,7 +15,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile
         run: make -j$JOBS -C src/ CI=1 default
@@ -26,7 +26,7 @@ jobs:
 
       - name: libjade-logs-src.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-src.tar.gz
           path: src/libjade-logs-src.tar.gz
@@ -38,7 +38,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile and run
         run: make -j$JOBS -C test/ CI=1 default
@@ -49,7 +49,7 @@ jobs:
 
       - name: libjade-logs-test.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-test.tar.gz
           path: test/libjade-logs-test.tar.gz
@@ -61,7 +61,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile and run
         run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10'
@@ -72,7 +72,7 @@ jobs:
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-bench1.tar.gz
           path: bench/libjade-logs-bench.tar.gz
@@ -84,7 +84,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile and run
         run: make -j1 -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
@@ -95,7 +95,7 @@ jobs:
 
       - name: libjade-logs-bench.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-bench2.tar.gz
           path: bench/libjade-logs-bench.tar.gz
@@ -107,7 +107,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: extract and check
         run: make -j$JOBS -C proof/ CI=1 ECJOBS=$JOBS check-extracted
@@ -120,14 +120,14 @@ jobs:
 
       - name: libjade-logs-proof.tar.gz - contains non-empty logs and errors
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-logs-proof.tar.gz
           path: proof/libjade-logs-proof.tar.gz
 
       - name: libjade-dist-proof.tar.gz - contains all EasyCrypt files and test.config
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-dist-proof.tar.gz
           path: libjade-dist-proof.tar.gz
@@ -139,7 +139,7 @@ jobs:
     runs-on: [self-hosted, linux, X64, amd64-release]
     steps:
       - name: checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: compile amd64
         run: make -j$JOBS -C src/ CI=1 default
@@ -152,7 +152,7 @@ jobs:
 
       - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: libjade-dist-src-amd64.tar.gz
           path: libjade-dist-src-amd64.tar.gz
