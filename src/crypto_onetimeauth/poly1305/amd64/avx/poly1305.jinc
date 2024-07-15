@@ -93,11 +93,10 @@ inline fn __broadcast_r4_avx(
   stack u128[5],
   stack u128[4]
 {
-  inline int i mask26;
+  inline int i;
   stack u128[5] r44;
   stack u128[4] r44x5;
   reg u64[5] t;
-  reg u64 h l;
 
   r44 = __unpack_avx(r44, r4, 0);
 
@@ -117,12 +116,10 @@ inline fn __poly1305_avx_setup(
   stack u128[5], stack u128[4],
   stack u128[5], stack u128[4]
 {
-  inline int i mask26;
+  inline int i;
   stack u128[5] r44 r22 r12;
   stack u128[4] r44x5 r22x5 r12x5;
-  reg u128 t;
   reg u64[3] rt;
-  reg u64 h l;
 
   // rt = r; store rt
   for i=0 to 2 { rt[i] = r[i]; } rt[2] = 0;
@@ -151,7 +148,7 @@ inline fn __load_avx(
   reg u128[5],
   reg u64
 {
-  reg u128 t m0 m1;
+  reg u128 t;
   reg u128[5] m;
 
   t = (u128)[in +  0];
@@ -182,9 +179,7 @@ inline fn __load_avx(
 inline fn __pack_avx(reg u128[5] h) -> reg u64[3]
 {
   reg bool cf;
-  inline int i;
   reg u128[3] t;
-  reg u128 t0;
   reg u128[2] u;
   reg u64[3] d r;
   reg u64 c cx4;
@@ -281,7 +276,6 @@ inline fn __mulmod_avx(
   reg u128[5] t;
   reg u128[4] u;
   reg u128 r0 r1 r4x5 r2 r3x5 r3 r2x5;
-  reg u128 mask26;
 
   r0 = s_r[0];
   r1 = s_r[1];
@@ -372,14 +366,12 @@ inline fn __mainloop_avx_v1(
   reg u128[5],
   reg u64
 {
-  inline int i;
   reg u128 mask26;
   stack u128[5] s_h;
   reg u128[5] m;
   reg u128[5] t;
   reg u128[4] u;
   reg u128 r0 r1 r4x5 r2 r3x5 r3 r2x5;
-  reg u128 mask26;
   reg u128 m0 m1 mt;
 
   r0 = s_r44[0];
@@ -565,7 +557,7 @@ inline fn __poly1305_avx_update(
 {
   inline int i;
   stack u128 s_mask26 s_bit25;
-  reg u128[5] h m;
+  reg u128[5] h;
   reg u128 mask26 t;
   reg u64[3] h64;
 

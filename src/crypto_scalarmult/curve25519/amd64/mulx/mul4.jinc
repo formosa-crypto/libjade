@@ -11,8 +11,7 @@ inline fn __mul4_c0
   reg bool,
   reg bool
 {
-  inline int i;
-  reg u64 hi lo;
+  reg u64 lo;
   reg u64[4] h r;
 
   (h[1], h[0]) = #MULX ( f0, g[0] );
@@ -44,7 +43,6 @@ inline fn __mul4_c1
   reg bool,
   reg bool
 {
-  inline int i;
   reg u64 hi lo;
 
   ( hi, lo )   = #MULX ( f, g[0] );
@@ -81,7 +79,6 @@ inline fn __mul4_c2
   reg bool,
   reg bool
 {
-  inline int i;
   reg u64 hi lo;
 
   ( hi, lo )   = #MULX ( f, g[0] );
@@ -118,7 +115,6 @@ inline fn __mul4_c3
   reg bool,
   reg bool
 {
-  inline int i;
   reg u64 hi lo;
 
   ( hi, lo )   = #MULX ( f, g[0] );
@@ -205,7 +201,6 @@ inline fn __mul4_rss(stack u64[4] fs gs) -> reg u64[4]
 
 inline fn __mul4_a24_rs(stack u64[4] fs, inline u64 a24) -> reg u64[4]
 {
-  inline int i;
   reg bool cf;
   reg u64[4] h;
   reg u64 c r0 lo;

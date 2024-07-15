@@ -108,8 +108,6 @@ inline fn __store_xor_h_x2_avx2(reg u64 output input len, reg u256[4] k1 k2) -> 
 // <= 256 bytes
 inline fn __store_xor_last_h_x2_avx2(reg u64 output input len, reg u256[4] k1 k2)
 {
-  inline int i;
-
   // write 128 bytes
   if(len >= 128)
   { output, input, len = __store_xor_h_avx2(output, input, len, k1);
@@ -215,8 +213,6 @@ inline fn __store_h_x2_avx2(reg u64 output len, reg u256[4] k1 k2) -> reg u64, r
 // <= 256 bytes
 inline fn __store_last_h_x2_avx2(reg u64 output len, reg u256[4] k1 k2)
 {
-  inline int i;
-
   // write 128 bytes
   if(len >= 128)
   { output, len = __store_h_avx2(output, len, k1);

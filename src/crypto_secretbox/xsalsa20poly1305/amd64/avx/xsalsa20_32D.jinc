@@ -1,5 +1,3 @@
-param int SALSA20_ROUNDS=20;
-
 from Jade require "crypto_stream/xsalsa20/amd64/ref/hsalsa20.jinc"
 require "salsa20_32D.jinc"
 

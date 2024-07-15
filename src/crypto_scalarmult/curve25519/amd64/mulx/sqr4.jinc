@@ -3,7 +3,6 @@ require "reduce4.jinc"
 inline fn __sqr4_rr(reg u64[4] f) -> reg u64[4]
 {
   reg bool cf of;
-  inline int i;
   reg u64[8] t;
   reg u64[4] h r;
   reg u64 z _38 fx;

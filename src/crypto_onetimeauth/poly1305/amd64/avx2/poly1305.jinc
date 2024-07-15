@@ -96,12 +96,10 @@ inline fn __poly1305_avx2_setup(
   stack u256[5],
   stack u256[4]
 {
-  inline int i mask26;
+  inline int i;
   stack u256[5] r4444   r1234;
   stack u256[4] r4444x5 r1234x5;
-  reg u256 t;
   reg u64[3] rt;
-  reg u64 h l;
 
   // rt = r; store rt
   for i=0 to 2 { rt[i] = r[i]; } rt[2] = 0;
@@ -195,7 +193,6 @@ inline fn __load_avx2(
 inline fn __pack_avx2(reg u256[5] h) -> reg u64[3]
 {
   reg bool cf;
-  inline int i;
   reg u256[3] t;
   reg u128 t0;
   reg u256[2] u;
@@ -380,7 +377,6 @@ inline fn __add_mulmod_avx2(
   reg u256[5] t;
   reg u256[4] u;
   reg u256 r0 r1 r4x5 r2 r3x5 r3 r2x5;
-  reg u256 mask26;
   inline int i;
 
  r0 = s_r[0];

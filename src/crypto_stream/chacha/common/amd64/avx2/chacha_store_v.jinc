@@ -78,7 +78,6 @@ inline fn __rotate_first_half_v_avx2(reg u256[16] k) -> reg u256[8], stack u256[
 
 inline fn __rotate_second_half_v_avx2(stack u256[8] s_k8_15) -> reg u256[8]
 {
-  inline int i;
   reg u256[8] k8_15;
   k8_15 = __rotate_stack_avx2(s_k8_15);
   return k8_15;
@@ -87,7 +86,6 @@ inline fn __rotate_second_half_v_avx2(stack u256[8] s_k8_15) -> reg u256[8]
 
 inline fn __interleave_avx2(stack u256[8] s, reg u256[8] k, inline int o) -> reg u256[4], reg u256[4]
 {
-  inline int i;
   reg u256[4] sk1 sk2;
 
   sk1[0] = s[o + 0];
@@ -140,7 +138,6 @@ inline fn __store_xor_v_avx2(reg u64 output input len, reg u256[16] k) -> reg u6
 // <= 512 bytes
 inline fn __store_xor_last_v_avx2(reg u64 output input len, reg u256[16] k)
 {
-  inline int i;
   stack u256[8] s_k0_7 s_k8_15;
   reg u256[8] k0_7 k8_15;
   reg u256[4] k0_3 k4_7;
@@ -194,7 +191,6 @@ inline fn __store_v_avx2(reg u64 output len, reg u256[16] k) -> reg u64, reg u64
 // <= 512 bytes
 inline fn __store_last_v_avx2(reg u64 output len, reg u256[16] k)
 {
-  inline int i;
   stack u256[8] s_k0_7 s_k8_15;
   reg u256[8] k0_7 k8_15;
   reg u256[4] k0_3 k4_7;

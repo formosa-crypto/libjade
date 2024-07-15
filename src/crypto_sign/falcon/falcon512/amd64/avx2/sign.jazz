@@ -1,5 +1,5 @@
 
-require "params.jinc"
+from Jade require "crypto_sign/falcon/falcon512/common/params.jinc"
 require "vec.jinc"
 require "verify.jinc"
 require "sign.jinc"
