@@ -50,6 +50,7 @@ mkdir -p $dist_doc
 # -----------------------------------------------------------------------------
 # copy license and README.md and doc/api.md
 cp $libjade/LICENSE $dist/LICENSE
+cp -r $libjade/LICENSES $dist/LICENSES
 cp $libjade/README.md $dist/README.md
 cp $libjade/doc/api.md $dist_doc/api.md
 
