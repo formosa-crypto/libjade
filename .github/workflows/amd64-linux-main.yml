@@ -7,6 +7,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    shell: nix develop -c bash -e {0}
+
 jobs:
 
 
@@ -17,15 +21,10 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
-
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
       - name: compile
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: make -j$JOBS -C src/ CI=1 default
-
+        run: make -j$JOBS -C src/ CI=1 default
       - name: print logs
         run: make -C src/ CI=1 reporter
       - name: return error if there are any errors
@@ -47,15 +46,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: compile and run
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: make -j$JOBS -C test/ CI=1 default
-
+        run: make -j$JOBS -C test/ CI=1 default
       - name: print logs
         run: make -C test/ CI=1 reporter
       - name: return error if there are any errors
@@ -77,14 +72,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: compile
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: make -j$JOBS -C src/   CI=1 default
+        run: make -j$JOBS -C src/   CI=1 default
 
       - name: run
         run: make -j$JOBS -C bench/ CI=1 DEFINE='-DTIMINGS=10' run
@@ -111,14 +103,11 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: compile
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: make -j$JOBS -C src/   CI=1 default
+        run: make -j$JOBS -C src/   CI=1 default
 
       - name: run
         run: make -j$JOBS -C bench/ CI=1 run DEFINE='-DTIMINGS=10 -DRUNS=2 -DST_ON' RANDINC='../test/common/' RANDLIB='../test/common/notrandombytes.c';
@@ -145,18 +134,15 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: extract and check
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: |
-            # extract and check
-            make -j$JOBS -C proof/ CI=1 check-extracted
-            # dist
-            ./scripts/ci/releaser/jdist-proof
+        run: |
+          # extract and check
+          make -j$JOBS -C proof/ CI=1 check-extracted
+          # dist
+          ./scripts/ci/releaser/jdist-proof
 
       - name: print logs
         run: make -C proof/ CI=1 reporter
@@ -187,20 +173,17 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: dist amd64
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: |
-            # compile amd64
-            make -j$JOBS -C src/ CI=1 default
-            # dist amd64
-            ./scripts/ci/releaser/jdist-src-v1 amd64
-            # check dist amd64
-            ./scripts/ci/releaser/jdist-src-test-v1 amd64
+        run: |
+          # compile amd64
+          make -j$JOBS -C src/ CI=1 default
+          # dist amd64
+          ./scripts/ci/releaser/jdist-src-v1 amd64
+          # check dist amd64
+          ./scripts/ci/releaser/jdist-src-test-v1 amd64
 
       - name: libjade-dist-src-amd64.tar.gz - contains assembly, Jasmin, and how-to-use code
         if: always()
