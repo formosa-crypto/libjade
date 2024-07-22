@@ -11,11 +11,17 @@ inputs:
     description: The name of the devShell
     required: true
     default: 'default'
+  init:
+    description: The init system to configure ('systemd' or 'none')
+    required: false
+    default: 'none'
 
 runs:
   using: composite
   steps:
     - uses: DeterminateSystems/nix-installer-action@v12
+      with:
+        init: ${{ inputs.init }}
     - uses: DeterminateSystems/magic-nix-cache-action@main
     - name: Prepare nix dev shell
       shell: nix develop .#${{ inputs.devShell }} -c bash -e {0}
