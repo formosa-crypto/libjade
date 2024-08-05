@@ -38,7 +38,7 @@ JINCLUDE = -I Jade:$(SRC)
 
 JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
-COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
+COMPILE  = ($(JASMINC) $(addprefix -slice ,$(FUNCTIONS)) -o $@ $<) $(CIT)
 
 # --------------------------------------------------------------------
 include $(SRC)/$(OPERATION)/EcFlags.mk

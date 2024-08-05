@@ -1,5 +1,1309 @@
-from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
-require "curve25519.jinc"
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/load_store4.jinc
+inline fn __load4(reg u64 p) -> reg u64[4]
+{
+  inline int i;
+  reg u64[4] a;
+
+  for i=0 to 4
+  { a[i] = [p + 8*i]; }
+
+  return a;
+}
+
+inline fn __store4(reg u64 p, reg u64[4] a)
+{
+  inline int i;
+
+  for i=0 to 4
+  { [p + 8*i] = a[i]; }
+}
+
+//EOR#
+//BOR#require "curve25519.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/curve25519.jinc
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/bit.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/bit.jinc
+inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
+{
+  reg u64 p bit;
+
+  p = ctr;
+  p >>= 3;
+  bit = (64u) k[(int) p];
+
+  p = ctr;
+  p &= 7;
+  bit >>= (p & 63);
+
+  bit &= 1;
+
+  return bit;
+}
+
+inline fn __next_bit(stack u64 k) -> reg u64, stack u64
+{
+  reg bool cf;
+  reg u64 b one;
+
+  ?{}, b = #set0();
+  one = 1;
+  _, cf, _, _, _, k = #SHL(k, 1);
+  b = one if cf;
+  return b, k;
+}
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/decode_scalar.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/decode_scalar.jinc
+inline fn __decode_scalar(reg u64[4] k) -> stack u8[32]
+{
+  inline int i;
+  stack u8[32] ks;
+
+  for i=0 to 4
+  { ks[u64 i] = k[i]; }
+
+  ks[0]  &= 0xf8;
+  ks[31] &= 0x7f;
+  ks[31] |= 0x40;
+
+  return ks;
+}
+
+inline fn __decode_scalar_shl1(reg u64[4] k) -> stack u64[4]
+{
+  stack u64[4] ks;
+
+  k[3] <<= 1;
+  k[0] &= 0xfffffffffffffff8;
+  k[3] |= 0x8000000000000000;
+
+  ks = #copy(k);
+
+  return ks;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/load_store4.jinc
+//EOR#
+
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/decode_u4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/decode_u4.jinc
+inline fn __decode_u_coordinate4(reg u64[4] u) -> reg u64[4]
+{
+  u[3] &= 0x7fffffffffffffff;
+  return u;
+}
+
+inline fn __decode_u_coordinate_base4() -> reg u64[4]
+{
+  reg u64[4] u;
+
+  u[0] = 9;
+  u[1] = 0;
+  u[2] = 0;
+  u[3] = 0;
+
+  return u;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/init_points4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/init_points4.jinc
+inline fn __init_points4(
+  reg u64[4] initr)
+  ->
+  stack u64[4],
+  reg u64[4],
+  stack u64[4],
+  stack u64[4]
+{
+  inline int i;
+  stack u64[4] x2 x3 z3;
+  reg u64[4] z2r;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  x2[0] = 1;
+  z2r[0] = 0;
+  x3 = #copy(initr);
+  z3[0] = 1;
+
+  for i=1 to 4
+  { x2[i] = z;
+    z2r[i] = z;
+    z3[i] = z;
+  }
+
+  //     (1,   0, init, 1)
+  return x2, z2r, x3,  z3;
+}
+
+inline fn __init_points4_x3()
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4]
+{
+  inline int i;
+  stack u64[4] f1s f3s;
+  reg   u64[4] f2;
+  reg   u64 z;
+
+  ?{}, z = #set0();
+
+  f1s[0] = 1;
+  f2[0]  = 1;
+  f3s[0] = 1;
+
+  for i=1 to 4
+  { f1s[i] = z;
+    f2[i]  = z;
+    f3s[i] = z;
+  }
+
+  return f1s, f2, f3s;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/add4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/add4.jinc
+// h = f + g
+// h = 2**0*f0 + 2**64*f1 + 2**128*f2 + 2**192*f3 +
+//     2**0*g0 + 2**64*g1 + 2**128*g2 + 2**192*g3
+
+inline fn __add4_rrs(reg u64[4] f, stack u64[4] g) -> reg u64[4]
+{
+  inline int i;
+  reg bool cf;
+  reg u64[4] h;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  h = #copy(f);
+
+  cf, h[0] += g[0];
+  for i=1 to 4
+  { cf, h[i] += g[i] + cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+
+  cf, h[0] += z;
+  for i=1 to 4
+  { cf, h[i] += 0 + cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+  h[0] += z;
+
+  return h;
+}
+
+inline fn __add4_sss(stack u64[4] fs gs) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h f;
+
+  f = #copy(fs);
+  h = __add4_rrs(f, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add4_ssr(stack u64[4] fs, reg u64[4] g) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h;
+
+  h = __add4_rrs(g, fs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add4_rsr(stack u64[4] fs, reg u64[4] g) -> reg u64[4]
+{
+  reg u64[4] h;
+
+  h = __add4_rrs(g, fs);
+
+  return h;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/sub4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/sub4.jinc
+// h = f - g
+// h = (2**0*f0 + 2**64*f1 + 2**128*f2 + 2**192*f3) -
+//     (2**0*g0 + 2**64*g1 + 2**128*g2 + 2**192*g3)
+
+inline fn __sub4_rrs(reg u64[4] f, stack u64[4] gs) -> reg u64[4]
+{
+  inline int i;
+  reg bool cf;
+  reg u64[4] h;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  h = #copy(f);
+
+  cf, h[0] -= gs[0];
+  for i=1 to 4
+  { cf, h[i] -= gs[i] - cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+
+  cf, h[0] -= z;
+  for i=1 to 4
+  { cf, h[i] -= 0 - cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+  h[0] -= z;
+
+  return h;
+}
+
+inline fn __sub4_sss(stack u64[4] fs gs) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h f;
+
+  f = #copy(fs);
+  h = __sub4_rrs(f, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __sub4_rss(stack u64[4] fs gs) -> reg u64[4]
+{
+  reg u64[4] h f;
+
+  f = #copy(fs);
+  h = __sub4_rrs(f, gs);
+
+  return h;
+}
+
+inline fn __sub4_rsr(stack u64[4] fs, reg u64[4] g) -> reg u64[4]
+{
+  inline int i;
+  reg bool cf;
+  reg u64[4] h;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  h = #copy(fs);
+
+  cf, h[0] -= g[0];
+  for i=1 to 4
+  { cf, h[i] -= g[i] - cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+
+  cf, h[0] -= z;
+  for i=1 to 4
+  { cf, h[i] -= 0 - cf; }
+
+  _, z -= z - cf;
+  z &= 38;
+  h[0] -= z;
+
+  return h;
+}
+
+inline fn __sub4_ssr(stack u64[4] fs, reg u64[4] g) -> stack u64[4]
+{
+  stack u64[4] hs;
+  reg u64[4] h;
+
+  h = __sub4_rsr(fs, g);
+  hs = #copy(h);
+
+  return hs;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/cswap4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/cswap4.jinc
+inline fn __cswap4(
+  stack u64[4] x2,
+  reg   u64[4] z2r,
+  stack u64[4] x3,
+  stack u64[4] z3,
+  reg   u64    toswap)
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4],
+  stack u64[4]
+{
+  inline int i;
+  reg u64[4] t4 x2r x3r z3r;
+  reg u64 t mask;
+
+  ?{}, mask = #set0();
+  mask -= toswap; // if toswap == 1 mask = -1 or all bits at 1, 0 otherwise
+
+  // swap between z2 and z3
+  z3r = #copy(z3);
+  t4  = #copy(z2r);
+
+  for i=0 to 4 { t4[i]  ^= z3r[i]; } // t4 =  z2 ^ z3
+  for i=0 to 4 { t4[i]  &= mask;   } // t4 = (z2 ^ z3) & mask --> if m==0 then t4 = {0}
+  for i=0 to 4 { z2r[i] ^= t4[i];
+                 z3r[i] ^= t4[i];
+                 z3[i]   = z3r[i]; }
+
+  // swap between x3r and z3
+  x3r = #copy(x3);
+
+  for i=0 to 4 { x2r[i]  = x2[i];
+                 t       = x3r[i];
+                 t      ^= x2r[i];
+                 t      &= mask;
+                 x2r[i] ^= t;
+                 x3r[i] ^= t;
+                 x2[i]   = x2r[i];
+                 x3[i]   = x3r[i]; }
+
+  return x2, z2r, x3, z3;
+}
+
+inline fn __cswap4_ssss(
+  stack u64[4] xs,
+  stack u64[4] ys,
+  reg   u64    swap)
+  ->
+  stack u64[4],
+  stack u64[4]
+{
+  inline int i;
+  reg u64[4] x y;
+  reg u64 t mask;
+
+  x = #copy(xs);
+
+  mask = 0;
+  mask -= swap;
+
+  for i=0 to 4
+  {
+    y[i] = ys[i];
+
+    t  = x[i];
+    t ^= y[i];
+    t &= mask;
+
+    x[i] ^= t; // ^ (x[i] ^ y[i]) if swap == 1
+    y[i] ^= t;
+
+    ys[i] = y[i];
+  }
+
+  xs = #copy(x);
+
+  return xs, ys;
+}
+
+inline fn __cswap4_rsrs(
+  reg   u64[4] x,
+  stack u64[4] ys,
+  reg   u64    swap)
+  ->
+  reg   u64[4],
+  stack u64[4]
+{
+  inline int i;
+  reg u64[4] y;
+  reg u64 t mask;
+
+  mask = 0;
+  mask -= swap;
+
+  for i=0 to 4
+  {
+    y[i] = ys[i];
+
+    t  = x[i];
+    t ^= y[i];
+    t &= mask;
+
+    x[i] ^= t; // ^ (x[i] ^ y[i]) if swap == 1
+    y[i] ^= t;
+
+    ys[i] = y[i];
+  }
+
+  return x, ys;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/tobytes4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/tobytes4.jinc
+inline fn __tobytes4(reg u64[4] f) -> reg u64[4]
+{
+  reg bool cf;
+  reg u64 t;
+
+  t = #LEA(f[3] + f[3]);
+  ?{}, f[3] = #SAR(f[3], 63);
+  t >>= 1;
+  f[3] &= 19;
+  f[3] += 19;
+
+  cf, f[0] += f[3];
+  cf, f[1] += 0 + cf;
+  cf, f[2] += 0 + cf;
+   _, t    += 0 + cf;
+
+  f[3] = #LEA(t + t);
+  ?{}, t = #SAR(t, 63);
+  f[3] >>= 1;
+  t = !t;
+  t &= 19;
+
+  cf, f[0] -= t;
+  cf, f[1] -= 0 - cf;
+  cf, f[2] -= 0 - cf;
+   _, f[3] -= 0 - cf;
+
+  return f;
+
+}
+//EOR#
+
+//BOR#require "mul4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/mul4.jinc
+//BOR#require "reduce4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/reduce4.jinc
+inline fn __reduce4(reg u64[8] z) -> reg u64[4]
+{
+  reg u64 z8 r0 r38 rax h l;
+  reg u64[4] r;
+  reg bool cf;
+  inline int i;
+
+  r38 = 38;
+
+	rax = z[4];
+	h, l = rax * r38;
+	r[0] = l;
+	r[1] = h;
+
+	rax = z[5];
+	h, l = rax * r38;
+	cf, r[1] += l;
+
+  r[2] = #MOV(0);
+	rax = z[6];
+	_, r[2] += h + cf;
+	h, l = rax * r38;
+	cf, r[2] += l;
+
+	r[3] = #MOV(0);
+	rax = z[7];
+	_, r[3] += h + cf;
+	h, l = rax * r38;
+	cf, r[3] += l;
+
+	z8 = #MOV(0);
+	_, z8  += h + cf;
+
+	cf, r[0] += z[0];
+
+  for i = 1 to 4 {
+  	cf, r[i] += z[i] + cf;
+	}
+
+	_, z8 += 0 + cf;
+	z8 *= 38;
+
+  r0 = #MOV(0);
+
+  cf, r[0] += z8;
+  for i = 1 to 4 {
+	    cf, r[i] += r0 + cf;
+  }
+
+	_, r0 += r0 + cf;
+
+	r0 *= 38;
+	r[0] += r0;
+
+  return r;
+}
+
+//EOR#
+
+inline fn __mul4_rss(stack u64[4] xa ya) -> reg u64[4]
+{
+  reg u64[8] z;
+  reg u64[4] r x y;
+  reg u64 h l hprev;
+  reg bool cf;
+  inline int i j;
+
+  for i = 2 to 8 { z[i] = #MOV(0); }
+
+  x[0] = xa[0];
+  for j = 0 to 4 {
+    y[j] = ya[j];
+    h, l = y[j] * x[0];
+    if (j == 0) {
+      z[0] = l;
+      z[1] = h;
+    } else {
+      cf, z[j] += l;
+      _, z[j + 1] += h + cf;
+    }
+  }
+
+  for i = 1 to 4 {
+    x[i] = xa[i];
+    for j = 0 to 4 {
+      y[j] = ya[j];
+      h, l = y[j] * x[i];
+      cf, z[i+j] += l;
+      if (j == 0) {
+        hprev = #MOV(0);
+        _, hprev += h + cf;
+      } else {
+        _, h += 0 + cf;
+        cf, z[i+j] += hprev;
+        if (1 <= j && j < 4 - 1) {
+          hprev = #MOV(0);
+          _, hprev += h + cf;
+        } else { /* j = 4 */
+          cf, z[i + j + 1] += h + cf;
+        }
+      }
+    }
+  }
+
+  r = __reduce4(z);
+
+  return r;
+}
+
+inline fn __mul4_sss(stack u64[4] xa ya) -> stack u64[4]
+{
+  stack u64[4] rs;
+  reg u64[4] r;
+
+  r = __mul4_rss(xa, ya);
+  rs = #copy(r);
+
+  return rs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _mul4_pp(reg ptr u64[4] xa ya) -> reg ptr u64[4]
+{
+  reg u64[8] z;
+  reg u64[4] r x y;
+  reg u64 h l hprev;
+  reg bool cf;
+  inline int i j;
+
+  for i = 2 to 8 { z[i] = #MOV(0); }
+
+  x[0] = xa[0];
+  for j = 0 to 4 {
+    y[j] = ya[j];
+    h, l = y[j] * x[0];
+    if (j == 0) {
+      z[0] = l;
+      z[1] = h;
+    } else {
+      cf, z[j] += l;
+      _, z[j + 1] += h + cf;
+    }
+  }
+
+  for i = 1 to 4 {
+    x[i] = xa[i];
+    for j = 0 to 4 {
+      y[j] = ya[j];
+      h, l = y[j] * x[i];
+      cf, z[i+j] += l;
+      if (j == 0) {
+        hprev = #MOV(0);
+        _, hprev += h + cf;
+      } else {
+        _, h += 0 + cf;
+        cf, z[i+j] += hprev;
+        if (1 <= j && j < 4 - 1) {
+          hprev = #MOV(0);
+          _, hprev += h + cf;
+        } else { /* j = 4 */
+          cf, z[i + j + 1] += h + cf;
+        }
+      }
+    }
+  }
+
+  r = __reduce4(z);
+
+  for i=0 to 4
+  { xa[i] = r[i]; }
+
+  return xa;
+}
+
+inline fn _mul4_ss_(stack u64[4] xa ya) -> stack u64[4]
+{
+  reg ptr u64[4] xp yp;
+
+  xp = xa;
+  yp = ya;
+  xp = _mul4_pp(xp, yp);
+
+  xa = xp;
+  return xa;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+inline fn __mul4_a24_rs(stack u64[4] xa, inline u64 a24) -> reg u64[4]
+{
+  reg u64 rax rdx c t1 t2 t3 t4;
+  reg u64[4] r;
+  reg bool cf;
+
+  c = a24;
+
+  rax = xa[0];
+  rdx, rax = rax * c;
+  r[0] = rax;
+  r[1] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * c;
+  r[2] = rax;
+  r[3] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * c;
+  t1 = rax;
+  t2 = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * c;
+  t3 = rax;
+  t4 = rdx;
+
+  cf, r[1] += t1;
+  cf, r[2] += t2 + cf;
+  cf, r[3] += t3 + cf;
+  _, t4 += 0 + cf;
+  _, t4 *= 38;
+
+  cf, r[0] += t4;
+  cf, r[1] += 0 + cf;
+  cf, r[2] += 0 + cf;
+  cf, r[3] += 0 + cf;
+
+  t1 = 38;
+  t2 = #MOV(0);
+  t1 = t2 if !cf;
+  r[0] += t1;
+
+  return r;
+}
+
+inline fn __mul4_a24_ss(stack u64[4] xa, inline u64 a24) -> stack u64[4]
+{
+  stack u64[4] rs;
+  reg u64[4] r;
+
+  r = __mul4_a24_rs(xa, a24);
+  rs = #copy(r);
+
+  return rs;
+}
+
+//EOR#
+//BOR#require "sqr4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/sqr4.jinc
+//BOR#require "reduce4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/reduce4.jinc
+//EOR#
+
+inline fn __sqr4_rs(stack u64[4] xa) -> reg u64[4]
+{
+  reg u64 zero rax rdx;
+  reg u64[8] z;
+  reg u64[4] r;
+  reg u64[5] t;
+  reg bool cf;
+
+  z[7] = #MOV(0);
+  zero = #MOV(0);
+
+  // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
+  z[1] = rax;
+  z[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
+  z[3] = rax;
+  z[4] = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
+  z[5] = rax;
+  z[6] = rdx;
+
+  // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
+  cf, z[2] += rax;
+  cf, z[3] += rdx + cf;
+   _, z[4] += zero   + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
+  cf, z[4] += rax;
+  cf, z[5] += rdx + cf;
+   _, z[6] += zero   + cf;
+
+  // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
+  cf, z[3] += rax;
+  cf, z[4] += rdx + cf;
+  cf, z[5] += zero   + cf;
+  cf, z[6] += zero   + cf;
+  _,  z[7] += zero   + cf;
+
+  // x01 + x02 + x03 + x12 + x13 + x23
+  // + x00 + x11 + x22 + x33
+
+  // set z<1..2n+1> = 2*z<1..2n+1> since
+  // we have summed all x_i*x_j with i<>j
+  // so far and these occur twice
+  cf, z[1] += z[1];
+  cf, z[2] += z[2] + cf;
+  cf, z[3] += z[3] + cf;
+  cf, z[4] += z[4] + cf;
+  cf, z[5] += z[5] + cf;
+  cf, z[6] += z[6] + cf;
+  cf, z[7] += z[7] + cf;
+
+  // x00 + x11 + x22 + x33
+
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
+  z[0] = rax;
+  t[0] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
+  t[1] = rax;
+  t[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
+  t[3] = rax;
+  t[4] = rdx;
+
+  cf, z[1] += t[0];
+  cf, z[2] += t[1] + cf;
+  cf, z[3] += t[2] + cf;
+  cf, z[4] += t[3] + cf;
+  cf, z[5] += t[4] + cf;
+  cf, z[6] += 0 + cf;
+   _, z[7] += 0 + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
+  cf, z[6] += rax;
+   _, z[7] += rdx + cf;
+
+  r = __reduce4(z);
+
+  return r;
+}
+
+inline fn __sqr4_ss(stack u64[4] xa) -> stack u64[4]
+{
+  stack u64[4] rs;
+  reg u64[4] r;
+
+  r = __sqr4_rs(xa);
+  rs = #copy(r);
+
+  return rs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+// TODO replace "-> reg ptr u64[4]" by "reg u64[4]" when r.a. @ f call
+#[returnaddress="stack"]
+fn _sqr4_p(reg ptr u64[4] xa) -> reg ptr u64[4]
+{
+  inline int i;
+  reg u64 zero rax rdx;
+  reg u64[8] z;
+  reg u64[4] r;
+  reg u64[5] t;
+  reg bool cf;
+
+  z[7] = #MOV(0);
+  zero = #MOV(0);
+
+  // 2*x01 + 2*x02 + 2*x03 + 2*x12 + 2*x13 + 2*x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[1];
+  rdx, rax = rax * xa[0];
+  z[1] = rax;
+  z[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[1];
+  z[3] = rax;
+  z[4] = rdx;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[2];
+  z[5] = rax;
+  z[6] = rdx;
+
+  // [2*]x01 + 2*x02 + 2*x03 + [2*]x12 + 2*x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[2];
+  rdx, rax = rax * xa[0];
+  cf, z[2] += rax;
+  cf, z[3] += rdx + cf;
+   _, z[4] += zero   + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[1];
+  cf, z[4] += rax;
+  cf, z[5] += rdx + cf;
+   _, z[6] += zero   + cf;
+
+  // [2*]x01 + [2*]x02 + 2*x03 + [2*]x12 + [2*]x13 + [2*]x23
+  // + x00 + x11 + x22 + x33
+
+  rax = xa[3];
+  rdx, rax = rax * xa[0];
+  cf, z[3] += rax;
+  cf, z[4] += rdx + cf;
+  cf, z[5] += zero   + cf;
+  cf, z[6] += zero   + cf;
+  _,  z[7] += zero   + cf;
+
+  // x01 + x02 + x03 + x12 + x13 + x23
+  // + x00 + x11 + x22 + x33
+
+  // set z<1..2n+1> = 2*z<1..2n+1> since
+  // we have summed all x_i*x_j with i<>j
+  // so far and these occur twice
+  cf, z[1] += z[1];
+  cf, z[2] += z[2] + cf;
+  cf, z[3] += z[3] + cf;
+  cf, z[4] += z[4] + cf;
+  cf, z[5] += z[5] + cf;
+  cf, z[6] += z[6] + cf;
+  cf, z[7] += z[7] + cf;
+
+  // x00 + x11 + x22 + x33
+
+  rax = xa[0];
+  rdx, rax = rax * xa[0];
+  z[0] = rax;
+  t[0] = rdx;
+
+  rax = xa[1];
+  rdx, rax = rax * xa[1];
+  t[1] = rax;
+  t[2] = rdx;
+
+  rax = xa[2];
+  rdx, rax = rax * xa[2];
+  t[3] = rax;
+  t[4] = rdx;
+
+  cf, z[1] += t[0];
+  cf, z[2] += t[1] + cf;
+  cf, z[3] += t[2] + cf;
+  cf, z[4] += t[3] + cf;
+  cf, z[5] += t[4] + cf;
+  cf, z[6] += 0 + cf;
+   _, z[7] += 0 + cf;
+
+  rax = xa[3];
+  rdx, rax = rax * xa[3];
+  cf, z[6] += rax;
+   _, z[7] += rdx + cf;
+
+  r = __reduce4(z);
+
+  for i=0 to 4
+  { xa[i] = r[i]; }
+
+  return xa;
+}
+
+inline fn _sqr4_ss_(stack u64[4] xa) -> stack u64[4]
+{
+  inline int j;
+  stack u64[4] ra;
+  reg ptr u64[4] rp;
+  reg u64 t;
+
+  for j=0 to 4
+  { t = xa[j]; ra[j] = t; }
+
+  rp = ra;
+  rp = _sqr4_p(rp);
+  ra = rp;
+
+  return ra;
+}
+
+inline fn _sqr4_s_(stack u64[4] x) -> stack u64[4]
+{
+  reg ptr u64[4] xp;
+
+  xp = x;
+  xp = _sqr4_p(xp);
+  x = xp;
+
+  return x;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _it_sqr4_p(reg ptr u64[4] x, reg u32 i) -> reg ptr u64[4]
+{
+  reg bool zf;
+
+  while {
+    x = _sqr4_p(x);
+    _,_,_,zf,i = #DEC_32(i);
+  }(!zf)
+
+  return x;
+}
+
+inline fn _it_sqr4_s_(stack u64[4] x, reg u32 i) -> stack u64[4]
+{
+  reg ptr u64[4] xp;
+
+  xp = x;
+  xp = _it_sqr4_p(xp, i);
+  x = xp;
+
+  return x;
+}
+
+inline fn _it_sqr4_ss_(stack u64[4] r x, reg u32 i) -> stack u64[4]
+{
+  inline int j;
+  reg ptr u64[4] rp;
+  reg u64 t;
+
+  for j=0 to 4
+  { t = x[j]; r[j] = t; }
+
+  rp = r;
+  rp = _it_sqr4_p(rp, i);
+  r = rp;
+
+  return r;
+}
+
+//EOR#
+//BOR#require "invert4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/invert4.jinc
+//BOR#require "mul4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/mul4.jinc
+//EOR#
+//BOR#require "sqr4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/sqr4.jinc
+//EOR#
+
+inline fn __invert4(stack u64[4] fs) -> stack u64[4]
+{
+  stack u64[4] t0s t1s t2s t3s;
+  reg u32 i;
+
+  // z2 = z1^2^1
+  t0s = _sqr4_ss_(fs);
+
+  // z8 = z2^2^2
+  t1s = _sqr4_ss_(t0s);
+  t1s = _sqr4_s_(t1s);
+
+  // z9 = z1*z8
+  t1s = _mul4_ss_(t1s, fs);
+
+  // z11 = z2*z9
+  t0s = _mul4_ss_(t0s,t1s);
+
+  // z22 = z11^2^1
+  t2s = _sqr4_ss_(t0s);
+
+  // z_5_0 = z9*z22
+  t1s = _mul4_ss_(t1s,t2s);
+
+  // z_10_5 = z_5_0^2^5
+  t2s = _sqr4_ss_(t1s);
+  i = 4;
+  t2s = _it_sqr4_s_(t2s, i);
+
+  // z_10_0 = z_10_5*z_5_0
+  t1s = _mul4_ss_(t1s,t2s);
+
+  // z_20_10 = z_10_0^2^10
+  i = 10;
+  t2s = _it_sqr4_ss_(t2s, t1s, i);
+
+  // z_20_0 = z_20_10*z_10_0
+  t2s = _mul4_ss_(t2s, t1s);
+
+  // z_40_20 = z_20_0^2^20
+  i = 20;
+  t3s = _it_sqr4_ss_(t3s, t2s, i);
+
+  // z_40_0 = z_40_20*z_20_0
+  t2s = _mul4_ss_(t2s,t3s);
+
+  // z_50_10 = z_40_0^2^10
+  i = 10;
+  t2s = _it_sqr4_s_(t2s, i);
+
+  // z_50_0 = z_50_10*z_10_0
+  t1s = _mul4_ss_(t1s,t2s);
+
+  // z_100_50 = z_50_0^2^50
+  i = 50;
+  t2s = _it_sqr4_ss_(t2s, t1s, i);
+
+  // z_100_0 = z_100_50*z_50_0
+  t2s = _mul4_ss_(t2s, t1s);
+
+  // z_200_100 = z_100_0^2^100
+  i = 100;
+  t3s = _it_sqr4_ss_(t3s, t2s, i);
+
+  // z_200_0 = z_200_100*z_100_0
+  t2s = _mul4_ss_(t2s,t3s);
+
+  // z_250_50 = z_200_0^2^50
+  i = 50;
+  t2s = _it_sqr4_s_(t2s, i);
+
+  // z_250_0 = z_250_50*z_50_0
+  t1s = _mul4_ss_(t1s,t2s);
+
+  // z_255_5 = z_250_0^2^5
+  i = 4;
+  t1s = _it_sqr4_s_(t1s, i);
+  t1s = _sqr4_s_(t1s);
+
+  // z_255_21 = z_255_5*z11
+  t1s = _mul4_ss_(t1s, t0s);
+
+  return t1s;
+}
+
+//EOR#
+
+inline fn __add_and_double4(
+  stack u64[4] init,
+  stack u64[4] x2,
+  reg   u64[4] z2r,
+  stack u64[4] x3,
+  stack u64[4] z3)
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4],
+  stack u64[4]
+{
+  stack u64[4] z2 t0 t1 t2;
+
+  t0  = __sub4_ssr(x2, z2r);
+  x2  = __add4_ssr(x2, z2r);
+
+  t1  = __sub4_sss(x3, z3);
+  z2  = __add4_sss(x3, z3);
+
+  z3  = __mul4_sss(x2, t1);
+  z2  = __mul4_sss(z2, t0);
+
+  t2  = __sqr4_ss(x2);
+  t1  = __sqr4_ss(t0);
+
+  x3  = __add4_sss(z3, z2);
+  z2  = __sub4_sss(z3, z2);
+
+  x2  = __mul4_sss(t2, t1);
+  t0  = __sub4_sss(t2, t1);
+
+  z2  = __sqr4_ss(z2);
+  z3  = __mul4_a24_ss(t0, 121665);
+  x3  = __sqr4_ss(x3);
+
+  t2  = __add4_sss(t2, z3);
+  z3  = __mul4_sss(init, z2);
+  z2r = __mul4_rss(t0, t2);
+
+  return x2, z2r, x3, z3;
+}
+
+inline fn __montgomery_ladder_step4(
+  stack u8[32] k,
+  stack u64[4] init,
+  stack u64[4] x2,
+  reg   u64[4] z2r,
+  stack u64[4] x3,
+  stack u64[4] z3,
+  stack u64    swapped,
+  reg   u64    ctr)
+  ->
+  stack u64[4],
+  reg   u64[4],
+  stack u64[4],
+  stack u64[4],
+  stack u64
+{
+  reg u64 toswap bit;
+
+  bit = __ith_bit(k, ctr);
+
+  toswap  = swapped;
+  toswap ^= bit;
+
+  x2, z2r, x3, z3 = __cswap4(x2, z2r, x3, z3, toswap);
+  swapped = bit;
+
+  x2, z2r, x3, z3 = __add_and_double4(init, x2, z2r, x3, z3);
+
+  return x2, z2r, x3, z3, swapped;
+}
+
+
+inline fn __montgomery_ladder4(
+  reg u64[4] u,
+  stack u8[32] k)
+  ->
+  stack u64[4],
+  reg u64[4]
+{
+  stack u64[4] us x2 x3 z3;
+  reg u64[4] z2r;
+  stack u64 swapped;
+  #spill_to_mmx reg u64 ctr;
+
+  (x2,z2r,x3,z3) = __init_points4(u); 
+  us = #copy(u);
+
+  ctr = 255;
+  swapped = 0;
+
+  while
+  {
+    ctr -= 1;
+    () = #spill(ctr);
+
+    (x2, z2r, x3, z3, swapped) = 
+      __montgomery_ladder_step4(k, us, x2, z2r, x3, z3, swapped, ctr);
+
+    () = #unspill(ctr);
+  } (ctr > 0)
+
+  return x2, z2r;
+}
+
+inline fn __encode_point4(stack u64[4] x2, reg u64[4] z2r) -> reg u64[4]
+{
+  stack u64[4] z2;
+  reg u64[4] r;
+
+  z2 = #copy(z2r);
+  z2 = __invert4(z2);
+  r = __mul4_rss(x2, z2);
+  r = __tobytes4(r);
+
+  return r;
+}
+
+inline fn __curve25519_internal_ref4(stack u8[32] k, reg u64[4] u) -> reg u64[4]
+{
+  stack u64[4] x2;
+  reg u64[4] z2r r;
+
+  (x2,z2r) = __montgomery_ladder4(u, k);
+  r = __encode_point4(x2,z2r);
+
+  return r;
+}
+
+fn _curve25519_ref4(reg u64[4] _k _u) -> reg u64[4]
+{
+  stack u8[32] k;
+  reg u64[4] u r;
+
+  k = __decode_scalar(_k);
+  u = __decode_u_coordinate4(_u);
+  r = __curve25519_internal_ref4(k, u);
+
+  return r;
+}
+
+inline fn __curve25519_ref4_ptr(#spill_to_mmx reg u64 rp, reg u64 kp up)
+{
+  reg u64[4] r k u;
+
+  ()  = #spill(rp);
+
+  k = __load4(kp);
+  u = __load4(up);
+  r = _curve25519_ref4(k, u);
+
+  ()  = #unspill(rp);
+
+  __store4(rp, r);
+}
+
+
+fn _curve25519_ref4_base(reg u64[4] _k) -> reg u64[4]
+{
+  stack u8[32] k;
+  reg u64[4] u r;
+
+  k = __decode_scalar(_k);
+  u = __decode_u_coordinate_base4();
+  r = __curve25519_internal_ref4(k, u);
+
+  return r;
+}
+
+inline fn __curve25519_ref4_base_ptr(#spill_to_mmx reg u64 rp, reg u64 kp)
+{
+  reg u64[4] r k;
+
+  () = #spill(rp);
+
+  k = __load4(kp);
+  r = _curve25519_ref4_base(k);
+
+  ()  = #unspill(rp);
+
+  __store4(rp, r);
+}
+
+//EOR#
 
 export fn jade_scalarmult_curve25519_amd64_ref4(#spill_to_mmx reg u64 qp np pp) -> reg u64
 {

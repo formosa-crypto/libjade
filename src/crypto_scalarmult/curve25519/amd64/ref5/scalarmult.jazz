@@ -1,5 +1,1532 @@
-from Jade require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"
-require "curve25519.jinc"
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/load_store4.jinc
+inline fn __load4(reg u64 p) -> reg u64[4]
+{
+  inline int i;
+  reg u64[4] a;
+
+  for i=0 to 4
+  { a[i] = [p + 8*i]; }
+
+  return a;
+}
+
+inline fn __store4(reg u64 p, reg u64[4] a)
+{
+  inline int i;
+
+  for i=0 to 4
+  { [p + 8*i] = a[i]; }
+}
+
+//EOR#
+//BOR#require "curve25519.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/curve25519.jinc
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/bit.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/bit.jinc
+inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
+{
+  reg u64 p bit;
+
+  p = ctr;
+  p >>= 3;
+  bit = (64u) k[(int) p];
+
+  p = ctr;
+  p &= 7;
+  bit >>= (p & 63);
+
+  bit &= 1;
+
+  return bit;
+}
+
+inline fn __next_bit(stack u64 k) -> reg u64, stack u64
+{
+  reg bool cf;
+  reg u64 b one;
+
+  ?{}, b = #set0();
+  one = 1;
+  _, cf, _, _, _, k = #SHL(k, 1);
+  b = one if cf;
+  return b, k;
+}
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/decode_scalar.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/decode_scalar.jinc
+inline fn __decode_scalar(reg u64[4] k) -> stack u8[32]
+{
+  inline int i;
+  stack u8[32] ks;
+
+  for i=0 to 4
+  { ks[u64 i] = k[i]; }
+
+  ks[0]  &= 0xf8;
+  ks[31] &= 0x7f;
+  ks[31] |= 0x40;
+
+  return ks;
+}
+
+inline fn __decode_scalar_shl1(reg u64[4] k) -> stack u64[4]
+{
+  stack u64[4] ks;
+
+  k[3] <<= 1;
+  k[0] &= 0xfffffffffffffff8;
+  k[3] |= 0x8000000000000000;
+
+  ks = #copy(k);
+
+  return ks;
+}
+
+//EOR#
+
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/decode_u5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/decode_u5.jinc
+inline fn __decode_u_coordinate5(reg u64[4] t) -> reg u64[5]
+{
+  reg u64[5] u;
+  reg u64 mask;
+
+  mask = 0x7ffffffffffff;
+  
+  //u[0] = t[0] & mask; // 51; 13 left
+  u[0] = t[0];
+  u[0] &= mask;
+  
+  //u[1] = (t[1] << 13) || (t[0] >> 51) & mask; // 38; 26 left
+  u[1] = t[1];
+  u[1] <<= 13;
+  t[0] >>= 51;
+  u[1] |= t[0];
+  u[1] &= mask;
+  
+  //u[2] = (t[2] << 26) || (t[1] >> 38) & mask; // 25; 39 left
+  u[2] = t[2];
+  u[2] <<= 26;
+  t[1] >>= 38;
+  u[2] |= t[1];
+  u[2] &= mask;
+  
+  //u[3] = (t[3] << 39) || (t[2] >> 25) & mask; // 12; '52' left
+  u[3] = t[3];
+  u[3] <<= 39;
+  t[2] >>= 25;
+  u[3] |= t[2];
+  u[3] &= mask;
+  
+  //u[4] = (t[3] >> 12) & mask;
+  u[4] = t[3];
+  u[4] >>= 12;
+  u[4] &= mask;
+
+  return u;
+}
+
+inline fn __decode_u_coordinate_base5() -> reg u64[5]
+{
+  reg u64[5] u;
+
+  u[0] = 9;
+  u[1] = 0;
+  u[2] = 0;
+  u[3] = 0;
+  u[4] = 0;
+
+  return u;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/init_points5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/init_points5.jinc
+inline fn __init_points5(
+  reg u64[5] initr)
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5],
+  stack u64[5]
+{
+  inline int i;
+  stack u64[5] x2 x3 z3;
+  reg u64[5] z2r;
+  reg u64 z;
+
+  ?{}, z = #set0();
+
+  x2[0] = 1;
+  z2r[0] = 0;
+  x3 = #copy(initr);
+  z3[0] = 1;
+
+  for i=1 to 5
+  { x2[i] = z;
+    z2r[i] = z;
+    z3[i] = z;
+  }
+
+  //     (1,   0, init, 1)
+  return x2, z2r, x3,  z3;
+}
+
+inline fn __init_points5_x3()
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5]
+{
+  inline int i;
+  stack u64[5] f1s f3s;
+  reg   u64[5] f2;
+  reg   u64 z;
+
+  ?{}, z = #set0();
+
+  f1s[0] = 1;
+  f2[0]  = 1;
+  f3s[0] = 1;
+
+  for i=1 to 5
+  { f1s[i] = z;
+    f2[i]  = z;
+    f3s[i] = z;
+  }
+
+  return f1s, f2, f3s;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/add5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/add5.jinc
+inline fn __add5_rrs(reg u64[5] f, stack u64[5] g) -> reg u64[5]
+{
+  inline int i;
+  reg u64[5] h;
+
+  h = #copy(f);
+
+  h[0] += g[0];
+  for i=1 to 5
+  { h[i] += g[i]; }
+
+  return h;
+}
+
+inline fn __add5_sss(stack u64[5] fs gs) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h f;
+
+  f = #copy(fs);
+  h = __add5_rrs(f, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add5_ssr(stack u64[5] fs, reg u64[5] g) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h;
+
+  h = __add5_rrs(g, fs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __add5_rsr(stack u64[5] fs, reg u64[5] g) -> reg u64[5]
+{
+  reg u64[5] h;
+
+  h = __add5_rrs(g, fs);
+
+  return h;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/sub5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/sub5.jinc
+inline fn __sub5_rrs(reg u64[5] f, stack u64[5] gs) -> reg u64[5]
+{
+  inline int i;
+  reg u64[5] h;
+  reg u64 _2p0 _2p1234;
+
+  _2p0 = 0xfffffffffffda;
+  _2p1234 = 0xffffffffffffe;
+  
+  h = #copy(f);
+  h[0] += _2p0;
+  for i=1 to 5
+  { h[i] += _2p1234; }
+  
+  for i=0 to 5
+  { h[i] -= gs[i]; }
+
+  return h;
+}
+
+inline fn __sub5_sss(stack u64[5] fs gs) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h f;
+
+  f = #copy(fs);
+  h = __sub5_rrs(f, gs);
+  hs = #copy(h);
+
+  return hs;
+}
+
+inline fn __sub5_rss(stack u64[5] fs gs) -> reg u64[5]
+{
+  reg u64[5] h f;
+
+  f = #copy(fs);
+  h = __sub5_rrs(f, gs);
+
+  return h;
+}
+
+inline fn __sub5_rsr(stack u64[5] fs, reg u64[5] g) -> reg u64[5]
+{
+  inline int i;
+  reg u64[5] h;
+  reg u64 _2p0 _2p1234;
+
+  _2p0 = 0xfffffffffffda;
+  _2p1234 = 0xffffffffffffe;
+  
+  h = #copy(fs);
+  h[0] += _2p0;
+  for i=1 to 5
+  { h[i] += _2p1234; }
+  
+  for i=0 to 5
+  { h[i] -= g[i]; }
+
+  return h;
+}
+
+inline fn __sub5_ssr(stack u64[5] fs, reg u64[5] g) -> stack u64[5]
+{
+  stack u64[5] hs;
+  reg u64[5] h;
+
+  h = __sub5_rsr(fs, g);
+  hs = #copy(h);
+
+  return hs;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/cswap5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/cswap5.jinc
+inline fn __cswap5(
+  stack u64[5] x2,
+  reg   u64[5] z2r,
+  stack u64[5] x3,
+  stack u64[5] z3,
+  reg   u64    toswap)
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5],
+  stack u64[5]
+{
+  inline int i;
+  reg u64[5] t4 x2r x3r;
+  reg u64 t mask;
+
+  ?{}, mask = #set0();
+  mask -= toswap; // if toswap == 1 mask = -1 or all bits at 1, 0 otherwise
+
+  // swap between z2 and z3
+  t4  = #copy(z2r);
+  for i=0 to 5
+  { t4[i]  ^= z3[i]; 
+    t4[i]  &= mask; } // t4 =  z2 ^ z3
+
+  for i=0 to 5
+  { z2r[i] ^= t4[i];
+    t = z3[i];
+    t ^= t4[i]; 
+    z3[i] = t; }
+
+  // swap between x2 and x3
+  x3r = #copy(x3);
+  for i=0 to 5 { x2r[i]  = x2[i];
+                 t       = x3r[i];
+                 t      ^= x2r[i];
+                 t      &= mask;
+                 x2r[i] ^= t;
+                 x3r[i] ^= t;
+                 x2[i]   = x2r[i];
+                 x3[i]   = x3r[i]; }
+
+  return x2, z2r, x3, z3;
+}
+
+inline fn __cswap5_ssss(
+  stack u64[5] xs,
+  stack u64[5] ys,
+  reg u64 swap)
+  ->
+  stack u64[5],
+  stack u64[5]
+{
+  inline int i;
+  reg u64[5] x y;
+  reg u64 t mask;
+
+  x = #copy(xs);
+
+  mask = 0;
+  mask -= swap;
+
+  for i=0 to 5
+  {
+    y[i] = ys[i];
+
+    t  = x[i];
+    t ^= y[i];
+    t &= mask;
+
+    x[i] ^= t; // ^ (x[i] ^ y[i]) if swap == 1 
+    y[i] ^= t;
+
+    ys[i] = y[i];
+  }
+
+  xs = #copy(x);
+
+  return xs, ys;
+}
+
+inline fn __cswap5_rsrs(
+  reg   u64[5] x,
+  stack u64[5] ys,
+  reg   u64 swap)
+  ->
+  reg   u64[5],
+  stack u64[5]
+{
+  inline int i;
+  reg u64[5] y;
+  reg u64 t mask;
+
+  mask = 0;
+  mask -= swap;
+
+  for i=0 to 5
+  {
+    y[i] = ys[i];
+
+    t  = x[i];
+    t ^= y[i];
+    t &= mask;
+
+    x[i] ^= t; // ^ (x[i] ^ y[i]) if swap == 1 
+    y[i] ^= t;
+
+    ys[i] = y[i];
+  }
+
+  return x, ys;
+}
+
+//EOR#
+//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/51/tobytes5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/51/tobytes5.jinc
+inline fn __tobytes5(reg u64[5] f) -> reg u64[4]
+{
+  reg bool eq;
+  reg u64 loop;
+  reg u64[4] h;
+  reg u64 t two51minus1 two51minus19;
+
+  two51minus1 = 0x0007FFFFFFFFFFFF;
+  two51minus19 = two51minus1;
+  two51minus19 -= 18;
+  loop = 3;
+
+  while(loop > 0){
+    t = f[0];
+    t >>= 51;
+    f[0] &= two51minus1;
+    f[1] += t;
+    t = f[1];
+    t >>= 51;
+    f[1] &= two51minus1;
+    f[2] += t;
+    t = f[2];
+    t >>= 51;
+    f[2] &= two51minus1;
+    f[3] += t;
+    t = f[3];
+    t >>= 51;
+    f[3] &= two51minus1;
+    f[4] += t;
+    t = f[4];
+    t >>= 51;
+    f[4] &= two51minus1;
+    t *= 19;
+    f[0] += t;
+    loop = loop - 1;
+  }
+  t = 1;
+
+	//signed<? f[0] - two51minus19 
+	t = loop if (f[0] <s two51minus19); /*t = loop if signed<*/
+	eq = (f[1] == two51minus1);
+	t = loop if !eq;
+	eq = (f[2] == two51minus1);
+	t = loop if !eq;
+	eq = (f[3] == two51minus1);
+	t = loop if !eq;
+	eq = (f[4] == two51minus1);
+	t = loop if !eq;
+	t = -t;
+	two51minus1 &= t;
+	two51minus19 &= t;
+
+	f[0] -= two51minus19;
+	f[1] -= two51minus1;
+	f[2] -= two51minus1;
+	f[3] -= two51minus1;
+	f[4] -= two51minus1;
+
+  //
+
+  //h[0] = (f[1] << 51) || f[0]; // 13 spent; 38 left
+  h[0] = f[1];
+  h[0] <<= 51;
+  h[0] |= f[0];
+  
+  //h[1] = (f[2] << 38) || (f[1] >> 13); // 26 spent; 25 left
+  h[1] = f[2];
+  h[1] <<= 38;
+  f[1] >>= 13;
+  h[1] |= f[1];
+  
+  // h[2] = (f[3] << 25) || (f[2] >> 26); // 39 spent; 12 left
+  h[2] = f[3];
+  h[2] <<= 25;
+  f[2] >>= 26;
+  h[2] |= f[2];
+  
+  // h[3] = f[4] << 12 || (f[3] >> 39); // 51 spent; 0 left
+  h[3] = f[4];
+  h[3] <<= 12;
+  f[3] >>= 39;
+  h[3] |= f[3];
+
+	return h;
+}
+
+//EOR#
+
+//BOR#require "mul5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/mul5.jinc
+// code originally from amd64-51 qhasm implementation
+// - and adapted from https://github.com/tfaoliveira/qhasm-translator/blob/master/test-cases/crypto_scalarmult/curve25519/amd64-51/fe25519_mul.mil
+
+inline fn __mul5_rss(stack u64[5] xa ya) -> reg u64[5]
+{
+  reg bool cf;
+  reg u64 mulr01 mulr11 mulr21 mulr31 mulr41;
+  reg u64 mulrax mulrdx;
+  reg u64 mulredmask;
+  reg u64 mult;
+  stack u64 mulx319_stack mulx419_stack;
+  reg u64[5] r;
+
+  mulrax = xa[3];
+  mulrax *= 19;
+  mulx319_stack = mulrax;
+  mulrdx, mulrax = mulrax * ya[2];
+  r[0] = mulrax;
+  mulr01 = mulrdx;
+  mulrax = xa[4];
+  mulrax *= 19;
+  mulx419_stack = mulrax;
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[1];
+  r[1] = mulrax;
+  mulr11 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[2];
+  r[2] = mulrax;
+  mulr21 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[3];
+  r[3] = mulrax;
+  mulr31 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[4];
+  r[4] = mulrax;
+  mulr41 = mulrdx;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = xa[3];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[3];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = mulx319_stack;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = mulx319_stack;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[4];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulredmask = 0x7FFFFFFFFFFFF;
+  ?{}, mulr01 = #SHLD(mulr01, r[0], 13);
+  r[0] &= mulredmask;
+  ?{}, mulr11 = #SHLD(mulr11, r[1], 13);
+  r[1] &= mulredmask;
+  r[1] += mulr01;
+  ?{}, mulr21 = #SHLD(mulr21, r[2], 13);
+  r[2] &= mulredmask;
+  r[2] += mulr11;
+  ?{}, mulr31 = #SHLD(mulr31, r[3], 13);
+  r[3] &= mulredmask;
+  r[3] += mulr21;
+  ?{}, mulr41 = #SHLD(mulr41, r[4], 13);
+  r[4] &= mulredmask;
+  r[4] += mulr31;
+  mulr41 = mulr41 * 19;
+  r[0] += mulr41;
+  mult = r[0];
+  mult >>= 51;
+  mult += r[1];
+  r[1] = mult;
+  mult >>= 51;
+  r[0] &= mulredmask;
+  mult += r[2];
+  r[2] = mult;
+  mult >>= 51;
+  r[1] &= mulredmask;
+  mult += r[3];
+  r[3] = mult;
+  mult >>= 51;
+  r[2] &= mulredmask;
+  mult += r[4];
+  r[4] = mult;
+  mult >>= 51;
+  r[3] &= mulredmask;
+  mult *= 19;
+  r[0] += mult;
+  r[4] &= mulredmask;
+
+	return r;
+}
+
+inline fn __mul5_sss(stack u64[5] xa ya) -> stack u64[5]
+{
+  stack u64[5] rs;
+  reg u64[5] r;
+
+  r = __mul5_rss(xa, ya);
+  rs = #copy(r);
+
+  return rs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _mul5_pp(reg ptr u64[5] xa ya) -> reg ptr u64[5]
+{
+  inline int i;
+  reg bool cf;
+  reg u64 mulr01 mulr11 mulr21 mulr31 mulr41;
+  reg u64 mulrax mulrdx;
+  reg u64 mulredmask;
+  reg u64 mult;
+  stack u64 mulx319_stack mulx419_stack;
+  reg u64[5] r;
+
+  mulrax = xa[3];
+  mulrax *= 19;
+  mulx319_stack = mulrax;
+  mulrdx, mulrax = mulrax * ya[2];
+  r[0] = mulrax;
+  mulr01 = mulrdx;
+  mulrax = xa[4];
+  mulrax *= 19;
+  mulx419_stack = mulrax;
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[1];
+  r[1] = mulrax;
+  mulr11 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[2];
+  r[2] = mulrax;
+  mulr21 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[3];
+  r[3] = mulrax;
+  mulr31 = mulrdx;
+  mulrax = xa[0];
+  mulrdx, mulrax = mulrax * ya[4];
+  r[4] = mulrax;
+  mulr41 = mulrdx;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = xa[1];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[0] += mulrax;
+  _, mulr01 += mulrdx + cf;
+  mulrax = xa[2];
+  mulrax *= 19;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = xa[3];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulrax = xa[3];
+  mulrdx, mulrax = mulrax * ya[1];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = mulx319_stack;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = mulx319_stack;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = xa[4];
+  mulrdx, mulrax = mulrax * ya[0];
+  cf, r[4] += mulrax;
+  _, mulr41 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[2];
+  cf, r[1] += mulrax;
+  _, mulr11 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[3];
+  cf, r[2] += mulrax;
+  _, mulr21 += mulrdx + cf;
+  mulrax = mulx419_stack;
+  mulrdx, mulrax = mulrax * ya[4];
+  cf, r[3] += mulrax;
+  _, mulr31 += mulrdx + cf;
+  mulredmask = 0x7FFFFFFFFFFFF;
+  ?{}, mulr01 = #SHLD(mulr01, r[0], 13);
+  r[0] &= mulredmask;
+  ?{}, mulr11 = #SHLD(mulr11, r[1], 13);
+  r[1] &= mulredmask;
+  r[1] += mulr01;
+  ?{}, mulr21 = #SHLD(mulr21, r[2], 13);
+  r[2] &= mulredmask;
+  r[2] += mulr11;
+  ?{}, mulr31 = #SHLD(mulr31, r[3], 13);
+  r[3] &= mulredmask;
+  r[3] += mulr21;
+  ?{}, mulr41 = #SHLD(mulr41, r[4], 13);
+  r[4] &= mulredmask;
+  r[4] += mulr31;
+  mulr41 = mulr41 * 19;
+  r[0] += mulr41;
+  mult = r[0];
+  mult >>= 51;
+  mult += r[1];
+  r[1] = mult;
+  mult >>= 51;
+  r[0] &= mulredmask;
+  mult += r[2];
+  r[2] = mult;
+  mult >>= 51;
+  r[1] &= mulredmask;
+  mult += r[3];
+  r[3] = mult;
+  mult >>= 51;
+  r[2] &= mulredmask;
+  mult += r[4];
+  r[4] = mult;
+  mult >>= 51;
+  r[3] &= mulredmask;
+  mult *= 19;
+  r[0] += mult;
+  r[4] &= mulredmask;
+
+  for i=0 to 5
+  { xa[i] = r[i]; }
+
+	return xa;
+}
+
+inline fn _mul5_ss_(stack u64[5] xa ya) -> stack u64[5]
+{
+  reg ptr u64[5] xp yp;
+
+  xp = xa;
+  yp = ya;
+  xp = _mul5_pp(xp, yp);
+
+  xa = xp;
+  return xa;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+inline fn __mul5_a24_add_rss(stack u64[5] xa ya, inline u64 _a24) -> reg u64[5]
+{
+  reg u64 a24;
+  reg u64 mul121666rax mul121666rdx;
+  reg u64[5] r;
+  
+  a24 = _a24;
+
+  // xa[0] * a24 
+  mul121666rax = xa[0];
+  mul121666rdx, mul121666rax = mul121666rax * a24;
+  mul121666rax >>= 13;
+  r[0] = mul121666rax;
+  r[1] = mul121666rdx;
+  
+  // xa[1] * a24
+  mul121666rax = xa[1];
+  mul121666rdx, mul121666rax = mul121666rax * a24;
+  mul121666rax >>= 13;
+  r[1] += mul121666rax;
+  r[2] = mul121666rdx;
+  
+  // xa[2] * a24
+  mul121666rax = xa[2];
+  mul121666rdx, mul121666rax = mul121666rax * a24;
+  mul121666rax >>= 13;
+  r[2] += mul121666rax;
+  r[3] = mul121666rdx;
+  
+  // xa[3] * a24
+  mul121666rax = xa[3];
+  mul121666rdx, mul121666rax = mul121666rax * a24;
+  mul121666rax >>= 13;
+  r[3] += mul121666rax;
+  r[4] = mul121666rdx;
+  
+  // xa[4] * a24
+  mul121666rax = xa[4];
+  mul121666rdx, mul121666rax = mul121666rax * a24;
+  mul121666rax >>= 13;
+  r[4] += mul121666rax;
+  mul121666rdx *= 19;
+  
+  r[0] += mul121666rdx;
+  
+  r[0] += ya[0];
+  r[1] += ya[1];
+  r[2] += ya[2];
+  r[3] += ya[3];
+  r[4] += ya[4];
+  
+  return r;
+}
+
+inline fn __mul5_a24_add_sss(stack u64[5] xa ya, inline u64 a24) -> stack u64[5]
+{
+  stack u64[5] rs;
+  reg u64[5] r;
+
+  r = __mul5_a24_add_rss(xa, ya, a24);
+  rs = #copy(r);
+
+  return rs;
+}
+
+//EOR#
+//BOR#require "sqr5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/sqr5.jinc
+inline fn __sqr5_rs(stack u64[5] xa) -> reg u64[5]
+{
+  reg bool cf;
+  reg u64[5] r;
+  reg u64 squarer01 squarer11 squarer21 squarer31 squarer41;
+  reg u64 squarerax squarerdx;
+  reg u64 squareredmask squaret;
+
+  squarerax = xa[0];
+  squarerdx, squarerax = squarerax * xa[0];
+  r[0] = squarerax;
+  squarer01 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[1];
+  r[1] = squarerax;
+  squarer11 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[2];
+  r[2] = squarerax;
+  squarer21 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[3];
+  r[3] = squarerax;
+  squarer31 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[4];
+  r[4] = squarerax;
+  squarer41 = squarerdx;
+  squarerax = xa[1];
+  squarerdx, squarerax = squarerax * xa[1];
+  cf, r[2] += squarerax;
+  _, squarer21 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[2];
+  cf, r[3] += squarerax;
+  _, squarer31 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[4] += squarerax;
+  _, squarer41 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[0] += squarerax;
+  _, squarer01 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerdx, squarerax = squarerax * xa[2];
+  cf, r[4] += squarerax;
+  _, squarer41 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[0] += squarerax;
+  _, squarer01 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[1] += squarerax;
+  _, squarer11 += squarerdx + cf;
+  squarerax = xa[3];
+  squarerax *= 19;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[1] += squarerax;
+  _, squarer11 += squarerdx + cf;
+  squarerax = xa[3];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[2] += squarerax;
+  _, squarer21 += squarerdx + cf;
+  squarerax = xa[4];
+  squarerax *= 19;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[3] += squarerax;
+  _, squarer31 += squarerdx + cf;
+  squareredmask = 0x7FFFFFFFFFFFF;
+  _, _, _, _, _, squarer01 = #SHLD(squarer01, r[0], 13);
+  r[0] &= squareredmask;
+  _, _, _, _, _, squarer11 = #SHLD(squarer11, r[1], 13);
+  r[1] &= squareredmask;
+  r[1] += squarer01;
+  _, _, _, _, _, squarer21 = #SHLD(squarer21, r[2], 13);
+  r[2] &= squareredmask;
+  r[2] += squarer11;
+  _, _, _, _, _, squarer31 = #SHLD(squarer31, r[3], 13);
+  r[3] &= squareredmask;
+  r[3] += squarer21;
+  _, _, _, _, _, squarer41 = #SHLD(squarer41, r[4], 13);
+  r[4] &= squareredmask;
+  r[4] += squarer31;
+  squarer41 = squarer41 * 19;
+  r[0] += squarer41;
+  squaret = r[0];
+  squaret >>= 51;
+  squaret += r[1];
+  r[0] &= squareredmask;
+  r[1] = squaret;
+  squaret >>= 51;
+  squaret += r[2];
+  r[1] &= squareredmask;
+  r[2] = squaret;
+  squaret >>= 51;
+  squaret += r[3];
+  r[2] &= squareredmask;
+  r[3] = squaret;
+  squaret >>= 51;
+  squaret += r[4];
+  r[3] &= squareredmask;
+  r[4] = squaret;
+  squaret >>= 51;
+  squaret *= 19;
+  r[0] += squaret;
+  r[4] &= squareredmask;
+
+	return r;
+}
+
+inline fn __sqr5_ss(stack u64[5] xa) -> stack u64[5]
+{
+  stack u64[5] rs;
+  reg u64[5] r;
+
+  r = __sqr5_rs(xa);
+  rs = #copy(r);
+
+  return rs;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+// TODO replace "-> reg ptr u64[5]" by "reg u64[5]" when r.a. @ f call
+#[returnaddress="stack"]
+fn _sqr5_p(reg ptr u64[5] xa) -> reg ptr u64[5]
+{
+  inline int i;
+  reg bool cf;
+  reg u64[5] r;
+  reg u64 squarer01 squarer11 squarer21 squarer31 squarer41;
+  reg u64 squarerax squarerdx;
+  reg u64 squareredmask squaret;
+
+  squarerax = xa[0];
+  squarerdx, squarerax = squarerax * xa[0];
+  r[0] = squarerax;
+  squarer01 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[1];
+  r[1] = squarerax;
+  squarer11 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[2];
+  r[2] = squarerax;
+  squarer21 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[3];
+  r[3] = squarerax;
+  squarer31 = squarerdx;
+  squarerax = xa[0];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[4];
+  r[4] = squarerax;
+  squarer41 = squarerdx;
+  squarerax = xa[1];
+  squarerdx, squarerax = squarerax * xa[1];
+  cf, r[2] += squarerax;
+  _, squarer21 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[2];
+  cf, r[3] += squarerax;
+  _, squarer31 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax <<= 1;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[4] += squarerax;
+  _, squarer41 += squarerdx + cf;
+  squarerax = xa[1];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[0] += squarerax;
+  _, squarer01 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerdx, squarerax = squarerax * xa[2];
+  cf, r[4] += squarerax;
+  _, squarer41 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[0] += squarerax;
+  _, squarer01 += squarerdx + cf;
+  squarerax = xa[2];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[1] += squarerax;
+  _, squarer11 += squarerdx + cf;
+  squarerax = xa[3];
+  squarerax *= 19;
+  squarerdx, squarerax = squarerax * xa[3];
+  cf, r[1] += squarerax;
+  _, squarer11 += squarerdx + cf;
+  squarerax = xa[3];
+  squarerax *= 38;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[2] += squarerax;
+  _, squarer21 += squarerdx + cf;
+  squarerax = xa[4];
+  squarerax *= 19;
+  squarerdx, squarerax = squarerax * xa[4];
+  cf, r[3] += squarerax;
+  _, squarer31 += squarerdx + cf;
+  squareredmask = 0x7FFFFFFFFFFFF;
+  _, _, _, _, _, squarer01 = #SHLD(squarer01, r[0], 13);
+  r[0] &= squareredmask;
+  _, _, _, _, _, squarer11 = #SHLD(squarer11, r[1], 13);
+  r[1] &= squareredmask;
+  r[1] += squarer01;
+  _, _, _, _, _, squarer21 = #SHLD(squarer21, r[2], 13);
+  r[2] &= squareredmask;
+  r[2] += squarer11;
+  _, _, _, _, _, squarer31 = #SHLD(squarer31, r[3], 13);
+  r[3] &= squareredmask;
+  r[3] += squarer21;
+  _, _, _, _, _, squarer41 = #SHLD(squarer41, r[4], 13);
+  r[4] &= squareredmask;
+  r[4] += squarer31;
+  squarer41 = squarer41 * 19;
+  r[0] += squarer41;
+  squaret = r[0];
+  squaret >>= 51;
+  squaret += r[1];
+  r[0] &= squareredmask;
+  r[1] = squaret;
+  squaret >>= 51;
+  squaret += r[2];
+  r[1] &= squareredmask;
+  r[2] = squaret;
+  squaret >>= 51;
+  squaret += r[3];
+  r[2] &= squareredmask;
+  r[3] = squaret;
+  squaret >>= 51;
+  squaret += r[4];
+  r[3] &= squareredmask;
+  r[4] = squaret;
+  squaret >>= 51;
+  squaret *= 19;
+  r[0] += squaret;
+  r[4] &= squareredmask;
+
+  for i=0 to 5
+  { xa[i] = r[i]; }
+
+	return xa;
+}
+
+inline fn _sqr5_ss_(stack u64[5] xa) -> stack u64[5]
+{
+  inline int j;
+  stack u64[5] ra;
+  reg ptr u64[5] rp;
+  reg u64 t;
+
+  for j=0 to 5
+  { t = xa[j]; ra[j] = t; }
+
+  rp = ra;
+  rp = _sqr5_p(rp);
+  ra = rp;
+
+  return ra;
+}
+
+inline fn _sqr5_s_(stack u64[5] x) -> stack u64[5]
+{
+  reg ptr u64[5] xp;
+
+  xp = x;
+  xp = _sqr5_p(xp);
+  x = xp;
+
+  return x;
+}
+
+// ////////////////////////////////////////////////////////////////////////////
+
+#[returnaddress="stack"]
+fn _it_sqr5_p(reg ptr u64[5] x, reg u32 i) -> reg ptr u64[5]
+{
+  reg bool zf;
+
+  while {
+    x = _sqr5_p(x);
+    _,_,_,zf,i = #DEC_32(i);
+  }(!zf)
+
+  return x;
+}
+
+inline fn _it_sqr5_s_(stack u64[5] x, reg u32 i) -> stack u64[5]
+{
+  reg ptr u64[5] xp;
+
+  xp = x;
+  xp = _it_sqr5_p(xp, i);
+  x = xp;
+
+  return x;
+}
+
+inline fn _it_sqr5_ss_(stack u64[5] r x, reg u32 i) -> stack u64[5]
+{
+  inline int j;
+  reg ptr u64[5] rp;
+  reg u64 t;
+
+  for j=0 to 5
+  { t = x[j]; r[j] = t; }
+
+  rp = r;
+  rp = _it_sqr5_p(rp, i);
+  r = rp;
+
+  return r;
+}
+
+//EOR#
+//BOR#require "invert5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/invert5.jinc
+//BOR#require "mul5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/mul5.jinc
+//EOR#
+//BOR#require "sqr5.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref5/sqr5.jinc
+//EOR#
+
+inline fn __invert5(stack u64[5] fs) -> stack u64[5]
+{
+  stack u64[5] t0s t1s t2s t3s;
+  reg u32 i;
+
+  // z2 = z1^2^1
+  t0s = _sqr5_ss_(fs);
+
+  // z8 = z2^2^2
+  t1s = _sqr5_ss_(t0s);
+  t1s = _sqr5_s_(t1s);
+
+  // z9 = z1*z8
+  t1s = _mul5_ss_(t1s, fs);
+
+  // z11 = z2*z9
+  t0s = _mul5_ss_(t0s,t1s);
+
+  // z22 = z11^2^1
+  t2s = _sqr5_ss_(t0s);
+
+  // z_5_0 = z9*z22
+  t1s = _mul5_ss_(t1s,t2s);
+
+  // z_10_5 = z_5_0^2^5
+  t2s = _sqr5_ss_(t1s);
+  i = 4;
+  t2s = _it_sqr5_s_(t2s, i);
+
+  // z_10_0 = z_10_5*z_5_0
+  t1s = _mul5_ss_(t1s,t2s);
+
+  // z_20_10 = z_10_0^2^10
+  i = 10;
+  t2s = _it_sqr5_ss_(t2s, t1s, i);
+
+  // z_20_0 = z_20_10*z_10_0
+  t2s = _mul5_ss_(t2s, t1s);
+
+  // z_40_20 = z_20_0^2^20
+  i = 20;
+  t3s = _it_sqr5_ss_(t3s, t2s, i);
+
+  // z_40_0 = z_40_20*z_20_0
+  t2s = _mul5_ss_(t2s,t3s);
+
+  // z_50_10 = z_40_0^2^10
+  i = 10;
+  t2s = _it_sqr5_s_(t2s, i);
+
+  // z_50_0 = z_50_10*z_10_0
+  t1s = _mul5_ss_(t1s,t2s);
+
+  // z_100_50 = z_50_0^2^50
+  i = 50;
+  t2s = _it_sqr5_ss_(t2s, t1s, i);
+
+  // z_100_0 = z_100_50*z_50_0
+  t2s = _mul5_ss_(t2s, t1s);
+
+  // z_200_100 = z_100_0^2^100
+  i = 100;
+  t3s = _it_sqr5_ss_(t3s, t2s, i);
+
+  // z_200_0 = z_200_100*z_100_0
+  t2s = _mul5_ss_(t2s,t3s);
+
+  // z_250_50 = z_200_0^2^50
+  i = 50;
+  t2s = _it_sqr5_s_(t2s, i);
+
+  // z_250_0 = z_250_50*z_50_0
+  t1s = _mul5_ss_(t1s,t2s);
+
+  // z_255_5 = z_250_0^2^5
+  i = 4;
+  t1s = _it_sqr5_s_(t1s, i);
+  t1s = _sqr5_s_(t1s);
+
+  // z_255_21 = z_255_5*z11
+  t1s = _mul5_ss_(t1s, t0s);
+
+  return t1s;
+}
+
+//EOR#
+
+inline fn __add_and_double5(
+  stack u64[5] init,
+  stack u64[5] x2,
+  reg   u64[5] z2r,
+  stack u64[5] x3,
+  stack u64[5] z3)
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5],
+  stack u64[5]
+{
+  stack u64[5] z2 t0 t1 t2;
+
+  t0  = __sub5_ssr(x2, z2r);
+  x2  = __add5_ssr(x2, z2r);
+
+  t1  = __sub5_sss(x3, z3);
+  z2  = __add5_sss(x3, z3);
+
+  z3  = __mul5_sss(x2, t1);
+  z2  = __mul5_sss(z2, t0);
+
+  t2  = __sqr5_ss(x2);
+  t1  = __sqr5_ss(t0);
+
+  x3  = __add5_sss(z3, z2);
+  z2  = __sub5_sss(z3, z2);
+
+  x2  = __mul5_sss(t2, t1);
+  t0  = __sub5_sss(t2, t1);
+
+  z2  = __sqr5_ss(z2);
+  t2  = __mul5_a24_add_sss(t0, t2, 996679680); // 121665 * 2^13
+  x3  = __sqr5_ss(x3);
+  z3  = __mul5_sss(init, z2);
+  z2r = __mul5_rss(t0, t2);
+
+  return x2, z2r, x3, z3;
+}
+
+inline fn __montgomery_ladder_step5(
+  stack u8[32] k,
+  stack u64[5] init,
+  stack u64[5] x2,
+  reg   u64[5] z2r,
+  stack u64[5] x3,
+  stack u64[5] z3,
+  stack u64    swapped,
+  reg   u64    ctr)
+  ->
+  stack u64[5],
+  reg   u64[5],
+  stack u64[5],
+  stack u64[5],
+  stack u64
+{
+  reg u64 toswap bit;
+
+  bit = __ith_bit(k, ctr);
+
+  toswap  = swapped;
+  toswap ^= bit;
+
+  x2, z2r, x3, z3 = __cswap5(x2, z2r, x3, z3, toswap);
+  swapped = bit;
+
+  x2, z2r, x3, z3 = __add_and_double5(init, x2, z2r, x3, z3);
+
+  return x2, z2r, x3, z3, swapped;
+}
+
+
+inline fn __montgomery_ladder5(
+  reg u64[5] u,
+  stack u8[32] k)
+  ->
+  stack u64[5],
+  reg u64[5]
+{
+  stack u64[5] us x2 x3 z3;
+  reg u64[5] z2r;
+  stack u64 swapped;
+  #spill_to_mmx reg u64 ctr;
+
+  (x2,z2r,x3,z3) = __init_points5(u); 
+  us = #copy(u);
+
+  ctr = 255;
+  swapped = 0;
+
+  while
+  {
+    ctr -= 1;
+    () = #spill(ctr);
+
+    (x2, z2r, x3, z3, swapped) = 
+      __montgomery_ladder_step5(k, us, x2, z2r, x3, z3, swapped, ctr);
+
+    () = #unspill(ctr);
+  } (ctr > 0)
+
+  return x2, z2r;
+}
+
+inline fn __encode_point5(stack u64[5] x2, reg u64[5] z2r) -> reg u64[4]
+{
+  stack u64[5] z2;
+  reg u64[5] r1;
+  reg u64[4] r2;
+
+  z2 = #copy(z2r);
+  z2 = __invert5(z2);
+  r1 = __mul5_rss(x2, z2);
+  r2 = __tobytes5(r1);
+
+  return r2;
+}
+
+inline fn __curve25519_internal_ref5(stack u8[32] k, reg u64[5] u) -> reg u64[4]
+{
+  stack u64[5] x2;
+  reg u64[5] z2r;
+  reg u64[4] r;
+
+  (x2,z2r) = __montgomery_ladder5(u, k);
+  r = __encode_point5(x2,z2r);
+
+  return r;
+}
+
+inline fn __curve25519_ref5(reg u64[4] _k _u) -> reg u64[4]
+{
+  stack u8[32] k;
+  reg u64[5] u;
+  reg u64[4] r;
+
+  k = __decode_scalar(_k);
+  u = __decode_u_coordinate5(_u);
+  r = __curve25519_internal_ref5(k, u);
+
+  return r;
+}
+
+inline fn __curve25519_ref5_base(reg u64[4] _k) -> reg u64[4]
+{
+  stack u8[32] k;
+  reg u64[5] u;
+  reg u64[4] r;
+
+  k = __decode_scalar(_k);
+  u = __decode_u_coordinate_base5();
+  r = __curve25519_internal_ref5(k, u);
+
+  return r;
+}
+
+//EOR#
 
 export fn jade_scalarmult_curve25519_amd64_ref5(#spill_to_mmx reg u64 qp np pp) -> reg u64
 {

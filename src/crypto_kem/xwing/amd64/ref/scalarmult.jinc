@@ -1,4 +1,4 @@
-from Jade require "crypto_scalarmult/curve25519/amd64/ref4/curve25519.jinc"
+from Jade require "crypto_scalarmult/curve25519/amd64/ref4/scalarmult.jazz"
 
 fn xwing_x25519_base_p_rp(#spill_to_mmx reg u64 qp, reg ptr u8[32] _n)
 {
