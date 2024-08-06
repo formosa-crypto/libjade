@@ -7,6 +7,10 @@ on:
       - main
   pull_request:
 
+defaults:
+  run:
+    shell: nix develop -c bash -e {0}
+
 jobs:
 
 
@@ -17,18 +21,15 @@ jobs:
       - name: checkout
         uses: actions/checkout@v4
 
-      - uses: DeterminateSystems/magic-nix-cache-action@v4
+      - name: Setup nix
+        uses: ./.github/actions/setup-nix
 
       - name: extract and check
-        uses: workflow/nix-shell-action@v3.3.0
-        with:
-          flakes: .
-          flakes-from-devshell: true
-          script: |
-            # extract and check
-            make -j$JOBS -C proof/ CI=1 default
-            # dist
-            ./scripts/ci/releaser/jdist-proof
+        run: |
+          # extract and check
+          make -j$JOBS -C proof/ CI=1 default
+          # dist
+          ./scripts/ci/releaser/jdist-proof
 
       - name: print logs
         run: make         -C proof/ CI=1 reporter
