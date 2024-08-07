@@ -1,24 +1,3 @@
-//BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/load_store4.jinc
-inline fn __load4(reg u64 p) -> reg u64[4]
-{
-  inline int i;
-  reg u64[4] a;
-
-  for i=0 to 4
-  { a[i] = [p + 8*i]; }
-
-  return a;
-}
-
-inline fn __store4(reg u64 p, reg u64[4] a)
-{
-  inline int i;
-
-  for i=0 to 4
-  { [p + 8*i] = a[i]; }
-}
-
-//EOR#
 //BOR#require "curve25519.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/ref4/curve25519.jinc
 //BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/bit.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/bit.jinc
 inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
@@ -81,6 +60,25 @@ inline fn __decode_scalar_shl1(reg u64[4] k) -> stack u64[4]
 
 //EOR#
 //BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/load_store4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/load_store4.jinc
+inline fn __load4(reg u64 p) -> reg u64[4]
+{
+  inline int i;
+  reg u64[4] a;
+
+  for i=0 to 4
+  { a[i] = [p + 8*i]; }
+
+  return a;
+}
+
+inline fn __store4(reg u64 p, reg u64[4] a)
+{
+  inline int i;
+
+  for i=0 to 4
+  { [p + 8*i] = a[i]; }
+}
+
 //EOR#
 
 //BOR#from formosa25519 require "crypto_scalarmult/curve25519/amd64/common/64/decode_u4.jinc"#formosa-25519/src/crypto_scalarmult/curve25519/amd64/common/64/decode_u4.jinc
@@ -1261,22 +1259,6 @@ fn _curve25519_ref4(reg u64[4] _k _u) -> reg u64[4]
   return r;
 }
 
-inline fn __curve25519_ref4_ptr(#spill_to_mmx reg u64 rp, reg u64 kp up)
-{
-  reg u64[4] r k u;
-
-  ()  = #spill(rp);
-
-  k = __load4(kp);
-  u = __load4(up);
-  r = _curve25519_ref4(k, u);
-
-  ()  = #unspill(rp);
-
-  __store4(rp, r);
-}
-
-
 fn _curve25519_ref4_base(reg u64[4] _k) -> reg u64[4]
 {
   stack u8[32] k;
@@ -1289,43 +1271,52 @@ fn _curve25519_ref4_base(reg u64[4] _k) -> reg u64[4]
   return r;
 }
 
-inline fn __curve25519_ref4_base_ptr(#spill_to_mmx reg u64 rp, reg u64 kp)
-{
-  reg u64[4] r k;
-
-  () = #spill(rp);
-
-  k = __load4(kp);
-  r = _curve25519_ref4_base(k);
-
-  ()  = #unspill(rp);
-
-  __store4(rp, r);
-}
-
 //EOR#
 
-export fn jade_scalarmult_curve25519_amd64_ref4(#spill_to_mmx reg u64 qp np pp) -> reg u64
+export fn jade_scalarmult_curve25519_amd64_ref4(
+  #spill_to_mmx reg ptr u64[4] qp,
+  reg ptr u64[4] np,
+  reg ptr u64[4] pp)
+  ->
+  reg ptr u64[4],
+  reg u64
 {
   reg u64 r;
+  reg u64[4] q n p;
 
   _ = #init_msf();
+  () = #spill(qp);
 
-  __curve25519_ref4_ptr(qp, np, pp);
+  n = #copy(np);
+  p = #copy(pp);
+  q = _curve25519_ref4(n, p);
+
+  () = #unspill(qp);
+  qp = #copy(q);
 
   ?{}, r = #set0();
-  return r;
+  return qp, r;
 }
 
-export fn jade_scalarmult_curve25519_amd64_ref4_base(#spill_to_mmx reg u64 qp np) -> reg u64
+export fn jade_scalarmult_curve25519_amd64_ref4_base(
+  #spill_to_mmx reg ptr u64[4] qp,
+  reg ptr u64[4] np)
+  ->
+  reg ptr u64[4],
+  reg u64
 {
   reg u64 r;
+  reg u64[4] q n;
 
   _ = #init_msf();
+  () = #spill(qp);
+  n = #copy(np);
 
-  __curve25519_ref4_base_ptr(qp, np);
+  q = _curve25519_ref4_base(n);
+
+  ()  = #unspill(qp);
+  qp = #copy(q);
 
   ?{}, r = #set0();
-  return r;
+  return qp, r;
 }
-
