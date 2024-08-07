@@ -69,7 +69,7 @@ RANDSRC  := $(COMMON)/notrandombytes.c
 FILTER   ?= $(SRC)/crypto_%
 export FILTER
 
-JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell find $(SRC) -name '*.jazz')))))
+JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell test -d $(SRC) && find $(SRC) -name '*.jazz')))))
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
 CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
@@ -113,14 +113,17 @@ COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 # --------------------------------------------------------------------
 .PHONY: __phony default compile-and-run reporter-and-err
 
-default: compile-and-run
+default: compile-and-run reporter-and-err
 
-compile-and-run:
+compile-and-run: $(SRC)
 	$(MAKE) CI=1 all
 
 reporter-and-err:
 	$(MAKE) CI=1 reporter
 	$(MAKE) CI=1 err
+
+$(SRC):
+	$(shell ../scripts/extract-all.sh > /dev/null)
 
 # --------------------------------------------------------------------
 $(TESTS):
@@ -256,5 +259,5 @@ clean:
 	rm -fr $(BIN) $(LOGS)
 
 distclean: clean clean-external
-	$(MAKE) -C $(SRC) distclean
+	rm -fr $(SRC)
 
