@@ -116,7 +116,6 @@ COMPILE_P   = $(CC) $(CFLAGS) -o $@ $(DEFINE) $(DNAMESPACES) $(INCLUDES) crypto_
 default: compile-and-run
 
 compile-and-run:
-	$(MAKE) CI=1 -C $(SRC) all
 	$(MAKE) CI=1 all
 
 reporter-and-err:
