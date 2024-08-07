@@ -1,0 +1,38 @@
+# Notes:
+# - this file defines fine-grained targets that allow checking the safety of individual exported
+#   functions
+# - it is meant to be included by Makefile.common, right before the 'generic' safety targets
+
+ifneq ($(OP),)
+
+SAFETY_FLAGS   ?=
+SAFETY_TIMEOUT ?= 4320m
+SAFETY_DIR     := .safety
+CHECK_SAFETY_S  = (time timeout -v $(SAFETY_TIMEOUT) $(JASMINC) -slice $* -checksafety $(SAFETY_FLAGS) $(shell cat $(SAFETY_DIR)/$*.safetyparam)  $< 2> $@) $(CIT)
+CHECK_SAFETY    = (time timeout -v $(SAFETY_TIMEOUT) $(JASMINC)           -checksafety $(SAFETY_FLAGS) $(shell cat $(SAFETY_DIR)/$(OP).safetyparam)  $< 2> $@) $(CIT)
+
+SAFETY_TARGETS  = $(addsuffix .safety, $(FUNCTIONS))
+
+checksafety-all: $(SAFETY_TARGETS)
+
+$(OP).safety : $(OP).jazz $(SAFETY_DIR)/$(OP).safetyparam $(DEPS_DIR)/$(OP).safety.d | $(SAFETY_DIR) $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(CHECK_SAFETY)
+
+$(SAFETY_TARGETS):
+%.safety : $(OP).jazz $(SAFETY_DIR)/$(OP).safetyparam $(DEPS_DIR)/%.safety.d | $(SAFETY_DIR) $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(CHECK_SAFETY_S)
+
+DEPFILES := \
+ $(DEPFILES) \
+ $(addprefix $(DEPS_DIR)/, $(addsuffix .safety.d, $(FUNCTIONS) $(OP)))
+
+$(SAFETY_DIR)/$(OP).safetyparam: $(SAFETY_DIR)
+	$(MAKE) -C $(TEST) bin/$(RDIR)/safetyparams
+	(cd $(SAFETY_DIR) && $(TDIR)/safetyparams)
+
+$(SAFETY_DIR): ; @mkdir -p $@
+
+endif
+
