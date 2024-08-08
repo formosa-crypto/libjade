@@ -1,0 +1,81 @@
+name: amd64-linux
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+
+  # src
+  check-safety:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: extract src from submodules
+        run: ./scripts/extract-all.sh
+
+      - name: check safety
+        run: make -j$JOBS -C src/ CI=1 check-safety
+      - name: print report
+        run: make -C src/ CI=1 reporter
+      - name: return error
+        run: make -C src/ CI=1 err
+
+  check-sct:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: extract src from submodules
+        run: ./scripts/extract-all.sh
+
+      - name: check speculative constant-time (v1)
+        run: make -j$JOBS -C src/ CI=1 check-sct
+      - name: print report
+        run: make -C src/ CI=1 reporter
+      - name: return error
+        run: make -C src/ CI=1 err
+
+  extract-to-easycrypt:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: extract src from submodules
+        run: ./scripts/extract-all.sh
+
+      - name: check extraction from Jasmin to EasyCrypt
+        run: make -j$JOBS -C src/ CI=1 extract-to-easycrypt
+      - name: print report
+        run: make -C src/ CI=1 reporter
+      - name: return error
+        run: make -C src/ CI=1 err
+
+  compile-src:
+    runs-on: [self-hosted, linux, X64, amd64-main]
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+      - name: extract src from submodules
+        run: ./scripts/extract-all.sh
+
+      - name: check compilation of libjade.a
+        run: make -j$JOBS -C src/ CI=1 libjade.a
+      - name: print report
+        run: make -C src/ CI=1 reporter
+      - name: return error
+        run: make -C src/ CI=1 err
+
+

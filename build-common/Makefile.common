@@ -1,107 +1,183 @@
+# -----------------------------------------------------------------------------
+# paths vars
 
-# --------------------------------------------------------------------
-TOP   = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
-SRC   = $(TOP)/src/
-BC    = $(TOP)/build-common/
-TEST  = $(TOP)/test/
-PROOF = $(TOP)/proof/
+PROJECT_DIR = $(abspath $(dir $(filter %Makefile.common,$(MAKEFILE_LIST)))../)
+PROJECT_PARENT_DIR = $(abspath $(PROJECT_DIR)/../)
 
-CDIR  = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
-RDIR  = $(subst $(SRC),,$(CDIR))
-TDIR  = $(TEST)bin/$(RDIR)
-PDIR  = $(PROOF)$(RDIR)
+BUILD_COMMON = $(PROJECT_DIR)/build-common
+SRC          = $(PROJECT_DIR)/src
+TEST         = $(PROJECT_DIR)/test
+PROOF        = $(PROJECT_DIR)/proof
 
-# OPERATION: crypto_kem, crypto_hash, ..., common; OP is a shorthand for OPERATION
-OPERATION = $(word 1, $(subst /, ,$(RDIR)))
-OP        = $(word 2, $(subst _, , $(OPERATION)_))
-NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(RDIR))))
+ABS_IMPLEMENTATION_DIR = $(abspath $(dir $(abspath $(firstword $(MAKEFILE_LIST)))))
+REL_IMPLEMENTATION_DIR = $(subst $(SRC)/,,$(ABS_IMPLEMENTATION_DIR))
 
-# --------------------------------------------------------------------
 
-include $(BC)/Makefile.functions
+# -----------------------------------------------------------------------------
+# implementation vars
 
-# --------------------------------------------------------------------
-CI_DIR =
-CIT =
-ifeq ($(CI),1)
-CI_DIR := .ci
-CIT = 2> $(CI_DIR)/$(@F).log && rm -f $(CI_DIR)/$(@F).error || \
-     (echo $$? > $(CI_DIR)/$(@F).error && \
-      cat $(CI_DIR)/$(@F).log >> $(CI_DIR)/$(@F).error && \
-      rm $(CI_DIR)/$(@F).log && \
-      exit 127)
+OP        = $(word 2, $(subst _, , $(word 1, $(subst /, ,$(REL_IMPLEMENTATION_DIR)))))
+NAMESPACE = $(subst crypto_,jade_, $(subst -,_,$(subst /,_,$(REL_IMPLEMENTATION_DIR))))
+
+ifeq ($(OP),kem)
+ifeq ($(SRCS),kem.jazz)
+FUNCTIONS = $(addprefix $(NAMESPACE)_, keypair_derand keypair enc_derand enc dec)
+endif
 endif
 
-# --------------------------------------------------------------------
-JEXT    ?= jazz
-override JFLAGS += -noinsertarraycopy $(addprefix -slice ,$(FUNCTIONS))
-JINCLUDE = -I Jade:$(SRC)
+ifeq ($(OP),hash)
+ifeq ($(SRCS),hash.jazz)
+FUNCTIONS = $(NAMESPACE)
+endif
+endif
 
-JASMIN  ?= jasminc
-JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
-COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
+ifeq ($(OP),onetimeauth)
+ifeq ($(SRCS),onetimeauth.jazz)
+FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_verify
+endif
+endif
 
-# --------------------------------------------------------------------
-CHECKS_DIR := checks
+ifeq ($(OP),scalarmult)
+ifeq ($(SRCS),scalarmult.jazz)
+FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_base
+endif
+endif
 
-# --------------------------------------------------------------------
-DEPS_DIR := .deps
-DEPS = ((printf "$@: "; printf "$< "; $(JASMINC) -print-dependencies $<) > $(DEPS_DIR)/$(@F).d) $(CIT)
-DEPFILES :=
+ifeq ($(OP),secretbox)
+ifeq ($(SRCS),secretbox.jazz)
+FUNCTIONS = $(NAMESPACE) $(NAMESPACE)_open
+endif
+endif
 
-# --------------------------------------------------------------------
-compile: $(SRCS:%.$(JEXT)=%.s)
+ifeq ($(OP),sign)
+ifeq ($(SRCS),sign.jazz)
+FUNCTIONS = $(NAMESPACE)_keypair $(NAMESPACE) $(NAMESPACE)_open
+endif
+endif
+
+ifeq ($(OP),xof)
+ifeq ($(SRCS),xof.jazz)
+FUNCTIONS = $(NAMESPACE)
+endif
+endif
+
+
+# -----------------------------------------------------------------------------
+# ci vars
+
+CI_DIR =
+CI_CMD =
+ifeq ($(CI),1)
+CI_DIR := .ci
+CI_CMD = 2> $(CI_DIR)/$(@F).log && rm -f $(CI_DIR)/$(@F).error || \
+             (echo $$? | cat - $(CI_DIR)/$(@F).log > $(CI_DIR)/$(@F).error && \
+              rm $(CI_DIR)/$(@F).log && \
+              exit 127 \
+             )
+endif
+
+
+# -----------------------------------------------------------------------------
+# compile vars
+
+JASMIN ?= jasminc
+
+JEXT ?= jazz
+override JFLAGS += -stack-zero loopSCT -noinsertarraycopy
+JINCLUDE ?= -I formosa25519:$(SRC)
+
+JASMIN_COMPILE = ($(JASMIN) $(JFLAGS) $(JINCLUDE) -o $@ $<) $(CI_CMD)
+
+ASSEMBLY_FILES = $(SRCS:%.$(JEXT)=%.s)
+
+
+# preprocessing vars
+
+JPP ?= $(PROJECT_DIR)/scripts/releaser/jpp
+PREPROCESSED_FILES := $(SRCS:%.$(JEXT)=%.jpp)
+JASMIN_PREPROCESS = ($(JPP) $(JINCLUDE) -b $(PROJECT_PARENT_DIR)/ -out $@ -in $<) $(CI_CMD)
+
+
+# -----------------------------------------------------------------------------
+# extraction vars
+
+EXTRACT_DIR = $(PROOF)/$(REL_IMPLEMENTATION_DIR)
+EXTRACT_ARRAY_DIR = $(PROOF)/arrays
+EFLAGS ?= $(addprefix -ec , $(FUNCTIONS)) 
+
+JASMIN_EXTRACT = (cd $(EXTRACT_DIR) && $(JASMIN) $(JINCLUDE) $(EFLAGS) -oecarray $(EXTRACT_ARRAY_DIR) -oec $(notdir $@) $(ABS_IMPLEMENTATION_DIR)/$<) $(CI_CMD)
+
+EASYCRYPT_FILES = $(SRCS:%.$(JEXT)=$(EXTRACT_DIR)/%_s.ec)
+
+
+# -----------------------------------------------------------------------------
+# dependencies vars
+
+DEPS_DIR ?= .deps
+DEPS = ((printf "$@: "; printf "$< "; $(JASMIN) $(JINCLUDE) -print-dependencies $<) > $(DEPS_DIR)/$(@F).d) $(CI_CMD)
+DEPFILES ?=
+
+
+# -----------------------------------------------------------------------------
+# default rule
+
+default: compile
+
+
+# -----------------------------------------------------------------------------
+# preprocess rules
+
+preprocess: $(PREPROCESSED_FILES)
 	@true
 
-# --------------------------------------------------------------------
-# Note: by using a single-file extraction, only one Jasmin file can be processed (the first from SRCS)
+$(PREPROCESSED_FILES):
+%.jpp: %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
+	$(DEPS)
+	$(JASMIN_PREPROCESS)
 
-extract: $(EC_DIR)/extracted_s.ec $(EC_DIR)/extracted_ct.ec
+preprocess-inplace: preprocess
+	for file in $(SRCS); do mv $${file%.$(JEXT)}.jpp $$file; done
+
+revert-preprocess-inplace:
+	for file in $(SRCS); do git checkout $$file; done
+
+# -----------------------------------------------------------------------------
+# compilation rules
+
+compile: $(ASSEMBLY_FILES)
 	@true
 
-$(EC_DIR)/extracted_s.ec : $(SRCS) $(DEPS_DIR)/extracted_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
+$(ASSEMBLY_FILES):
+%.s: %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
 	$(DEPS)
-	$(EXTRACT_S)
+	$(JASMIN_COMPILE)
 
-$(EC_DIR)/extracted_ct.ec : $(SRCS) $(DEPS_DIR)/extracted_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
-	$(DEPS)
-	$(EXTRACT_CT)
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# extraction rules
 
-extract0: extract_s extract_ct
+extract-to-easycrypt: $(EASYCRYPT_FILES)
 	@true
 
-extract_s: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_s.ec)
-	@true
-
-extract_ct: $(SRCS:%.$(JEXT)=$(EC_DIR)/%_ct.ec)
-	@true
-
-%.s : %.$(JEXT) $(DEPS_DIR)/%.s.d | $(DEPS_DIR) $(CI_DIR)
+$(EASYCRYPT_FILES):
+$(EXTRACT_DIR)/%_s.ec : %.$(JEXT) $(DEPS_DIR)/%_s.ec.d | $(DEPS_DIR) $(EXTRACT_DIR) $(EXTRACT_ARRAY_DIR) $(CI_DIR)
 	$(DEPS)
-	$(COMPILE)
+	$(JASMIN_EXTRACT)
 
-$(EC_DIR)/%_s.ec : %.$(JEXT) $(DEPS_DIR)/%_s.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
-	$(DEPS)
-	$(EXTRACT_S)
 
-$(EC_DIR)/%_ct.ec : %.$(JEXT) $(DEPS_DIR)/%_ct.ec.d | $(DEPS_DIR) $(EC_DIR) $(CI_DIR)
-	$(DEPS)
-	$(EXTRACT_CT)
+# -----------------------------------------------------------------------------
+# include Makefiles for checking implementations' properties
 
-# --------------------------------------------------------------------
+include $(BUILD_COMMON)/Makefile.checksafety
+include $(BUILD_COMMON)/Makefile.checksct
 
-include $(BC)/Makefile.checksafety
 
-# --------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+# directories
 
-include $(BC)/Makefile.checksct
-
-# --------------------------------------------------------------------
-$(CHECKSDIR): ; @mkdir -p $@
 $(DEPS_DIR): ; @mkdir -p $@
-$(EC_DIR): ; @mkdir -p $@; touch $@/.gitkeep
+$(EXTRACT_DIR): ; @mkdir -p $@; touch $@/.gitkeep
+$(EXTRACT_ARRAY_DIR): ; @mkdir -p $@; touch $@/.gitkeep
 ifeq ($(CI),1)
 $(CI_DIR): ; @mkdir -p $@
 endif
@@ -109,26 +185,70 @@ endif
 DEPFILES := \
  $(DEPFILES) \
  $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%.s.d) \
- $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_s.ec.d) \
- $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_ct.ec.d) \
- $(DEPS_DIR)/extracted_s.ec.d \
- $(DEPS_DIR)/extracted_ct.ec.d
+ $(SRCS:%.$(JEXT)=$(DEPS_DIR)/%_s.ec.d)
 
 $(DEPFILES):
 
 include $(wildcard $(DEPFILES))
 
-# --------------------------------------------------------------------
-.PHONY: .jflags
-.jflags:
-	@echo -n "$(JFLAGS)" > .jflags
+
+# -----------------------------------------------------------------------------
+# the following rule records the flags used to compile the implementation
+# these are used by the release script
+
+.PHONY: .JFLAGS
+.JFLAGS:
+	@echo -n "$(JFLAGS)" > .JFLAGS
+
 
 # --------------------------------------------------------------------
-.PHONY: clean
+.PHONY: clean distclean
 
 clean:
-	@rm -fr $(DEPS_DIR) $(CHECKS_DIR) $(SAFETY_DIR) *.s *.safety* *.sct* *.o *.a .jflags *.out
-ifeq ($(CI),1)
-	@rm -fr $(CI_DIR)
-endif
+	rm -fr $(CI_DIR) $(DEPS_DIR) *.jpp *.s *.safety* *.sct* *.o .JFLAGS
+
+distclean: clean
+	rm -fr $(EASYCRYPT_FILES)
+
+# --------------------------------------------------------------------
+debug-print-variables:
+	@echo ""
+	@echo "Path variables:"
+	@echo "  PROJECT_DIR: $(PROJECT_DIR)"
+	@echo "  SRC: $(SRC)"
+	@echo "  TEST: $(TEST)"
+	@echo "  PROOF: $(PROOF)"
+	@echo "  ABS_IMPLEMENTATION_DIR: $(ABS_IMPLEMENTATION_DIR)"
+	@echo "  REL_IMPLEMENTATION_DIR: $(REL_IMPLEMENTATION_DIR)"
+	@echo ""
+	@echo "Implementation variables:"
+	@echo "  OP: $(OP)"
+	@echo "  NAMESPACE: $(NAMESPACE)"
+	@echo "  FUNCTIONS: $(FUNCTIONS)"
+	@echo ""
+	@echo "CI variables:"
+	@echo "  CI_DIR: $(CI_DIR)"
+	@echo "  CI_CMD: not printed, it is rule dependent."
+	@echo ""
+	@echo "Compilation variables:"
+	@echo "  JASMIN: $(JASMIN)"
+	@echo "  JEXT: $(JEXT)"
+	@echo "  JFLAGS: $(JFLAGS)"
+	@echo "  JINCLUDE: $(JINCLUDE)"
+	@echo "  SRCS: $(SRCS)"
+	@echo "  ASSEMBLY_FILES: $(ASSEMBLY_FILES)"
+	@echo "  JASMIN_COMPILE: not printed, it is rule dependent."
+	@echo ""
+	@echo "Preprocess variables:"
+	@echo "  JPP: $(JPP)"
+	@echo "  PREPROCESSED_FILES: $(PREPROCESSED_FILES)"
+	@echo "  JASMIN_PREPROCESS: not printed, it is rule dependent."
+	@echo ""
+	@echo "Extraction variables:"
+	@echo "  EXTRACT_DIR: $(EXTRACT_DIR)"
+	@echo "  EXTRACT_ARRAY_DIR: $(EXTRACT_ARRAY_DIR)"
+	@echo "  EFLAGS: $(EFLAGS)"
+	@echo "  EASYCRYPT_FILES: $(EASYCRYPT_FILES)"
+	@echo "  JASMIN_EXTRACT: not printed, it is rule dependent."
+	@echo ""
 

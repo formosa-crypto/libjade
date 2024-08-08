@@ -30,3 +30,5 @@ for SUBMODULE in "$LIBJADE_ROOT"/submodules/formosa-*;do
     fi
   done
 done
+
+echo "include ../build-common/Makefile" > "$LIBJADE_SRC/Makefile"
