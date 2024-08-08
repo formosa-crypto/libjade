@@ -67,9 +67,8 @@ EXT      := ../ext
 RANDSRC  := $(COMMON)/notrandombytes.c
 
 FILTER   ?= $(SRC)/crypto_%
-export FILTER
-
 JAZZ     ?= $(filter $(FILTER), $(filter-out $(addprefix $(SRC)/,$(EXCLUDE)), $(sort $(dir $(shell test -d $(SRC) && find $(SRC) -name '*.jazz')))))
+
 TESTDIR  := $(subst $(SRC),$(BIN), $(JAZZ))
 
 CHECKSUMSMALL     := $(addsuffix checksumsmall, $(TESTDIR))
@@ -123,7 +122,7 @@ reporter-and-err:
 	$(MAKE) CI=1 err
 
 $(SRC):
-	$(shell ../scripts/extract-all.sh > /dev/null)
+	../scripts/extract-all.sh
 
 # --------------------------------------------------------------------
 $(TESTS):
