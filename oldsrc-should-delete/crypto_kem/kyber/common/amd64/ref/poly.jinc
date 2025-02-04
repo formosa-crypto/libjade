@@ -3,7 +3,7 @@ require "zetas.jinc"
 require "reduce.jinc"
 
 
-fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> stack u16[KYBER_N]
+fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> reg ptr u16[KYBER_N]
 {
   reg u16 a;
   reg u16 b;
@@ -212,7 +212,7 @@ fn _i_poly_compress(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_
 }
 
 
-fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
+fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
 {
   reg u8 t;
   reg u16 d0, d1;
@@ -290,7 +290,7 @@ fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   return rp; 
 }
 
-fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
+fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
 {
   reg u8 c;
   reg u16 t;
@@ -352,7 +352,7 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> stack u16[KYBER_N]
 }
 
 
-fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_INDCPA_MSGBYTES] ap) -> stack u16[KYBER_N]
+fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_INDCPA_MSGBYTES] ap) -> reg ptr u16[KYBER_N]
 {
   reg u8 c;
   reg u16 t;
