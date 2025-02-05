@@ -29,7 +29,7 @@ fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
 	-> reg ptr u32[Li2_polydeg],
 	   stack u64,
 	   stack u256[25],
-	   stack u64
+	   reg u64
 {
 	// Assume the XOF buffer is full.
 	//

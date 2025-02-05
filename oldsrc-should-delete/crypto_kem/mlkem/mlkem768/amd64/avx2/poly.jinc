@@ -5,7 +5,7 @@ require "reduce.jinc"
 require "fips202.jinc"
 require "fips202_4x.jinc"
 
-fn _poly_add2(reg ptr u16[MLKEM_N] rp bp) -> stack u16[MLKEM_N]
+fn _poly_add2(reg ptr u16[MLKEM_N] rp bp) -> reg ptr u16[MLKEM_N]
 {
   inline int i;
   reg u256 a;
@@ -298,7 +298,7 @@ u8[32] pd_jshufbidx = {0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,
 u32 pd_mask_s = 0x00F0000F;
 u32 pd_shift_s = 0x800800;
 
-fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
+fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
 {
   inline int i;
   reg u256 f q shufbidx mask shift;
@@ -437,7 +437,7 @@ u32[4] pfm_shift_s = {3, 2, 1, 0};
 u8[16] pfm_idx_s = {0, 1, 4, 5, 8, 9, 12, 13,
                 2, 3, 6, 7, 10, 11, 14, 15};
 
-fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
+fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
 {
   inline int i;
   reg u256 f g0 g1 g2 g3 h0 h1 h2 h3;
@@ -485,7 +485,7 @@ fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> stack u16[MLKEM_N]
 }
 
 
-fn _poly_frommsg_1(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> stack u16[MLKEM_N]
+fn _poly_frommsg_1(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> reg ptr u16[MLKEM_N]
 {
   inline int i;
   reg u256 f g0 g1 g2 g3 h0 h1 h2 h3;

@@ -467,7 +467,7 @@ fn __shake256(reg u64 out outlen in inlen)
 */
 
 
-fn _shake256_128_33(#spill_to_mmx reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
+fn _shake256_128_33(#spill_to_mmx reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[128]
 {
   stack u64[25] state;
   reg u8 c;
@@ -553,7 +553,7 @@ fn _shake256_1120_32(#spill_to_mmx reg u64 out in0 in1) {
 }
 
 
-fn _sha3512_32(#spill_to_mmx reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _sha3512_32(#spill_to_mmx reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
 {
   stack u64[25] state;
   reg u8 c;
@@ -697,7 +697,7 @@ fn _isha3_256_32(#spill_to_mmx reg ptr u8[32] out, reg ptr u8[MLKEM_SYMBYTES] in
 }
 
 #[returnaddress="stack"]
-fn _sha3_512_64(#spill_to_mmx reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
+fn _sha3_512_64(#spill_to_mmx reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
 {
   stack u64[25] state;
   reg u64 t64;

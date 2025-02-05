@@ -187,7 +187,7 @@ fn _shake256_128_33(
   #spill_to_mmx reg ptr u8[128] out,
                 reg const ptr u8[33] in)
   ->
-  stack u8[128]
+  reg ptr u8[128]
 {
   stack u64[25] state;
   reg u64 t64;

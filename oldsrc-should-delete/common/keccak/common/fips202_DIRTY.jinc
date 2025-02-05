@@ -181,7 +181,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 
 
 #[returnaddress="stack"]
-fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[128]
+fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[128]
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -235,7 +235,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> stack u8[12
 }
 
 #[returnaddress="stack"]
-fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
+fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
 {
   reg u256[7] state;
   stack u64[28] s_state;
@@ -284,7 +284,7 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> stack u8[64]
 }
 
 #[returnaddress="stack"]
-fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> stack u8[64]
+fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
 {
   reg u256[7] state;
   stack u64[28] s_state;
