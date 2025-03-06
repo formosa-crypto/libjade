@@ -34,7 +34,7 @@ endif
 # --------------------------------------------------------------------
 JEXT    ?= jazz
 override JFLAGS += -noinsertarraycopy $(addprefix -slice ,$(FUNCTIONS))
-JINCLUDE = -I Jade:$(SRC)
+JINCLUDE = -I Jade=$(SRC)
 
 JASMIN  ?= jasminc
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
