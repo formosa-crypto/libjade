@@ -1,1 +1,1 @@
-ECFN ?= -ec namespace_keypair -ec namespace_enc -ec namespace_dec
+ECFN ?= -f namespace_keypair -f namespace_enc -f namespace_dec

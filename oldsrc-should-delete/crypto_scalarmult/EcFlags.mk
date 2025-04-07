@@ -1,1 +1,1 @@
-ECFN ?= -ec namespace -ec namespace_base
+ECFN ?= -f namespace -f namespace_base

@@ -1,1 +1,1 @@
-ECFN ?= -ec namespace -ec namespace_xor
+ECFN ?= -f namespace -f namespace_xor

@@ -37,6 +37,7 @@ override JFLAGS += -noinsertarraycopy $(addprefix -slice ,$(FUNCTIONS))
 JINCLUDE = -I Jade:$(SRC)
 
 JASMIN  ?= jasminc
+JASMIN2EC?= jasmin2ec
 JASMINC := $(JASMIN) $(JFLAGS) $(JINCLUDE)
 COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 
@@ -44,9 +45,9 @@ COMPILE  = ($(JASMINC) -o $@ $<) $(CIT)
 include $(SRC)/$(OPERATION)/EcFlags.mk
 
 EC_DIR     := $(PDIR)
-ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -oec $(notdir $@)
-EXTRACT_S  = (cd $(EC_DIR) && $(JASMINC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
-EXTRACT_CT = (cd $(EC_DIR) && $(JASMINC) -CT $(ECFLAGS) $(CDIR)/$<) $(CIT)
+ECFLAGS    = $(subst namespace,$(NAMESPACE),$(ECFN)) -o $(notdir $@)
+EXTRACT_S  = (cd $(EC_DIR) && env JASMINPATH=Jade=$(SRC) $(JASMIN2EC) $(ECFLAGS) $(CDIR)/$<) $(CIT)
+EXTRACT_CT = (cd $(EC_DIR) && env JASMINPATH=Jade=$(SRC) $(JASMIN2EC) --model=CTG $(ECFLAGS) $(CDIR)/$<) $(CIT)
 
 # --------------------------------------------------------------------
 CHECKS_DIR := checks
