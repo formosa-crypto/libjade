@@ -26,7 +26,7 @@ for SUBMODULE in "$LIBJADE_ROOT"/submodules/formosa-*;do
       $EXTRACT --gen-implementation "$IMPLEMENTATION" "$IMPLPATH"
 
       echo "SRCS := $JAZZFILE" > "$IMPLPATH/Makefile"
-      echo "include $RELSTRING/build-common/Makefile.common" >> "$IMPLPATH/Makefile"
+      echo "include $RELSTRING/../build-common/Makefile.common" >> "$IMPLPATH/Makefile"
     fi
   done
 done
