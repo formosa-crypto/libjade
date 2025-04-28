@@ -10,3 +10,5 @@
 [submodule "submodules/formosa-mlkem"]
 	path = submodules/formosa-mlkem
 	url = git@github.com:formosa-crypto/formosa-mlkem.git
+[submodule "submodules/formosa-mlkem/"]
+	branch = bdep-comments
