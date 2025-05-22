@@ -27,7 +27,7 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   for i=0 to 4
   {
     l = a_jagged_p[i];
-    t = s_state[(int) l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -53,18 +53,18 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int) l] = t;
+    s_state[l] = t;
   }
 
   l = a_jagged_p[KYBER_SYMBYTES/8];
   l <<= 3;
-  s_state[u8 (int)l] = 0x06;
+  s_state[u8 l] = 0x06;
 
   l = a_jagged_p[(SHA3_256_RATE-1)/8];
   l <<= 3;
   t = SHA3_256_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
   
@@ -75,7 +75,7 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   for i=0 to 4
   {
     l = a_jagged_p[i];
-    t = s_state[(int)l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -101,28 +101,28 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int) l] = t;
+    s_state[l] = t;
   }
 
   c = in[u8 128];
-  l = a_jagged_p[(int) 16];
+  l = a_jagged_p[16];
   l <<= 3;
-  s_state[u8 (int)l] = c;
+  s_state[u8 l] = c;
 
   for i = 129 to 134{
     c = in[i];
     l += 1;
-    s_state[u8 (int)l] = c;
+    s_state[u8 l] = c;
   }
 
   l += 1;
-  s_state[u8 (int)l] = 0x06;
+  s_state[u8 l] = 0x06;
 
   l = a_jagged_p[(SHA3_256_RATE-1)/8];
   l <<= 3;
   t = SHA3_256_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
   
@@ -133,7 +133,7 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
   for i=0 to 4
   {
     l = a_jagged_p[i];
-    t = s_state[(int)l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -158,19 +158,19 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   {
     l = a_jagged_p[i];
     t = in[u64 i];
-    s_state[(int)l] = t;
+    s_state[l] = t;
   }
 
   l = a_jagged_p[8];
   l <<= 3;
 
-  s_state[u8 (int)l] = 0x1f;
+  s_state[u8 l] = 0x1f;
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
   l <<= 3;
   t = SHAKE256_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
@@ -199,22 +199,22 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int)l] = t;
+    s_state[l] = t;
   }
 
   c = in[u8 32];
   l = a_jagged_p[4];
   l <<= 3;
-  s_state[u8 (int)l] = c;
+  s_state[u8 l] = c;
   
   l += 1;
-  s_state[u8 (int)l] = 0x1f;
+  s_state[u8 l] = 0x1f;
 
   l = a_jagged_p[(SHAKE256_RATE-1)/8];
   l <<= 3;
   t = SHAKE256_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
@@ -227,7 +227,7 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[
   for i = 0 to 16
   {
     l = a_jagged_p[i];
-    t = s_state[(int)l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -252,18 +252,18 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int)l] = t;
+    s_state[l] = t;
   }
 
   l = a_jagged_p[8];
   l <<= 3;
-  s_state[u8 (int)l] = 0x06;
+  s_state[u8 l] = 0x06;
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
   l <<= 3;
   t = SHA3_512_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
@@ -276,7 +276,7 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
   for i = 0 to 8
   {
     l = a_jagged_p[i];
-    t = s_state[(int) l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -301,18 +301,18 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int)l] = t;
+    s_state[l] = t;
   }
 
   l = a_jagged_p[4];
   l <<= 3;
-  s_state[u8 (int)l] = 0x06;
+  s_state[u8 l] = 0x06;
 
   l = a_jagged_p[(SHA3_512_RATE-1)/8];
   l <<= 3;
   t = SHA3_512_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] ^= 0x80;
+  s_state[u8 l] ^= 0x80;
 
   for i=1 to 7
   { state[i] = s_state[u256 i]; }
@@ -325,7 +325,7 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
   for i = 0 to 8
   {
     l = a_jagged_p[i];
-    t = s_state[(int) l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 
@@ -351,26 +351,26 @@ fn __shake128_absorb34(reg u256[7] state, reg const ptr u8[34] in) -> reg u256[7
   {
     t = in[u64 i];
     l = a_jagged_p[i];
-    s_state[(int)l] = t;
+    s_state[l] = t;
   }
 
   t8 = in[32];
-  l = a_jagged_p[(int) 4];
+  l = a_jagged_p[4];
   l <<= 3;
-  s_state[u8 (int)l] = t8;
+  s_state[u8 l] = t8;
 
   t8 = in[33];
   l += 1;
-  s_state[u8 (int)l] = t8;
+  s_state[u8 l] = t8;
 
   l += 1;
-  s_state[u8 (int)l] = 0x1f;
+  s_state[u8 l] = 0x1f;
 
   l = a_jagged_p[(SHAKE128_RATE-1)/8];
   l <<= 3;
   t = SHAKE128_RATE - 1; t &= 0x7;
   l += t;
-  s_state[u8 (int)l] = 0x80;
+  s_state[u8 l] = 0x80;
 
   for i=1 to 7 { state[i] = s_state[u256 i]; }
   
@@ -395,7 +395,7 @@ fn __shake128_squeezeblock(reg u256[7] state, reg ptr u8[SHAKE128_RATE] out) -> 
   for i = 0 to SHAKE128_RATE/8
   {
     l = a_jagged_p[i];
-    t = s_state[(int) l];
+    t = s_state[l];
     out[u64 i] = t;
   }
 

@@ -103,7 +103,7 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
   out = s_out;
 
   for i = 0 to 64 {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
   return out;
@@ -141,7 +141,7 @@ fn _shake128_squeezeblock(reg ptr u64[25] state, reg ptr u8[SHAKE128_RATE] out) 
   out = s_out;
 
   for i = 0 to SHAKE128_RATE {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
 
@@ -359,7 +359,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   j = 0;
   while(j < outlen)
   {
-    t64 = state[(int) j];
+    t64 = state[j];
     (u64)[out + 8 * j] = t64;
     j = j + 1;
   }
@@ -369,7 +369,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 
   while (j < outlen)
   {
-    c = state[u8 (int) j];
+    c = state[u8 j];
     (u8)[out + j] = c;
     j = j + 1;
   }

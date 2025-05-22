@@ -36,7 +36,7 @@ fn expandA_poly(reg ptr u8[32] rho, inline int i, inline int j,
 				state_rsp = __keccakf1600_ref(state_rsp);
 				offset = 0;
 			}
-			c = state_rsp[u8 (int) offset];
+			c = state_rsp[u8 offset];
 			vs[k] = c;
 			offset += 1;
 		}
@@ -56,7 +56,7 @@ fn expandA_poly(reg ptr u8[32] rho, inline int i, inline int j,
 
 		if(value < Li2_q) {
 			addr = (64u) term;
-			result[(int) addr] = value;
+			result[addr] = value;
 			term += 1;
 		}
 	}

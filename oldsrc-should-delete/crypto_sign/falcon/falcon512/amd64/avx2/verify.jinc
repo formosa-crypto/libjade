@@ -15,7 +15,7 @@ fn __verify_raw(stack u16[ARRAY_N] c0 s2 h) -> reg u32 {
 
     i = 0;
     while(i < ARRAY_N){
-        buff2[(int) i] = s2[(int) i];
+        buff2[i] = s2[i];
         i += 1;
     }
 

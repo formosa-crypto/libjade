@@ -208,7 +208,7 @@ inline fn __keccakf1600(reg ptr u64[25] a) -> reg ptr u64[25]
   c = 0;
   while (c < KECCAK_ROUNDS - 1)
   {
-    rc = RC[(int) c];
+    rc = RC[c];
     e = keccakf1600_round(e, a, rc);
 
     rc = RC[(int) c + 1];
@@ -263,7 +263,7 @@ fn __add_full_block(
   while (i < r64)
   {
     t = [in + 8 * i];
-    state[(int) i] ^= t;
+    state[i] ^= t;
     i = i + 1;
   }
 
@@ -292,7 +292,7 @@ fn __add_final_block(
   while ( i < inlen8)
   {
     t = [in + 8*i];
-    state[(int) i] ^= t;
+    state[i] ^= t;
     i = i + 1;
   }
 
@@ -300,15 +300,15 @@ fn __add_final_block(
   while (i < inlen)
   {
     c = (u8)[in + i];
-    state[u8 (int) i] ^= c;
+    state[u8 i] ^= c;
     i = i + 1;
   }
 
-  state[u8 (int) i] ^= trail_byte;
+  state[u8 i] ^= trail_byte;
 
   i = r8;
   i -= 1;
-  state[u8 (int) i] ^= 0x80;
+  state[u8 i] ^= 0x80;
 
   return state;
 }
@@ -329,7 +329,7 @@ fn __xtr_full_block(
   i = 0;
   while (i < rate64)
   {
-    t = state[(int) i];
+    t = state[i];
     [out + 8 * i] = t;
     i = i + 1;
   }
@@ -356,7 +356,7 @@ fn ____xtr_bytes(
   i = 0;
   while (i < outlen8 )
   {
-    t = state[(int) i];
+    t = state[i];
     [out + 8 * i] = t;
     i = i + 1;
   }
@@ -364,7 +364,7 @@ fn ____xtr_bytes(
 
   while (i < outlen)
   {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     (u8)[out + i] = c;
     i = i + 1;
   }
@@ -489,7 +489,7 @@ fn _shake256_128_33(#spill_to_mmx reg ptr u8[128] out, reg const ptr u8[33] in) 
   () = #unspill(out);
 
   for i = 0 to 128 {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
   return out;
@@ -575,7 +575,7 @@ fn _sha3512_32(#spill_to_mmx reg ptr u8[64] out, reg const ptr u8[32] in) -> reg
   () = #unspill(out);
 
   for i = 0 to 64 {
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
 
@@ -613,7 +613,7 @@ fn _shake128_squeezeblock(reg ptr u64[25] state, #spill_to_mmx reg ptr u8[SHAKE1
   () = #unspill(out);
 
   for i = 0 to SHAKE128_RATE { // SHAKE128 rate is 168: or 21 u64: TODO: 'compress' this for loop
-    c = state[u8 (int) i];
+    c = state[u8 i];
     out[i] = c;
   }
   return state, out;

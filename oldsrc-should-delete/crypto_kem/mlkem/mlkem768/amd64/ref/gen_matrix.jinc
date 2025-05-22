@@ -136,7 +136,7 @@ fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       rij = r[i * MLKEM_VECN + j * MLKEM_N : MLKEM_N];
       while (k < MLKEM_N)
       {
-        t = poly[(int) k];
+        t = poly[k];
         rij[k] = t;
         k += 1;
       }

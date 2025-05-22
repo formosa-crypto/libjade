@@ -40,18 +40,18 @@ fn keygen_inner(reg ptr u8[32] random_zeta)
 	//TODO Maybe can load 8 bytes at a time using u64?
 	i = 0;
 	while(i < 32) {
-		c = s256_out[(int) i];
-		rho[(int) i] = c;
+		c = s256_out[i];
+		rho[i] = c;
 		i += 1;
 	}
 	while(i < 96) {
-		c = s256_out[(int) i];
-		rho_prime[(int) (i - 32)] = c;
+		c = s256_out[i];
+		rho_prime[i - 32] = c;
 		i += 1;
 	}
 	while(i < 128) {
-		c = s256_out[(int) i];
-		k[(int) (i - 96)] = c;
+		c = s256_out[i];
+		k[i - 96] = c;
 		i += 1;
 	}
 
@@ -127,7 +127,7 @@ fn keygen(reg u64 pk_ptr sk_ptr)
   pk_ptr = pk_ptr_s;
 	i = 0;
 	while(i < Li2_PK_LEN) {
-		c = pk[(int) i];
+		c = pk[i];
 		(u8)[pk_ptr + i] = c;
 		i += 1;
 	}
@@ -135,7 +135,7 @@ fn keygen(reg u64 pk_ptr sk_ptr)
   sk_ptr = sk_ptr_s;
 	i = 0;
 	while(i < Li2_SK_LEN) {
-		c = sk[(int) i];
+		c = sk[i];
 		(u8)[sk_ptr + i] = c;
 		i += 1;
 	}

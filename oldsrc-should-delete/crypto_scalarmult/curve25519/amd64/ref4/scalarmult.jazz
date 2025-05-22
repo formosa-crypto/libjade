@@ -6,7 +6,7 @@ inline fn __ith_bit(stack u8[32] k, reg u64 ctr) -> reg u64
 
   p = ctr;
   p >>= 3;
-  bit = (64u) k[(int) p];
+  bit = (64u) k[p];
 
   p = ctr;
   p &= 7;

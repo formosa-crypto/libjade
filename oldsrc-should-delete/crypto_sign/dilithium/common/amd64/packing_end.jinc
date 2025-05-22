@@ -73,8 +73,8 @@ fn pack_signature(reg ptr u8[32] c_tilde,
 
 	?{}, i = #set0_64();
 	while (i < 32) {
-		c = c_tilde[(int) i];
-		signature[(int) i] = c;
+		c = c_tilde[i];
+		signature[i] = c;
 		i += 1;
 	}
 
@@ -88,7 +88,7 @@ fn pack_signature(reg ptr u8[32] c_tilde,
 	// Clear the hints buffer
 	?{}, i = #set0_64();
 	while (i < Li2_omega + Li2_k) {
-		signature[(int) (Li2_pack_hstart + i)] = 0;
+		signature[Li2_pack_hstart + i] = 0;
 		i += 1;
 	}
 
@@ -101,14 +101,14 @@ fn pack_signature(reg ptr u8[32] c_tilde,
 			addr = i;
 			addr <<= Li2_log2polydeg;
 			addr += j;
-			coeff = h[(int) addr];
+			coeff = h[addr];
 			if coeff != 0 {
-				signature[(int) (Li2_pack_hstart + k)] = (8u) j;
+				signature[Li2_pack_hstart + k] = (8u) j;
 				k += 1;
 			}
 			j += 1;
 		}
-		signature[(int) (Li2_pack_hstart + Li2_omega + i)] = (8u) k;
+		signature[Li2_pack_hstart + Li2_omega + i] = (8u) k;
 		i += 1;
 	}
 

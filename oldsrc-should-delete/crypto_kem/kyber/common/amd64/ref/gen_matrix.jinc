@@ -12,9 +12,9 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
   pos = 0;
 
   while {
-    val1 = (16u)buf[(int)pos];
+    val1 = (16u)buf[pos];
     pos += 1;
-    t   = (16u)buf[(int)pos];
+    t   = (16u)buf[pos];
     val2 = t;
     val2 >>= 4;
     t &= 0x0F;
@@ -22,7 +22,7 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
     val1 |= t;
     pos += 1;
 
-    t   = (16u)buf[(int)pos];
+    t   = (16u)buf[pos];
     t <<= 4;
     val2 |= t;
     pos += 1;
@@ -30,7 +30,7 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
     if(val1 < KYBER_Q)
     {
         if(ctr < KYBER_N) {
-            rp[(int)ctr] = val1;
+            rp[ctr] = val1;
             ctr += 1;
         }
     }
@@ -39,7 +39,7 @@ fn __rej_uniform(stack u16[KYBER_N] rp, reg u64 offset, stack u8[SHAKE128_RATE] 
     {
       if(ctr < KYBER_N)
       {
-        rp[(int)ctr] = val2;
+        rp[ctr] = val2;
         ctr += 1;
       }
     }
@@ -96,7 +96,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       ctr = 0;
       #bounded
       while (ctr < KYBER_N / 4) {
-        poly[u64 (int) ctr] = ctr;
+        poly[u64 ctr] = ctr;
         ctr += 1;
       }
 
@@ -115,8 +115,8 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       #bounded
       while (k < KYBER_N)
       {
-        t = poly[(int) k];
-        r[(int) l] = t;
+        t = poly[k];
+        r[l] = t;
         k += 1;
         l += 1;
       }

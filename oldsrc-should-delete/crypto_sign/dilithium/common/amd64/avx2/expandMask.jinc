@@ -33,8 +33,8 @@ fn expandMask_poly_shake_init(stack u64[25] state, reg ptr u8[64] rho_prime, sta
 	state = st0(state);
 	i = 0;
 	while (i < 64) {
-		c = rho_prime[(int) i];
-		state[u8 (int) i] = c;
+		c = rho_prime[i];
+		state[u8 i] = c;
 		i += 1;
 	}
 
@@ -129,12 +129,12 @@ fn expandMask_poly_gamma1_217_4x(
 				addr = i;
 				v64 = j;
 				addr = expandMask_xof_addr(addr, v64);
-				c = xof[u8 (int) addr];
+				c = xof[u8 addr];
 				addr = y_packed_buflen_gamma1_217;
 				addr *= j;
 				addr += y_packed_filled;
 				addr += i;
-				y_packed[(int) addr] = c;
+				y_packed[addr] = c;
 				j += 1;
 			}
 			i += 1;
@@ -204,12 +204,12 @@ fn expandMask_poly_gamma1_219_4x(
 				addr = i;
 				v64 = j;
 				addr = expandMask_xof_addr(addr, v64);
-				c = xof[u8 (int) addr];
+				c = xof[u8 addr];
 				addr = y_packed_buflen_gamma1_219;
 				addr *= j;
 				addr += y_packed_filled;
 				addr += i;
-				y_packed[(int) addr] = c;
+				y_packed[addr] = c;
 				j += 1;
 			}
 			i += 1;
@@ -259,9 +259,9 @@ fn expandMask_poly_gamma1_219(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_pri
 		i = 0;
 		while(i < SHAKE256_RATE) {
 			addr = i;
-			c = state[u8 (int) addr];
+			c = state[u8 addr];
 			addr = y_loc;
-			y_packed[(int) addr] = c;
+			y_packed[addr] = c;
 			y_loc += 1;
 			i += 1;
 		}

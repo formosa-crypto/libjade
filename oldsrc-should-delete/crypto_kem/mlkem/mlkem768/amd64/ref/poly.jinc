@@ -13,10 +13,10 @@ fn _poly_add2(reg ptr u16[MLKEM_N] rp bp) -> reg ptr u16[MLKEM_N]
   i = 0;
 
   while (i < MLKEM_N) {
-    a = rp[(int)i];
-    b = bp[(int)i];
+    a = rp[i];
+    b = bp[i];
     r = a + b;
-    rp[(int)i] = r;
+    rp[i] = r;
     i += 1;
   }
   return rp;
@@ -31,13 +31,13 @@ fn _poly_csubq(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   i = 0;
   while (i < MLKEM_N)
   {
-    t = rp[(int)i];
+    t = rp[i];
     t -= MLKEM_Q;
     b = t;
     b >>s= 15;
     b &= MLKEM_Q;
     t += b;
-    rp[(int)i] = t;
+    rp[i] = t;
     i += 1;
   }
   return rp;
@@ -70,11 +70,11 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> r
     zetasctr >>= 2;
     zeta = zetasp[zetasctr];
     
-    a0 = ap[(int)i];
-    b0 = bp[(int)i];
+    a0 = ap[i];
+    b0 = bp[i];
     i += 1;
-    a1 = ap[(int)i];
-    b1 = bp[(int)i];
+    a1 = ap[i];
+    b1 = bp[i];
     i -= 1;
 
     r0 = __fqmul(a1, b1);
@@ -87,20 +87,20 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> r
     r1 += t;
 
     rp = srp;
-    rp[(int)i]   = r0;
+    rp[i]   = r0;
     i += 1;
-    rp[(int)i] = r1;
+    rp[i] = r1;
     srp = rp;
 
 
     zeta = -zeta;
 
     i += 1;
-    a0 = ap[(int)i];
-    b0 = bp[(int)i];
+    a0 = ap[i];
+    b0 = bp[i];
     i += 1;
-    a1 = ap[(int)i];
-    b1 = bp[(int)i];
+    a1 = ap[i];
+    b1 = bp[i];
     i -= 1;
 
     r0 = __fqmul(a1, b1);
@@ -113,9 +113,9 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp, reg const ptr u16[MLKEM_N] ap bp) -> r
     r1 += t;
 
     rp = srp;
-    rp[(int)i]   = r0;
+    rp[i]   = r0;
     i += 1;
-    rp[(int)i] = r1;
+    rp[i] = r1;
     srp = rp;
     
     i += 1;
@@ -131,9 +131,9 @@ fn __poly_reduce(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   j = 0;
   while (j < MLKEM_N) 
   {
-    t = rp[(int)j];
+    t = rp[j];
     t = __barrett_reduce(t);
-    rp[(int)j] = t;
+    rp[j] = t;
     j += 1;
   }
   return rp;
@@ -267,9 +267,9 @@ fn _poly_frommont(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   i = 0;
   while (i < MLKEM_N)
   {
-    r = rp[(int)i];
+    r = rp[i];
     r = __fqmul(r, dmont);
-    rp[(int)i] = r;
+    rp[i] = r;
     i += 1;
   }
   return rp; 
@@ -479,22 +479,22 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     start = 0;
     while (start < 256)
     {
-      zeta = zetasp[(int)zetasctr];
+      zeta = zetasp[zetasctr];
       zetasctr += 1;
 
       j = start;
       cmp = start; cmp += len;
       while (j < cmp)
       {
-        t = rp[(int)j];
+        t = rp[j];
         offset = j; offset += len;
-        s = rp[(int)offset];
+        s = rp[offset];
         m = s; m += t;
         m = __barrett_reduce(m);
-        rp[(int)j] = m;
+        rp[j] = m;
         t -= s;
         t = __fqmul(t, zeta);
-        rp[(int)offset] = t;
+        rp[offset] = t;
         j += 1;
       }
       start = j; start += len;
@@ -506,9 +506,9 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   j = 0;
   while (j < MLKEM_N) 
   {
-    t = rp[(int)j];
+    t = rp[j];
     t = __fqmul(t, zeta);
-    rp[(int)j] = t;
+    rp[j] = t;
     j += 1;
   }
   return rp;
@@ -539,20 +539,20 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     while (start < 256)
     {
       zetasctr += 1;
-      zeta = zetasp[(int)zetasctr];
+      zeta = zetasp[zetasctr];
       j = start;
       cmp = start; cmp += len;
       while (j < cmp)
       {
-        s = rp[(int)j];
+        s = rp[j];
         m = s;
         offset = j; offset += len;
-        t = rp[(int)offset];
+        t = rp[offset];
         t = __fqmul(t, zeta);
         m -= t;
         t += s;
-        rp[(int)offset] = m;
-        rp[(int)j] = t;
+        rp[offset] = m;
+        rp[j] = t;
         j += 1;
       }
       start = j; start += len;
@@ -574,10 +574,10 @@ fn _poly_sub(reg ptr u16[MLKEM_N] rp ap bp) -> reg ptr u16[MLKEM_N]
 
   i = 0;
   while (i < MLKEM_N) {
-    a = ap[(int)i];
-    b = bp[(int)i];
+    a = ap[i];
+    b = bp[i];
     r = a - b;
-    rp[(int)i] = r;
+    rp[i] = r;
     i += 1;
   }
   return rp;
@@ -594,9 +594,9 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
   j = 0;
   while (i < MLKEM_N)
   {
-    t0 = a[(int)i]; 
+    t0 = a[i]; 
     i += 1;
-    t1 = a[(int)i]; 
+    t1 = a[i]; 
     i += 1;
     d  = t0;
     d  &= 0xff;

@@ -418,14 +418,14 @@ inline fn __gen_matrix_buf_rejection_filter48
   t0_0 = good;
   t0_0 &= 0xFF; // g0[0..7]
 
-  shuffle_0 = (256u) #VMOV(sst[u64 (int)t0_0]);
+  shuffle_0 = (256u) #VMOV(sst[u64 t0_0]);
   ?{}, t0_0 = #POPCNT_64(t0_0);
   t0_0 += counter;  
 
   t0_1 = good;
   t0_1 >>= 16;
   t0_1 &= 0xFF; // g0[8..15]
-  shuffle_0_1 = #VMOV(sst[u64 (int)t0_1]);
+  shuffle_0_1 = #VMOV(sst[u64 t0_1]);
   ?{}, t0_1 = #POPCNT_64(t0_1);
   t0_1 += t0_0;
 
@@ -433,14 +433,14 @@ inline fn __gen_matrix_buf_rejection_filter48
   t1_0 = good;
   t1_0 >>= 8;
   t1_0 &= 0xFF; // g1[0..7]
-  shuffle_1 = (256u) #VMOV(sst[u64 (int)t1_0]);
+  shuffle_1 = (256u) #VMOV(sst[u64 t1_0]);
   ?{}, t1_0 = #POPCNT_64(t1_0);
   t1_0 += t0_1;
 
   t1_1 = good;
   t1_1 >>= 24;
   t1_1 &= 0xFF; // g1[8..15]
-  shuffle_1_1 = #VMOV(sst[u64 (int)t1_1]);
+  shuffle_1_1 = #VMOV(sst[u64 t1_1]);
   ?{}, t1_1 = #POPCNT_64(t1_1);
   t1_1 += t1_0;
 
@@ -560,14 +560,14 @@ inline fn __gen_matrix_buf_rejection_filter24
   // g0
   t0_0 = good;
   t0_0 &= 0xFF; // g0[0..7]
-  shuffle_0 = (256u) #VMOV(sst[u64 (int)t0_0]);
+  shuffle_0 = (256u) #VMOV(sst[u64 t0_0]);
   ?{}, t0_0 = #POPCNT_64(t0_0);
   t0_0 += counter;
 
   t0_1 = good;
   t0_1 >>= 16;
   t0_1 &= 0xFF; // g0[8..15]
-  shuffle_0_1 = #VMOV(sst[u64 (int)t0_1]);
+  shuffle_0_1 = #VMOV(sst[u64 t0_1]);
   ?{}, t0_1 = #POPCNT_64(t0_1);
   t0_1 += t0_0;
 

@@ -190,7 +190,7 @@ inline fn __keccakf1600_avx2(reg u256[7] state) -> reg u256[7]
 	  state[4] = state[4] ^ t[4];
 
 	  //######################################## Iota
-	  state[0] = state[0] ^ iotas_p.[(int) iotas_o];
+	  state[0] = state[0] ^ iotas_p.[iotas_o];
     iotas_o += 32;
 
     _,_,_,zf,r = #DEC_64(r);
