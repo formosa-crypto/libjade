@@ -327,8 +327,8 @@ fn __basemul(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
     i = 0;
     while(i < ARRAY_N * 2){
 
-        a = src1.[u256 (int) i];
-        b = src2.[u256 (int) i];
+        a = src1.[u256 i];
+        b = src2.[u256 i];
 
         lo = #VPMULL_16u16(a, b);
         hi = #VPMULH_16u16(a, b);
@@ -337,7 +337,7 @@ fn __basemul(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
         lo = #VPMULH_16u16(lo, __q);
         c = #VPSUB_16u16(hi, lo);
 
-        des.[u256 (int) i] = c;
+        des.[u256 i] = c;
 
         i += 32;
 

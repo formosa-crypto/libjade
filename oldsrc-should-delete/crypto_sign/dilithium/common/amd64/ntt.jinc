@@ -37,7 +37,7 @@ fn fft(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 			//zeta = zetas[k++];
 			tfs = twiddle_factors;
 			addr = (64u) k;
-			v32 = tfs[(int) addr];
+			v32 = tfs[addr];
 			zeta = v32;
 			k += 1;
 
@@ -47,10 +47,10 @@ fn fft(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 			bound += len;
 			while {
 				addr = (64u) j;
-				v32 = f[(int) addr];
+				v32 = f[addr];
 				left = v32;
 				addr += len;
-				v32 = f[(int) addr];
+				v32 = f[addr];
 				right = v32;
 
 				//t = montgomery_reduce((int64_t)zeta * a[j + len]);
@@ -71,10 +71,10 @@ fn fft(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 				
 				addr = (64u) j;
 				v32 = left;
-				f[(int) addr] = v32;
+				f[addr] = v32;
 				addr += len;
 				v32 = right;
-				f[(int) addr] = v32;
+				f[addr] = v32;
 
 				j += 1;
 				rbound = bound;
@@ -119,7 +119,7 @@ fn ifft_to_mont(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 
 			tfs = twiddle_factors;
 			addr = (64u) k;
-			v32 = tfs[(int) addr];
+			v32 = tfs[addr];
 			v32 *= -1;
 			zeta = v32;
 
@@ -128,10 +128,10 @@ fn ifft_to_mont(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 			bound += len;
 			while {
 				addr = (64u) j;
-				v32 = f[(int) addr];
+				v32 = f[addr];
 				left = v32;
 				addr += len;
-				v32 = f[(int) addr];
+				v32 = f[addr];
 				right = v32;
 				
 				// t = a[j];
@@ -157,10 +157,10 @@ fn ifft_to_mont(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 	
 				addr = (64u) j;
 				v32 = left;
-				f[(int) addr] = v32;
+				f[addr] = v32;
 				addr += len;
 				v32 = right;
-				f[(int) addr] = v32;
+				f[addr] = v32;
 
 				j += 1;
 				rbound = bound;
@@ -176,13 +176,13 @@ fn ifft_to_mont(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg]
 	while(j < Li2_polydeg) {
 		//a[j] = montgomery_reduce((int64_t)f * a[j]);
 		addr = (64u) j;
-		v32 = f[(int) addr];
+		v32 = f[addr];
 
 		v64 = (64s) v32;
 		v64 *= mont_sq_over_256;
 		v32 = montgomery_REDC(v64);
 
-		f[(int) addr] = v32;
+		f[addr] = v32;
 		j += 1;
 	}
 	

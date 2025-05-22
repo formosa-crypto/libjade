@@ -14,14 +14,14 @@ fn __is_short(stack u16[ARRAY_N] s1 s2) -> reg u32
   i = 0;
   while(i < ARRAY_N)
   {
-    z = (32s)s1[(int)i];
+    z = (32s)s1[i];
     t = z;
     t *= z;
     s += t;
     s = s;
     ng |= s;
 
-    z = (32s)s2[(int)i];
+    z = (32s)s2[i];
     t = z;
     t *= z;
     s += t;

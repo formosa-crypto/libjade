@@ -176,7 +176,7 @@ inline fn __get_iota_ref(reg ptr u64[25] sp, reg u64 round) -> stack u64
   reg u64 v;
 
   p = sp;
-  v = p[(int)round];
+  v = p[round];
   sv = v;
 
   return sv;
@@ -193,11 +193,11 @@ inline fn __keccakf1600_ref(stack u64[25] a) -> stack u64[25]
 
   while(round < 24)
   {
-    iota = iotas_p[(int) round];
+    iota = iotas_p[round];
     a, r = __round2x_ref(a, r, iota);
     round += 1;
 
-    iota = iotas_p[(int) round];
+    iota = iotas_p[round];
     r, a = __round2x_ref(r, a, iota);
     round += 1;
   }

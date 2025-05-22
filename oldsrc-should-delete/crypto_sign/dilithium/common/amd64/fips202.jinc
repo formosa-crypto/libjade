@@ -141,7 +141,7 @@ fn __keccakf1600_ref(reg ptr u64[25] state) -> reg ptr u64[25] {
     state = pi(state);
     state = chi(state);
     constptr = roundconstants;
-	  c = constptr.[(int) rctr];
+	  c = constptr.[rctr];
     state = iota(state, c);
     rctr += 8;
   }
@@ -220,8 +220,8 @@ fn shake256_squeezeblock(stack u64[25] state, stack u8[SHAKE256_RATE] out)
 
 	?{}, i = #set0_64();
 	while(i < SHAKE256_RATE) {
-		c = state[u8 (int) i];
-		out[(int) i] = c;
+		c = state[u8 i];
+		out[i] = c;
 		i += 1;
 	}
 

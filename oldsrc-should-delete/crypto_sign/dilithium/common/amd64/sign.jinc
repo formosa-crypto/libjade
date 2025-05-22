@@ -21,7 +21,7 @@ inline fn __sign(reg u64 sm smlen_p m mlen sk) -> reg u64
   ?{}, i = #set0();
   while(i < Li2_SK_LEN) {
     c = (u8)[sk + i];
-    secret_key[(int) i] = c;
+    secret_key[i] = c;
     i += 1;
   } // sk dead.
 
@@ -49,7 +49,7 @@ inline fn __sign(reg u64 sm smlen_p m mlen sk) -> reg u64
   sm = s_sm;
   ?{}, i = #set0();
   while(i < Li2_SIGN_LEN)
-  { c = signature[(int) i];
+  { c = signature[i];
     (u8)[sm + i] = c;
     i += 1;
   }

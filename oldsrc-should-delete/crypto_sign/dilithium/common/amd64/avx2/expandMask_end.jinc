@@ -25,11 +25,11 @@ fn expandMask_buffered(
 			addr = buffer_offset;
 			addr <<= Li2_log2polydeg;
 			addr += i;
-			v32 = buffer[(int) addr];
+			v32 = buffer[addr];
 			addr = polys_generated;
 			addr <<= Li2_log2polydeg;
 			addr += i;
-			y[(int) addr] = v32;
+			y[addr] = v32;
 			i += 1;
 		}
 		buffer_offset += 1;

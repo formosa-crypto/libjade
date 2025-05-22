@@ -148,9 +148,9 @@ inline fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) ->
 
         } else if(t < SHAKE256_RATE - 1){
 
-            buff[1] = block_buff[(int) t];
+            buff[1] = block_buff[t];
             t += 1;
-            buff[0] = block_buff[(int) t];
+            buff[0] = block_buff[t];
             t += 1;
             s_indx = t;
 
@@ -164,7 +164,7 @@ inline fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) ->
             }
 
             hm_i = s_hm_i;
-            hm[(int) hm_i] = (16u)t;
+            hm[hm_i] = (16u)t;
             hm_i += 1;
             s_hm_i = hm_i;
 

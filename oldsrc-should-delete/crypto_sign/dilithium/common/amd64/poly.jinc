@@ -9,10 +9,10 @@ fn poly_add(reg ptr u32[Li2_polydeg] f g sum)
 	reg u64 i;
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		result = f[(int) i];
-		v32 = g[(int) i];
+		result = f[i];
+		v32 = g[i];
 		result += v32;
-		sum[(int) i] = result;
+		sum[i] = result;
 		i += 1;
 	}
 	return sum;
@@ -26,10 +26,10 @@ fn poly_subtract(reg ptr u32[Li2_polydeg] f g difference)
 	reg u64 i;
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		result = f[(int) i];
-		v32 = g[(int) i];
+		result = f[i];
+		v32 = g[i];
 		result -= v32;
-		difference[(int) i] = result;
+		difference[i] = result;
 		i += 1;
 	}
 	return difference;
@@ -43,10 +43,10 @@ fn poly_accumulate(reg ptr u32[Li2_polydeg] f sum)
 	reg u64 i;
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		v32 = f[(int) i];
-		result = sum[(int) i];
+		v32 = f[i];
+		result = sum[i];
 		result += v32;
-		sum[(int) i] = result;
+		sum[i] = result;
 		i += 1;
 	}
 	return sum;
@@ -60,9 +60,9 @@ fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
 
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		val = poly[(int) i];
+		val = poly[i];
 		res = reduce32(val);
-		poly[(int) i] = res;
+		poly[i] = res;
 		i += 1;
 	}
 
@@ -79,14 +79,14 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		x1 = fft_f[(int) i];
+		x1 = fft_f[i];
 		prod = (64s) x1;
-		x2 = fft_g[(int) i];
+		x2 = fft_g[i];
 		x2_64 = (64s) x2;
 		prod *= x2_64;
 		
 		prod_redc = montgomery_REDC(prod);
-		fft_prod[(int) i] = prod_redc;
+		fft_prod[i] = prod_redc;
 		i += 1;
 	}
 	return fft_prod;
@@ -99,7 +99,7 @@ fn zero_poly(reg ptr u32[Li2_polydeg] f)
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
 		// Montgomery of 0 is 0
-		f[(int) i] = 0;
+		f[i] = 0;
 		i += 1;
 	}
 	return f;
@@ -112,9 +112,9 @@ fn poly_caddq(reg ptr u32[Li2_polydeg] f)
 	reg u32 val;
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		val = f[(int) i];
+		val = f[i];
 		val = caddq(val);
-		f[(int) i] = val;
+		f[i] = val;
 		i += 1;
 	}
 	return f;
@@ -135,7 +135,7 @@ fn poly_checknorm(reg ptr u32[Li2_polydeg] f, inline int threshold)
 
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		val = f[(int) i];
+		val = f[i];
 		r = checknorm(val, threshold);
 		c = r;
 		result |= c;

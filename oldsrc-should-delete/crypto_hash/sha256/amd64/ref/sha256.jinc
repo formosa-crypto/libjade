@@ -223,8 +223,8 @@ fn _blocks_0_ref(reg ptr u32[8] _H, reg u64 in inlen) -> reg ptr u32[8], reg u64
       T1 += r;
       r   = __CH_ref(e,f,g);
       T1 += r;
-      T1 += Kp[(int)tr];
-      T1 += W[(int)tr];
+      T1 += Kp[tr];
+      T1 += W[tr];
 
       //T2 = BSIG0(a) + MAJ(a,b,c)
       T2  = __BSIG0_ref(a);
@@ -311,8 +311,8 @@ fn _blocks_1_ref(reg ptr u32[8] _H, reg ptr u32[32] sblocks, reg u64 nblocks) ->
       T1 += r;
       r   = __CH_ref(e,f,g);
       T1 += r;
-      T1 += Kp[(int)tr];
-      T1 += W[(int)tr];
+      T1 += Kp[tr];
+      T1 += W[tr];
 
       //T2 = BSIG0(a) + MAJ(a,b,c)
       T2  = __BSIG0_ref(a);
@@ -370,12 +370,12 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
   // copy in to sblocks
   while(i < inlen)
   { v = (u8)[in + i];
-    sblocks[u8 (int)i] = v;
+    sblocks[u8 i] = v;
     i += 1;
   }
 
   // set first byte after input to 0x80 
-  sblocks[u8 (int)i] = 0x80;
+  sblocks[u8 i] = 0x80;
 
   // check if one or two blocks are needed
   if(inlen < 56) // 448 / 8 = 56
@@ -384,7 +384,7 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u32[32], reg u64
   { j = (128-8); nblocks = 2; i = 127; }
 
   while(i >= j)
-  { sblocks[u8 (int)i] = (8u) bits;
+  { sblocks[u8 i] = (8u) bits;
     bits >>= 8;
     i -= 1;
   }

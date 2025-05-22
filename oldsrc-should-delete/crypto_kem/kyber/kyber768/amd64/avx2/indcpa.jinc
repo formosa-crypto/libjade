@@ -85,7 +85,7 @@ fn __indcpa_enc_0(stack u64 sctp, reg ptr u8[KYBER_INDCPA_MSGBYTES] msgp, reg u6
   while (i < KYBER_SYMBYTES/8)
   {
     t64 = (u64)[pkp];
-    publicseed[u64 (int)i] = t64;
+    publicseed[u64 i] = t64;
     pkp += 8;
     i += 1;
   }
@@ -150,7 +150,7 @@ fn __indcpa_enc_1(reg ptr u8[KYBER_INDCPA_BYTES] ctp, reg ptr u8[KYBER_INDCPA_MS
   while (i < KYBER_SYMBYTES/8)
   {
     t64 = (u64)[pkp];
-    publicseed[u64 (int)i] = t64;
+    publicseed[u64 i] = t64;
     pkp += 8;
     i += 1;
   }

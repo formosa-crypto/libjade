@@ -213,7 +213,7 @@ fn __comp_decode(stack u16[ARRAY_N] out, reg u64 in, reg u64 max_in_len)
             }
             m = -m;
         }
-        out[(int) out_i] = m;
+        out[out_i] = m;
         out_i += 1;
     }
 

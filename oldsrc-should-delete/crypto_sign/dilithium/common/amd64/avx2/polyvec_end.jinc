@@ -9,9 +9,9 @@ fn reduce32_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 
 	?{}, i = #set0_64();
 	while(i < Li2_l * Li2_polydeg) {
-		val = vec[(int) i];
+		val = vec[i];
 		res = reduce32(val);
-		vec[(int) i] = res;
+		vec[i] = res;
 		i += 1;
 	}
 
@@ -26,9 +26,9 @@ fn reduce32_veck(reg ptr u32[Li2_k * Li2_polydeg] vec)
 
 	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
-		val = vec[(int) i];
+		val = vec[i];
 		res = reduce32(val);
-		vec[(int) i] = res;
+		vec[i] = res;
 		i += 1;
 	}
 
@@ -107,10 +107,10 @@ fn power2round_vec(reg ptr u32[Li2_k * Li2_polydeg] v)
 
 	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
-		x = v[(int) i];
+		x = v[i];
 		y1, y2 = power2round(x);
-		t1[(int) i] = y1;
-		t0[(int) i] = y2;
+		t1[i] = y1;
+		t0[i] = y2;
 		i += 1;
 	}
 
@@ -244,13 +244,13 @@ fn pointwise_mont_mult(reg ptr u32[Li2_polydeg] f g fg)
 	reg u32 prod_redc;
 	?{}, i = #set0_64();
 	while(i < Li2_polydeg) {
-		v32 = f[(int) i];
+		v32 = f[i];
 		result = (64s) v32;
-		v32 = g[(int) i];
+		v32 = g[i];
 		gv_64 = (64s) v32;
 		result *= gv_64;
 		prod_redc = montgomery_REDC(result);
-		fg[(int) i] = prod_redc;
+		fg[i] = prod_redc;
 		i += 1;
 	}
 	return fg;
@@ -267,8 +267,8 @@ fn deep_copy_vecl(reg ptr u32[Li2_l * Li2_polydeg] vec)
 
 	?{}, i = #set0_64();
 	while(i < Li2_l * Li2_polydeg) {
-		entry = vec[(int) i];
-		dest[(int) i] = entry;
+		entry = vec[i];
+		dest[i] = entry;
 		i += 1;
 	}
 	return dest;
@@ -286,13 +286,13 @@ fn decompose_vec(reg ptr u32[Li2_k * Li2_polydeg] vec)
 	?{}, i = #set0_64();
 	while(i < Li2_k * Li2_polydeg) {
 		addr = i;
-		a = vec[(int) addr];
+		a = vec[addr];
 
 		a0, a1 = decompose(a);
 
 		addr = i;
-		vec0[(int) addr] = a0;
-		vec1[(int) addr] = a1;
+		vec0[addr] = a0;
+		vec1[addr] = a1;
 
 		i += 1;
 	}

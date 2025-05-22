@@ -5,9 +5,9 @@ fn poly_shiftl(reg ptr u32[Li2_polydeg] f) -> reg ptr u32[Li2_polydeg] {
 
     ?{}, i = #set0_64();
     while (i < Li2_polydeg) {
-        coeff = f[(int) i];
+        coeff = f[i];
         coeff <<= Li2_d;
-        f[(int) i] = coeff;
+        f[i] = coeff;
         i += 1;
     }
 
@@ -42,12 +42,12 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
         ?{}, zero = #set0_32();
         while (j < Li2_polydeg) {
             idx = #LEA_64(hints_elem_offset + j);
-            hints[(int) idx] = zero;
+            hints[idx] = zero;
             j += 1;
         }
 
         // if (sig[OMEGA + i] < k || sig[OMEGA + i] > OMEGA) { return 1; }
-        hints_cumpop = (64u)hints_buf[(int) (Li2_omega + i)];
+        hints_cumpop = (64u)hints_buf[Li2_omega + i];
         if (hints_cumpop < k) {
             fail = 1;
         } else {
@@ -62,7 +62,7 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
                 } (done == 0) {
                     // Coefficients are ordered for strong unforgeability
                     // if(j > k && sig[j] <= sig[j-1]) return 1;
-                    idx1 = (64u)hints_buf[(int) j];
+                    idx1 = (64u)hints_buf[j];
                     if (j > k) {
                         idx2 = (64u)hints_buf[(int) j-1];
                         if (idx1 <= idx2) {
@@ -72,7 +72,7 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
                     if (fail == 0) {
                         // h->vec[i].coeffs[sig[j]] = 1;
                         idxtmp = #LEA_64(hints_elem_offset + idx1);
-                        hints[(int) idxtmp] = 1;
+                        hints[idxtmp] = 1;
 
                         j += 1;
 
@@ -101,8 +101,8 @@ fn cmp_ctilde(stack u8[32] c_tilde1 c_tilde2) -> reg u8 {
     ?{}, result = #set0_8();
     ?{}, i = #set0_64();
     while (i < 32) {
-        b1 = c_tilde1[(int) i];
-        b2 = c_tilde2[(int) i];
+        b1 = c_tilde1[i];
+        b2 = c_tilde2[i];
         if (b1 != b2) {
             result |= 0xFF;
         }
@@ -186,8 +186,8 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
             sig_rsp = sig;
             ?{}, i = #set0_64();
             while (i < 32) {
-                byte = sig_rsp[(int) i];
-                c_tilde[(int) i] = byte;
+                byte = sig_rsp[i];
+                c_tilde[i] = byte;
                 i += 1;
             }
             challenge = sampleInBall(challenge, c_tilde);
@@ -240,14 +240,14 @@ fn verify(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg 
     ?{}, i = #set0_64();
 	while(i < Li2_PK_LEN) {
 		byte = (u8)[ptr_pk + i];
-		pk_rsp[(int) i] = byte;
+		pk_rsp[i] = byte;
 		i += 1;
 	}
 
     ?{}, i = #set0_64();
     while(i < Li2_SIGN_LEN) {
 		byte = (u8)[ptr_sig + i];
-		sig_rsp[(int) i] = byte;
+		sig_rsp[i] = byte;
 		i += 1;
 	}
 

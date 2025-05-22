@@ -59,7 +59,7 @@ fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
 			v64_1 = xof_offset;
 			v64_2 = lane;
 			addr = expandA_xof_buf_addr(v64_1, v64_2);
-			vs[ii] = (32u) xof[u8 (int) addr];
+			vs[ii] = (32u) xof[u8 addr];
 			xof_offset += 1;
 		}
 
@@ -74,7 +74,7 @@ fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
 		coeff &= 0x7FFFFF;
 		if coeff < Li2_q {
 			addr = coeffs_filled;
-			poly[(int) addr] = coeff;
+			poly[addr] = coeff;
 			coeffs_filled += 1;
 			if coeffs_filled >= Li2_polydeg {
 				yield = 1;

@@ -298,10 +298,10 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
 
   while(!b)
   {
-    val0 = (16u)buf[(int)pos];
+    val0 = (16u)buf[pos];
     pos += 1;
 
-    t   = (16u)buf[(int)pos];
+    t   = (16u)buf[pos];
     val1 = t;
     val1 >>= 4;
 
@@ -310,14 +310,14 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
     val0 |= t;
     pos += 1;
 
-    t   = (16u)buf[(int)pos];
+    t   = (16u)buf[pos];
     t <<= 4;
     val1 |= t;
     pos += 1;
 
     if(val0 < KYBER_Q)
     {
-      rp[(int)ctr] = val0;
+      rp[ctr] = val0;
       ctr += 1;
     }
 
@@ -325,7 +325,7 @@ fn __rej_uniform(reg ptr u16[KYBER_N] rp, reg u64 offset, reg ptr u8[SHAKE128_RA
     {
       if(val1 < KYBER_Q)
       {
-        rp[(int)ctr] = val1;
+        rp[ctr] = val1;
         ctr += 1;
       }
     }
@@ -380,7 +380,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
   while(!b)
   {
-    f0 = #VPERMQ(buf.[u256 (int)pos], 0x94);
+    f0 = #VPERMQ(buf.[u256 pos], 0x94);
     f1 = #VPERMQ(buf.[u256 24 + (int)pos], 0x94);
     f0 = #VPSHUFB_256(f0, idx8);
     f1 = #VPSHUFB_256(f1, idx8);
@@ -399,22 +399,22 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
     t64 = good;
     t64 &= 0xFF;
-    g0 = (256u) #VMOV(idxp[u64 (int)t64]);
+    g0 = (256u) #VMOV(idxp[u64 t64]);
 
     t64_1 = good;
     t64_1 >>= 16;
     t64_1 &= 0xFF;
-    l = #VMOV(idxp[u64 (int)t64_1]);
+    l = #VMOV(idxp[u64 t64_1]);
 
     t64_2 = good;
     t64_2 >>= 8;
     t64_2 &= 0xFF;
-    g1 = (256u) #VMOV(idxp[u64 (int)t64_2]);
+    g1 = (256u) #VMOV(idxp[u64 t64_2]);
 
     t64_3 = good;
     t64_3 >>= 24;
     t64_3 &= 0xFF;
-    h = #VMOV(idxp[u64 (int)t64_3]);
+    h = #VMOV(idxp[u64 t64_3]);
 
     g0 = #VINSERTI128(g0, l, 1);
 
@@ -466,7 +466,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   t64 = 0x5555;
   while(!b)
   {
-    f = buf.[u128 (int)pos];
+    f = buf.[u128 pos];
     f = #VPSHUFB_128(f, idx8);
     t = #VPSRL_8u16(f, 4);
     f = #VPBLEND_8u16(f, t, 0xAA);
@@ -476,7 +476,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     good = #VPMOVMSKB_u128u64(t);
 
     good = #PEXT_64(good, t64);
-    l = #VMOV(idxp[u64 (int)good]);
+    l = #VMOV(idxp[u64 good]);
     _, _, _, _, _, good =  #POPCNT_64(good);
 
     h = #VPADD_16u8(l, ones);
@@ -506,9 +506,9 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
 
   while(!b)
   {
-    val0 = (16u)buf[(int)pos];
+    val0 = (16u)buf[pos];
     pos += 1;
-    t16 = (16u)buf[(int)pos];
+    t16 = (16u)buf[pos];
     pos += 1;
     val1 = t16;
 
@@ -517,21 +517,21 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     val0 &= 0xFFF;
 
     val1 >>= 4;
-    t16 = (16u)buf[(int)pos];
+    t16 = (16u)buf[pos];
     pos += 1;
     t16 <<= 4;
     val1 |= t16;
 
     if(val0 < KYBER_Q)
     {
-      rp[(int)ctr] = val0;
+      rp[ctr] = val0;
       ctr += 1;
     }
     if(val1 < KYBER_Q)
     {
       if(ctr < KYBER_N)
       {
-        rp[(int)ctr] = val1;
+        rp[ctr] = val1;
         ctr += 1;
       }
     }
