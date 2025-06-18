@@ -9,11 +9,11 @@ inline fn __init_h_avx(reg u64 nonce key) -> reg u128[4]
 
   st[0] = CHACHA_SIGMA_H_AVX;
 
-  st[1] = (u128)[key + 0];
-  st[2] = (u128)[key + 16];
+  st[1] = [:u128 key + 0];
+  st[2] = [:u128 key + 16];
 
   st[3] = #set0_128();
-  st[3] = #VPINSR_2u64(st[3], (u64)[nonce + 0], 1);
+  st[3] = #VPINSR_2u64(st[3], [:u64 nonce + 0], 1);
 
   // st:
   //  st[0] = { sigma      }

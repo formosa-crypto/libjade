@@ -13,10 +13,10 @@ fn _poly_add2(reg ptr u16[MLKEM_N] rp bp) -> reg ptr u16[MLKEM_N]
   reg u256 r;
 
   for i = 0 to 16 {
-    a = rp.[u256 32*i];
-    b = bp.[u256 32*i];
+    a = rp.[:u256 32*i];
+    b = bp.[:u256 32*i];
     r = #VPADD_16u16(a, b);
-    rp.[u256 32*i] = r;
+    rp.[:u256 32*i] = r;
   }
 
   return rp;
@@ -27,12 +27,12 @@ fn _poly_csubq(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   reg u256 r qx16;
   inline int i;
   
-  qx16 = jqx16[u256 0];
+  qx16 = jqx16[:u256 0];
 
   for i=0 to 16 {
-    r = rp.[u256 32*i];
+    r = rp.[:u256 32*i];
     r = __csubq(r, qx16);
-    rp.[u256 32*i] = r;
+    rp.[:u256 32*i] = r;
   }
 
   return rp;
@@ -116,84 +116,84 @@ fn _poly_basemul(reg ptr u16[MLKEM_N] rp ap bp) -> reg ptr u16[MLKEM_N]
 {
   reg u256 zeta zetaqinv qx16 qinvx16 are aim bre bim;
   
-  qx16    = jqx16.[u256 0];
-  qinvx16 = jqinvx16.[u256 0];
+  qx16    = jqx16.[:u256 0];
+  qinvx16 = jqinvx16.[:u256 0];
   
-  zetaqinv = jzetas_exp.[u256 272];
-  zeta = jzetas_exp.[u256 304];
+  zetaqinv = jzetas_exp.[:u256 272];
+  zeta = jzetas_exp.[:u256 304];
 
-  are = ap.[u256 32*0];
-  aim = ap.[u256 32*1];
-  bre = bp.[u256 32*0];
-  bim = bp.[u256 32*1];
+  are = ap.[:u256 32*0];
+  aim = ap.[:u256 32*1];
+  bre = bp.[:u256 32*0];
+  bim = bp.[:u256 32*1];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
-  rp.[u256 32*0] = are;
-  rp.[u256 32*1] = aim;
+  rp.[:u256 32*0] = are;
+  rp.[:u256 32*1] = aim;
 
-  are = ap.[u256 32*2];
-  aim = ap.[u256 32*3];
-  bre = bp.[u256 32*2];
-  bim = bp.[u256 32*3];
+  are = ap.[:u256 32*2];
+  aim = ap.[:u256 32*3];
+  bre = bp.[:u256 32*2];
+  bim = bp.[:u256 32*3];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
-  rp.[u256 32*2] = are;
-  rp.[u256 32*3] = aim;
+  rp.[:u256 32*2] = are;
+  rp.[:u256 32*3] = aim;
 
-  zetaqinv = jzetas_exp.[u256 336];
-  zeta = jzetas_exp.[u256 368];
+  zetaqinv = jzetas_exp.[:u256 336];
+  zeta = jzetas_exp.[:u256 368];
 
-  are = ap.[u256 32*4];
-  aim = ap.[u256 32*5];
-  bre = bp.[u256 32*4];
-  bim = bp.[u256 32*5];
+  are = ap.[:u256 32*4];
+  aim = ap.[:u256 32*5];
+  bre = bp.[:u256 32*4];
+  bim = bp.[:u256 32*5];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
-  rp.[u256 32*4] = are;
-  rp.[u256 32*5] = aim;
+  rp.[:u256 32*4] = are;
+  rp.[:u256 32*5] = aim;
 
-  are = ap.[u256 32*6];
-  aim = ap.[u256 32*7];
-  bre = bp.[u256 32*6];
-  bim = bp.[u256 32*7];
+  are = ap.[:u256 32*6];
+  aim = ap.[:u256 32*7];
+  bre = bp.[:u256 32*6];
+  bim = bp.[:u256 32*7];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
-  rp.[u256 32*6] = are;
-  rp.[u256 32*7] = aim;
+  rp.[:u256 32*6] = are;
+  rp.[:u256 32*7] = aim;
 
-  zetaqinv = jzetas_exp.[u256 664];
-  zeta = jzetas_exp.[u256 696];
+  zetaqinv = jzetas_exp.[:u256 664];
+  zeta = jzetas_exp.[:u256 696];
 
-  are = ap.[u256 32*8];
-  aim = ap.[u256 32*9];
-  bre = bp.[u256 32*8];
-  bim = bp.[u256 32*9];
+  are = ap.[:u256 32*8];
+  aim = ap.[:u256 32*9];
+  bre = bp.[:u256 32*8];
+  bim = bp.[:u256 32*9];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
-  rp.[u256 32*8] = are;
-  rp.[u256 32*9] = aim;
+  rp.[:u256 32*8] = are;
+  rp.[:u256 32*9] = aim;
 
-  are = ap.[u256 32*10];
-  aim = ap.[u256 32*11];
-  bre = bp.[u256 32*10];
-  bim = bp.[u256 32*11];
+  are = ap.[:u256 32*10];
+  aim = ap.[:u256 32*11];
+  bre = bp.[:u256 32*10];
+  bim = bp.[:u256 32*11];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
-  rp.[u256 32*10] = are;
-  rp.[u256 32*11] = aim;
+  rp.[:u256 32*10] = are;
+  rp.[:u256 32*11] = aim;
 
-  zetaqinv = jzetas_exp.[u256 728];
-  zeta = jzetas_exp.[u256 760];
+  zetaqinv = jzetas_exp.[:u256 728];
+  zeta = jzetas_exp.[:u256 760];
 
-  are = ap.[u256 32*12];
-  aim = ap.[u256 32*13];
-  bre = bp.[u256 32*12];
-  bim = bp.[u256 32*13];
+  are = ap.[:u256 32*12];
+  aim = ap.[:u256 32*13];
+  bre = bp.[:u256 32*12];
+  bim = bp.[:u256 32*13];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 0);
-  rp.[u256 32*12] = are;
-  rp.[u256 32*13] = aim;
+  rp.[:u256 32*12] = are;
+  rp.[:u256 32*13] = aim;
 
-  are = ap.[u256 32*14];
-  aim = ap.[u256 32*15];
-  bre = bp.[u256 32*14];
-  bim = bp.[u256 32*15];
+  are = ap.[:u256 32*14];
+  aim = ap.[:u256 32*15];
+  bre = bp.[:u256 32*14];
+  bim = bp.[:u256 32*15];
   are, aim = __schoolbook16x(are, aim, bre, bim, zeta, zetaqinv, qx16, qinvx16, 1);
-  rp.[u256 32*14] = are;
-  rp.[u256 32*15] = aim;
+  rp.[:u256 32*14] = are;
+  rp.[:u256 32*15] = aim;
 
   return rp;
 }
@@ -212,18 +212,18 @@ fn _poly_compress(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
   a = _poly_csubq(a);
 
   x16p = jvx16;
-  v = x16p[u256 0];
+  v = x16p[:u256 0];
   shift1 = #VPBROADCAST_16u16(pc_shift1_s);
   mask = #VPBROADCAST_16u16(pc_mask_s);
   shift2 = #VPBROADCAST_16u16(pc_shift2_s);
-  permidx = pc_permidx_s[u256 0];
+  permidx = pc_permidx_s[:u256 0];
 
   for i=0 to MLKEM_N/64
   {
-    f0 = a[u256 4*i];
-    f1 = a[u256 4*i + 1];
-    f2 = a[u256 4*i + 2];
-    f3 = a[u256 4*i + 3];
+    f0 = a[:u256 4*i];
+    f1 = a[:u256 4*i + 1];
+    f2 = a[:u256 4*i + 2];
+    f3 = a[:u256 4*i + 3];
     f0 = #VPMULH_16u16(f0, v);
     f1 = #VPMULH_16u16(f1, v);
     f2 = #VPMULH_16u16(f2, v);
@@ -242,7 +242,7 @@ fn _poly_compress(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
     f2 = #VPMADDUBSW_256(f2, shift2);
     f0 = #VPACKUS_16u16(f0, f2);
     f0 = #VPERMD(permidx, f0);
-    (u256)[rp + 32*i] = f0;
+    [:u256 rp + 32*i] = f0;
   }
 
   return a;
@@ -257,18 +257,18 @@ fn _poly_compress_1(reg ptr u8[MLKEM_POLYCOMPRESSEDBYTES] rp, reg ptr u16[MLKEM_
   a = _poly_csubq(a);
 
   x16p = jvx16;
-  v = x16p[u256 0];
+  v = x16p[:u256 0];
   shift1 = #VPBROADCAST_16u16(pc_shift1_s);
   mask = #VPBROADCAST_16u16(pc_mask_s);
   shift2 = #VPBROADCAST_16u16(pc_shift2_s);
-  permidx = pc_permidx_s[u256 0];
+  permidx = pc_permidx_s[:u256 0];
 
   for i=0 to MLKEM_N/64
   {
-    f0 = a[u256 4*i];
-    f1 = a[u256 4*i + 1];
-    f2 = a[u256 4*i + 2];
-    f3 = a[u256 4*i + 3];
+    f0 = a[:u256 4*i];
+    f1 = a[:u256 4*i + 1];
+    f2 = a[:u256 4*i + 2];
+    f3 = a[:u256 4*i + 3];
     f0 = #VPMULH_16u16(f0, v);
     f1 = #VPMULH_16u16(f1, v);
     f2 = #VPMULH_16u16(f2, v);
@@ -287,7 +287,7 @@ fn _poly_compress_1(reg ptr u8[MLKEM_POLYCOMPRESSEDBYTES] rp, reg ptr u16[MLKEM_
     f2 = #VPMADDUBSW_256(f2, shift2);
     f0 = #VPACKUS_16u16(f0, f2);
     f0 = #VPERMD(permidx, f0);
-    rp.[u256 32*i] = f0;
+    rp.[:u256 32*i] = f0;
   }
 
   return rp, a;
@@ -308,9 +308,9 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
   stack u128 sh;
 
   x16p = jqx16;
-  q = x16p[u256 0];
+  q = x16p[:u256 0];
   x32p = pd_jshufbidx;
-  shufbidx = x32p[u256 0];
+  shufbidx = x32p[:u256 0];
   mask = #VPBROADCAST_8u32(pd_mask_s);
   shift = #VPBROADCAST_8u32(pd_shift_s);
 
@@ -318,7 +318,7 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
 
   for i=0 to MLKEM_N/16
   {
-    h = (128u)(u64)[ap + 8*i];
+    h = (128u)[:u64 ap + 8*i];
     sh = h;
     f = #VPBROADCAST_2u128(sh);
 
@@ -326,7 +326,7 @@ fn _poly_decompress(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
     f = #VPAND_256(f, mask);
     f = #VPMULL_16u16(f, shift);
     f = #VPMULHRS_16u16(f, q);
-    rp[u256 i] = f;
+    rp[:u256 i] = f;
   }
 
   return rp;
@@ -340,16 +340,16 @@ fn _poly_frombytes(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
   reg ptr u16[16] maskp;
 
   maskp = maskx16;
-  mask = maskp[u256 0];
+  mask = maskp[:u256 0];
 
   for i=0 to 2
   {
-    t0 = (u256)[ap + 192*i];
-    t1 = (u256)[ap + 192*i + 32];
-    t2 = (u256)[ap + 192*i + 64];
-    t3 = (u256)[ap + 192*i + 96];
-    t4 = (u256)[ap + 192*i + 128];
-    t5 = (u256)[ap + 192*i + 160];
+    t0 = [:u256 ap + 192*i];
+    t1 = [:u256 ap + 192*i + 32];
+    t2 = [:u256 ap + 192*i + 64];
+    t3 = [:u256 ap + 192*i + 96];
+    t4 = [:u256 ap + 192*i + 128];
+    t5 = [:u256 ap + 192*i + 160];
 
     tt, t3 = __shuffle8(t0, t3);
     t0, t4 = __shuffle8(t1, t4);
@@ -395,14 +395,14 @@ fn _poly_frombytes(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
     tt = #VPSRL_16u16(t5, 4);
     tt = #VPAND_256(mask, tt);
 
-    rp[u256 8*i] = t6;
-    rp[u256 8*i + 1] = t7;
-    rp[u256 8*i + 2] = t8;
-    rp[u256 8*i + 3] = t9;
-    rp[u256 8*i + 4] = t4;
-    rp[u256 8*i + 5] = t10;
-    rp[u256 8*i + 6] = t11;
-    rp[u256 8*i + 7] = tt;
+    rp[:u256 8*i] = t6;
+    rp[:u256 8*i + 1] = t7;
+    rp[:u256 8*i + 2] = t8;
+    rp[:u256 8*i + 3] = t9;
+    rp[:u256 8*i + 4] = t4;
+    rp[:u256 8*i + 5] = t10;
+    rp[:u256 8*i + 6] = t11;
+    rp[:u256 8*i + 7] = tt;
   }
 
   return rp;
@@ -417,17 +417,17 @@ fn _poly_frommont(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   reg ptr u16[16] x16p;
 
   x16p = jqx16;
-  qx16 = x16p[u256 0];
+  qx16 = x16p[:u256 0];
   x16p = jqinvx16;
-  qinvx16 = x16p[u256 0];
+  qinvx16 = x16p[:u256 0];
   x16p = jdmontx16;
-  dmontx16 = x16p[u256 0];
+  dmontx16 = x16p[:u256 0];
 
   for i=0 to MLKEM_N/16
   {
-    t = rp[u256 i];
+    t = rp[:u256 i];
     t = __fqmulx16(t, dmontx16, qx16, qinvx16);
-    rp[u256 i] = t;
+    rp[:u256 i] = t;
   }
 
   return rp; 
@@ -445,11 +445,11 @@ fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
   reg ptr u16[16] x16p;
 
   x16p = hqx16_p1;
-  hqs = x16p[u256 0];
-  shift = #VPBROADCAST_2u128(pfm_shift_s[u128 0]);
-  idx = #VPBROADCAST_2u128(pfm_idx_s[u128 0]);
+  hqs = x16p[:u256 0];
+  shift = #VPBROADCAST_2u128(pfm_shift_s[:u128 0]);
+  idx = #VPBROADCAST_2u128(pfm_idx_s[:u128 0]);
 
-  f = (u256)[ap];
+  f = [:u256 ap];
 
   for i=0 to 4
   {
@@ -475,10 +475,10 @@ fn _poly_frommsg(reg ptr u16[MLKEM_N] rp, reg u64 ap) -> reg ptr u16[MLKEM_N]
     g2 = #VPERM2I128(h0,h1,0x31);
     g1 = #VPERM2I128(h2,h3,0x20);
     g3 = #VPERM2I128(h2,h3,0x31);
-    rp[u256 2*i] = g0;
-    rp[u256 2*i + 1] = g1;
-    rp[u256 2*i + 8] = g2;
-    rp[u256 2*i + 8 + 1] = g3;
+    rp[:u256 2*i] = g0;
+    rp[:u256 2*i + 1] = g1;
+    rp[:u256 2*i + 8] = g2;
+    rp[:u256 2*i + 8 + 1] = g3;
   }
 
   return rp;
@@ -493,11 +493,11 @@ fn _poly_frommsg_1(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> reg ptr u16[ML
   reg ptr u16[16] x16p;
 
   x16p = hqx16_p1;
-  hqs = x16p[u256 0];
-  shift = #VPBROADCAST_2u128(pfm_shift_s[u128 0]);
-  idx = #VPBROADCAST_2u128(pfm_idx_s[u128 0]);
+  hqs = x16p[:u256 0];
+  shift = #VPBROADCAST_2u128(pfm_shift_s[:u128 0]);
+  idx = #VPBROADCAST_2u128(pfm_idx_s[:u128 0]);
 
-  f = ap[u256 0];
+  f = ap[:u256 0];
 
   for i=0 to 4
   {
@@ -523,10 +523,10 @@ fn _poly_frommsg_1(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> reg ptr u16[ML
     g2 = #VPERM2I128(h0,h1,0x31);
     g1 = #VPERM2I128(h2,h3,0x20);
     g3 = #VPERM2I128(h2,h3,0x31);
-    rp[u256 2*i] = g0;
-    rp[u256 2*i + 1] = g1;
-    rp[u256 2*i + 8] = g2;
-    rp[u256 2*i + 8 + 1] = g3;
+    rp[:u256 2*i] = g0;
+    rp[:u256 2*i + 1] = g1;
+    rp[:u256 2*i + 8] = g2;
+    rp[:u256 2*i + 8 + 1] = g3;
   }
 
   return rp;
@@ -557,11 +557,11 @@ fn __cbd3(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_ETA1*MLKEM_N/4+(MLKEM_ETA1 -
   mask07  = #VPBROADCAST_8u32(mask07_s);
   mask70  = #VPBROADCAST_8u32(mask70_s);
   mask3   = #VPBROADCAST_16u16(mask3_s);
-  shufbidx = cbd_jshufbidx[u256 0];
+  shufbidx = cbd_jshufbidx[:u256 0];
 
   for i=0 to MLKEM_N/32
   {
-    f0 = buf.[u256 24*i];
+    f0 = buf.[:u256 24*i];
     f0 = #VPERMQ(f0, 0x94);
     f0 = #VPSHUFB_256(f0, shufbidx);
 
@@ -595,8 +595,8 @@ fn __cbd3(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_ETA1*MLKEM_N/4+(MLKEM_ETA1 -
     f0 = #VPERM2I128(f2, f3, 0x20);
     f1 = #VPERM2I128(f2, f3, 0x31);
 
-    rp[u256 2*i] = f0;
-    rp[u256 2*i + 1] = f1;
+    rp[:u256 2*i] = f0;
+    rp[:u256 2*i + 1] = f1;
   }
 
   return rp;
@@ -624,7 +624,7 @@ fn __cbd2(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_ETA2*MLKEM_N/4] buf) -> reg 
 
   for i=0 to MLKEM_N/64
   {
-    f0 = buf[u256 i];
+    f0 = buf[:u256 i];
 
     f1 = #VPSRL_16u16(f0, 1);
     f0 = #VPAND_256(mask55, f0);
@@ -654,10 +654,10 @@ fn __cbd2(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_ETA2*MLKEM_N/4] buf) -> reg 
     f2 = #VPMOVSX_16u8_16u16(t);
     t = #VEXTRACTI128(f3, 1);
     f3 = #VPMOVSX_16u8_16u16(t);
-    rp[u256 4*i] = f0;
-    rp[u256 4*i + 1] = f2;
-    rp[u256 4*i + 2] = f1;
-    rp[u256 4*i + 3] = f3;
+    rp[:u256 4*i] = f0;
+    rp[:u256 4*i + 1] = f2;
+    rp[:u256 4*i + 2] = f1;
+    rp[:u256 4*i + 3] = f3;
   }
 
   return rp;
@@ -708,8 +708,8 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
 
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = seed[u64 i];
-    extseed[u64 i] = t64;
+    t64 = seed[:u64 i];
+    extseed[:u64 i] = t64;
   }
   extseed[MLKEM_SYMBYTES] = nonce;
 
@@ -724,7 +724,7 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
 
   for i=0 to MLKEM_N/64
   {
-    f0 = buf[u256 i];
+    f0 = buf[:u256 i];
 
     f1 = #VPSRL_16u16(f0, 1);
     f0 = #VPAND_256(mask55, f0);
@@ -754,10 +754,10 @@ fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg 
     f2 = #VPMOVSX_16u8_16u16(t);
     t = #VEXTRACTI128(f3, 1);
     f3 = #VPMOVSX_16u8_16u16(t);
-    rp[u256 4*i] = f0;
-    rp[u256 4*i + 1] = f2;
-    rp[u256 4*i + 2] = f1;
-    rp[u256 4*i + 3] = f3;
+    rp[:u256 4*i] = f0;
+    rp[:u256 4*i + 1] = f2;
+    rp[:u256 4*i + 2] = f1;
+    rp[:u256 4*i + 3] = f3;
   }
 
   return rp;
@@ -784,11 +784,11 @@ fn _poly_getnoise_eta1_4x(reg ptr u16[MLKEM_N] r0 r1 r2 r3, reg ptr u8[MLKEM_SYM
   stack u256[25] state;
   stack u8[NOISE_NBLOCKS * SHAKE256_RATE] buf0 buf1 buf2 buf3;
 
-  f = seed[u256 0];
-  buf0[u256 0] = f;
-  buf1[u256 0] = f;
-  buf2[u256 0] = f;
-  buf3[u256 0] = f;
+  f = seed[:u256 0];
+  buf0[:u256 0] = f;
+  buf1[:u256 0] = f;
+  buf2[:u256 0] = f;
+  buf3[:u256 0] = f;
 
   buf0.[32] = nonce;
   nonce += 1;
@@ -816,11 +816,11 @@ fn _poly_getnoise_eta1122_4x(reg ptr u16[MLKEM_N] r0 r1 r2 r3, reg ptr u8[MLKEM_
   stack u256[25] state;
   stack u8[NOISE_NBLOCKS * SHAKE256_RATE] buf0 buf1 buf2 buf3;
 
-  f = seed[u256 0];
-  buf0[u256 0] = f;
-  buf1[u256 0] = f;
-  buf2[u256 0] = f;
-  buf3[u256 0] = f;
+  f = seed[:u256 0];
+  buf0[:u256 0] = f;
+  buf1[:u256 0] = f;
+  buf2[:u256 0] = f;
+  buf3[:u256 0] = f;
 
   buf0.[32] = nonce;
   nonce += 1;
@@ -891,31 +891,31 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   inline int i;
 
   zetasp = jzetas_inv_exp;
-  qx16 = jqx16[u256 0];
+  qx16 = jqx16[:u256 0];
 
   for i=0 to 2 
   {
     // level 0:
-    zeta0 = zetasp.[u256 0+392*i];
-    zeta1 = zetasp.[u256 64+392*i];
-    zeta2 = zetasp.[u256 32+392*i];
-    zeta3 = zetasp.[u256 96+392*i];
+    zeta0 = zetasp.[:u256 0+392*i];
+    zeta1 = zetasp.[:u256 64+392*i];
+    zeta2 = zetasp.[:u256 32+392*i];
+    zeta3 = zetasp.[:u256 96+392*i];
 
-    r0 = rp.[u256 32*0+256*i];
-    r1 = rp.[u256 32*1+256*i];
-    r2 = rp.[u256 32*2+256*i];
-    r3 = rp.[u256 32*3+256*i];
-    r4 = rp.[u256 32*4+256*i];
-    r5 = rp.[u256 32*5+256*i];
-    r6 = rp.[u256 32*6+256*i];
-    r7 = rp.[u256 32*7+256*i];
+    r0 = rp.[:u256 32*0+256*i];
+    r1 = rp.[:u256 32*1+256*i];
+    r2 = rp.[:u256 32*2+256*i];
+    r3 = rp.[:u256 32*3+256*i];
+    r4 = rp.[:u256 32*4+256*i];
+    r5 = rp.[:u256 32*5+256*i];
+    r6 = rp.[:u256 32*6+256*i];
+    r7 = rp.[:u256 32*7+256*i];
 
     r0, r1, r4, r5, r2, r3, r6, r7 = __invntt___butterfly64x(r0, r1, r4, r5, r2, r3, r6, r7, zeta0, zeta1, zeta2, zeta3, qx16);
 
     // level 1:
-    vx16 = jvx16[u256 0];
-    zeta0 = zetasp.[u256 128+392*i];
-    zeta1 = zetasp.[u256 160+392*i];
+    vx16 = jvx16[:u256 0];
+    zeta0 = zetasp.[:u256 128+392*i];
+    zeta1 = zetasp.[:u256 160+392*i];
     r0 = __red16x(r0, qx16, vx16);
     r1 = __red16x(r1, qx16, vx16);
     r4 = __red16x(r4, qx16, vx16);
@@ -929,8 +929,8 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r6, r7 = __shuffle1(r6, r7);
 
     // level 2:
-    zeta0 = zetasp.[u256 192+392*i];
-    zeta1 = zetasp.[u256 224+392*i];
+    zeta0 = zetasp.[:u256 192+392*i];
+    zeta1 = zetasp.[:u256 224+392*i];
 
 
     r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
@@ -943,8 +943,8 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r5, r7 = __shuffle2(r5, r7);
 
     // level 3:
-    zeta0 = zetasp.[u256 256+392*i];
-    zeta1 = zetasp.[u256 288+392*i];
+    zeta0 = zetasp.[:u256 256+392*i];
+    zeta1 = zetasp.[:u256 288+392*i];
 
     r0, r4, r1, r5, r2, r6, r3, r7 = __invntt___butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
@@ -956,8 +956,8 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r3, r7 = __shuffle4(r3, r7);
 
     // level 4:
-    zeta0 = zetasp.[u256 320+392*i];
-    zeta1 = zetasp.[u256 352+392*i];
+    zeta0 = zetasp.[:u256 320+392*i];
+    zeta1 = zetasp.[:u256 352+392*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
@@ -969,27 +969,27 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r6, r7 = __shuffle8(r6, r7);
 
     // level 5:
-    zeta0 = #VPBROADCAST_8u32(zetasp.[u32 384+392*i]);
-    zeta1 = #VPBROADCAST_8u32(zetasp.[u32 388+392*i]);
+    zeta0 = #VPBROADCAST_8u32(zetasp.[:u32 384+392*i]);
+    zeta1 = #VPBROADCAST_8u32(zetasp.[:u32 388+392*i]);
 
     r0, r2, r4, r6, r1, r3, r5, r7 = __invntt___butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     r0 = __red16x(r0, qx16, vx16);
 
     if (i==0) {
-     rp.[u256 32*0+256*i] = r0;
-     rp.[u256 32*1+256*i] = r2;
-     rp.[u256 32*2+256*i] = r4;
-     rp.[u256 32*3+256*i] = r6;
+     rp.[:u256 32*0+256*i] = r0;
+     rp.[:u256 32*1+256*i] = r2;
+     rp.[:u256 32*2+256*i] = r4;
+     rp.[:u256 32*3+256*i] = r6;
     }
-    rp.[u256 32*4+256*i] = r1;
-    rp.[u256 32*5+256*i] = r3;
-    rp.[u256 32*6+256*i] = r5;
-    rp.[u256 32*7+256*i] = r7;
+    rp.[:u256 32*4+256*i] = r1;
+    rp.[:u256 32*5+256*i] = r3;
+    rp.[:u256 32*6+256*i] = r5;
+    rp.[:u256 32*7+256*i] = r7;
   }
 
-  zeta0 = #VPBROADCAST_8u32(zetasp.[u32 784]);
-  zeta1 = #VPBROADCAST_8u32(zetasp.[u32 788]);
+  zeta0 = #VPBROADCAST_8u32(zetasp.[:u32 784]);
+  zeta1 = #VPBROADCAST_8u32(zetasp.[:u32 788]);
 
   for i=0 to 2
   {
@@ -999,35 +999,35 @@ fn _poly_invntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
      r5 = r2;
      r4 = r0;
     } else {
-     r4 = rp.[u256 32*8+128*i];
-     r5 = rp.[u256 32*9+128*i];
-     r6 = rp.[u256 32*10+128*i];
-     r7 = rp.[u256 32*11+128*i];
+     r4 = rp.[:u256 32*8+128*i];
+     r5 = rp.[:u256 32*9+128*i];
+     r6 = rp.[:u256 32*10+128*i];
+     r7 = rp.[:u256 32*11+128*i];
     }
-    r0 = rp.[u256 32*0+128*i];
-    r1 = rp.[u256 32*1+128*i];
-    r2 = rp.[u256 32*2+128*i];
-    r3 = rp.[u256 32*3+128*i];
+    r0 = rp.[:u256 32*0+128*i];
+    r1 = rp.[:u256 32*1+128*i];
+    r2 = rp.[:u256 32*2+128*i];
+    r3 = rp.[:u256 32*3+128*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __invntt___butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
-    flox16 = jflox16[u256 0];
-    fhix16 = jfhix16[u256 0];
+    flox16 = jflox16[:u256 0];
+    fhix16 = jfhix16[:u256 0];
 
-    rp.[u256 32*8+128*i]  = r4;
-    rp.[u256 32*9+128*i]  = r5;
-    rp.[u256 32*10+128*i] = r6;
-    rp.[u256 32*11+128*i] = r7;
+    rp.[:u256 32*8+128*i]  = r4;
+    rp.[:u256 32*9+128*i]  = r5;
+    rp.[:u256 32*10+128*i] = r6;
+    rp.[:u256 32*11+128*i] = r7;
 
     r0 = __fqmulprecomp16x(r0, flox16, fhix16, qx16);
     r1 = __fqmulprecomp16x(r1, flox16, fhix16, qx16);
     r2 = __fqmulprecomp16x(r2, flox16, fhix16, qx16);
     r3 = __fqmulprecomp16x(r3, flox16, fhix16, qx16);
 
-    rp.[u256 32*0+128*i] = r0;
-    rp.[u256 32*1+128*i] = r1;
-    rp.[u256 32*2+128*i] = r2;
-    rp.[u256 32*3+128*i] = r3;
+    rp.[:u256 32*0+128*i] = r0;
+    rp.[:u256 32*1+128*i] = r1;
+    rp.[:u256 32*2+128*i] = r2;
+    rp.[:u256 32*3+128*i] = r3;
   }
 
   return rp;
@@ -1089,58 +1089,58 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   inline int i;
 
   zetasp = jzetas_exp;
-  qx16 = jqx16[u256 0];
+  qx16 = jqx16[:u256 0];
 
-  zeta0 = #VPBROADCAST_8u32(zetasp[u32 0]);
-  zeta1 = #VPBROADCAST_8u32(zetasp[u32 1]);
+  zeta0 = #VPBROADCAST_8u32(zetasp[:u32 0]);
+  zeta1 = #VPBROADCAST_8u32(zetasp[:u32 1]);
 
-  r0 = rp.[u256 32*0];
-  r1 = rp.[u256 32*1];
-  r2 = rp.[u256 32*2];
-  r3 = rp.[u256 32*3];
-  r4 = rp.[u256 32*8];
-  r5 = rp.[u256 32*9];
-  r6 = rp.[u256 32*10];
-  r7 = rp.[u256 32*11];
+  r0 = rp.[:u256 32*0];
+  r1 = rp.[:u256 32*1];
+  r2 = rp.[:u256 32*2];
+  r3 = rp.[:u256 32*3];
+  r4 = rp.[:u256 32*8];
+  r5 = rp.[:u256 32*9];
+  r6 = rp.[:u256 32*10];
+  r7 = rp.[:u256 32*11];
 
   r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
-  rp.[u256 32*0] = r0;
-  rp.[u256 32*1] = r1;
-  rp.[u256 32*2] = r2;
-  rp.[u256 32*3] = r3;
-  rp.[u256 32*8] = r4;
-  rp.[u256 32*9] = r5;
-  rp.[u256 32*10] = r6;
-  rp.[u256 32*11] = r7;
+  rp.[:u256 32*0] = r0;
+  rp.[:u256 32*1] = r1;
+  rp.[:u256 32*2] = r2;
+  rp.[:u256 32*3] = r3;
+  rp.[:u256 32*8] = r4;
+  rp.[:u256 32*9] = r5;
+  rp.[:u256 32*10] = r6;
+  rp.[:u256 32*11] = r7;
 
-  r0 = rp.[u256 32*4];
-  r1 = rp.[u256 32*5];
-  r2 = rp.[u256 32*6];
-  r3 = rp.[u256 32*7];
-  r4 = rp.[u256 32*12];
-  r5 = rp.[u256 32*13];
-  r6 = rp.[u256 32*14];
-  r7 = rp.[u256 32*15];
+  r0 = rp.[:u256 32*4];
+  r1 = rp.[:u256 32*5];
+  r2 = rp.[:u256 32*6];
+  r3 = rp.[:u256 32*7];
+  r4 = rp.[:u256 32*12];
+  r5 = rp.[:u256 32*13];
+  r6 = rp.[:u256 32*14];
+  r7 = rp.[:u256 32*15];
 
   r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
   /*
-   rp.[u256 32*4] = r0;
-   rp.[u256 32*5] = r1;
-   rp.[u256 32*6] = r2;
-   rp.[u256 32*7] = r3;
+   rp.[:u256 32*4] = r0;
+   rp.[:u256 32*5] = r1;
+   rp.[:u256 32*6] = r2;
+   rp.[:u256 32*7] = r3;
   */
-  rp.[u256 32*12] = r4;
-  rp.[u256 32*13] = r5;
-  rp.[u256 32*14] = r6;
-  rp.[u256 32*15] = r7;
+  rp.[:u256 32*12] = r4;
+  rp.[:u256 32*13] = r5;
+  rp.[:u256 32*14] = r6;
+  rp.[:u256 32*15] = r7;
 
   for i=0 to 2 {
 
     // level 1
-    zeta0 = #VPBROADCAST_8u32(zetasp.[u32 8 + 392*i]);
-    zeta1 = #VPBROADCAST_8u32(zetasp.[u32 12 + 392*i]);
+    zeta0 = #VPBROADCAST_8u32(zetasp.[:u32 8 + 392*i]);
+    zeta1 = #VPBROADCAST_8u32(zetasp.[:u32 12 + 392*i]);
 
     if ( i == 0) {
      r4 = r0;
@@ -1148,21 +1148,21 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
      r6 = r2;
      r7 = r3;
     } else {
-     r4 = rp.[u256 32*4+256*i];
-     r5 = rp.[u256 32*5+256*i];
-     r6 = rp.[u256 32*6+256*i];
-     r7 = rp.[u256 32*7+256*i];
+     r4 = rp.[:u256 32*4+256*i];
+     r5 = rp.[:u256 32*5+256*i];
+     r6 = rp.[:u256 32*6+256*i];
+     r7 = rp.[:u256 32*7+256*i];
     }
-    r0 = rp.[u256 32*0+256*i];
-    r1 = rp.[u256 32*1+256*i];
-    r2 = rp.[u256 32*2+256*i];
-    r3 = rp.[u256 32*3+256*i];
+    r0 = rp.[:u256 32*0+256*i];
+    r1 = rp.[:u256 32*1+256*i];
+    r2 = rp.[:u256 32*2+256*i];
+    r3 = rp.[:u256 32*3+256*i];
 
     r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     // level 2
-    zeta0 = zetasp.[u256 16 + 392*i];
-    zeta1 = zetasp.[u256 48 + 392*i];
+    zeta0 = zetasp.[:u256 16 + 392*i];
+    zeta1 = zetasp.[:u256 48 + 392*i];
 
     r0, r4 = __shuffle8(r0, r4);
     r1, r5 = __shuffle8(r1, r5);
@@ -1172,8 +1172,8 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r0, r4, r1, r5, r2, r6, r3, r7 = __butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     // level 3
-    zeta0 = zetasp.[u256 80 + 392*i];
-    zeta1 = zetasp.[u256 112 + 392*i];
+    zeta0 = zetasp.[:u256 80 + 392*i];
+    zeta1 = zetasp.[:u256 112 + 392*i];
 
     r0, r2 = __shuffle4(r0, r2);
     r4, r6 = __shuffle4(r4, r6);
@@ -1183,8 +1183,8 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r0, r2, r4, r6, r1, r3, r5, r7 = __butterfly64x(r0, r2, r4, r6, r1, r3, r5, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     // level 4
-    zeta0 = zetasp.[u256 144 + 392*i];
-    zeta1 = zetasp.[u256 176 + 392*i];
+    zeta0 = zetasp.[:u256 144 + 392*i];
+    zeta1 = zetasp.[:u256 176 + 392*i];
 
     r0, r1 = __shuffle2(r0, r1);
     r2, r3 = __shuffle2(r2, r3);
@@ -1194,8 +1194,8 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r0, r1, r2, r3, r4, r5, r6, r7 = __butterfly64x(r0, r1, r2, r3, r4, r5, r6, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     // level 5
-    zeta0 = zetasp.[u256 208 + 392*i];
-    zeta1 = zetasp.[u256 240 + 392*i];
+    zeta0 = zetasp.[:u256 208 + 392*i];
+    zeta1 = zetasp.[:u256 240 + 392*i];
 
     r0, r4 = __shuffle1(r0, r4);
     r1, r5 = __shuffle1(r1, r5);
@@ -1205,14 +1205,14 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r0, r4, r1, r5, r2, r6, r3, r7 = __butterfly64x(r0, r4, r1, r5, r2, r6, r3, r7, zeta0, zeta0, zeta1, zeta1, qx16);
 
     // level 6
-    zeta0 = zetasp.[u256 272 + 392*i];
-    zeta2 = zetasp.[u256 304 + 392*i];
-    zeta1 = zetasp.[u256 336 + 392*i];
-    zeta3 = zetasp.[u256 368 + 392*i];
+    zeta0 = zetasp.[:u256 272 + 392*i];
+    zeta2 = zetasp.[:u256 304 + 392*i];
+    zeta1 = zetasp.[:u256 336 + 392*i];
+    zeta3 = zetasp.[:u256 368 + 392*i];
 
     r0, r4, r2, r6, r1, r5, r3, r7 = __butterfly64x(r0, r4, r2, r6, r1, r5, r3, r7, zeta0, zeta1, zeta2, zeta3, qx16);
 
-    vx16 = jvx16[u256 0];
+    vx16 = jvx16[:u256 0];
 
     r0 = __red16x(r0, qx16, vx16);
     r4 = __red16x(r4, qx16, vx16);
@@ -1223,14 +1223,14 @@ fn _poly_ntt(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
     r3 = __red16x(r3, qx16, vx16);
     r7 = __red16x(r7, qx16, vx16);
 
-    rp.[u256 32*0+256*i] = r0;
-    rp.[u256 32*1+256*i] = r4;
-    rp.[u256 32*2+256*i] = r1;
-    rp.[u256 32*3+256*i] = r5;
-    rp.[u256 32*4+256*i] = r2;
-    rp.[u256 32*5+256*i] = r6;
-    rp.[u256 32*6+256*i] = r3;
-    rp.[u256 32*7+256*i] = r7;
+    rp.[:u256 32*0+256*i] = r0;
+    rp.[:u256 32*1+256*i] = r4;
+    rp.[:u256 32*2+256*i] = r1;
+    rp.[:u256 32*3+256*i] = r5;
+    rp.[:u256 32*4+256*i] = r2;
+    rp.[:u256 32*5+256*i] = r6;
+    rp.[:u256 32*6+256*i] = r3;
+    rp.[:u256 32*7+256*i] = r7;
   }
 
   return rp;
@@ -1242,14 +1242,14 @@ fn __poly_reduce(reg ptr u16[MLKEM_N] rp) -> reg ptr u16[MLKEM_N]
   inline int i;
   reg u256 r qx16 vx16;
   
-  qx16 = jqx16[u256 0];
-  vx16 = jvx16[u256 0];
+  qx16 = jqx16[:u256 0];
+  vx16 = jvx16[:u256 0];
 
   for i=0 to 16 
   {
-    r = rp.[u256 32*i];
+    r = rp.[:u256 32*i];
     r = __red16x(r, qx16, vx16);
-    rp.[u256 32*i] = r;
+    rp.[:u256 32*i] = r;
   }
   return rp;
 }
@@ -1262,10 +1262,10 @@ fn _poly_sub(reg ptr u16[MLKEM_N] rp ap bp) -> reg ptr u16[MLKEM_N]
   reg u256 r;
 
   for i = 0 to 16 {
-    a = ap.[u256 32*i];
-    b = bp.[u256 32*i];
+    a = ap.[:u256 32*i];
+    b = bp.[:u256 32*i];
     r = #VPSUB_16u16(a, b);
-    rp.[u256 32*i] = r;
+    rp.[:u256 32*i] = r;
   }
 
   return rp;
@@ -1278,20 +1278,20 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
   reg ptr u16[16] jqx16_p;
 
   jqx16_p = jqx16;
-  qx16 = jqx16_p[u256 0];
+  qx16 = jqx16_p[:u256 0];
 
   a = _poly_csubq(a);
 
   for i = 0 to 2
   {
-    t0 = a[u256 8*i];
-    t1 = a[u256 8*i + 1];
-    t2 = a[u256 8*i + 2];
-    t3 = a[u256 8*i + 3];
-    t4 = a[u256 8*i + 4];
-    t5 = a[u256 8*i + 5];
-    t6 = a[u256 8*i + 6];
-    t7 = a[u256 8*i + 7];
+    t0 = a[:u256 8*i];
+    t1 = a[:u256 8*i + 1];
+    t2 = a[:u256 8*i + 2];
+    t3 = a[:u256 8*i + 3];
+    t4 = a[:u256 8*i + 4];
+    t5 = a[:u256 8*i + 5];
+    t6 = a[:u256 8*i + 6];
+    t7 = a[:u256 8*i + 7];
 
     tt = #VPSLL_16u16(t1, 12);
     tt |= t0;
@@ -1331,12 +1331,12 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
     t2, ttt = __shuffle8(t1, ttt);
     t1, t4 = __shuffle8(tt, t4);
 
-    (u256)[rp + 192*i] = t0;
-    (u256)[rp + 192*i + 32] = t2;
-    (u256)[rp + 192*i + 64] = t1;
-    (u256)[rp + 192*i + 96] = t3;
-    (u256)[rp + 192*i + 128] = ttt;
-    (u256)[rp + 192*i + 160] = t4;
+    [:u256 rp + 192*i] = t0;
+    [:u256 rp + 192*i + 32] = t2;
+    [:u256 rp + 192*i + 64] = t1;
+    [:u256 rp + 192*i + 96] = t3;
+    [:u256 rp + 192*i + 128] = ttt;
+    [:u256 rp + 192*i + 160] = t4;
   }
 
   return a;
@@ -1352,15 +1352,15 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
   a = _poly_csubq(a);
 
   px16 = hqx16_m1;
-  hq = px16[u256 0];
+  hq = px16[:u256 0];
 
   px16 = hhqx16;
-  hhq = px16[u256 0];
+  hhq = px16[:u256 0];
 
   for i=0 to MLKEM_N/32
   {
-    f0 = a[u256 2*i];
-    f1 = a[u256 2*i + 1];
+    f0 = a[:u256 2*i];
+    f1 = a[:u256 2*i + 1];
     f0 = #VPSUB_16u16(hq, f0);
     f1 = #VPSUB_16u16(hq, f1);
     g0 = #VPSRA_16u16(f0, 15);
@@ -1372,7 +1372,7 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[MLKEM_N] a) -> reg ptr u16[MLKEM_N]
     f0 = #VPACKSS_16u16(f0, f1);
     f0 = #VPERMQ(f0, 0xD8);
     c = #VPMOVMSKB_u256u32(f0);
-    (u32)[rp+4*i] = c;
+    [:u32 rp+4*i] = c;
   }
   return a;
 }
@@ -1387,15 +1387,15 @@ fn _poly_tomsg_1(reg ptr u8[MLKEM_INDCPA_MSGBYTES] rp, reg ptr u16[MLKEM_N] a) -
   a = _poly_csubq(a);
 
   px16 = hqx16_m1;
-  hq = px16[u256 0];
+  hq = px16[:u256 0];
 
   px16 = hhqx16;
-  hhq = px16[u256 0];
+  hhq = px16[:u256 0];
 
   for i=0 to MLKEM_N/32
   {
-    f0 = a[u256 2*i];
-    f1 = a[u256 2*i + 1];
+    f0 = a[:u256 2*i];
+    f1 = a[:u256 2*i + 1];
     f0 = #VPSUB_16u16(hq, f0);
     f1 = #VPSUB_16u16(hq, f1);
     g0 = #VPSRA_16u16(f0, 15);
@@ -1407,7 +1407,7 @@ fn _poly_tomsg_1(reg ptr u8[MLKEM_INDCPA_MSGBYTES] rp, reg ptr u16[MLKEM_N] a) -
     f0 = #VPACKSS_16u16(f0, f1);
     f0 = #VPERMQ(f0, 0xD8);
     c = #VPMOVMSKB_u256u32(f0);
-    rp[u32 i] = c;
+    rp[:u32 i] = c;
   }
   return rp, a;
 }

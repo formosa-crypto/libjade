@@ -168,7 +168,7 @@ fn _poly_compress(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
     d1 &= 0xf;
     d1 <<= 4;
     d0 |= d1;
-    (u8)[rp+i] = d0;
+    [:u8 rp+i] = d0;
     i += 1;
     j += 1;
   }
@@ -222,7 +222,7 @@ fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
   j = 0;
 
   while (i < 128) {
-    t  = (u8)[ap+i];
+    t  = [:u8 ap+i];
     d0 = (16u)t;
     d1 = (16u)t;
     d0 &= 0xf;
@@ -250,9 +250,9 @@ fn _poly_frombytes(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
 
   for i = 0 to KYBER_N/2
   {
-    c0 = (u8)[ap+3*i];
-    c1 = (u8)[ap+3*i+1];
-    c2 = (u8)[ap+3*i+2];
+    c0 = [:u8 ap+3*i];
+    c1 = [:u8 ap+3*i+1];
+    c2 = [:u8 ap+3*i+2];
     d0 = (16u)c0;
     t  = (16u)c1;
     t &= 0xf;
@@ -298,7 +298,7 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
 
   for i = 0 to KYBER_INDCPA_MSGBYTES
   {
-    c = (u8)[ap + i];
+    c = [:u8 ap + i];
 
     t = (16u)c; 
     t &= 1;
@@ -759,17 +759,17 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
     i += 1;
     d  = t0;
     d  &= 0xff;
-    (u8)[rp+j] = d;
+    [:u8 rp+j] = d;
     j += 1;
     t0 >>= 8;
     d = t1;
     d &= 0xf;
     d <<= 4;
     d |= t0;
-    (u8)[rp+j] = d;
+    [:u8 rp+j] = d;
     j += 1;
     t1 >>= 4;
-    (u8)[rp+j] = t1;
+    [:u8 rp+j] = t1;
     j += 1;
   }
   return a;
@@ -800,7 +800,7 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
       r  |= d;
     }
 
-    (u8)[rp+i] = r;
+    [:u8 rp+i] = r;
   }
   return a;
 }

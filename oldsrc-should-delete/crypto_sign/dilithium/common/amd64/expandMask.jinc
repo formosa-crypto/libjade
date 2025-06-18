@@ -13,21 +13,21 @@ fn expandMask_poly_shake_init(stack u64[25] state, reg ptr u8[64] rho_prime, sta
 	i = 0;
 	while(i < 64) {
 		c = rho_prime[i];
-		state[u8 i] = c;
+		state[:u8 i] = c;
 		i += 1;
 	}
 
 	v = kappa;
 	v &= 255;
 	c = (8u) v;
-	state[u8 64] = c;
+	state[:u8 64] = c;
 
 	v = kappa;
 	v >>= 8;
 	c = (8u) v;
-	state[u8 65] = c;
-	state[u8 66] ^= 0x1f;
-	state[u8 SHAKE256_RATE - 1] ^= 0x80;
+	state[:u8 65] = c;
+	state[:u8 66] ^= 0x1f;
+	state[:u8 SHAKE256_RATE - 1] ^= 0x80;
 
 	return state;
 }
@@ -54,7 +54,7 @@ fn expandMask_poly_gamma1_217(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_pri
 		i = 0;
 		while(i < SHAKE256_RATE) {
 			addr = i;
-			c = state[u8 addr];
+			c = state[:u8 addr];
 			addr = y_loc;
 			y_packed[addr] = c;
 			y_loc += 1;
@@ -91,7 +91,7 @@ fn expandMask_poly_gamma1_219(reg ptr u32[Li2_polydeg] f, reg ptr u8[64] rho_pri
 		i = 0;
 		while(i < SHAKE256_RATE) {
 			addr = i;
-			c = state[u8 addr];
+			c = state[:u8 addr];
 			addr = y_loc;
 			y_packed[addr] = c;
 			y_loc += 1;

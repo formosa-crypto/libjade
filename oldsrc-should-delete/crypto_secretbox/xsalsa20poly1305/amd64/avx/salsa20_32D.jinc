@@ -23,7 +23,7 @@ inline fn __init_ref_32(reg u64 nonce, reg u32[8] key) -> stack u32[16]
 
   // st[6,7] = nonce[0,1]
   for i=0 to 2
-  { t = (u32)[nonce + i*4];
+  { t = [:u32 nonce + i*4];
     st[i+6] = t; }
 
   // st[8,9] = 0
@@ -151,7 +151,7 @@ inline fn __store_ref_32(
   inline int i;
 
   for i=0 to 8
-  { out[u32 i] = k[i]; }
+  { out[:u32 i] = k[i]; }
 
   return out;
 }

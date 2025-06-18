@@ -57,7 +57,7 @@ inline fn __store_ref(reg u64 out, stack u64[8] H)
   for i=0 to 8
   { v = H[i];
     v = #BSWAP_64(v);
-    (u64)[out + i*8] = v;
+    [:u64 out + i*8] = v;
   }
 }
 
@@ -202,7 +202,7 @@ fn _blocks_0_ref(reg ptr u64[8] _H, reg u64 in inlen) -> reg ptr u64[8], reg u64
   while(inlen >= 128)
   {
     for t=0 to 16
-    { v = (u64)[in + t*8];
+    { v = [:u64 in + t*8];
       v = #BSWAP_64(v);
       W[t] = v;
     }
@@ -369,13 +369,13 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u64[32], reg u64
 
   // copy in to sblocks
   while(i < inlen)
-  { v = (u8)[in + i];
-    sblocks[u8 i] = v;
+  { v = [:u8 in + i];
+    sblocks[:u8 i] = v;
     i += 1;
   }
 
   // set first byte after input to 0x80 
-  sblocks[u8 i] = 0x80;
+  sblocks[:u8 i] = 0x80;
 
   // check if one or two blocks are needed
   if(inlen < 112)
@@ -384,7 +384,7 @@ inline fn __lastblocks_ref(reg u64 in inlen bits) -> stack u64[32], reg u64
   { j = (256-8); nblocks = 2; i = 255; }
 
   while(i >= j)
-  { sblocks[u8 i] = (8u) bits;
+  { sblocks[:u8 i] = (8u) bits;
     bits >>= 8;
     i -= 1;
   }

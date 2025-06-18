@@ -29,8 +29,8 @@ fn _crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SY
 
   for i=0 to KYBER_INDCPA_PUBLICKEYBYTES/8
   {
-    t64 = (u64)[pkp + 8*i];
-    (u64)[skp] = t64;
+    t64 = [:u64 pkp + 8*i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 
@@ -42,8 +42,8 @@ fn _crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SY
 
   for i=0 to 4
   {
-    t64 = h_pk[u64 i];
-    (u64)[skp] = t64;
+    t64 = h_pk[:u64 i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 
@@ -51,8 +51,8 @@ fn _crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SY
   randomnessp2 = randomnessp[KYBER_SYMBYTES:KYBER_SYMBYTES];
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = randomnessp2[u64 i];
-    (u64)[skp] = t64;
+    t64 = randomnessp2[:u64 i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 }
@@ -72,8 +72,8 @@ fn _crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = randomnessp[u64 i];
-    kr[u64 i] = t64;
+    t64 = randomnessp[:u64 i];
+    kr[:u64 i] = t64;
   }
 
   buf[0:KYBER_SYMBYTES] = _sha3_256_32(buf[0:KYBER_SYMBYTES], kr[0:KYBER_SYMBYTES]);
@@ -118,8 +118,8 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = (u64)[hp + 8*i];
-    buf.[u64 KYBER_SYMBYTES + 8*i] = t64;
+    t64 = [:u64 hp + 8*i];
+    buf.[:u64 KYBER_SYMBYTES + 8*i] = t64;
   }
 
   s_skp = skp;

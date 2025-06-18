@@ -327,8 +327,8 @@ fn __basemul(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
     i = 0;
     while(i < ARRAY_N * 2){
 
-        a = src1.[u256 i];
-        b = src2.[u256 i];
+        a = src1.[:u256 i];
+        b = src2.[:u256 i];
 
         lo = #VPMULL_16u16(a, b);
         hi = #VPMULH_16u16(a, b);
@@ -337,7 +337,7 @@ fn __basemul(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
         lo = #VPMULH_16u16(lo, __q);
         c = #VPSUB_16u16(hi, lo);
 
-        des.[u256 i] = c;
+        des.[:u256 i] = c;
 
         i += 32;
 
@@ -358,12 +358,12 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
 
     stack u256[4] buff;
 
-    a[0] = src.[u256 0 * 32];
-    a[1] = src.[u256 1 * 32];
+    a[0] = src.[:u256 0 * 32];
+    a[1] = src.[:u256 1 * 32];
     b[0] = #VPUNPCKL_16u16(a[0], a[1]);
     b[1] = #VPUNPCKH_16u16(a[0], a[1]);
-    a[2] = src.[u256 2 * 32];
-    a[3] = src.[u256 3 * 32];
+    a[2] = src.[:u256 2 * 32];
+    a[3] = src.[:u256 3 * 32];
     b[2] = #VPUNPCKL_16u16(a[2], a[3]);
     b[3] = #VPUNPCKH_16u16(a[2], a[3]);
     c[0] = #VPUNPCKL_8u32(b[0], b[2]);
@@ -371,12 +371,12 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     c[2] = #VPUNPCKL_8u32(b[1], b[3]);
     c[3] = #VPUNPCKH_8u32(b[1], b[3]);
 
-    a[4] = src.[u256 4 * 32];
-    a[5] = src.[u256 5 * 32];
+    a[4] = src.[:u256 4 * 32];
+    a[5] = src.[:u256 5 * 32];
     b[4] = #VPUNPCKL_16u16(a[4], a[5]);
     b[5] = #VPUNPCKH_16u16(a[4], a[5]);
-    a[6] = src.[u256 6 * 32];
-    a[7] = src.[u256 7 * 32];
+    a[6] = src.[:u256 6 * 32];
+    a[7] = src.[:u256 7 * 32];
     b[6] = #VPUNPCKL_16u16(a[6], a[7]);
     b[7] = #VPUNPCKH_16u16(a[6], a[7]);
     c[4] = #VPUNPCKL_8u32(b[4], b[6]);
@@ -389,12 +389,12 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     buff[2] = #VMOVDQU_256(c[6]);
     buff[3] = #VMOVDQU_256(c[7]);
 
-    a[8] = src.[u256 8 * 32];
-    a[9] = src.[u256 9 * 32];
+    a[8] = src.[:u256 8 * 32];
+    a[9] = src.[:u256 9 * 32];
     b[8] = #VPUNPCKL_16u16(a[8], a[9]);
     b[9] = #VPUNPCKH_16u16(a[8], a[9]);
-    a[10] = src.[u256 10 * 32];
-    a[11] = src.[u256 11 * 32];
+    a[10] = src.[:u256 10 * 32];
+    a[11] = src.[:u256 11 * 32];
     b[10] = #VPUNPCKL_16u16(a[10], a[11]);
     b[11] = #VPUNPCKH_16u16(a[10], a[11]);
     c[8] = #VPUNPCKL_8u32(b[8], b[10]);
@@ -402,12 +402,12 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     c[10] = #VPUNPCKL_8u32(b[9], b[11]);
     c[11] = #VPUNPCKH_8u32(b[9], b[11]);
 
-    a[12] = src.[u256 12 * 32];
-    a[13] = src.[u256 13 * 32];
+    a[12] = src.[:u256 12 * 32];
+    a[13] = src.[:u256 13 * 32];
     b[12] = #VPUNPCKL_16u16(a[12], a[13]);
     b[13] = #VPUNPCKH_16u16(a[12], a[13]);
-    a[14] = src.[u256 14 * 32];
-    a[15] = src.[u256 15 * 32];
+    a[14] = src.[:u256 14 * 32];
+    a[15] = src.[:u256 15 * 32];
     b[14] = #VPUNPCKL_16u16(a[14], a[15]);
     b[15] = #VPUNPCKH_16u16(a[14], a[15]);
     c[12] = #VPUNPCKL_8u32(b[12], b[14]);
@@ -424,10 +424,10 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     e[8] = #VPERM2I128(d[0], d[8], 0x31);
     e[4] = #VPERM2I128(d[4], d[12], 0x20);
     e[12] = #VPERM2I128(d[4], d[12], 0x31);
-    src.[u256 0 * 32] = e[ 0];
-    src.[u256 1 * 32] = e[ 4];
-    src.[u256 8 * 32] = e[ 8];
-    src.[u256 9 * 32] = e[12];
+    src.[:u256 0 * 32] = e[ 0];
+    src.[:u256 1 * 32] = e[ 4];
+    src.[:u256 8 * 32] = e[ 8];
+    src.[:u256 9 * 32] = e[12];
 
     d[1] = #VPUNPCKL_4u64(c[1], c[5]);
     d[5] = #VPUNPCKH_4u64(c[1], c[5]);
@@ -437,10 +437,10 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     e[9] = #VPERM2I128(d[1], d[9], 0x31);
     e[5] = #VPERM2I128(d[5], d[13], 0x20);
     e[13] = #VPERM2I128(d[5], d[13], 0x31);
-    src.[u256 2 * 32] = e[ 1];
-    src.[u256 3 * 32] = e[ 5];
-    src.[u256 10 * 32] = e[ 9];
-    src.[u256 11 * 32] = e[13];
+    src.[:u256 2 * 32] = e[ 1];
+    src.[:u256 3 * 32] = e[ 5];
+    src.[:u256 10 * 32] = e[ 9];
+    src.[:u256 11 * 32] = e[13];
 
     c[2] = #VMOVDQU_256(buff[0]);
     c[3] = #VMOVDQU_256(buff[1]);
@@ -455,10 +455,10 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     e[10] = #VPERM2I128(d[2], d[10], 0x31);
     e[6] = #VPERM2I128(d[6], d[14], 0x20);
     e[14] = #VPERM2I128(d[6], d[14], 0x31);
-    src.[u256 4 * 32] = e[ 2];
-    src.[u256 5 * 32] = e[ 6];
-    src.[u256 12 * 32] = e[10];
-    src.[u256 13 * 32] = e[14];
+    src.[:u256 4 * 32] = e[ 2];
+    src.[:u256 5 * 32] = e[ 6];
+    src.[:u256 12 * 32] = e[10];
+    src.[:u256 13 * 32] = e[14];
 
     d[3] = #VPUNPCKL_4u64(c[3], c[7]);
     d[7] = #VPUNPCKH_4u64(c[3], c[7]);
@@ -468,10 +468,10 @@ fn __transpose(stack u16[256] src) -> stack u16[256] {
     e[11] = #VPERM2I128(d[3], d[11], 0x31);
     e[7] = #VPERM2I128(d[7], d[15], 0x20);
     e[15] = #VPERM2I128(d[7], d[15], 0x31);
-    src.[u256 6 * 32] = e[ 3];
-    src.[u256 7 * 32] = e[ 7];
-    src.[u256 14 * 32] = e[11];
-    src.[u256 15 * 32] = e[15];
+    src.[:u256 6 * 32] = e[ 3];
+    src.[:u256 7 * 32] = e[ 7];
+    src.[:u256 14 * 32] = e[11];
+    src.[:u256 15 * 32] = e[15];
 
     return src;
 

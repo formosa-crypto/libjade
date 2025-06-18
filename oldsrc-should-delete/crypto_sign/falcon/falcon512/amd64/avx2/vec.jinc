@@ -13,13 +13,13 @@ fn __load4_u256(reg u256 buff0 buff1 buff2 buff3, stack u16[ARRAY_N] src, reg u6
     reg u64 __src_indx;
 
     __src_indx = src_indx;
-    buff0 = src.[u256 __src_indx];
+    buff0 = src.[:u256 __src_indx];
     __src_indx += jump;
-    buff1 = src.[u256 __src_indx];
+    buff1 = src.[:u256 __src_indx];
     __src_indx += jump;
-    buff2 = src.[u256 __src_indx];
+    buff2 = src.[:u256 __src_indx];
     __src_indx += jump;
-    buff3 = src.[u256 __src_indx];
+    buff3 = src.[:u256 __src_indx];
 
     return buff0, buff1, buff2, buff3;
 
@@ -31,13 +31,13 @@ fn __store4_u256(reg u256 buff0 buff1 buff2 buff3, stack u16[ARRAY_N] des, reg u
     reg u64 __des_indx;
 
     __des_indx = des_indx;
-    des.[u256 __des_indx] = buff0;
+    des.[:u256 __des_indx] = buff0;
     __des_indx += jump;
-    des.[u256 __des_indx] = buff1;
+    des.[:u256 __des_indx] = buff1;
     __des_indx += jump;
-    des.[u256 __des_indx] = buff2;
+    des.[:u256 __des_indx] = buff2;
     __des_indx += jump;
-    des.[u256 __des_indx] = buff3;
+    des.[:u256 __des_indx] = buff3;
 
     return des;
 
@@ -61,8 +61,8 @@ fn __sub_canonical(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
     i = 0;
     while(i < ARRAY_N * 2){
 
-        t0 = src1.[u256 i];
-        t1 = src2.[u256 i];
+        t0 = src1.[:u256 i];
+        t1 = src2.[:u256 i];
 
         t0 = #VPSUB_16u16(t0, t1);
 
@@ -78,7 +78,7 @@ fn __sub_canonical(stack u16[ARRAY_N] des src1 src2) -> stack u16[ARRAY_N] {
         cmpn = #VPMULL_16u16(cmpn, __q);
         t0 = #VPSUB_16u16(t0, cmpn);
 
-        des.[u256 i] = t0;
+        des.[:u256 i] = t0;
 
         i += 32;
 

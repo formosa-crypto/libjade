@@ -37,12 +37,12 @@ inline fn __load_last_add(reg u64[3] h, reg u64 in len) -> reg u64[3]
 
   j = 0;
   while(j < len)
-  { c = (u8)[in + j];
-    s[u8 j] = c;
+  { c = [:u8 in + j];
+    s[:u8 j] = c;
     j += 1;
   }
 
-  s[u8 j] = 0x1;
+  s[:u8 j] = 0x1;
 
   cf, h[0] += s[0];
   cf, h[1] += s[1] + cf;

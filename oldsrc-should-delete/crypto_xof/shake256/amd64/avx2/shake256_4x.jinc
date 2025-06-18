@@ -21,11 +21,11 @@ inline fn __shake256_squeezeblock4x(
 	for i = 0 to (SHAKE256_RATE / 8) {
     t256 = state[i];
     t128 = (128u)t256;
-		h0[u64 i] = #VMOVLPD(t128);
-		h1[u64 i] = #VMOVHPD(t128);
+		h0[:u64 i] = #VMOVLPD(t128);
+		h1[:u64 i] = #VMOVHPD(t128);
     t128 = #VEXTRACTI128(t256, 1);
-		h2[u64 i] = #VMOVLPD(t128);
-		h3[u64 i] = #VMOVHPD(t128);
+		h2[:u64 i] = #VMOVLPD(t128);
+		h3[:u64 i] = #VMOVHPD(t128);
 	}
 
   return state, h0, h1, h2, h3;

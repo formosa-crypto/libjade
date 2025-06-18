@@ -171,10 +171,10 @@ fn shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr 
   // TODO: Inefficient to load one byte at a time. Optimize this.
   for i = 0 to 34 {
     c = in[i];
-    state[u8 i] ^= c;
+    state[:u8 i] ^= c;
   }
-  state[u8 34] ^= 0x1f;
-  state[u8 SHAKE128_RATE - 1] ^= 0x80;
+  state[:u8 34] ^= 0x1f;
+  state[:u8 SHAKE128_RATE - 1] ^= 0x80;
 
   return state;
 }
@@ -197,11 +197,11 @@ fn shake256_absorb32(stack u8[32] in) -> stack u64[25]
   // TODO: Inefficient to load one byte at a time. Optimize this.
   for i = 0 to 32 {
     c = in[i];
-    state_rsp[u8 i] ^= c;
+    state_rsp[:u8 i] ^= c;
   }
 
-  state_rsp[u8 32] ^= 0x1f;
-  state_rsp[u8 SHAKE256_RATE - 1] ^= 0x80;
+  state_rsp[:u8 32] ^= 0x1f;
+  state_rsp[:u8 SHAKE256_RATE - 1] ^= 0x80;
 
   state = state_rsp;
   return state;
@@ -220,7 +220,7 @@ fn shake256_squeezeblock(stack u64[25] state, stack u8[SHAKE256_RATE] out)
 
 	?{}, i = #set0_64();
 	while(i < SHAKE256_RATE) {
-		c = state[u8 i];
+		c = state[:u8 i];
 		out[i] = c;
 		i += 1;
 	}

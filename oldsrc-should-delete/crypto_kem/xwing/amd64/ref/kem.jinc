@@ -62,8 +62,8 @@ fn _crypto_xkem_keypair_derand_jazz(reg u64 pkp skp, reg ptr u8[(MLKEM_SYMBYTES*
     pk2 = #LEA(pkp + MLKEM_PUBLICKEYBYTES);
 
   for i=0 to 4 // assumes: sk2 with 32 bytes; pk2 with 32 bytes
-  { (u64)[skp + MLKEM_SECRETKEYBYTES + i*8] = sk2[u64 i];
-    (u64)[skp + MLKEM_SECRETKEYBYTES + 32 + i*8] = (u64)[pk2 + i*8];
+  { [:u64 skp + MLKEM_SECRETKEYBYTES + i*8] = sk2[:u64 i];
+    [:u64 skp + MLKEM_SECRETKEYBYTES + 32 + i*8] = [:u64 pk2 + i*8];
   }
 }
 

@@ -96,7 +96,7 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       ctr = 0;
       #bounded
       while (ctr < KYBER_N / 4) {
-        poly[u64 ctr] = ctr;
+        poly[:u64 ctr] = ctr;
         ctr += 1;
       }
 

@@ -66,16 +66,16 @@ inline fn __add_final_block_bmi1(
   i <<= 3;
   while ( i < inlen )
   {
-    c = (u8)[in + i];
-    state[u8 i] ^= c;
+    c = [:u8 in + i];
+    state[:u8 i] ^= c;
     i += 1;
   }
 
-  state[u8 i] ^= trail_byte;
+  state[:u8 i] ^= trail_byte;
 
   i = rate;
   i -= 1;
-  state[u8 i] ^= 0x80;
+  state[:u8 i] ^= 0x80;
 
   return state;
 }
@@ -162,8 +162,8 @@ inline fn __xtr_bytes_bmi1(
 
   while ( i < outlen )
   {
-    c = state[u8 i];
-    (u8)[out + i] = c;
+    c = state[:u8 i];
+    [:u8 out + i] = c;
     i += 1;
   }
 

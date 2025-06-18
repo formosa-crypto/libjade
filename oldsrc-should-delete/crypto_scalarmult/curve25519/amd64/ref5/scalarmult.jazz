@@ -36,7 +36,7 @@ inline fn __decode_scalar(reg u64[4] k) -> stack u8[32]
   stack u8[32] ks;
 
   for i=0 to 4
-  { ks[u64 i] = k[i]; }
+  { ks[:u64 i] = k[i]; }
 
   ks[0]  &= 0xf8;
   ks[31] &= 0x7f;

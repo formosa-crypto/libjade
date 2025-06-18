@@ -15,13 +15,13 @@ inline fn __init_h_avx(reg u64 nonce, reg u32 counter, reg u64 key) -> reg u128[
 
   st[0] = CHACHA_SIGMA_H_AVX;
 
-  st[1] = (u128)[key + 0];
-  st[2] = (u128)[key + 16];
+  st[1] = [:u128 key + 0];
+  st[2] = [:u128 key + 16];
 
   st[3] = #set0_128();
   st[3] = #VPINSR_4u32(st[3], counter, 0);
-  st[3] = #VPINSR_4u32(st[3], (u32)[nonce + 0], 1);
-  st[3] = #VPINSR_2u64(st[3], (u64)[nonce + 4], 1);
+  st[3] = #VPINSR_4u32(st[3], [:u32 nonce + 0], 1);
+  st[3] = #VPINSR_2u64(st[3], [:u64 nonce + 4], 1);
 
   // st:
   //  st[0] = { sigma      }
@@ -68,7 +68,7 @@ inline fn __init_v_avx(reg u64 nonce, reg u32 counter, reg u64 key) -> stack u12
 
   // key
   for i=0 to 8
-  { st[4+i] = #VPBROADCAST_4u32((u32)[key + 4*i]); }
+  { st[4+i] = #VPBROADCAST_4u32([:u32 key + 4*i]); }
 
   // counter
   st[12] = #VPBROADCAST_4u32(s_counter);
@@ -76,7 +76,7 @@ inline fn __init_v_avx(reg u64 nonce, reg u32 counter, reg u64 key) -> stack u12
 
   // nonce
   for i=0 to 3
-  { st[13+i] = #VPBROADCAST_4u32((u32)[nonce + 4*i]); }
+  { st[13+i] = #VPBROADCAST_4u32([:u32 nonce + 4*i]); }
 
   _st = #copy_128(st);
 

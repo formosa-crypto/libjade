@@ -8,8 +8,8 @@ inline fn __clamp_ref_k(
 {
   reg u64[3] r;
 
-  r[0] = k[u64 0];
-  r[1] = k[u64 1];
+  r[0] = k[:u64 0];
+  r[1] = k[:u64 1];
   r[0] &= 0x0ffffffc0fffffff;
   r[1] &= 0x0ffffffc0ffffffc;
   r[2] = r[1];
@@ -51,8 +51,8 @@ inline fn __poly1305_last_ref_k(
 
   h2 = __freeze(h);
 
-  cf, h2[0] += k[u64 2];
-   _, h2[1] += k[u64 3] + cf;
+  cf, h2[0] += k[:u64 2];
+   _, h2[1] += k[:u64 3] + cf;
 
   return h2;
 }

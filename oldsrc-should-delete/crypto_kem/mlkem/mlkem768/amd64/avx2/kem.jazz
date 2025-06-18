@@ -14,7 +14,7 @@ export fn jade_kem_mlkem_mlkem768_amd64_avx2_keypair_derand(reg u64 public_key s
 
   for i = 0 to MLKEM_SYMBYTES*2
   {
-     randomness[i] = (u8)[coins + i];
+     randomness[i] = [:u8 coins + i];
   }
 
   randomnessp = randomness;
@@ -39,7 +39,7 @@ export fn jade_kem_mlkem_mlkem768_amd64_avx2_enc_derand(reg u64 ciphertext share
 
   for i = 0 to MLKEM_SYMBYTES 
   {
-     randomness[i] = (u8)[coins + i];
+     randomness[i] = [:u8 coins + i];
   }
 
   randomnessp = randomness;

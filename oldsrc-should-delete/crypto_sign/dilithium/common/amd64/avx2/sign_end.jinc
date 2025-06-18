@@ -22,25 +22,25 @@ fn compute_rho_prime(reg ptr u8[32] k, reg ptr u8[64] mu)
 	?{}, i = #set0_64();
 	while(i < 32) {
 		c = k[i];
-		state[u8 i] = c;	
+		state[:u8 i] = c;	
 		i += 1;
 	}
 	while(i < 96) {
 		mu_loc = i;
 		mu_loc -= 32;
 		c = mu[mu_loc];
-		state[u8 i] = c;
+		state[:u8 i] = c;
 		i += 1;
 	}
 
-	state[u8 96] ^= 0x1f;
-	state[u8 SHAKE256_RATE - 1] ^= 0x80;
+	state[:u8 96] ^= 0x1f;
+	state[:u8 SHAKE256_RATE - 1] ^= 0x80;
 
 	state = __keccakf1600_ref(state);
 
 	?{}, i = #set0_64();
 	while(i < 64) {
-		c = state[u8 i];
+		c = state[:u8 i];
 		rho_prime[i] = c;
 		i += 1;
 	}
@@ -218,7 +218,7 @@ fn sign(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) -> 
 	
 	?{}, i = #set0_64();
 	while(i < Li2_SK_LEN) {
-		c = (u8)[ptr_sk + i];
+		c = [:u8 ptr_sk + i];
 		sk[i] = c;
 		i += 1;
 	}
@@ -230,7 +230,7 @@ fn sign(reg u64 ptr_signature, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_sk) -> 
 	?{}, i = #set0_64();
 	while(i < Li2_SIGN_LEN) {
 		c = signature[i];
-		(u8) [sig_addr + i] = c;
+		[:u8 sig_addr + i] = c;
 		i += 1;
 	}
 

@@ -13,8 +13,8 @@ inline fn __store_xor_h_avx2(reg u64 output input len, reg u256[4] k) -> reg u64
   inline int i;
 
   for i=0 to 4
-  { k[i] ^= (u256)[input + 32*i];
-    (u256)[output + 32*i] = k[i];
+  { k[i] ^= [:u256 input + 32*i];
+    [:u256 output + 32*i] = k[i];
   }
 
   output, input, len = __update_ptr_xor_ref(output, input, len, 128);
@@ -33,8 +33,8 @@ inline fn __store_xor_last_h_avx2(reg u64 output input len, reg u256[4] k)
   // write 64 bytes
   if(len >= 64)
   { for i=0 to 2
-    { k[i] ^= (u256)[input + 32*i];
-      (u256)[output + 32*i] = k[i];
+    { k[i] ^= [:u256 input + 32*i];
+      [:u256 output + 32*i] = k[i];
     }
     output, input, len = __update_ptr_xor_ref(output, input, len, 64);
     k[0] = k[2];
@@ -43,8 +43,8 @@ inline fn __store_xor_last_h_avx2(reg u64 output input len, reg u256[4] k)
 
   // write 32 bytes
   if(len >= 32)
-  { k[0] ^= (u256)[input + 0];
-    (u256)[output + 0] = k[0];
+  { k[0] ^= [:u256 input + 0];
+    [:u256 output + 0] = k[0];
     output, input, len = __update_ptr_xor_ref(output, input, len, 32);
     k[0] = k[1];
   }
@@ -53,8 +53,8 @@ inline fn __store_xor_last_h_avx2(reg u64 output input len, reg u256[4] k)
 
   // write 16 bytes
   if(len >= 16)
-  { r0 ^= (u128)[input + 0];
-    (u128)[output + 0] = r0;
+  { r0 ^= [:u128 input + 0];
+    [:u128 output + 0] = r0;
     output, input, len = __update_ptr_xor_ref(output, input, len, 16);
     r0 = #VEXTRACTI128(k[0], 1);
   }
@@ -63,8 +63,8 @@ inline fn __store_xor_last_h_avx2(reg u64 output input len, reg u256[4] k)
 
   // write 8 bytes
   if(len >= 8)
-  { r1 ^= (u64)[input + 0];
-    (u64)[output + 0] = r1;
+  { r1 ^= [:u64 input + 0];
+    [:u64 output + 0] = r1;
     output, input, len = __update_ptr_xor_ref(output, input, len, 8);
     r1 = #VPEXTR_64(r0, 1);
   }
@@ -73,8 +73,8 @@ inline fn __store_xor_last_h_avx2(reg u64 output input len, reg u256[4] k)
   while(len > 0)
   {
     r2 = (8u) r1;
-    r2 ^= (u8)[input + 0];
-    (u8)[output + 0] = r2;
+    r2 ^= [:u8 input + 0];
+    [:u8 output + 0] = r2;
     r1 >>= 8;
     output, input, len = __update_ptr_xor_ref(output, input, len, 1);
   }
@@ -90,13 +90,13 @@ inline fn __store_xor_h_x2_avx2(reg u64 output input len, reg u256[4] k1 k2) -> 
   inline int i;
 
   for i=0 to 4
-  { k1[i] ^= (u256)[input + 32*i];
-    (u256)[output + 32*i] = k1[i];
+  { k1[i] ^= [:u256 input + 32*i];
+    [:u256 output + 32*i] = k1[i];
   }
 
   for i=0 to 4
-  { k2[i] ^= (u256)[input + 32*(i+4)];
-    (u256)[output + 32*(i+4)] = k2[i];
+  { k2[i] ^= [:u256 input + 32*(i+4)];
+    [:u256 output + 32*(i+4)] = k2[i];
   }
 
   output, input, len = __update_ptr_xor_ref(output, input, len, 256);
@@ -130,7 +130,7 @@ inline fn __store_h_avx2(reg u64 output len, reg u256[4] k) -> reg u64, reg u64
   inline int i;
 
   for i=0 to 4
-  { (u256)[output + 32*i] = k[i]; }
+  { [:u256 output + 32*i] = k[i]; }
 
   output, len = __update_ptr_ref(output, len, 128);
 
@@ -148,7 +148,7 @@ inline fn __store_last_h_avx2(reg u64 output len, reg u256[4] k)
   // write 64 bytes
   if(len >= 64)
   { for i=0 to 2
-    { (u256)[output + 32*i] = k[i]; }
+    { [:u256 output + 32*i] = k[i]; }
     output, len = __update_ptr_ref(output, len, 64);
     k[0] = k[2];
     k[1] = k[3];
@@ -156,7 +156,7 @@ inline fn __store_last_h_avx2(reg u64 output len, reg u256[4] k)
 
   // write 32 bytes
   if(len >= 32)
-  { (u256)[output + 0] = k[0];
+  { [:u256 output + 0] = k[0];
     output, len = __update_ptr_ref(output, len, 32);
     k[0] = k[1];
   }
@@ -165,7 +165,7 @@ inline fn __store_last_h_avx2(reg u64 output len, reg u256[4] k)
 
   // write 16 bytes
   if(len >= 16)
-  { (u128)[output + 0] = r0;
+  { [:u128 output + 0] = r0;
     output, len = __update_ptr_ref(output, len, 16);
     r0 = #VEXTRACTI128(k[0], 1);
   }
@@ -174,7 +174,7 @@ inline fn __store_last_h_avx2(reg u64 output len, reg u256[4] k)
 
   // write 8 bytes
   if(len >= 8)
-  { (u64)[output + 0] = r1;
+  { [:u64 output + 0] = r1;
     output, len = __update_ptr_ref(output, len, 8);
     r1 = #VPEXTR_64(r0, 1);
   }
@@ -183,7 +183,7 @@ inline fn __store_last_h_avx2(reg u64 output len, reg u256[4] k)
   while(len > 0)
   {
     r2 = (8u) r1;
-    (u8)[output + 0] = r2;
+    [:u8 output + 0] = r2;
     r1 >>= 8;
     output, len = __update_ptr_ref(output, len, 1);
   }
@@ -199,10 +199,10 @@ inline fn __store_h_x2_avx2(reg u64 output len, reg u256[4] k1 k2) -> reg u64, r
   inline int i;
 
   for i=0 to 4
-  { (u256)[output + 32*i] = k1[i]; }
+  { [:u256 output + 32*i] = k1[i]; }
 
   for i=0 to 4
-  { (u256)[output + 32*(i+4)] = k2[i]; }
+  { [:u256 output + 32*(i+4)] = k2[i]; }
 
   output, len = __update_ptr_ref(output, len, 256);
 
