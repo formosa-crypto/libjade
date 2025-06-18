@@ -21,26 +21,26 @@ inline fn __unpack_avx(
 
   l = rt[0];
   l &= mask26;
-  r12[u64 o + 0] = l;
+  r12[:u64 o + 0] = l;
 
   l = rt[0];
   l >>= 26;
   l &= mask26;
-  r12[u64 o + 2] = l;
+  r12[:u64 o + 2] = l;
 
   l = rt[0];
   ?{},l = #SHRD(l, rt[1], 52);
   h = l;
   l &= mask26;
-  r12[u64 o + 4] = l;
+  r12[:u64 o + 4] = l;
 
   l = h;
   l >>= 26;
   l &= mask26;
-  r12[u64 o + 6] = l;
+  r12[:u64 o + 6] = l;
   l = rt[1];
   ?{}, l = #SHRD(l, rt[2], 40);
-  r12[u64 o + 8] = l;
+  r12[:u64 o + 8] = l;
 
   return r12;
 }
@@ -76,11 +76,11 @@ inline fn __broadcast_r2_avx(
   reg   u128[5] t;
 
   for i=0 to 5
-  { t[i] = #VPBROADCAST_2u64(r12[u64 2*i]);
+  { t[i] = #VPBROADCAST_2u64(r12[:u64 2*i]);
     r22[i] = t[i]; }
 
   for i=0 to 4
-  { t[i] = #VPBROADCAST_2u64(r12x5[u64 2*i]);
+  { t[i] = #VPBROADCAST_2u64(r12x5[:u64 2*i]);
     r22x5[i] = t[i]; }
 
   return r22, r22x5;
@@ -101,7 +101,7 @@ inline fn __broadcast_r4_avx(
   r44 = __unpack_avx(r44, r4, 0);
 
   for i=0 to 5
-  { t[i] = r44[u64 2*i]; r44[u64 1+2*i] = t[i]; }
+  { t[i] = r44[:u64 2*i]; r44[:u64 1+2*i] = t[i]; }
 
   r44x5 = __times_5_avx(r44);
 
@@ -151,8 +151,8 @@ inline fn __load_avx(
   reg u128 t;
   reg u128[5] m;
 
-  t = (u128)[in +  0];
-  m[3] = (u128)[in + 16];
+  t = [:u128 in +  0];
+  m[3] = [:u128 in + 16];
   m[0] = #VPUNPCKL_2u64(t, m[3]);
   m[3] = #VPUNPCKH_2u64(t, m[3]);
   m[1] = m[0];
@@ -388,12 +388,12 @@ inline fn __mainloop_avx_v1(
   t[4] = #VPMULU(h[4], r0);   t[3] +2u64= u[2];
                               t[4] +2u64= u[3];
 
-  u[0] = #VPMULU(h[1], r4x5); m0 = (u128)[in + 0];
+  u[0] = #VPMULU(h[1], r4x5); m0 = [:u128 in + 0];
   u[1] = #VPMULU(h[2], r4x5); r2 = s_r44[2];
   u[2] = #VPMULU(h[3], r4x5);
   u[3] = #VPMULU(h[4], r4x5);
 
-  t[0] +2u64= u[0];           m1 = (u128)[in + 16];
+  t[0] +2u64= u[0];           m1 = [:u128 in + 16];
   t[1] +2u64= u[1];
   t[2] +2u64= u[2];
   t[3] +2u64= u[3];
@@ -459,12 +459,12 @@ inline fn __mainloop_avx_v1(
   t[4] = #VPMULU(m[4], r0);   t[3] +2u64= s_h[3]; t[3] +2u64= u[2];
                               t[4] +2u64= s_h[4]; t[4] +2u64= u[3];
 
-  u[0] = #VPMULU(m[1], r4x5); m0 = (u128)[in + 32];
+  u[0] = #VPMULU(m[1], r4x5); m0 = [:u128 in + 32];
   u[1] = #VPMULU(m[2], r4x5); r2 = s_r22[2];
   u[2] = #VPMULU(m[3], r4x5);
   u[3] = #VPMULU(m[4], r4x5);
 
-  t[0] +2u64= u[0];           m1 = (u128)[in + 48];
+  t[0] +2u64= u[0];           m1 = [:u128 in + 48];
   t[1] +2u64= u[1];
   t[2] +2u64= u[2];
   t[3] +2u64= u[3];

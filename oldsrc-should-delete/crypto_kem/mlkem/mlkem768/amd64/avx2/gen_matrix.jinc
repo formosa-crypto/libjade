@@ -59,24 +59,24 @@ inline fn __st4x_unpack_at
   reg u256 x0, x1, x2, x3;
   reg u64 t0, t1, t2, t3;
   for i = 0 to 6 {
-    x0 = st4x[u256 4*i+0];
-    x1 = st4x[u256 4*i+1];
-    x2 = st4x[u256 4*i+2];
-    x3 = st4x[u256 4*i+3];
+    x0 = st4x[:u256 4*i+0];
+    x1 = st4x[:u256 4*i+1];
+    x2 = st4x[:u256 4*i+2];
+    x3 = st4x[:u256 4*i+3];
     x0, x1, x2, x3 = _4u64x4_u256x4(x0, x1, x2, x3);
-    buf.[u256 offset + 4*8*i + 0*8*BUF_size] = x0;
-    buf.[u256 offset + 4*8*i + 1*8*BUF_size] = x1;
-    buf.[u256 offset + 4*8*i + 2*8*BUF_size] = x2;
-    buf.[u256 offset + 4*8*i + 3*8*BUF_size] = x3;
+    buf.[:u256 offset + 4*8*i + 0*8*BUF_size] = x0;
+    buf.[:u256 offset + 4*8*i + 1*8*BUF_size] = x1;
+    buf.[:u256 offset + 4*8*i + 2*8*BUF_size] = x2;
+    buf.[:u256 offset + 4*8*i + 3*8*BUF_size] = x3;
   }
-  t0 = st4x[u64 4*24+0];
-  t1 = st4x[u64 4*24+1];
-  t2 = st4x[u64 4*24+2];
-  t3 = st4x[u64 4*24+3];
-  buf.[u64 offset + 8*24 + 0*8*BUF_size] = t0;
-  buf.[u64 offset + 8*24 + 1*8*BUF_size] = t1;
-  buf.[u64 offset + 8*24 + 2*8*BUF_size] = t2;
-  buf.[u64 offset + 8*24 + 3*8*BUF_size] = t3;
+  t0 = st4x[:u64 4*24+0];
+  t1 = st4x[:u64 4*24+1];
+  t2 = st4x[:u64 4*24+2];
+  t3 = st4x[:u64 4*24+3];
+  buf.[:u64 offset + 8*24 + 0*8*BUF_size] = t0;
+  buf.[:u64 offset + 8*24 + 1*8*BUF_size] = t1;
+  buf.[:u64 offset + 8*24 + 2*8*BUF_size] = t2;
+  buf.[:u64 offset + 8*24 + 3*8*BUF_size] = t3;
 
   return buf;
 }
@@ -92,30 +92,30 @@ inline fn __stavx2_pack_at
   reg u64 r;
 
   // [ 0 0 0 0 ]
-  state[0] = #VPBROADCAST_4u64(st.[u64 8*0 + offset]);
+  state[0] = #VPBROADCAST_4u64(st.[:u64 8*0 + offset]);
   // [ 1 2 3 4 ]
-  state[1] = st.[u256 1*8 + offset];
+  state[1] = st.[:u256 1*8 + offset];
   // [ 5 - ]
-  t128_0 = #VMOV(st.[u64 5*8 + offset]);
+  t128_0 = #VMOV(st.[:u64 5*8 + offset]);
   // [ 6 7 8 9 ]
-  state[3] = st.[u256 6*8 + offset];
+  state[3] = st.[:u256 6*8 + offset];
   // [ 10 - ]
-  t128_1 = #VMOV(st.[u64 10*8 + offset]);
+  t128_1 = #VMOV(st.[:u64 10*8 + offset]);
   // [ 11 12 13 14 ]
-  state[4] = st.[u256 11*8 + offset];
+  state[4] = st.[:u256 11*8 + offset];
   // [ 5 15 ]
-  r = st.[u64 15*8 + offset];
+  r = st.[:u64 15*8 + offset];
   t128_0 = #VPINSR_2u64(t128_0, r, 1);
   // [ 16 17 18 19 ]
-  state[5] = st.[u256 16*8 + offset];
+  state[5] = st.[:u256 16*8 + offset];
   // [ 10 20 ]
-  r = st.[u64 20*8 + offset];
+  r = st.[:u64 20*8 + offset];
   t128_1 = #VPINSR_2u64(t128_1, r, 1);
   // alternative not currently supported: VPGATHERDQ for filling state[2]
   // [ 10 20 5 15 ]
   state[2] = (2u128)[t128_0, t128_1];
   // [ 21 22 23 24 ]
-  state[6] = st.[u256 21*8 + offset];
+  state[6] = st.[:u256 21*8 + offset];
 
   // [ 16 7 8 19 ]
   t256_0 = #VPBLEND_8u32(state[3], state[5], (8u1)[1,1,0,0,0,0,1,1]);
@@ -167,9 +167,9 @@ inline fn __stavx2_unpack_at
 
   // [ 0, 0 ]
   t128_0 = (128u) state[0];
-  buf.[u64 0*8 + offset] = #VMOVLPD(t128_0);
+  buf.[:u64 0*8 + offset] = #VMOVLPD(t128_0);
   // [ 1, 2, 3, 4 ]
-  buf.[u256 1*8 + offset] = state[1];
+  buf.[:u256 1*8 + offset] = state[1];
 
   // [ 16, 7, 8, 19 ]
   t256_0 = #VPBLEND_8u32(state[3], state[4], (8u1)[1,1,1,1,0,0,0,0]);
@@ -182,33 +182,33 @@ inline fn __stavx2_unpack_at
 
   // [ 5, 15 ]
   t128_1 = #VEXTRACTI128(state[2], 1);
-  buf.[u64 5*8 + offset] = #VMOVLPD(t128_1);
+  buf.[:u64 5*8 + offset] = #VMOVLPD(t128_1);
 
   // [ 6, 7, 8, 9 ]
   t256_4 = #VPBLEND_8u32(t256_0, t256_3, (8u1)[1,1,0,0,0,0,1,1]);
-  buf.[u256 6*8 + offset] = t256_4;
+  buf.[:u256 6*8 + offset] = t256_4;
 
   // [ 10, 20 ]
   t128_0 = (128u) state[2];
-  buf.[u64 10*8 + offset] = #VMOVLPD(t128_0);
+  buf.[:u64 10*8 + offset] = #VMOVLPD(t128_0);
   
   // [ 11, 12, 13, 14 ]
   t256_4 = #VPBLEND_8u32(t256_3, t256_1, (8u1)[1,1,0,0,0,0,1,1]);
-  buf.[u256 11*8 + offset] = t256_4;
+  buf.[:u256 11*8 + offset] = t256_4;
 
   // [ 15 ]
-  buf.[u64 15*8 + offset] = #VMOVHPD(t128_1);
+  buf.[:u64 15*8 + offset] = #VMOVHPD(t128_1);
   
   // [ 16, 17, 18, 19 ]
   t256_4 = #VPBLEND_8u32(t256_2, t256_0, (8u1)[1,1,0,0,0,0,1,1]);
-  buf.[u256 16*8 + offset] = t256_4;
+  buf.[:u256 16*8 + offset] = t256_4;
 
   // [ 20 ]
-  buf.[u64 20*8 + offset] = #VMOVHPD(t128_0);
+  buf.[:u64 20*8 + offset] = #VMOVHPD(t128_0);
 
   // [ 21, 22, 23, 24 ]
   t256_4 = #VPBLEND_8u32(t256_1, t256_2, (8u1)[1,1,0,0,0,0,1,1]);
-  buf.[u256 21*8 + offset] = t256_4;
+  buf.[:u256 21*8 + offset] = t256_4;
 
   return buf;
 }
@@ -239,14 +239,14 @@ inline fn xof_init_x4
 
   // copy rho to state
   for i = 0 to 4 {
-    t = #VPBROADCAST_4u64(rho[u64 i]);
+    t = #VPBROADCAST_4u64(rho[:u64 i]);
     state[i] = t;
   }
 
   for i=0 to 4
   { r = (64u) indexes[i];
     r |= 0x1F0000;
-    temp[u64 i] = r;
+    temp[:u64 i] = r;
   }
   t = temp[0];
   state[4] = t;
@@ -275,16 +275,16 @@ inline fn xof_init_avx2
   reg u64 r;
 
   // copy rho to state
-  state[0] = #VPBROADCAST_4u64(rho[u64 0]);
-  r = rho[u64 1];
-  temp[u64 0] = r;
-  r = rho[u64 2];
-  temp[u64 1] = r;
-  r = rho[u64 3];
-  temp[u64 2] = r;
+  state[0] = #VPBROADCAST_4u64(rho[:u64 0]);
+  r = rho[:u64 1];
+  temp[:u64 0] = r;
+  r = rho[:u64 2];
+  temp[:u64 1] = r;
+  r = rho[:u64 3];
+  temp[:u64 2] = r;
   r = (64u) index;
   r |= 0x1F0000;
-  temp[u64 3] = r;
+  temp[:u64 3] = r;
   state[1] = temp[0];
 
   t = #set0_256();
@@ -343,8 +343,8 @@ inline fn __gen_matrix_buf_rejection_filter48
   // - so the last 8 bytes will be discarded:
   //   - 0x01aaaaaaaaaaaa08, 0x01bbbbbbbbbbbb08, 0x01bbbbbbbbbbbb08, 0x01cccccccccccc08
 
-  f0 = #VPERMQ(buf.[u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
-  f1 = #VPERMQ(buf.[u256 (int) buf_offset + 24], (4u2)[2,1,1,0]);
+  f0 = #VPERMQ(buf.[:u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
+  f1 = #VPERMQ(buf.[:u256 (int) buf_offset + 24], (4u2)[2,1,1,0]);
 
   // next, the data is shuffled at byte level. For a given state (in u64s): 
   // - 0xa8a7a6a5a4a3a2a1, 0xb8b7b6b5b4b3b2b1, 0xc8c7c6c5c4c3c2c1, 0xd8d7d6d5d4d3d2d1
@@ -418,14 +418,14 @@ inline fn __gen_matrix_buf_rejection_filter48
   t0_0 = good;
   t0_0 &= 0xFF; // g0[0..7]
 
-  shuffle_0 = (256u) #VMOV(sst[u64 t0_0]);
+  shuffle_0 = (256u) #VMOV(sst[:u64 t0_0]);
   ?{}, t0_0 = #POPCNT_64(t0_0);
   t0_0 += counter;  
 
   t0_1 = good;
   t0_1 >>= 16;
   t0_1 &= 0xFF; // g0[8..15]
-  shuffle_0_1 = #VMOV(sst[u64 t0_1]);
+  shuffle_0_1 = #VMOV(sst[:u64 t0_1]);
   ?{}, t0_1 = #POPCNT_64(t0_1);
   t0_1 += t0_0;
 
@@ -433,14 +433,14 @@ inline fn __gen_matrix_buf_rejection_filter48
   t1_0 = good;
   t1_0 >>= 8;
   t1_0 &= 0xFF; // g1[0..7]
-  shuffle_1 = (256u) #VMOV(sst[u64 t1_0]);
+  shuffle_1 = (256u) #VMOV(sst[:u64 t1_0]);
   ?{}, t1_0 = #POPCNT_64(t1_0);
   t1_0 += t0_1;
 
   t1_1 = good;
   t1_1 >>= 24;
   t1_1 &= 0xFF; // g1[8..15]
-  shuffle_1_1 = #VMOV(sst[u64 t1_1]);
+  shuffle_1_1 = #VMOV(sst[:u64 t1_1]);
   ?{}, t1_1 = #POPCNT_64(t1_1);
   t1_1 += t1_0;
 
@@ -462,10 +462,10 @@ inline fn __gen_matrix_buf_rejection_filter48
 
   //
 
-  pol.[u128 2*counter] = (128u)f0;
-  pol.[u128 2*t0_0] = #VEXTRACTI128(f0, 1);
-  pol.[u128 2*t0_1] = (128u)f1;
-  pol.[u128 2*t1_0] = #VEXTRACTI128(f1, 1);
+  pol.[:u128 2*counter] = (128u)f0;
+  pol.[:u128 2*t0_0] = #VEXTRACTI128(f0, 1);
+  pol.[:u128 2*t0_1] = (128u)f1;
+  pol.[:u128 2*t1_0] = #VEXTRACTI128(f1, 1);
 
   counter = t1_1;
 
@@ -487,7 +487,7 @@ inline fn __write_u128_boundchk
   if ( condition_8 ) {
     ms = #update_msf(condition_8, ms);
 
-    pol.[u128 2*(int)ctr] = data;
+    pol.[:u128 2*(int)ctr] = data;
     ctr += 8;
   } else
   {
@@ -499,7 +499,7 @@ inline fn __write_u128_boundchk
     if ( condition_4 ) {
       ms = #update_msf(condition_4, ms);
 
-      pol.[u64 2*(int)ctr] = data_u64;
+      pol.[:u64 2*(int)ctr] = data_u64;
       data_u64 = #VPEXTR_64(data, 1);
       ctr += 4;
     } else
@@ -509,7 +509,7 @@ inline fn __write_u128_boundchk
     if ( condition_2 ) {
       ms = #update_msf(condition_2, ms);
 
-      pol.[u32 2*(int)ctr] = (32u) data_u64;
+      pol.[:u32 2*(int)ctr] = (32u) data_u64;
       data_u64 >>= 32;
       ctr += 2;
     } else
@@ -519,7 +519,7 @@ inline fn __write_u128_boundchk
     if ( condition_1 ) {
       ms = #update_msf(condition_1, ms);
 
-      pol.[u16 2*(int)ctr] = (16u) data_u64;
+      pol.[:u16 2*(int)ctr] = (16u) data_u64;
       ctr += 1;
     } else
     { ms = #update_msf(!condition_1, ms); }
@@ -545,7 +545,7 @@ inline fn __gen_matrix_buf_rejection_filter24
   reg u128 shuffle_0_1 t128;
   reg u64 good t0_0 t0_1;
 
-  f0 = #VPERMQ(buf.[u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
+  f0 = #VPERMQ(buf.[:u256 (int) buf_offset + 0 ], (4u2)[2,1,1,0]);
   f0 = #VPSHUFB_256(f0, load_shuffle);
   g0 = #VPSRL_16u16(f0, 4);
   f0 = #VPBLEND_16u16(f0, g0, 0xAA);
@@ -560,14 +560,14 @@ inline fn __gen_matrix_buf_rejection_filter24
   // g0
   t0_0 = good;
   t0_0 &= 0xFF; // g0[0..7]
-  shuffle_0 = (256u) #VMOV(sst[u64 t0_0]);
+  shuffle_0 = (256u) #VMOV(sst[:u64 t0_0]);
   ?{}, t0_0 = #POPCNT_64(t0_0);
   t0_0 += counter;
 
   t0_1 = good;
   t0_1 >>= 16;
   t0_1 &= 0xFF; // g0[8..15]
-  shuffle_0_1 = #VMOV(sst[u64 t0_1]);
+  shuffle_0_1 = #VMOV(sst[:u64 t0_1]);
   ?{}, t0_1 = #POPCNT_64(t0_1);
   t0_1 += t0_0;
 
@@ -605,7 +605,7 @@ fn _gen_matrix_buf_rejection
 
   ms = #init_msf();
 
-  load_shuffle = sample_load_shuffle[u256 0];
+  load_shuffle = sample_load_shuffle[:u256 0];
   mask = sample_mask;
   bounds = sample_q;
   ones = sample_ones;

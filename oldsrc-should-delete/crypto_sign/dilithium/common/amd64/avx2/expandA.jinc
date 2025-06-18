@@ -59,7 +59,7 @@ fn expandA_poly_extract(reg ptr u32[Li2_polydeg] poly,
 			v64_1 = xof_offset;
 			v64_2 = lane;
 			addr = expandA_xof_buf_addr(v64_1, v64_2);
-			vs[ii] = (32u) xof[u8 addr];
+			vs[ii] = (32u) xof[:u8 addr];
 			xof_offset += 1;
 		}
 
@@ -120,7 +120,7 @@ fn expandA_chunk(
 
 	// Initialize the XOF state
 	for ii = 0 to 4 {
-		v64 = rho.[u64 8 * ii];
+		v64 = rho.[:u64 8 * ii];
 		v256 = (256u) v64;
 		v256 = #VPBROADCAST_4u64(v256);
 		xof[ii] = v256;		
@@ -128,7 +128,7 @@ fn expandA_chunk(
 	for lane = 0 to 4 {
 		v64 = nonces[lane];
 		v64 = #LEA_64(0x1F0000 + v64);
-		xof[u64 16 + (int) lane] = v64;
+		xof[:u64 16 + (int) lane] = v64;
 	}
 	?{}, v256_zero = #set0_256();
 	for ii = 5 to 20 {

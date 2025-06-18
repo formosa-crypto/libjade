@@ -14,7 +14,7 @@ inline fn __decode_public_key(stack u16[ARRAY_N] h, reg u64 pk) -> stack u16[ARR
 
     failed = 0;
 
-    t = (u8)[pk];
+    t = [:u8 pk];
     if(t != LOGN){
         failed = -1;
     }
@@ -38,7 +38,7 @@ inline fn __decode_sign(stack u16[ARRAY_N] sign, reg u64 esign sign_len) -> stac
 
     failed = 0;
 
-    t = (u8)[esign];
+    t = [:u8 esign];
     if(t != 0x20 + LOGN){
         failed = -1;
     }
@@ -69,7 +69,7 @@ inline fn __check_len(stack u64 esig_buff sig_len_buff msg_len_buff, reg u64 sm 
         failed = -1;
     }
 
-    sig_len = (64u)(u8)[sm]; t = (64u)(u8)[sm + 1]; sig_len <<= 8; sig_len |= t;
+    sig_len = (64u)[:u8 sm]; t = (64u)[:u8 sm + 1]; sig_len <<= 8; sig_len |= t;
 
     t = smlen;
     t -= 2; t -= NONCELEN;
@@ -156,7 +156,7 @@ inline fn __hash_to_point_vartime(stack u64[25] state, stack u16[ARRAY_N] hm) ->
 
         }
 
-        t = buff[u64 0];
+        t = buff[:u64 0];
 
         if(t < 61445){
             while(t >= 12289){
@@ -257,8 +257,8 @@ inline fn __jade_sign_falcon_falcon512_amd64_avx2_open(reg u64 m mlen sm smlen p
 
         i = 0;
         while(i < msg_len){
-            tmp8 = (u8)[sm + 2 + NONCELEN + i];
-            (u8)[m + i] = tmp8;
+            tmp8 = [:u8 sm + 2 + NONCELEN + i];
+            [:u8 m + i] = tmp8;
             i += 1;
         }
 

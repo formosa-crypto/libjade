@@ -44,11 +44,11 @@ fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
     }
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 0 * 32];
 
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 3 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 3 * 32];
 
 
     t4    = #VPMULL_16u16(buff2, t0);
@@ -101,8 +101,8 @@ fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     }
 
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 1 * 32];
 
     t4    = #VPMULL_16u16(buff1, t0);
     buff1 = #VPMULH_16u16(buff1, t1);
@@ -111,8 +111,8 @@ fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff1 = #VPSUB_16u16(buff0, t5);
     buff0 = #VPADD_16u16(buff0, t5);
 
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 2 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 2 * 32];
 
     t4    = #VPMULL_16u16(buff3, t2);
     buff3 = #VPMULH_16u16(buff3, t3);
@@ -121,8 +121,8 @@ fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff3 = #VPSUB_16u16(buff2, t5);
     buff2 = #VPADD_16u16(buff2, t5);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 4 * 32];
 
     t4    = #VPMULL_16u16(buff5, t0);
     buff5 = #VPMULH_16u16(buff5, t1);
@@ -131,8 +131,8 @@ fn __2_layer_CT_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff5 = #VPSUB_16u16(buff4, t5);
     buff4 = #VPADD_16u16(buff4, t5);
 
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 5 * 32];
 
     t4    = #VPMULL_16u16(buff7, t2);
     buff7 = #VPMULH_16u16(buff7, t3);
@@ -167,10 +167,10 @@ fn __2_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 1 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 2 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 2 * 32];
 
     t4    = #VPSUB_16u16(buff0, buff1);
     t5    = #VPSUB_16u16(buff2, buff3);
@@ -185,10 +185,10 @@ fn __2_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff1 = #VPSUB_16u16(t4, buff1);
     buff3 = #VPSUB_16u16(t5, buff3);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 4 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 5 * 32];
 
     t4    = #VPSUB_16u16(buff4, buff5);
     t5    = #VPSUB_16u16(buff6, buff7);
@@ -224,8 +224,8 @@ fn __2_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 0 * 32];
 
     t4    = #VPSUB_16u16(buff0, buff2);
     t5    = #VPSUB_16u16(buff1, buff3);
@@ -240,8 +240,8 @@ fn __2_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff2 = #VPSUB_16u16(t4, buff2);
     buff3 = #VPSUB_16u16(t5, buff3);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 3 * 32];
 
     t4    = #VPSUB_16u16(buff4, buff6);
     t5    = #VPSUB_16u16(buff5, buff7);
@@ -319,8 +319,8 @@ fn __3_layer_CT_butterfly_8(
 
     }
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 0 * 32];
 
     t2    = #VPMULL_16u16(buff4, t0);
     t4    = #VPMULL_16u16(buff5, t0);
@@ -371,8 +371,8 @@ fn __3_layer_CT_butterfly_8(
 
     }
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 1 * 32];
 
     t2    = #VPMULL_16u16(buff2, t0);
     t4    = #VPMULL_16u16(buff3, t0);
@@ -387,8 +387,8 @@ fn __3_layer_CT_butterfly_8(
     buff0 = #VPADD_16u16(buff0, t3);
     buff1 = #VPADD_16u16(buff1, t5);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 2 * 32];
 
     t2    = #VPMULL_16u16(buff6, t0);
     t4    = #VPMULL_16u16(buff7, t0);
@@ -426,10 +426,10 @@ fn __3_layer_CT_butterfly_8(
 
     }
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 3 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 4 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 4 * 32];
 
     t4    = #VPMULL_16u16(buff1, t0);
     t0    = #VPMULL_16u16(buff3, t2);
@@ -444,10 +444,10 @@ fn __3_layer_CT_butterfly_8(
     buff0 = #VPADD_16u16(buff0, t5);
     buff2 = #VPADD_16u16(buff2, t1);
 
-    t4 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
-    t5 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
+    t4 = twiddlelo.[:u256 (int) twiddle_indx + 5 * 32];
+    t5 = twiddlehi.[:u256 (int) twiddle_indx + 5 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 6 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 6 * 32];
 
     t2    = #VPMULL_16u16(buff5, t4);
     t4    = #VPMULL_16u16(buff7, t0);
@@ -484,10 +484,10 @@ fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 3 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 4 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 4 * 32];
 
     t4    = #VPSUB_16u16(buff0, buff1);
     t5    = #VPSUB_16u16(buff2, buff3);
@@ -502,10 +502,10 @@ fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff1 = #VPSUB_16u16(t4, buff1);
     buff3 = #VPSUB_16u16(t5, buff3);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 5 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 5 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 6 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 6 * 32];
 
     t4    = #VPSUB_16u16(buff4, buff5);
     t5    = #VPSUB_16u16(buff6, buff7);
@@ -543,8 +543,8 @@ fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 1 * 32];
 
     t2    = #VPSUB_16u16(buff0, buff2);
     t4    = #VPSUB_16u16(buff1, buff3);
@@ -559,8 +559,8 @@ fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
     buff2 = #VPSUB_16u16(t2, t3);
     buff3 = #VPSUB_16u16(t4, t5);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 2 * 32];
 
     t2    = #VPSUB_16u16(buff4, buff6);
     t4    = #VPSUB_16u16(buff5, buff7);
@@ -598,8 +598,8 @@ fn __3_layer_GS_butterfly_8(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 buff6 b
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 0 * 32];
 
     t2    = #VPSUB_16u16(buff0, buff4);
     t4    = #VPSUB_16u16(buff1, buff5);
@@ -670,10 +670,10 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 4 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 4 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 5 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 5 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 4 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 4 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 5 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 5 * 32];
 
     t4    = #VPSUB_16u16(buff0, buff1);
     t5    = #VPSUB_16u16(buff2, buff3);
@@ -688,10 +688,10 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
     buff1 = #VPSUB_16u16(t4, buff1);
     buff3 = #VPSUB_16u16(t5, buff3);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 6 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 6 * 32];
-    t2 = twiddlelo.[u256 (int) twiddle_indx + 7 * 32];
-    t3 = twiddlehi.[u256 (int) twiddle_indx + 7 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 6 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 6 * 32];
+    t2 = twiddlelo.[:u256 (int) twiddle_indx + 7 * 32];
+    t3 = twiddlehi.[:u256 (int) twiddle_indx + 7 * 32];
 
     t4    = #VPSUB_16u16(buff4, buff5);
     t5    = #VPSUB_16u16(buff6, buff7);
@@ -729,8 +729,8 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 2 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 2 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 2 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 2 * 32];
 
     t2    = #VPSUB_16u16(buff0, buff2);
     t4    = #VPSUB_16u16(buff1, buff3);
@@ -745,8 +745,8 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
     buff2 = #VPSUB_16u16(t2, t3);
     buff3 = #VPSUB_16u16(t4, t5);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 3 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 3 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 3 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 3 * 32];
 
     t2    = #VPSUB_16u16(buff4, buff6);
     t4    = #VPSUB_16u16(buff5, buff7);
@@ -784,8 +784,8 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
 
 // ========
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 1 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 1 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 1 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 1 * 32];
 
     t2    = #VPSUB_16u16(buff0, buff4);
     t4    = #VPSUB_16u16(buff1, buff5);
@@ -813,8 +813,8 @@ fn __3_layer_GS_butterfly_8_last(reg u256 buff0 buff1 buff2 buff3 buff4 buff5 bu
     buff6 = #VPSUB_16u16(t2, t3);
     buff7 = #VPSUB_16u16(t4, t5);
 
-    t0 = twiddlelo.[u256 (int) twiddle_indx + 0 * 32];
-    t1 = twiddlehi.[u256 (int) twiddle_indx + 0 * 32];
+    t0 = twiddlelo.[:u256 (int) twiddle_indx + 0 * 32];
+    t1 = twiddlehi.[:u256 (int) twiddle_indx + 0 * 32];
 
     t2    = #VPMULL_16u16(buff0, t0);
     t3    = #VPMULL_16u16(buff1, t0);

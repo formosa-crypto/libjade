@@ -22,7 +22,7 @@ inline fn __modq_decode_8(
 
   while(out_i < out_e)
   {
-    acc <<= 8; t = (32u)(u8)[in]; in += 1; acc |= t;
+    acc <<= 8; t = (32u)[:u8 in]; in += 1; acc |= t;
     acc_len += 8;
 
     if(acc_len >= 14)
@@ -97,7 +97,7 @@ fn __modq_decode_8_unrolled(stack u16[8] out, reg u64 in)
     out_i = 0;
     while(out_i < 8){
 
-        acc <<= 8; t = (32u)(u8)[in]; in += 1; acc |= t;
+        acc <<= 8; t = (32u)[:u8 in]; in += 1; acc |= t;
         acc_len += 8;
 
         if(acc_len >= 14) {
@@ -181,7 +181,7 @@ fn __comp_decode(stack u16[ARRAY_N] out, reg u64 in, reg u64 max_in_len)
             is_zero = 1;
         }
 
-        acc <<= 8; t = (32u)(u8)[in + in_i]; in_i += 1; acc |= t;
+        acc <<= 8; t = (32u)[:u8 in + in_i]; in_i += 1; acc |= t;
         b = acc; b >>= (acc_len & 31);
         s = b; s &= 128;
         m = b; m &= 127;
@@ -200,7 +200,7 @@ fn __comp_decode(stack u16[ARRAY_N] out, reg u64 in, reg u64 max_in_len)
                     is_zero = 1;
                 }
 
-                acc <<= 8; t = (32u)(u8)[in + in_i]; in_i += 1; acc |= t;
+                acc <<= 8; t = (32u)[:u8 in + in_i]; in_i += 1; acc |= t;
                 acc_len = 8;
             }
             acc_len -= 1;

@@ -239,14 +239,14 @@ fn verify(reg u64 ptr_sig, reg u64 ptr_m, reg u64 m_len, reg u64 ptr_pk) -> reg 
 
     ?{}, i = #set0_64();
 	while(i < Li2_PK_LEN) {
-		byte = (u8)[ptr_pk + i];
+		byte = [:u8 ptr_pk + i];
 		pk_rsp[i] = byte;
 		i += 1;
 	}
 
     ?{}, i = #set0_64();
     while(i < Li2_SIGN_LEN) {
-		byte = (u8)[ptr_sig + i];
+		byte = [:u8 ptr_sig + i];
 		sig_rsp[i] = byte;
 		i += 1;
 	}

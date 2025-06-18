@@ -28,18 +28,18 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = randomnessp[u64 i];
-    inbuf[u64 i] = t64;
+    t64 = randomnessp[:u64 i];
+    inbuf[:u64 i] = t64;
   }
 
   buf = _sha3_512_32(buf, inbuf);
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = buf[u64 i];
-    publicseed[u64 i] = t64;
-    t64 = buf[u64 i + KYBER_SYMBYTES/8];
-    noiseseed[u64 i] = t64;
+    t64 = buf[:u64 i];
+    publicseed[:u64 i] = t64;
+    t64 = buf[:u64 i + KYBER_SYMBYTES/8];
+    noiseseed[:u64 i] = t64;
   }
 
   zero = 0; 
@@ -81,8 +81,8 @@ fn __indcpa_keypair_derand(reg u64 pkp, reg u64 skp, reg ptr u8[KYBER_SYMBYTES] 
   pkp += KYBER_POLYVECBYTES; 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = publicseed[u64 i];
-    (u64)[pkp] = t64;
+    t64 = publicseed[:u64 i];
+    [:u64 pkp] = t64;
     pkp += 8;
   }
 }
@@ -108,8 +108,8 @@ fn __indcpa_enc(stack u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[KYB
   #bounded
   while (i < KYBER_SYMBYTES/8)
   {
-    t64 = (u64)[pkp];
-    publicseed.[u64 8 * (int)i] = t64;
+    t64 = [:u64 pkp];
+    publicseed.[:u64 8 * (int)i] = t64;
     pkp += 8;
     i += 1;
   }
@@ -192,8 +192,8 @@ fn __iindcpa_enc(reg ptr u8[KYBER_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   #bounded
   while (i < KYBER_SYMBYTES/8)
   {
-    t64 = (u64)[pkp];
-    publicseed.[u64 8*(int)i] = t64;
+    t64 = [:u64 pkp];
+    publicseed.[:u64 8*(int)i] = t64;
     pkp += 8;
     i += 1;
   }

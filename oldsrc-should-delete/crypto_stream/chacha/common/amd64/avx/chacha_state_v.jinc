@@ -15,7 +15,7 @@ inline fn __init_v_avx(reg u64 nonce key) -> stack u128[16]
 
   // key
   for i=0 to 8
-  { st[4+i] = #VPBROADCAST_4u32((u32)[key + 4*i]); }
+  { st[4+i] = #VPBROADCAST_4u32([:u32 key + 4*i]); }
 
   // counter
   st[12] = CHACHA_P3210_V_AVX;
@@ -23,7 +23,7 @@ inline fn __init_v_avx(reg u64 nonce key) -> stack u128[16]
 
   // nonce
   for i=0 to 2
-  { st[14+i] = #VPBROADCAST_4u32((u32)[nonce + 4*i]); }
+  { st[14+i] = #VPBROADCAST_4u32([:u32 nonce + 4*i]); }
 
   _st = #copy_128(st);
 

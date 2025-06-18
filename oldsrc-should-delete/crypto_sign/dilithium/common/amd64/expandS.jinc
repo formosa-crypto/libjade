@@ -21,14 +21,14 @@ fn expandSEta2_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_po
 	i = 0;
 	while(i < 64) {
 		c = rho_prime[i];
-		state[u8 i] = c;
+		state[:u8 i] = c;
 		i += 1;
 	}
 	c = (8u) elem_idx;
-	state[u8 64] = c;
-	state[u8 65] = 0;
-	state[u8 66] = 0x1F;
-	state[u8 SHAKE256_RATE - 1] = 0x80;
+	state[:u8 64] = c;
+	state[:u8 65] = 0;
+	state[:u8 66] = 0x1F;
+	state[:u8 SHAKE256_RATE - 1] = 0x80;
 
 	state = __keccakf1600_ref(state);
 	coeffs_generated = 0;
@@ -39,7 +39,7 @@ fn expandSEta2_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_po
 			?{}, offset = #set0_64();
 		}
 
-		t0 = (32u)state[u8 offset];
+		t0 = (32u)state[:u8 offset];
 		t1 = t0;
 		offset += 1;
 
@@ -99,14 +99,14 @@ fn expandSEta4_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_po
 	?{}, i = #set0_64();
 	while(i < 64) {
 		c1 = rho_prime[i];
-		state[u8 i] = c1;
+		state[:u8 i] = c1;
 		i += 1;
 	}
 	c = (8u) elem_idx;
-	state[u8 64] = c;
-	state[u8 65] = 0;
-	state[u8 66] = 0x1F;
-	state[u8 SHAKE256_RATE - 1] = 0x80;
+	state[:u8 64] = c;
+	state[:u8 65] = 0;
+	state[:u8 66] = 0x1F;
+	state[:u8 SHAKE256_RATE - 1] = 0x80;
 
 	state = __keccakf1600_ref(state);
 	?{}, coeffs_generated = #set0_64();
@@ -117,7 +117,7 @@ fn expandSEta4_poly(stack u8[64] rho_prime, reg u16 elem_idx, reg ptr u32[Li2_po
 			?{}, offset = #set0_64();
 		}
 
-		c = state[u8 offset];
+		c = state[:u8 offset];
 		offset += 1;
 
 		c32 = (32u) c;

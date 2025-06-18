@@ -26,8 +26,8 @@ inline fn __xsalsa20poly1305_ref(reg u64 c m mlen nonce key) -> reg u64
     __poly1305_ref(tag, ct, mlen, skey);
 
     c = c_s;
-    (u64)[c + 0] = 0;
-    (u64)[c + 8] = 0;
+    [:u64 c + 0] = 0;
+    [:u64 c + 8] = 0;
     r = 0;
   }
   else
@@ -72,10 +72,10 @@ inline fn __xsalsa20poly1305_ref_open(reg u64 m c clen nonce key) -> reg u64
       __xsalsa20_xor_ref(m, c, clen, nonce, key);
 
       m = m_s;
-      (u64)[m + 0]  = 0;
-      (u64)[m + 8]  = 0;
-      (u64)[m + 16] = 0;
-      (u64)[m + 24] = 0;
+      [:u64 m + 0]  = 0;
+      [:u64 m + 8]  = 0;
+      [:u64 m + 16] = 0;
+      [:u64 m + 24] = 0;
       r = 0; // this frees 'r' for the xsalsa20_xor_ref f. call
     }
     else

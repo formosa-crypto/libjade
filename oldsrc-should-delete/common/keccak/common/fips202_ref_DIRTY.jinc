@@ -17,17 +17,17 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[
 
   for i = 0 to 33 {
     c = in[i];
-    state[u8 i] ^= c;
+    state[:u8 i] ^= c;
   }
-  state[u8 33] ^= 0x1f;
-  state[u8 SHAKE256_RATE-1] ^= 0x80;
+  state[:u8 33] ^= 0x1f;
+  state[:u8 SHAKE256_RATE-1] ^= 0x80;
 
   state = _keccakf1600_ref1(state);
 
   out = s_out;
   
   for i = 0 to 128 {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[i] = c;
   }
   return out;
@@ -49,17 +49,17 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> reg ptr u8[
 
   for i = 0 to 33 {
     c = in[i];
-    state[u8 i] ^= c;
+    state[:u8 i] ^= c;
   }
-  state[u8 33] ^= 0x1f;
-  state[u8 SHAKE256_RATE-1] ^= 0x80;
+  state[:u8 33] ^= 0x1f;
+  state[:u8 SHAKE256_RATE-1] ^= 0x80;
 
   state = _keccakf1600_ref1(state);
 
   out = s_out;
   
   for i = 0 to SHAKE256_RATE {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[i] = c;
   }
 
@@ -70,7 +70,7 @@ fn _shake256_192_33(reg ptr u8[192] out, reg const ptr u8[33] in) -> reg ptr u8[
   out = s_out;
   
   for i = 0 to (192-SHAKE256_RATE) {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[SHAKE256_RATE + i] = c;
   }
 
@@ -93,17 +93,17 @@ fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
 
   for i = 0 to 32 {
     c = in[i];
-    state[u8 i] ^= c;
+    state[:u8 i] ^= c;
   }
-  state[u8 32] ^= 0x06;
-  state[u8 SHA3_512_RATE-1] ^= 0x80;
+  state[:u8 32] ^= 0x06;
+  state[:u8 SHA3_512_RATE-1] ^= 0x80;
 
   state = _keccakf1600_ref1(state);
 
   out = s_out;
 
   for i = 0 to 64 {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[i] = c;
   }
   return out;
@@ -119,10 +119,10 @@ fn _shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr
 
   for i = 0 to 34 {
     c = in[i];
-    state[u8 i] ^= c;
+    state[:u8 i] ^= c;
   }
-  state[u8 34] ^= 0x1f;
-  state[u8 SHAKE128_RATE-1] ^= 0x80;
+  state[:u8 34] ^= 0x1f;
+  state[:u8 SHAKE128_RATE-1] ^= 0x80;
 
   return state;
 }
@@ -141,7 +141,7 @@ fn _shake128_squeezeblock(reg ptr u64[25] state, reg ptr u8[SHAKE128_RATE] out) 
   out = s_out;
 
   for i = 0 to SHAKE128_RATE {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[i] = c;
   }
 
@@ -193,7 +193,7 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
   for i=0 to 4
   {
     t64 = state[i];
-    out[u64 i] = t64;
+    out[:u64 i] = t64;
   }
 
   return out;
@@ -215,12 +215,12 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = in[u64 i];
-    state[u64 i] = t64;
+    t64 = in[:u64 i];
+    state[:u64 i] = t64;
   }
 
-  state[u8 KYBER_SYMBYTES] ^= 0x06;
-  state[u8 SHA3_256_RATE - 1] = 0x80;
+  state[:u8 KYBER_SYMBYTES] ^= 0x06;
+  state[:u8 SHA3_256_RATE - 1] = 0x80;
 
   state = _keccakf1600_ref1(state);
 
@@ -229,7 +229,7 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   for i=0 to 4
   {
     t64 = state[i];
-    out[u64 i] = t64;
+    out[:u64 i] = t64;
   }
 
   return out;
@@ -250,11 +250,11 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
 
   for i=0 to 134
   {
-    state[u8 i] = in[i];
+    state[:u8 i] = in[i];
   }
 
-  state[u8 134] ^= 0x06;
-  state[u8 SHA3_256_RATE - 1] = 0x80;
+  state[:u8 134] ^= 0x06;
+  state[:u8 SHA3_256_RATE - 1] = 0x80;
 
   state = __keccakf1600_ref1(state);
 
@@ -263,7 +263,7 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
   for i=0 to 4
   {
     t64 = state[i];
-    out[u64 i] = t64;
+    out[:u64 i] = t64;
   }
 
   return out;
@@ -285,12 +285,12 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
 
   for i = 0 to 8
   {
-    t64 = in[u64 i];
+    t64 = in[:u64 i];
     state[i] ^= t64;
   }
 
-  state[u8 64] ^= 0x06;
-  state[u8 SHA3_512_RATE - 1] ^= 0x80;
+  state[:u8 64] ^= 0x06;
+  state[:u8 SHA3_512_RATE - 1] ^= 0x80;
 
   state = _keccakf1600_ref1(state);
 
@@ -299,7 +299,7 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
   for i = 0 to 8
   {
     t64 = state[i];
-    out[u64 i] = t64;
+    out[:u64 i] = t64;
   }
 
   return out;
@@ -322,12 +322,12 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   state = __keccak_init_ref1(state);
 
   for i = 0 to 8 {
-    t64 = in[u64 i];
-    state[u64 i] ^= t64;
+    t64 = in[:u64 i];
+    state[:u64 i] ^= t64;
   }
 
-  state[u8 64] ^= 0x1f;
-  state[u8 SHAKE256_RATE-1] ^= 0x80;
+  state[:u8 64] ^= 0x1f;
+  state[:u8 SHAKE256_RATE-1] ^= 0x80;
 
   state = _keccakf1600_ref1(state);
 
@@ -338,8 +338,8 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   {
     for i = 0 to SHAKE256_RATE/8
     {
-      t64 = state[u64 i];
-      (u64)[out + 8*i] = t64;
+      t64 = state[:u64 i];
+      [:u64 out + 8*i] = t64;
     }
 
     out += SHAKE256_RATE;
@@ -360,7 +360,7 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
   while(j < outlen)
   {
     t64 = state[j];
-    (u64)[out + 8 * j] = t64;
+    [:u64 out + 8 * j] = t64;
     j = j + 1;
   }
 
@@ -369,8 +369,8 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 
   while (j < outlen)
   {
-    c = state[u8 j];
-    (u8)[out + j] = c;
+    c = state[:u8 j];
+    [:u8 out + j] = c;
     j = j + 1;
   }
 }

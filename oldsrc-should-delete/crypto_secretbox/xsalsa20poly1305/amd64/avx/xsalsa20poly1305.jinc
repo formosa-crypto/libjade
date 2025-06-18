@@ -28,7 +28,7 @@ inline fn __xsalsa20poly1305_avx(reg u64 c m mlen nonce key) -> reg u64
 
     c = c_s;
      t = #set0_128();
-    (u128)[c + 0] = t;
+    [:u128 c + 0] = t;
     r = 0;
   }
   else
@@ -75,8 +75,8 @@ inline fn __xsalsa20poly1305_avx_open(reg u64 m c clen nonce key) -> reg u64
 
       m = m_s;
       t = #set0_128();
-      (u128)[m + 0]  = t;
-      (u128)[m + 16] = t;
+      [:u128 m + 0]  = t;
+      [:u128 m + 16] = t;
       r = 0; // this frees 'r' for the xsalsa20_xor_avx f. call
     }
     else

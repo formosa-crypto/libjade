@@ -26,8 +26,8 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER
 
   for i=0 to KYBER_INDCPA_PUBLICKEYBYTES/8
   {
-    t64 = (u64)[pkp + 8*i];
-    (u64)[skp] = t64;
+    t64 = [:u64 pkp + 8*i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 
@@ -96,8 +96,8 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 
   for i=0 to KYBER_SYMBYTES/8
   {
-    t64 = (u64)[hp + 8*i];
-    buf.[u64 KYBER_SYMBYTES + 8*i] = t64;
+    t64 = [:u64 hp + 8*i];
+    buf.[:u64 KYBER_SYMBYTES + 8*i] = t64;
   }
 
   s_skp = skp;

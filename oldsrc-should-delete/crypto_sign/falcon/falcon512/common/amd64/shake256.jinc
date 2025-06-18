@@ -43,7 +43,7 @@ fn __shake256_squeezeblock(stack u64[25] state, reg ptr u8[SHAKE256_RATE] out) -
   out = s_out;
 
   for i = 0 to SHAKE256_RATE {
-    c = state[u8 i];
+    c = state[:u8 i];
     out[i] = c;
   }
 

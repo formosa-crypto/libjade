@@ -112,9 +112,9 @@ inline fn __store_xor_half_interleave_v_avx2(reg u64 output input, reg u256[8] k
   inline int i;
 
   for i=0 to 8
-  { k[i] ^= (u256)[input + o + 64*i]; }
+  { k[i] ^= [:u256 input + o + 64*i]; }
   for i=0 to 8
-  { (u256)[output + o + 64*i] = k[i]; }
+  { [:u256 output + o + 64*i] = k[i]; }
 }
 
 
@@ -167,7 +167,7 @@ inline fn __store_half_interleave_v_avx2(reg u64 output, reg u256[8] k, inline i
   inline int i;
 
   for i=0 to 8
-  { (u256)[output + o + 64*i] = k[i]; }
+  { [:u256 output + o + 64*i] = k[i]; }
 }
 
 

@@ -137,12 +137,12 @@ inline fn __store_xor_half_interleave_v_avx(reg u64 output input, reg u128[8] k,
   inline int i;
 
   for i=0 to 4
-  { k[2*i  ] ^= (u128)[input + o + 64*i];
-    k[2*i+1] ^= (u128)[input + o + 64*i + 16]; }
+  { k[2*i  ] ^= [:u128 input + o + 64*i];
+    k[2*i+1] ^= [:u128 input + o + 64*i + 16]; }
 
   for i=0 to 4
-  { (u128)[output + o + 64*i     ] = k[2*i  ];
-    (u128)[output + o + 64*i + 16] = k[2*i+1]; }
+  { [:u128 output + o + 64*i     ] = k[2*i  ];
+    [:u128 output + o + 64*i + 16] = k[2*i+1]; }
 }
 
 
@@ -194,8 +194,8 @@ inline fn __store_half_interleave_v_avx(reg u64 output, reg u128[8] k, inline in
   inline int i;
 
   for i=0 to 4
-  { (u128)[output + o + 64*i     ] = k[2*i  ];
-    (u128)[output + o + 64*i + 16] = k[2*i+1]; }
+  { [:u128 output + o + 64*i     ] = k[2*i  ];
+    [:u128 output + o + 64*i + 16] = k[2*i+1]; }
 }
 
 

@@ -25,8 +25,8 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
 
   for i=0 to MLKEM_INDCPA_PUBLICKEYBYTES/8
   {
-    t64 = (u64)[pkp + 8*i];
-    (u64)[skp] = t64;
+    t64 = [:u64 pkp + 8*i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 
@@ -39,8 +39,8 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
 
   for i=0 to 4
   {
-    t64 = h_pk[u64 i];
-    (u64)[skp] = t64;
+    t64 = h_pk[:u64 i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 
@@ -49,8 +49,8 @@ fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES
 
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = randomnessp2[u64 i];
-    (u64)[skp] = t64;
+    t64 = randomnessp2[:u64 i];
+    [:u64 skp] = t64;
     skp += 8;
   }
 }
@@ -70,8 +70,8 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
   
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = randomnessp[u64 i];
-    buf[u64 i] = t64;
+    t64 = randomnessp[:u64 i];
+    buf[:u64 i] = t64;
   }
 
   t64 = MLKEM_PUBLICKEYBYTES;
@@ -87,8 +87,8 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
 
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = kr[u64 i];
-    (u64)[shkp + 8*i] = t64;
+    t64 = kr[:u64 i];
+    [:u64 shkp + 8*i] = t64;
   }
 }
 
@@ -112,8 +112,8 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
   /* fixme: should loads be 256-bits long? */
   for i=0 to MLKEM_SYMBYTES/8
   {
-    t64 = (u64)[hp + 8*i];
-    buf.[u64 MLKEM_SYMBYTES + 8*i] = t64;
+    t64 = [:u64 hp + 8*i];
+    buf.[:u64 MLKEM_SYMBYTES + 8*i] = t64;
   }
 
   s_skp = skp;

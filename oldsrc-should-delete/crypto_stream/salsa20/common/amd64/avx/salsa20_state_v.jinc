@@ -11,10 +11,10 @@ inline fn __init_v_avx(reg u64 nonce key) -> stack u128[16]
 
   // state[1,2,3,4, 11,12,13,14] = key[0,1,2,3, 4,5,6,7]
   for i=0 to 4
-  { st[i+1] = #VPBROADCAST_4u32((u32)[key + i*4]); }
+  { st[i+1] = #VPBROADCAST_4u32([:u32 key + i*4]); }
 
   for i=4 to 8
-  { st[i+7] = #VPBROADCAST_4u32((u32)[key + i*4]); }
+  { st[i+7] = #VPBROADCAST_4u32([:u32 key + i*4]); }
 
   // state[0,5,10,15] = sigma[0,1,2,3]
   for i=0 to 4
@@ -22,7 +22,7 @@ inline fn __init_v_avx(reg u64 nonce key) -> stack u128[16]
 
   // state[6,7] = nonce[0,1]
   for i=0 to 2
-  { st[i+6] = #VPBROADCAST_4u32((u32)[nonce + i*4]); }
+  { st[i+6] = #VPBROADCAST_4u32([:u32 nonce + i*4]); }
 
   // state[8,9] = 0
   st[8] = SALSA20_P3210_V_AVX;
@@ -77,7 +77,7 @@ inline fn __init_v_1_avx(reg u64 nonce, reg u32[8] key) -> stack u128[16]
 
   // state[6,7] = nonce[0,1]
   for i=0 to 2
-  { st[i+6] = #VPBROADCAST_4u32((u32)[nonce + i*4]); }
+  { st[i+6] = #VPBROADCAST_4u32([:u32 nonce + i*4]); }
 
   // state[8,9] = 0
   st[8] = SALSA20_P3210_V_AVX;

@@ -21,26 +21,26 @@ inline fn __unpack_avx2(
 
   l = rt[0];
   l &= mask26;
-  r1234[u64 o + 0] = l;
+  r1234[:u64 o + 0] = l;
 
   l = rt[0];
   l >>= 26;
   l &= mask26;
-  r1234[u64 o + 4] = l;
+  r1234[:u64 o + 4] = l;
 
   l = rt[0];
   ?{}, l = #SHRD(l, rt[1], 52);
   h = l;
   l &= mask26;
-  r1234[u64 o + 8] = l;
+  r1234[:u64 o + 8] = l;
 
   l = h;
   l >>= 26;
   l &= mask26;
-  r1234[u64 o + 12] = l;
+  r1234[:u64 o + 12] = l;
   l = rt[1];
   ?{}, l = #SHRD(l, rt[2], 40);
-  r1234[u64 o + 16] = l;
+  r1234[:u64 o + 16] = l;
 
   return r1234;
 }
@@ -77,11 +77,11 @@ inline fn __broadcast_r4_avx2(
   reg   u256[5] t;
 
   for i=0 to 5
-  { t[i] = #VPBROADCAST_4u64(r1234[u64 4*i]);
+  { t[i] = #VPBROADCAST_4u64(r1234[:u64 4*i]);
     r4444[i] = t[i]; }
 
   for i=0 to 4
-  { t[i] = #VPBROADCAST_4u64(r1234x5[u64 4*i]);
+  { t[i] = #VPBROADCAST_4u64(r1234x5[:u64 4*i]);
     r4444x5[i] = t[i]; }
 
   return r4444, r4444x5;
@@ -133,8 +133,8 @@ inline fn __load_avx2(
   reg u256[5] m;
   reg u256 t;
 
-  t    = (u256)[in + 0];
-  m[1] = (u256)[in + 32];
+  t    = [:u256 in + 0];
+  m[1] = [:u256 in + 32];
   in += 64;
   //    t = { in[128:257] , in[0:127]   }
   // m[1] = { in[384:511] , in[256:383] }
@@ -518,11 +518,11 @@ inline fn __mainloop_avx2_v1(
                                   t[4] +4u64= u[3];
 
   // T[0..3] += H[1..4] * r4*5                                      
-  u[0] = #VPMULU_256(h[1], r4x5); m0 = (u256)[in + 0];
+  u[0] = #VPMULU_256(h[1], r4x5); m0 = [:u256 in + 0];
   u[1] = #VPMULU_256(h[2], r4x5); r2 = s_r[2];
   u[2] = #VPMULU_256(h[3], r4x5);
   u[3] = #VPMULU_256(h[4], r4x5);
-  t[0] +4u64= u[0];               m[1] = (u256)[in + 32];
+  t[0] +4u64= u[0];               m[1] = [:u256 in + 32];
   t[1] +4u64= u[1];
   t[2] +4u64= u[2];
   t[3] +4u64= u[3];

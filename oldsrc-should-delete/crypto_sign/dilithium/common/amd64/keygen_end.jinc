@@ -128,7 +128,7 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 	i = 0;
 	while(i < Li2_PK_LEN) {
 		c = pk[i];
-		(u8)[pk_ptr + i] = c;
+		[:u8 pk_ptr + i] = c;
 		i += 1;
 	}
 
@@ -136,7 +136,7 @@ fn keygen(reg u64 pk_ptr sk_ptr)
 	i = 0;
 	while(i < Li2_SK_LEN) {
 		c = sk[i];
-		(u8)[sk_ptr + i] = c;
+		[:u8 sk_ptr + i] = c;
 		i += 1;
 	}
 }

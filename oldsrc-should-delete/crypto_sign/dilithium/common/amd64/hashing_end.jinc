@@ -35,7 +35,7 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 			c = pk[addr];
 
 			addr = ptr_state;
-			state_rsp[u8 addr] ^= c;
+			state_rsp[:u8 addr] ^= c;
 
 			ptr_pk += 1;
 			ptr_state += 1;
@@ -49,15 +49,15 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 		c = pk[addr];
 
 		addr = ptr_state;
-		state_rsp[u8 addr] ^= c;
+		state_rsp[:u8 addr] ^= c;
 
 		ptr_pk += 1;
 		ptr_state += 1;
 	}
 
 	addr = ptr_state;
-	state_rsp[u8 addr] ^= 0x1f;
-	state_rsp[u8 SHAKE256_RATE-1] ^= 0x80;
+	state_rsp[:u8 addr] ^= 0x1f;
+	state_rsp[:u8 SHAKE256_RATE-1] ^= 0x80;
 
 	state_rsp = __keccakf1600_ref(state_rsp);
 
@@ -65,7 +65,7 @@ fn shake256_of_pk(reg ptr u8[Li2_PK_LEN] pk, reg ptr u8[32] out)
 
 	addr = 0;
 	while(addr < 32) {
-		c = state_rsp[u8 addr];
+		c = state_rsp[:u8 addr];
 		out[addr] = c;
 		addr += 1;
 	}
@@ -95,7 +95,7 @@ fn sampleInBall(reg ptr u32[Li2_polydeg] f, reg ptr u8[32] seed)
 
 	signs = 0;
 	for ii = 0 to 8 {
-		c = state_rsp[u8 ii];
+		c = state_rsp[:u8 ii];
 		v = (64u) c;
 		v <<= 8 * ii;
 		signs |= v;
@@ -117,7 +117,7 @@ fn sampleInBall(reg ptr u32[Li2_polydeg] f, reg ptr u8[32] seed)
 				state_rsp = __keccakf1600_ref(state_rsp);
 				offset = 0;
 			}
-			c = state_rsp[u8 offset];
+			c = state_rsp[:u8 offset];
 			b = (64u) c;
 			offset += 1;
 		} (b > i)
@@ -158,7 +158,7 @@ fn hash_tr_m(reg ptr u8[32] tr, reg u64 m_len, reg u64 m)
 	offset = 0;
 	while(offset < 32) {
 		c = tr[offset];
-		state[u8 offset] ^= c;
+		state[:u8 offset] ^= c;
 		offset += 1;
 	}
 
@@ -167,8 +167,8 @@ fn hash_tr_m(reg ptr u8[32] tr, reg u64 m_len, reg u64 m)
 	space_required += 32; //edge case correction
 	while(space_required >= SHAKE256_RATE) {
 		while(offset < SHAKE256_RATE) {
-			c = (u8) [m + m_loc];
-			state[u8 offset] ^= c;
+			c = [:u8 m + m_loc];
+			state[:u8 offset] ^= c;
 			m_loc += 1;
 			offset += 1;
 		}
@@ -180,19 +180,19 @@ fn hash_tr_m(reg ptr u8[32] tr, reg u64 m_len, reg u64 m)
 
 	//last block
 	while(m_loc < m_len) {
-		c = (u8) [m + m_loc];
-		state[u8 offset] ^= c;
+		c = [:u8 m + m_loc];
+		state[:u8 offset] ^= c;
 		m_loc += 1;
 		offset += 1;
 	}
-	state[u8 offset] ^= 0x1f;
-	state[u8 SHAKE256_RATE-1] ^= 0x80;
+	state[:u8 offset] ^= 0x1f;
+	state[:u8 SHAKE256_RATE-1] ^= 0x80;
 
 	state = __keccakf1600_ref(state);
 
 	offset = 0;
 	while(offset < 64) {
-		c = state[u8 offset];
+		c = state[:u8 offset];
 		mu[offset] = c;
 		offset += 1;
 	}
@@ -216,7 +216,7 @@ fn hash_mu_w1(reg ptr u8[64] mu, reg ptr u8[Li2_pack_w1len] w1_packed)
 	while(offset < 64) {
 		state, offset = shake256_consider_permute(state, offset);
 		c = mu[offset];
-		state[u8 offset] ^= c;
+		state[:u8 offset] ^= c;
 		offset += 1;
 	}
 
@@ -225,23 +225,23 @@ fn hash_mu_w1(reg ptr u8[64] mu, reg ptr u8[Li2_pack_w1len] w1_packed)
 	while(w1_loc < Li2_pack_w1len) {
 		state, offset = shake256_consider_permute(state, offset);
 		c = w1_packed[w1_loc];
-		state[u8 offset] ^= c;
+		state[:u8 offset] ^= c;
 		w1_loc += 1;
 		offset += 1;
 	}
 
 	// Absorb separator byte
 	state, offset = shake256_consider_permute(state, offset);
-	state[u8 offset] ^= 0x1f;
+	state[:u8 offset] ^= 0x1f;
 
 	// Finish
 	state, offset = shake256_consider_permute(state, offset);
-	state[u8 SHAKE256_RATE-1] ^= 0x80;
+	state[:u8 SHAKE256_RATE-1] ^= 0x80;
 	state = __keccakf1600_ref(state);
 	?{}, offset = #set0_64();
 
 	while(offset < 32) {
-		c = state[u8 offset];
+		c = state[:u8 offset];
 		c_tilde[offset] = c;
 		offset += 1;
 	}

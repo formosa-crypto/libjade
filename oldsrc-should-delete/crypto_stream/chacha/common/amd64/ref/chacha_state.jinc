@@ -15,15 +15,15 @@ inline fn __init_ref(reg u64 nonce key) -> stack u32[16]
 
   // reads 8 u32 from pointer key
   for i=0 to 8
-  { t = (u32)[key + 4*i];
+  { t = [:u32 key + 4*i];
     st[4+i] = t; }
 
   // 64-bit counter (same as st[12] = 0; st[13] = 0;)
-  st[u64 6] = 0;
+  st[:u64 6] = 0;
 
   // reads 2 u32 from pointer nonce
   for i=0 to 2
-  { t = (u32)[nonce + 4*i];
+  { t = [:u32 nonce + 4*i];
     st[14+i] = t; }
 
   return st;
@@ -34,9 +34,9 @@ inline fn __increment_counter_ref(stack u32[16] st) -> stack u32[16]
 {
   reg u64 t;
 
-  t = st[u64 6];
+  t = st[:u64 6];
   t += 1;
-  st[u64 6] = t;
+  st[:u64 6] = t;
 
   return st;
 }
