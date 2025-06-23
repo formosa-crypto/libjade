@@ -408,7 +408,7 @@ inline fn __gen_matrix_buf_rejection_filter48
   g0 = #VPACKSS_16u16(g0, g1);
 
   // from Intel intrinsics: "Create mask from the most significant bit of each 8-bit element in a, and store the result in dst."
-  good = #VPMOVMSKB_u256u64(g0);
+  good = (64u)#MOVEMASK_32u8(g0);
 
   good = #protect(good, ms);
 
@@ -553,7 +553,7 @@ inline fn __gen_matrix_buf_rejection_filter24
   g0 = #VPCMPGT_16u16(bounds, f0);
   g1 = #set0_256();
   g0 = #VPACKSS_16u16(g0, g1);
-  good = #VPMOVMSKB_u256u64(g0);
+  good = (64u)#MOVEMASK_32u8(g0);
 
   good = #protect(good, ms);
 

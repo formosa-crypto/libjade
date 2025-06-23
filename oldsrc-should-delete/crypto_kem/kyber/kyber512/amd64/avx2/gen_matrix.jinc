@@ -395,7 +395,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     g1 = #VPCMPGT_16u16(bound, f1);
 
     g0 = #VPACKSS_16u16(g0, g1);
-    good = #VPMOVMSKB_u256u64(g0);
+    good = (64u)#MOVEMASK_32u8(g0);
 
     t64 = good;
     t64 &= 0xFF;
@@ -473,7 +473,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     f = #VPAND_128(f, mask);
 
     t = #VPCMPGT_8u16(bound, f);
-    good = #VPMOVMSKB_u128u64(t);
+    good = (64u)#MOVEMASK_16u8(t);
 
     good = #PEXT_64(good, t64);
     l = #VMOV(idxp[:u64 good]);

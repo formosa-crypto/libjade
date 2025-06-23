@@ -1403,7 +1403,7 @@ fn _poly_tomsg(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
     f1 = #VPSUB_16u16(f1, hhq);
     f0 = #VPACKSS_16u16(f0, f1);
     f0 = #VPERMQ(f0, 0xD8);
-    c = #VPMOVMSKB_u256u32(f0);
+    c = #MOVEMASK_32u8(f0);
     [:u32 rp+4*i] = c;
   }
   return a;
@@ -1439,7 +1439,7 @@ fn _poly_tomsg_1(reg ptr u8[KYBER_INDCPA_MSGBYTES] rp, reg ptr u16[KYBER_N] a) -
     f1 = #VPSUB_16u16(f1, hhq);
     f0 = #VPACKSS_16u16(f0, f1);
     f0 = #VPERMQ(f0, 0xD8);
-    c = #VPMOVMSKB_u256u32(f0);
+    c = #MOVEMASK_32u8(f0);
     rp[:u32 i] = c;
   }
   return rp, a;
