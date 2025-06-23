@@ -464,11 +464,11 @@ fn __load24(reg ptr u8[KYBER_ETA1*KYBER_N/4] buf, reg u64 i) -> reg u32
 
   r = (32u)buf[i];
 
-  t = (32u)buf[(int)i+1];
+  t = (32u)buf[(uint)i+1];
   t <<= 8;
   r |= t;
 
-  t = (32u)buf[(int)i+2];
+  t = (32u)buf[(uint)i+2];
   t <<= 16;
   r |= t;
 

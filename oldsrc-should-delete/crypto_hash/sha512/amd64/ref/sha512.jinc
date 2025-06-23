@@ -290,7 +290,7 @@ fn _blocks_1_ref(reg ptr u64[8] _H, reg ptr u64[32] sblocks, reg u64 nblocks) ->
     s_i = i;
     oblocks = i << 4;
     for t=0 to 16
-    { v = sblocks[(int)oblocks + t];
+    { v = sblocks[(uint)oblocks + t];
       v = #BSWAP_64(v);
       W[t] = v;
     }

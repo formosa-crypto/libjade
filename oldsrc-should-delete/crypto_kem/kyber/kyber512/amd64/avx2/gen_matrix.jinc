@@ -381,7 +381,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
   while(!b)
   {
     f0 = #VPERMQ(buf.[:u256 pos], 0x94);
-    f1 = #VPERMQ(buf.[:u256 24 + (int)pos], 0x94);
+    f1 = #VPERMQ(buf.[:u256 24 + (uint)pos], 0x94);
     f0 = #VPSHUFB_256(f0, idx8);
     f1 = #VPSHUFB_256(f1, idx8);
     g0 = #VPSRL_16u16(f0, 4);
@@ -438,10 +438,10 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     f0 = #VPSHUFB_256(f0, g0);
     f1 = #VPSHUFB_256(f1, g1);
 
-    rp.[:u128 2*(int)ctr] = (128u)f0;
-    rp.[:u128 2*(int)t64] = #VEXTRACTI128(f0, 1);
-    rp.[:u128 2*(int)t64_1] = (128u)f1;
-    rp.[:u128 2*(int)t64_2] = #VEXTRACTI128(f1, 1);
+    rp.[:u128 2*(uint)ctr] = (128u)f0;
+    rp.[:u128 2*(uint)t64] = #VEXTRACTI128(f0, 1);
+    rp.[:u128 2*(uint)t64_1] = (128u)f1;
+    rp.[:u128 2*(uint)t64_2] = #VEXTRACTI128(f1, 1);
 
     ctr = t64_3;
 
@@ -483,7 +483,7 @@ fn _rej_uniform_avx(reg ptr u16[KYBER_N] rp, reg ptr u8[REJ_UNIFORM_AVX_BUFLEN] 
     l = #VPUNPCKL_16u8(l, h);
     f = #VPSHUFB_128(f, l);
 
-    rp.[:u128 2*(int)ctr] = f;
+    rp.[:u128 2*(uint)ctr] = f;
     ctr += good;
 
     pos += 12;

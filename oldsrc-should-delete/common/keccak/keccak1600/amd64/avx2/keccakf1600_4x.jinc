@@ -191,7 +191,7 @@ inline fn __keccakf1600_4x_avx2(reg ptr u256[25] a) -> reg ptr u256[25]
     rc = RC.[c];
     e = __round_4x_avx2(e, a, rc, r8, r56);
 
-    rc = RC.[(int) c + 32];
+    rc = RC.[(uint) c + 32];
     a = __round_4x_avx2(a, e, rc, r8, r56);
 
     c += 64;
