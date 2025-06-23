@@ -202,7 +202,7 @@ fn poly_checknorm(reg ptr u32[Li2_polydeg] poly, inline int threshold)
 		v256 = #VPSUB_8u32(v256_zero, v256);
 		exceeds_neg = #VPCMPGT_8u32(v256, v256_threshold);
 		exceeds_any = #VPOR_256(exceeds_pos, exceeds_neg);
-		movmskb = #VPMOVMSKB_u256u64(exceeds_any);
+		movmskb = (64u)#MOVEMASK_32u8(exceeds_any);
 		_,_,_,_,zf = #TEST_64(movmskb, movmskb);
 		v8 = #SETcc(!zf);
 		ret |= v8;
