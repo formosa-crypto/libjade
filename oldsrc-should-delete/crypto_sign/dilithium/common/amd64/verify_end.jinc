@@ -64,7 +64,7 @@ fn unpack_hints(reg ptr u8[Li2_omega + Li2_k] hints_buf, reg ptr u32[Li2_k * Li2
                     // if(j > k && sig[j] <= sig[j-1]) return 1;
                     idx1 = (64u)hints_buf[j];
                     if (j > k) {
-                        idx2 = (64u)hints_buf[(int) j-1];
+                        idx2 = (64u)hints_buf[(uint) j-1];
                         if (idx1 <= idx2) {
                             fail = 1;
                         }
@@ -170,7 +170,7 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
 		z_to_unpack = polyz_unpack(z_to_unpack, z_buf);
         z[ii * Li2_polydeg : Li2_polydeg] = z_to_unpack;
 	}
-    z_normcheck_fail = checknorm_vecl(z, (int) (Li2_gamma1 - Li2_beta));
+    z_normcheck_fail = checknorm_vecl(z, (uint) (Li2_gamma1 - Li2_beta));
     if (z_normcheck_fail == 0) {
         z = fft_vec(z);
 

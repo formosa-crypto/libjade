@@ -197,7 +197,7 @@ inline fn __keccakf1600_4x(reg ptr u256[25] a) -> reg ptr u256[25]
     a_s = a; s_e = e;
     a = a_s; e = s_e;
 
-    rc = RC.[(int) c + 32];
+    rc = RC.[(uint) c + 32];
     a = keccakf1600_4x_round(a, e, rc, r8, r56);
 
     // just an expensive pointer swap (#todo request feature)

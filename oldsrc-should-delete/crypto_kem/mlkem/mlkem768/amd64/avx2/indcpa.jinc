@@ -92,7 +92,7 @@ fn __indcpa_enc_0(#mmx reg u64 sctp, reg ptr u8[MLKEM_INDCPA_MSGBYTES] msgp, reg
   while (i < MLKEM_SYMBYTES/8)
   {
     #declassify t64 = [:u64 pkp];
-    publicseed.[:u64 8 * (int)i] = t64;
+    publicseed.[:u64 8 * (uint)i] = t64;
     pkp += 8;
     i += 1;
   }
@@ -164,7 +164,7 @@ fn __indcpa_enc_1(
   while (i < MLKEM_SYMBYTES/8)
   {
     #declassify t64 = [:u64 pkp];
-    publicseed.[:u64 8*(int)i] = t64;
+    publicseed.[:u64 8*(uint)i] = t64;
     pkp += 8;
     i += 1;
   }

@@ -146,7 +146,7 @@ inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
     e = __round_bmi1(e, a, rc);
 
     RC = s_RC;
-    rc = RC[(int) c + 1];
+    rc = RC[(uint) c + 1];
     a = __round_bmi1(a, e, rc);
 
     c += 2;

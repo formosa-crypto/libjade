@@ -33,7 +33,7 @@ inline fn __modq_decode_8(
       if(w >= 12289)
       { is_zero = 1; }
 
-      out.[(int) out_i * 2] = (16u)w;
+      out.[(uint) out_i * 2] = (16u)w;
 
       out_i += 1;
     }
@@ -108,7 +108,7 @@ fn __modq_decode_8_unrolled(stack u16[8] out, reg u64 in)
                 is_zero = 1;
             }
 
-            out.[(int) out_i * 2] = (16u)w;
+            out.[(uint) out_i * 2] = (16u)w;
 
             out_i += 1;
         }
