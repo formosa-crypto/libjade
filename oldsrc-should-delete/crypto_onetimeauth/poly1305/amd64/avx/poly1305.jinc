@@ -557,12 +557,12 @@ inline fn __poly1305_avx_update(
   inline int i;
   stack u128 s_mask26 s_bit25;
   reg u128[5] h;
-  reg u128 mask26 t;
+  reg u128 t;
   reg u64[3] h64;
 
   for i=0 to 5
   { h[i] = #set0_128(); }
-  t = #VPBROADCAST_2u64(mask26_u64); s_mask26 = t; mask26 = t;
+  t = #VPBROADCAST_2u64(mask26_u64); s_mask26 = t;
   t = #VPBROADCAST_2u64(bit25_u64); s_bit25 = t;
 
   while(inlen >= 64)

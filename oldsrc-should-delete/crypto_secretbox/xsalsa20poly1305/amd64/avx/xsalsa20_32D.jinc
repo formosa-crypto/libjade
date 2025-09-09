@@ -8,12 +8,11 @@ inline fn __xsalsa20_ref_32(
   reg ptr u8[32]
 {
   stack ptr u8[32] out_s;
-  stack u64 nonce_s key_s;
+  stack u64 nonce_s;
   reg u32[8] subkey;
 
   out_s = out;
   nonce_s = nonce;
-  key_s = key;
 
   subkey = __hsalsa20_ref(nonce, key);
 

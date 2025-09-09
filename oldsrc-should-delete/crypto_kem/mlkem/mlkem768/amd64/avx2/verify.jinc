@@ -47,7 +47,7 @@ fn __cmov(reg u64 dst, reg ptr u8[MLKEM_SYMBYTES] src, reg u64 cnd)
 {
   reg u256 f g m;
   stack u64 scnd;
-  reg u8 t1 t2 bcond;
+  reg u8 t1 t2;
   inline int i off;
 
   cnd = -cnd;
@@ -65,8 +65,6 @@ fn __cmov(reg u64 dst, reg ptr u8[MLKEM_SYMBYTES] src, reg u64 cnd)
 
   off = MLKEM_SYMBYTES/32 * 32;
 
-  /* fixme: unused in 768, hence untested */
-  bcond = (8u)cnd;
   for i=off to MLKEM_SYMBYTES
   {
     t2 = [:u8 dst + i];

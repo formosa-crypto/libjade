@@ -318,8 +318,6 @@ fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
   mask = #VPBROADCAST_8u32(pd_mask_s);
   shift = #VPBROADCAST_8u32(pd_shift_s);
 
-  f = #set0_256();
-
   for i=0 to KYBER_N/16
   {
     h = (128u)[:u64 ap + 8*i];

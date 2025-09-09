@@ -789,7 +789,6 @@ fn _gen_matrix_avx2
   pol, _ = __gen_matrix_sample_one_polynomial(pol, buf, rho, rc);
 
   matrix[8*MLKEM_N:MLKEM_N] = pol;
-  bufx4_s = bufx4;
 
   for i = 0 to MLKEM_K
   { for j = 0 to MLKEM_K

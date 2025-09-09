@@ -5,14 +5,13 @@ from Jade require "crypto_stream/salsa20/common/amd64/ref/salsa20.jinc"
 
 inline fn __xsalsa20_xor_ref(reg u64 output input len nonce key)
 {
-  stack u64 _output _input _len _nonce _key;
+  stack u64 _output _input _len _nonce;
   reg u32[8] subkey;
 
   _output = output;
   _input = input;
   _len = len;
   _nonce = nonce;
-  _key = key;
 
   subkey = __hsalsa20_ref(nonce, key);
 
@@ -27,13 +26,12 @@ inline fn __xsalsa20_xor_ref(reg u64 output input len nonce key)
 
 inline fn __xsalsa20_ref(reg u64 output len nonce key)
 {
-  stack u64 _output _len _nonce _key;
+  stack u64 _output _len _nonce;
   reg u32[8] subkey;
 
   _output = output;
   _len = len;
   _nonce = nonce;
-  _key = key;
 
   subkey = __hsalsa20_ref(nonce, key);
 
