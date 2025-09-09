@@ -346,7 +346,6 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
-    c >>= 1;
   }
   return rp;
 }
@@ -408,7 +407,6 @@ fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_INDCPA_MSGBYTES] ap
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
-    c >>= 1;
   }
   return rp;
 }
@@ -471,8 +469,6 @@ fn __load24(reg ptr u8[KYBER_ETA1*KYBER_N/4] buf, reg u64 i) -> reg u32
   t = (32u)buf[(uint)i+2];
   t <<= 16;
   r |= t;
-
-  t &= 0x00FFFFFF;
 
   return r;
 }

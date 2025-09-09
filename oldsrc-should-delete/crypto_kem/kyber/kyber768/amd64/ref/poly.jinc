@@ -366,7 +366,6 @@ fn _poly_frommsg(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
-    c >>= 1;
   }
   return rp;
 }
@@ -428,7 +427,6 @@ fn _i_poly_frommsg(reg ptr u16[KYBER_N] rp, reg ptr u8[32] ap) -> reg ptr u16[KY
     t &= 1;
     t *= (KYBER_Q+1)/2;
     rp[8*i+7] = t;
-    c >>= 1;
   }
   return rp;
 }
