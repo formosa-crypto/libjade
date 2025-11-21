@@ -82,13 +82,13 @@ fn __add_final_block(
 }
 
 fn _isha3_256(
-  #spill_to_mmx reg ptr u8[32] out,
-  #spill_to_mmx reg u64 in inlen)
+  #[spill_to_mmx] reg ptr u8[32] out,
+  #[spill_to_mmx] reg u64 in inlen)
   ->
   reg ptr u8[32]
 {
   stack u64[25] state;
-  #spill_to_mmx reg u64 ilen r8 t64;
+  #[spill_to_mmx] reg u64 ilen r8 t64;
   reg u8 t8;
   inline int i;
 
@@ -126,10 +126,10 @@ fn _isha3_256(
 }
 
 
-fn _shake256_1120_32(#spill_to_mmx reg u64 out in0 in1)
+fn _shake256_1120_32(#[spill_to_mmx] reg u64 out in0 in1)
 {
   stack u64[25] state;
-  #spill_to_mmx reg u64 ilen r8 t64;
+  #[spill_to_mmx] reg u64 ilen r8 t64;
   reg u8 t8;
   inline int i;
 
@@ -184,7 +184,7 @@ fn _shake256_1120_32(#spill_to_mmx reg u64 out in0 in1)
 }
 
 fn _shake256_128_33(
-  #spill_to_mmx reg ptr u8[128] out,
+  #[spill_to_mmx] reg ptr u8[128] out,
                 reg const ptr u8[33] in)
   ->
   reg ptr u8[128]
@@ -221,7 +221,7 @@ fn _shake256_128_33(
 }
 
 fn _isha3_256_32(
-  #spill_to_mmx reg ptr u8[32] out,
+  #[spill_to_mmx] reg ptr u8[32] out,
                 reg ptr u8[MLKEM_SYMBYTES] in)
   ->
   reg ptr u8[32]
@@ -257,7 +257,7 @@ fn _isha3_256_32(
 }
 
 fn _sha3_512_64(
-  #spill_to_mmx reg ptr u8[64] out,
+  #[spill_to_mmx] reg ptr u8[64] out,
                 reg const ptr u8[64] in)
   ->
   reg ptr u8[64]
@@ -293,7 +293,7 @@ fn _sha3_512_64(
 }
 
 fn _sha3_512_32(
-  #spill_to_mmx reg ptr u8[64] out,
+  #[spill_to_mmx] reg ptr u8[64] out,
                 reg const ptr u8[32] in)
   ->
   reg ptr u8[64]
@@ -353,7 +353,7 @@ fn _shake128_absorb34(reg ptr u64[25] state, reg const ptr u8[34] in) -> reg ptr
 
 fn _shake128_squeezeblock(
                 reg ptr u64[25] state,
-  #spill_to_mmx reg ptr u8[SHAKE128_RATE] out)
+  #[spill_to_mmx] reg ptr u8[SHAKE128_RATE] out)
   ->
   reg ptr u64[25],
   reg ptr u8[SHAKE128_RATE]

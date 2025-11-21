@@ -1,6 +1,6 @@
 
 fn _xwing_sha3(
-  #spill_to_mmx
+  #[spill_to_mmx]
   reg u64 k,         // writes: 32 bytes
   reg u64 k1,        // reads:  32 bytes
   reg ptr u8[32] k2, // reads:  32 bytes

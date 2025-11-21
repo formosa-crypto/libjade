@@ -1,6 +1,6 @@
 from Jade require "crypto_scalarmult/curve25519/amd64/ref4/scalarmult.jazz"
 
-fn xwing_x25519_base_p_rp(#spill_to_mmx reg u64 qp, reg ptr u8[32] _n)
+fn xwing_x25519_base_p_rp(#[spill_to_mmx] reg u64 qp, reg ptr u8[32] _n)
 {
   reg u64[4] q n;
   inline int i;
@@ -14,7 +14,7 @@ fn xwing_x25519_base_p_rp(#spill_to_mmx reg u64 qp, reg ptr u8[32] _n)
   __store4(qp, q);
 }
 
-fn xwing_x25519_rp_rp_p(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n, reg u64 pp) -> reg ptr u8[32]
+fn xwing_x25519_rp_rp_p(#[spill_to_mmx] reg ptr u8[32] _q, reg ptr u8[32] _n, reg u64 pp) -> reg ptr u8[32]
 {
   reg u64[4] q n p;
   inline int i;
@@ -31,7 +31,7 @@ fn xwing_x25519_rp_rp_p(#spill_to_mmx reg ptr u8[32] _q, reg ptr u8[32] _n, reg 
   return _q;
 }
 
-fn xwing_x25519_rp_p_p(#spill_to_mmx reg ptr u8[32] _q, reg u64 np, reg u64 pp) -> reg ptr u8[32]
+fn xwing_x25519_rp_p_p(#[spill_to_mmx] reg ptr u8[32] _q, reg u64 np, reg u64 pp) -> reg ptr u8[32]
 {
   reg u64[4] q n p;
   inline int i;
