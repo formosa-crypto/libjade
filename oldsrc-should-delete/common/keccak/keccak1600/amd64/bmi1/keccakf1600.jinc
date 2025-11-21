@@ -156,7 +156,6 @@ inline fn __keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
 }
 
 
-#[returnaddress="stack"]
 fn _keccakf1600_bmi1(reg ptr u64[25] a) -> reg ptr u64[25]
 {
   a = __keccakf1600_bmi1(a);

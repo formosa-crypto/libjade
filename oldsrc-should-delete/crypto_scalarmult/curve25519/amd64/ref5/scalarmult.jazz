@@ -676,7 +676,6 @@ inline fn __mul5_sss(stack u64[5] xa ya) -> stack u64[5]
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#[returnaddress="stack"]
 fn _mul5_pp(reg ptr u64[5] xa ya) -> reg ptr u64[5]
 {
   inline int i;
@@ -1057,7 +1056,6 @@ inline fn __sqr5_ss(stack u64[5] xa) -> stack u64[5]
 // ////////////////////////////////////////////////////////////////////////////
 
 // TODO replace "-> reg ptr u64[5]" by "reg u64[5]" when r.a. @ f call
-#[returnaddress="stack"]
 fn _sqr5_p(reg ptr u64[5] xa) -> reg ptr u64[5]
 {
   inline int i;
@@ -1214,7 +1212,6 @@ inline fn _sqr5_s_(stack u64[5] x) -> stack u64[5]
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#[returnaddress="stack"]
 fn _it_sqr5_p(reg ptr u64[5] x, reg u32 i) -> reg ptr u64[5]
 {
   reg bool zf;

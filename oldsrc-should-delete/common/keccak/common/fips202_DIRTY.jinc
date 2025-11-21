@@ -2,7 +2,6 @@ from Jade require "common/keccak/keccak1600/amd64/avx2/keccak1600_nomsf.jinc"
 from Jade require "common/keccak/keccak1600/amd64/avx2/keccakf1600_nomsf.jinc"
 require "fips202_params.jinc"
 
-#[returnaddress="stack"]
 fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 {
   reg u256[7] state;
@@ -35,7 +34,6 @@ fn _sha3_256(reg ptr u8[32] out, reg u64 in inlen) -> reg ptr u8[32]
 }
 
 
-#[returnaddress="stack"]
 fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8[32]
 {
   reg u256[7] state;
@@ -82,7 +80,6 @@ fn _sha3_256_32(reg ptr u8[32] out, reg ptr u8[KYBER_SYMBYTES] in) -> reg ptr u8
   return out;
 }
 
-#[returnaddress="stack"]
 fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
 {
   reg u256[7] state;
@@ -140,7 +137,6 @@ fn _sha3_256_134(reg ptr u8[32] out, reg ptr u8[134] in) -> reg ptr u8[32]
   return out;
 }
 
-#[returnaddress="stack"]
 fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 {
   reg u256[7] state;
@@ -180,7 +176,6 @@ fn _shake256_64(reg u64 out outlen, reg const ptr u8[64] in)
 }
 
 
-#[returnaddress="stack"]
 fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[128]
 {
   reg u256[7] state;
@@ -234,7 +229,6 @@ fn _shake256_128_33(reg ptr u8[128] out, reg const ptr u8[33] in) -> reg ptr u8[
   return out;
 }
 
-#[returnaddress="stack"]
 fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
 {
   reg u256[7] state;
@@ -283,7 +277,6 @@ fn _sha3_512_64(reg ptr u8[64] out, reg const ptr u8[64] in) -> reg ptr u8[64]
   return out;
 }
 
-#[returnaddress="stack"]
 fn _sha3_512_32(reg ptr u8[64] out, reg const ptr u8[32] in) -> reg ptr u8[64]
 {
   reg u256[7] state;

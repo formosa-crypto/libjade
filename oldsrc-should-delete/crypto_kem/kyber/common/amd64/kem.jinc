@@ -5,7 +5,6 @@
 // Note2: due to the integration of hakyber implementations into libjade, this file is no longer
 //        required by kyber768/amd64/ref/
 
-#[returnaddress="stack"]
 fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER_SYMBYTES] coins)
 {
   stack u8[32] h_pk;
@@ -44,7 +43,6 @@ fn __crypto_kem_keypair_derand_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[2*KYBER
   __fromstack32u8(skp, coins[32:32]);
 }
 
-#[returnaddress="stack"]
 fn __crypto_kem_enc_derand_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[KYBER_SYMBYTES] coins)
 {
   stack u8[KYBER_SYMBYTES * 2] buf kr;
