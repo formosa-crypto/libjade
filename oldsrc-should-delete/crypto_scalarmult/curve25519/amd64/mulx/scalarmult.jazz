@@ -1156,7 +1156,7 @@ inline fn __montgomery_ladder4(
   stack u64[4] us x2 x3 z3;
   reg u64[4] z2r;
   stack u64 swapped;
-  #spill_to_mmx reg u64 ctr;
+  #[spill_to_mmx] reg u64 ctr;
 
   (x2,z2r,x3,z3) = __init_points4(u); 
   us = #copy(u);
@@ -1227,7 +1227,7 @@ inline fn __curve25519_mulx_base(reg u64[4] _k) -> reg u64[4]
 //EOR#
 
 export fn jade_scalarmult_curve25519_amd64_mulx(
-  #spill_to_mmx reg ptr u64[4] qp,
+  #[spill_to_mmx] reg ptr u64[4] qp,
   reg ptr u64[4] np,
   reg ptr u64[4] pp)
   ->
@@ -1252,7 +1252,7 @@ export fn jade_scalarmult_curve25519_amd64_mulx(
 }
 
 export fn jade_scalarmult_curve25519_amd64_mulx_base(
-  #spill_to_mmx reg ptr u64[4] qp,
+  #[spill_to_mmx] reg ptr u64[4] qp,
   reg ptr u64[4] np)
   ->
   reg ptr u64[4],
