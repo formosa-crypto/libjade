@@ -396,7 +396,7 @@ fn _i_poly_frommsg(reg ptr u16[MLKEM_N] rp, reg ptr u8[32] ap) -> reg ptr u16[ML
   return rp;
 }
 
-fn _poly_getnoise(#[spill_to_mmx] reg ptr u16[MLKEM_N] rp, #mmx reg ptr u8[MLKEM_SYMBYTES] s_seed, reg u8 nonce) -> reg ptr u16[MLKEM_N]
+fn _poly_getnoise(#[spill_to_mmx] reg ptr u16[MLKEM_N] rp, #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_seed, reg u8 nonce) -> reg ptr u16[MLKEM_N]
 {
   stack u8[33] extseed;   /* 33 = MLKEM_SYMBYTES +1 */
   stack u8[128] buf;      /* 128 = MLKEM_ETA*MLKEM_N/4 */

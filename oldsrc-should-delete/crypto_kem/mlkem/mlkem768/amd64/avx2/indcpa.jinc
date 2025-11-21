@@ -72,13 +72,13 @@ fn __indcpa_keypair(#[spill_to_mmx] reg u64 pkp skp, reg ptr u8[MLKEM_SYMBYTES] 
 }
 
 inline
-fn __indcpa_enc_0(#mmx reg u64 sctp, reg ptr u8[MLKEM_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[MLKEM_SYMBYTES] noiseseed)
+fn __indcpa_enc_0(#[mmx] reg u64 sctp, reg ptr u8[MLKEM_INDCPA_MSGBYTES] msgp, reg u64 pkp, reg ptr u8[MLKEM_SYMBYTES] noiseseed)
 {
   stack u16[MLKEM_VECN] pkpv sp ep bp;
   stack u16[MLKEM_K*MLKEM_VECN] aat;
   stack u16[MLKEM_N] k epp v;
   stack u8[MLKEM_SYMBYTES] publicseed;
-  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
   reg ptr u8[MLKEM_SYMBYTES] lnoiseseed;
   reg u64 i t64 ctp;
   reg u8 nonce;
@@ -150,7 +150,7 @@ fn __indcpa_enc_1(
   stack u16[MLKEM_K*MLKEM_VECN] aat;
   stack u16[MLKEM_N] k epp v;
   stack u8[MLKEM_SYMBYTES] publicseed;
-  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
   reg ptr u8[MLKEM_SYMBYTES] lnoiseseed;
   reg u64 i t64;
   reg u8 nonce;

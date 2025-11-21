@@ -4,14 +4,14 @@ require "polyvec.jinc"
 require "gen_matrix.jinc"
 
 inline
-fn __indcpa_keypair(#mmx reg u64 spkp, #mmx reg u64 sskp, reg ptr u8[MLKEM_SYMBYTES] randomnessp)
+fn __indcpa_keypair(#[mmx] reg u64 spkp, #[mmx] reg u64 sskp, reg ptr u8[MLKEM_SYMBYTES] randomnessp)
 {
   stack u16[MLKEM_K * MLKEM_VECN] a;
   stack u16[MLKEM_VECN] e pkpv skpv;
   stack u8[64] buf;
   stack u8[MLKEM_SYMBYTES] publicseed noiseseed;
   reg ptr u8[MLKEM_SYMBYTES] r_noiseseed;
-  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
   stack u8[32] inbuf;
   reg u64 t64;
   reg u64 zero;
@@ -86,7 +86,7 @@ fn __indcpa_keypair(#mmx reg u64 spkp, #mmx reg u64 sskp, reg ptr u8[MLKEM_SYMBY
 }
 
 inline
-fn __indcpa_enc(#mmx reg u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLKEM_SYMBYTES] noiseseed)
+fn __indcpa_enc(#[mmx] reg u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[MLKEM_SYMBYTES] noiseseed)
 {
   stack u16[MLKEM_VECN] pkpv sp ep bp;
   stack u16[MLKEM_K*MLKEM_VECN] aat;
@@ -95,7 +95,7 @@ fn __indcpa_enc(#mmx reg u64 sctp, reg ptr u8[32] msgp, reg u64 pkp, reg ptr u8[
   reg u64 i t64;
   reg u64 ctp;
   reg u8 nonce;
-  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
 
   s_noiseseed = noiseseed;
 
@@ -169,8 +169,8 @@ fn __iindcpa_enc(reg ptr u8[MLKEM_CT_LEN] ctp, reg ptr u8[32] msgp, reg u64 pkp,
   stack u8[MLKEM_SYMBYTES] publicseed;
   reg u64 i t64;
   reg u8 nonce;
-  #mmx reg ptr u8[MLKEM_CT_LEN] sctp;
-  #mmx reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
+  #[mmx] reg ptr u8[MLKEM_CT_LEN] sctp;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES] s_noiseseed;
 
   s_noiseseed = noiseseed;
   sctp = ctp;

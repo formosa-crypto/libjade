@@ -4,11 +4,11 @@ require "verify.jinc"
 inline
 fn __crypto_kem_keypair_jazz(reg u64 pkp, reg u64 skp, reg ptr u8[MLKEM_SYMBYTES*2] randomnessp)
 {
-  #mmx reg ptr u8[MLKEM_SYMBYTES*2] s_randomnessp;
+  #[mmx] reg ptr u8[MLKEM_SYMBYTES*2] s_randomnessp;
   reg ptr u8[MLKEM_SYMBYTES] randomnessp1 randomnessp2;
 
   stack u8[32] h_pk;
-  #mmx reg u64 s_skp s_pkp;
+  #[mmx] reg u64 s_skp s_pkp;
   reg u64 t64;
   inline int i;
 
@@ -61,7 +61,7 @@ fn __crypto_kem_enc_jazz(reg u64 ctp, reg u64 shkp, reg u64 pkp, reg ptr u8[MLKE
   inline int i;
 
   stack u8[MLKEM_SYMBYTES * 2] kr buf;
-  #mmx reg u64 s_pkp s_ctp s_shkp;
+  #[mmx] reg u64 s_pkp s_ctp s_shkp;
   reg u64 t64;
 
   s_pkp = pkp;
@@ -100,7 +100,7 @@ fn __crypto_kem_dec_jazz(reg u64 shkp, reg u64 ctp, reg u64 skp)
 {
   stack u8[MLKEM_CT_LEN] ctpc;
   stack u8[2*MLKEM_SYMBYTES] kr buf;
-  #mmx reg u64 s_skp s_ctp s_shkp s_cnd;
+  #[mmx] reg u64 s_skp s_ctp s_shkp s_cnd;
   reg u64 pkp hp zp t64 cnd;
   inline int i;
 
