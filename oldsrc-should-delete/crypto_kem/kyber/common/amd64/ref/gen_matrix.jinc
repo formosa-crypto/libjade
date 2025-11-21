@@ -100,7 +100,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
       }
 
       ctr = 0;
-      #no_termination_check
       while (ctr < KYBER_N)
       {
         sctr = ctr;
