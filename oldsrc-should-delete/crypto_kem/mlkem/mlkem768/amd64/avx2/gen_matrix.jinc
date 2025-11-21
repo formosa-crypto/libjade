@@ -327,7 +327,7 @@ inline fn __gen_matrix_buf_rejection_filter48
 , reg u256 bounds
 , reg ptr u8[2048] sst
 , reg u256 ones
-, #msf reg u64 ms
+, #[msf] reg u64 ms
 ) -> reg ptr u16[MLKEM_N], reg u64
 {
   reg u256 f0 f1 g0 g1;
@@ -477,8 +477,8 @@ inline fn __write_u128_boundchk
 ( reg mut ptr u16[MLKEM_N] pol
 , reg u64 ctr
 , reg u128 data
-, #msf reg u64 ms
-) -> reg ptr u16[MLKEM_N], reg u64, #msf reg u64
+, #[msf] reg u64 ms
+) -> reg ptr u16[MLKEM_N], reg u64, #[msf] reg u64
 {
   reg u64 data_u64;
   reg bool condition_8 condition_4 condition_2 condition_1;
@@ -537,8 +537,8 @@ inline fn __gen_matrix_buf_rejection_filter24
 , reg u256 load_shuffle mask bounds
 , reg ptr u8[2048] sst
 , reg u256 ones
-, #msf reg u64 ms
-) -> reg ptr u16[MLKEM_N], reg u64, #msf reg u64
+, #[msf] reg u64 ms
+) -> reg ptr u16[MLKEM_N], reg u64, #[msf] reg u64
 {
   reg u256 f0 g0 g1;
   reg u256 shuffle_0 shuffle_t;
@@ -601,7 +601,7 @@ fn _gen_matrix_buf_rejection
   reg bool condition_loop;
   reg ptr u8[2048] sst;
   reg u256 load_shuffle mask bounds ones;
-  #msf reg u64 ms;
+  #[msf] reg u64 ms;
 
   ms = #init_msf();
 
