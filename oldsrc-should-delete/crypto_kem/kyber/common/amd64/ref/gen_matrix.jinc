@@ -94,7 +94,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
 
       // Initialize the poly array
       ctr = 0;
-      #bounded
       while (ctr < KYBER_N / 4) {
         poly[:u64 ctr] = ctr;
         ctr += 1;
@@ -112,7 +111,6 @@ fn __gen_matrix(stack u8[KYBER_SYMBYTES] seed, reg u64 transposed) -> stack u16[
 
       k = 0;
       l = i * KYBER_VECN + j * KYBER_N;
-      #bounded
       while (k < KYBER_N)
       {
         t = poly[k];

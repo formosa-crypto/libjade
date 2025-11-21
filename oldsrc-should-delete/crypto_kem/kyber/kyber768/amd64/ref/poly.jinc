@@ -24,7 +24,6 @@ fn _poly_add2(reg ptr u16[KYBER_N] rp bp) -> reg ptr u16[KYBER_N]
 
   i = 0;
 
-  #bounded
   while (i < KYBER_N) {
     a = rp[i];
     b = bp[i];
@@ -42,7 +41,6 @@ fn _poly_csubq(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   reg u16 b;
 
   i = 0;
-  #bounded
   while (i < KYBER_N)
   {
     t = rp[i];
@@ -78,7 +76,6 @@ fn _poly_basemul(reg ptr u16[KYBER_N] rp, reg const ptr u16[KYBER_N] ap bp) -> r
   zetasctr = 64;
   i = 0;
 
-  #bounded
   while(i < KYBER_N)
   {
     zetasp = jzetas;
@@ -144,7 +141,6 @@ fn __poly_reduce(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   reg u64 j; 
   reg u16 t;
   j = 0;
-  #bounded
   while (j < KYBER_N) 
   {
     t = rp[j];
@@ -165,7 +161,6 @@ fn _poly_compress(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
 
   i = 0;
   j = 0;
-  #bounded
   while(i < 128)
   {
     t  = a[j];
@@ -202,7 +197,6 @@ fn _i_poly_compress(reg ptr u8[KYBER_POLYCOMPRESSEDBYTES] rp, reg ptr u16[KYBER_
 
   i = 0;
   j = 0;
-  #bounded
   while(i < 128)
   {
     t  = a[j];
@@ -239,7 +233,6 @@ fn _poly_decompress(reg ptr u16[KYBER_N] rp, reg u64 ap) -> reg ptr u16[KYBER_N]
   i = 0;
   j = 0;
 
-  #bounded
   while (i < 128) {
     t  = [:u8 ap+i];
     d0 = (16u)t;
@@ -299,7 +292,6 @@ fn _poly_frommont(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   dmont = DMONT;
   
   i = 0;
-  #bounded
   while (i < KYBER_N)
   {
     r = rp[i];
@@ -458,7 +450,6 @@ fn _poly_getnoise(reg ptr u16[KYBER_N] rp, reg ptr u8[KYBER_SYMBYTES] seed, reg 
 
   i = 0;
   j = 0;
-  #bounded
   while (i < 128) {
     c = buf[i];
     a = c;
@@ -512,11 +503,9 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   zetasctr = 0;
 
   len = 2;
-  #bounded
   while (len <= 128)
   {
     start = 0;
-    #bounded
     while (start < 256)
     {
       zeta = zetasp[zetasctr];
@@ -524,7 +513,6 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
       j = start;
       cmp = #LEA(start + len); // avoid -lea
-      #bounded
       while (j < cmp)
       {
         offset = #LEA(j + len); // avoid -lea
@@ -545,7 +533,6 @@ fn _poly_invntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
 
   zeta = zetasp[127];
   j = 0;
-  #bounded
   while (j < KYBER_N) 
   {
     t = rp[j];
@@ -575,18 +562,15 @@ fn _poly_ntt(reg ptr u16[KYBER_N] rp) -> reg ptr u16[KYBER_N]
   zetasp = jzetas;
   zetasctr = 0;
   len = 128;
-  #bounded
   while (len >= 2)
   {
     start = 0;
-    #bounded
     while (start < 256)
     {
       zetasctr += 1;
       zeta = zetasp[zetasctr];
       j = start;
       cmp = #LEA(start + len);
-      #bounded
       while (j < cmp)
       {
         offset = #LEA(j + len);
@@ -618,7 +602,6 @@ fn _poly_sub(reg ptr u16[KYBER_N] rp ap bp) -> reg ptr u16[KYBER_N]
   reg u64 i;
 
   i = 0;
-  #bounded
   while (i < KYBER_N) {
     a = ap[i];
     b = bp[i];
@@ -638,7 +621,6 @@ fn _poly_tobytes(reg u64 rp, reg ptr u16[KYBER_N] a) -> reg ptr u16[KYBER_N]
 
   i = 0;
   j = 0;
-  #bounded
   while (i < KYBER_N)
   {
     t0 = a[i]; 
