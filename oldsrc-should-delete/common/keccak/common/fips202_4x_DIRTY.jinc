@@ -3,7 +3,6 @@ from Jade require "common/keccak/common/fips202_params.jinc"
 
 u256 SHAKE_SEP = (4u64)[0x8000000000000000, 0x8000000000000000, 0x8000000000000000, 0x8000000000000000];
 
-#[returnaddress="stack"]
 fn _shake128_absorb4x_34(reg ptr u256[25] s, reg ptr u8[34] m0 m1 m2 m3) -> reg ptr u256[25]
 {
 	inline int i;
@@ -52,7 +51,6 @@ fn _shake128_absorb4x_34(reg ptr u256[25] s, reg ptr u8[34] m0 m1 m2 m3) -> reg 
 }
 
 
-#[returnaddress="stack"]
 fn _shake256_absorb4x_33(reg ptr u256[25] s, reg ptr u8[33] m0 m1 m2 m3) -> reg ptr u256[25]
 {
 	inline int i;

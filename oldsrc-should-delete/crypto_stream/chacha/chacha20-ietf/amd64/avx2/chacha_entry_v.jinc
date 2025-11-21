@@ -1,4 +1,3 @@
-#[returnaddress="stack"]
 fn _chacha_xor_v_avx2_ic(reg u64 output input len nonce, reg u32 counter, reg u64 key)
 {
   stack u256[16] st;
@@ -54,7 +53,6 @@ inline fn __chacha_xor_v_avx2(reg u64 output input len nonce key)
 
 //
 
-#[returnaddress="stack"]
 fn _chacha_v_avx2_ic(reg u64 output len nonce, reg u32 counter, reg u64 key)
 {
   stack u256[16] st;

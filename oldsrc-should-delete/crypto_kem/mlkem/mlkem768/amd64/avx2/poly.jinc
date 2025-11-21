@@ -684,7 +684,6 @@ fn __poly_cbd_eta2(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_ETA2*MLKEM_N/4] buf
 }
 
 /*
-#[returnaddress="stack"]
 fn _poly_getnoise(reg ptr u16[MLKEM_N] rp, reg ptr u8[MLKEM_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[MLKEM_N]
 {
   inline int i;
@@ -775,7 +774,6 @@ fn __shake256_squeezenblocks4x(reg ptr u256[25] state, reg ptr u8[NOISE_NBLOCKS 
   return state, buf0, buf1, buf2, buf3;
 }
 
-#[returnaddress="stack"]
 fn _poly_getnoise_eta1_4x(reg ptr u16[MLKEM_N] r0 r1 r2 r3, reg ptr u8[MLKEM_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N]
 {
   reg u256 f;
@@ -807,7 +805,6 @@ fn _poly_getnoise_eta1_4x(reg ptr u16[MLKEM_N] r0 r1 r2 r3, reg ptr u8[MLKEM_SYM
   return r0, r1, r2, r3;
 }
 
-#[returnaddress="stack"]
 fn _poly_getnoise_eta1122_4x(reg ptr u16[MLKEM_N] r0 r1 r2 r3, reg ptr u8[MLKEM_SYMBYTES] seed, reg u8 nonce) -> reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N], reg ptr u16[MLKEM_N]
 {
   reg u256 f;

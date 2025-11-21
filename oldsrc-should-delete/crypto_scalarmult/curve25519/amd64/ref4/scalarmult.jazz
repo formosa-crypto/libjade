@@ -594,7 +594,6 @@ inline fn __mul4_sss(stack u64[4] xa ya) -> stack u64[4]
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#[returnaddress="stack"]
 fn _mul4_pp(reg ptr u64[4] xa ya) -> reg ptr u64[4]
 {
   reg u64[8] z;
@@ -843,7 +842,6 @@ inline fn __sqr4_ss(stack u64[4] xa) -> stack u64[4]
 // ////////////////////////////////////////////////////////////////////////////
 
 // TODO replace "-> reg ptr u64[4]" by "reg u64[4]" when r.a. @ f call
-#[returnaddress="stack"]
 fn _sqr4_p(reg ptr u64[4] xa) -> reg ptr u64[4]
 {
   inline int i;
@@ -982,7 +980,6 @@ inline fn _sqr4_s_(stack u64[4] x) -> stack u64[4]
 
 // ////////////////////////////////////////////////////////////////////////////
 
-#[returnaddress="stack"]
 fn _it_sqr4_p(reg ptr u64[4] x, reg u32 i) -> reg ptr u64[4]
 {
   reg bool zf;

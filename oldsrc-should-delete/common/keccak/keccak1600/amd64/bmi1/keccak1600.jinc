@@ -232,7 +232,6 @@ inline fn __keccak1600_bmi1(reg u64 out outlen in inlen, reg u8 trail_byte, reg 
 }
 
 
-#[returnaddress="stack"]
 fn _keccak1600_bmi1(reg u64 out outlen in inlen, reg u8 trail_byte, reg u64 rate)
 {
   __keccak1600_bmi1(out, outlen, in, inlen, trail_byte, rate);
