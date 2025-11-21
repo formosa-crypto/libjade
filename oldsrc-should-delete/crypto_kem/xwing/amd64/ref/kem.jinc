@@ -5,7 +5,7 @@ require "params.jinc"
 require "scalarmult.jinc"
 require "sha3.jinc"
 
-// sct: at this level there are no more #mmx register to spend
+// sct: at this level there are no more #[mmx] register to spend
 //      as such, after unspill, an init_msf (lfence) is needed
 //      to "promote" transient variables to public; in this
 //      particular case, there is no advantage in patching the

@@ -90,8 +90,8 @@ fn __gen_matrix(stack u8[MLKEM_SYMBYTES] seed, reg u64 transposed) -> stack u16[
   reg u8 c;
   reg u16 t;
   reg u64 ctr k;
-  #mmx reg u64 sctr;
-  #mmx reg u64 stransposed;
+  #[mmx] reg u64 sctr;
+  #[mmx] reg u64 stransposed;
   inline int j i;
 
   stransposed = transposed;
