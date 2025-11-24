@@ -1,1 +1,0 @@
-override JFLAGS += -lazy-regalloc
