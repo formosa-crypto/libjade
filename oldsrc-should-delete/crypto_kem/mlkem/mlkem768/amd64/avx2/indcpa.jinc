@@ -28,7 +28,7 @@ fn __indcpa_keypair(#[spill_to_mmx] reg u64 pkp skp, reg ptr u8[MLKEM_SYMBYTES] 
 
   for i=0 to MLKEM_SYMBYTES/8
   {
-    #declassify t64 = buf[:u64 i];
+    #[declassify] t64 = buf[:u64 i];
     publicseed[:u64 i] = t64;
     t64 = buf[:u64 i + MLKEM_SYMBYTES/8];
     noiseseed[:u64 i] = t64;
@@ -91,7 +91,7 @@ fn __indcpa_enc_0(#[mmx] reg u64 sctp, reg ptr u8[MLKEM_INDCPA_MSGBYTES] msgp, r
   pkp += MLKEM_POLYVECBYTES;
   while (i < MLKEM_SYMBYTES/8)
   {
-    #declassify t64 = [:u64 pkp];
+    #[declassify] t64 = [:u64 pkp];
     publicseed.[:u64 8 * (uint)i] = t64;
     pkp += 8;
     i += 1;
@@ -163,7 +163,7 @@ fn __indcpa_enc_1(
   pkp += MLKEM_POLYVECBYTES;
   while (i < MLKEM_SYMBYTES/8)
   {
-    #declassify t64 = [:u64 pkp];
+    #[declassify] t64 = [:u64 pkp];
     publicseed.[:u64 8*(uint)i] = t64;
     pkp += 8;
     i += 1;
