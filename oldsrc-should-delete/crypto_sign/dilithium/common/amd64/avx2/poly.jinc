@@ -22,7 +22,7 @@ fn poly_add(reg ptr u32[Li2_polydeg] f g result)
 	while (offset < 4 * Li2_polydeg) {
 		v256 = #VMOVDQU_256(f.[:u256 offset]);
 		v256 = #VPADD_8u32(v256, g.[:u256 offset]);
-		#VMOVDQU_256(result.[:u256 offset]) = v256;
+		result.[:u256 offset] = v256;
 
 		offset += 32;
 	}
@@ -39,7 +39,7 @@ fn poly_subtract(reg ptr u32[Li2_polydeg] f g result)
 	while (offset < 4 * Li2_polydeg) {
 		v256 = #VMOVDQU_256(f.[:u256 offset]);
 		v256 = #VPSUB_8u32(v256, g.[:u256 offset]);
-		#VMOVDQU_256(result.[:u256 offset]) = v256;
+		result.[:u256 offset] = v256;
 
 		offset += 32;
 	}
@@ -56,7 +56,7 @@ fn poly_accumulate(reg ptr u32[Li2_polydeg] f acc)
 	while (offset < 4 * Li2_polydeg) {
 		v256 = #VMOVDQU_256(acc.[:u256 offset]);
 		v256 = #VPADD_8u32(v256, f.[:u256 offset]);
-		#VMOVDQU_256(acc.[:u256 offset]) = v256;
+		acc.[:u256 offset] = v256;
 
 		offset += 32;
 	}
@@ -83,7 +83,7 @@ fn poly_reduce32(reg ptr u32[Li2_polydeg] poly)
 		// t = a - t*Q
 		t = #VPMULL_8u32(t, q);
 		a = #VPSUB_8u32(a, t);
-		#VMOVDQU_256(poly.[:u256 offset]) = a;
+		poly.[:u256 offset] = a;
 
 		offset += 32;
 	}
@@ -130,7 +130,7 @@ fn poly_pointwise_montgomery(reg ptr u32[Li2_polydeg] fft_f fft_g fft_prod)
 
 		prod_lo = #VMOVSHDUP_256(prod_lo);
 		prod_lo = #VPBLEND_8u32(prod_lo, prod_hi, 0xAA);
-		#VMOVDQU_256(fft_prod.[:u256 offset]) = prod_lo;
+		fft_prod.[:u256 offset] = prod_lo;
 
 		offset += 32;
 	}
@@ -147,7 +147,7 @@ fn zero_poly(reg ptr u32[Li2_polydeg] f)
 	?{}, offset = #set0_64();
 
 	while (offset < 4 * Li2_polydeg) {
-		#VMOVDQU_256(f.[:u256 offset]) = zero;
+		f.[:u256 offset] = zero;
 		offset += 32;
 	}
 	return f;
@@ -168,7 +168,7 @@ fn poly_caddq(reg ptr u32[Li2_polydeg] poly)
 		mask = #VPCMPGT_8u32(zero, v256);
 		add = #VPAND_256(q, mask);
 		v256 = #VPADD_8u32(v256, add);
-		#VMOVDQU_256(poly.[:u256 offset]) = v256;
+		poly.[:u256 offset] = v256;
 
 		offset += 32;
 	}
