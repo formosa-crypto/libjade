@@ -23,7 +23,7 @@ fn __NTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
     while(i < 4){
 
         src_indx0 = src_indx + 0 * 128;
-        src_indx1 = src_indx + 4 * 128;
+        src_indx1 = #LEA(src_indx + 4 * 128);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -49,7 +49,7 @@ fn __NTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
     while(i < 4){
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 4 * 32;
+        src_indx1 = #LEA(src_indx + 4 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -90,7 +90,7 @@ fn __NTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
         jump = 128;
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 2 * 32;
+        src_indx1 = #LEA(src_indx + 2 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -102,8 +102,8 @@ fn __NTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
         src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
 
-        src_indx0 = src_indx + 1 * 32;
-        src_indx1 = src_indx + 3 * 32;
+        src_indx0 = #LEA(src_indx + 1 * 32);
+        src_indx1 = #LEA(src_indx + 3 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -120,7 +120,7 @@ fn __NTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
         jump = 32;
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 4 * 32;
+        src_indx1 = #LEA(src_indx + 4 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -134,8 +134,8 @@ fn __NTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi)
 
         twiddle_indx += 6 * 32;
 
-        src_indx0 = src_indx + 8 * 32;
-        src_indx1 = src_indx + 12 * 32;
+        src_indx0 = #LEA(src_indx + 8 * 32);
+        src_indx1 = #LEA(src_indx + 12 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -176,7 +176,7 @@ fn __iNTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
     while(i < 4){
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 4 * 32;
+        src_indx1 = #LEA(src_indx + 4 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -202,7 +202,7 @@ fn __iNTT_top(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
     while(i < 4){
 
         src_indx0 = src_indx + 0 * 128;
-        src_indx1 = src_indx + 4 * 128;
+        src_indx1 = #LEA(src_indx + 4 * 128);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -244,7 +244,7 @@ fn __iNTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
         jump = 32;
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 4 * 32;
+        src_indx1 = #LEA(src_indx + 4 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -258,8 +258,8 @@ fn __iNTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
 
         twiddle_indx += 6 * 32;
 
-        src_indx0 = src_indx + 8 * 32;
-        src_indx1 = src_indx + 12 * 32;
+        src_indx0 = #LEA(src_indx + 8 * 32);
+        src_indx1 = #LEA(src_indx + 12 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -276,7 +276,7 @@ fn __iNTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
         jump = 128;
 
         src_indx0 = src_indx + 0 * 32;
-        src_indx1 = src_indx + 2 * 32;
+        src_indx1 = #LEA(src_indx + 2 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
@@ -288,8 +288,8 @@ fn __iNTT_bot(stack u16[ARRAY_N] src, reg ptr u16[TWIDDLE_N] twiddlelo twiddlehi
         src = __store4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         src = __store4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
 
-        src_indx0 = src_indx + 1 * 32;
-        src_indx1 = src_indx + 3 * 32;
+        src_indx0 = #LEA(src_indx + 1 * 32);
+        src_indx1 = #LEA(src_indx + 3 * 32);
 
         buff0, buff1, buff2, buff3 = __load4_u256(buff0, buff1, buff2, buff3, src, src_indx0, jump);
         buff4, buff5, buff6, buff7 = __load4_u256(buff4, buff5, buff6, buff7, src, src_indx1, jump);
