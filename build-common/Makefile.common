@@ -83,7 +83,7 @@ endif
 JASMIN ?= jasminc
 
 JEXT ?= jazz
-override JFLAGS += -stack-zero loopSCT -noinsertarraycopy
+override JFLAGS += -stack-zero loopSCT
 JINCLUDE ?= -I formosa25519=$(SRC)
 
 JASMIN_COMPILE = ($(JASMIN) $(JFLAGS) $(JINCLUDE) -o $@ $<) $(CI_CMD)
