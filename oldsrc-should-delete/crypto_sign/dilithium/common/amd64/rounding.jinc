@@ -85,7 +85,7 @@ fn decompose_gamma2_32(reg u32 a) -> reg u32, reg u32 {
 	v = a1;
 	a1 <<= 10;
 	a1 += v;
-	a1 += (int) (1 << 21);
+	a1 += 1 << 21;
 	a1 >>= 22;
 
 	// a1 &= 15;

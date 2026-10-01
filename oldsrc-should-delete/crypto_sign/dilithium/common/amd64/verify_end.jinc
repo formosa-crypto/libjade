@@ -170,7 +170,7 @@ fn verify_inner(stack ptr u8[Li2_SIGN_LEN] sig, reg u64 m, reg u64 m_len, stack 
 		z_to_unpack = polyz_unpack(z_to_unpack, z_buf);
         z[ii * Li2_polydeg : Li2_polydeg] = z_to_unpack;
 	}
-    z_normcheck_fail = checknorm_vecl(z, (uint) (Li2_gamma1 - Li2_beta));
+    z_normcheck_fail = checknorm_vecl(z, Li2_gamma1 - Li2_beta);
     if (z_normcheck_fail == 0) {
         z = fft_vec(z);
 

@@ -128,7 +128,7 @@ fn expandA_chunk(
 	for lane = 0 to 4 {
 		v64 = nonces[lane];
 		v64 = #LEA_64(0x1F0000 + v64);
-		xof[:u64 16 + (int) lane] = v64;
+		xof[:u64 16 + lane] = v64;
 	}
 	?{}, v256_zero = #set0_256();
 	for ii = 5 to 20 {

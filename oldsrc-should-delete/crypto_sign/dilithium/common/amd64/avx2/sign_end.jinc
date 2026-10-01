@@ -172,14 +172,14 @@ fn sign_inner(reg u64 ptr_m,
 		cs1 = ifft_to_mont_vecl(cs1);
 		z = sum_vecl(cs1, y);
 		z = reduce32_vecl(z);
-		normcheck_result = checknorm_vecl(z, (int) (Li2_gamma1 - Li2_beta));
+		normcheck_result = checknorm_vecl(z, Li2_gamma1 - Li2_beta);
 
 		if(normcheck_result == 0) {
 			cs2 = mult_scalar_veck(challenge, s2);
 			cs2 = ifft_to_mont_vec(cs2);
 			r0 = subtract_veck(w0, cs2);
 			w0 = reduce32_veck(w0);
-			normcheck_result = checknorm_veck(r0, (int) (Li2_gamma2 - Li2_beta));
+			normcheck_result = checknorm_veck(r0, Li2_gamma2 - Li2_beta);
 			if(normcheck_result == 0) {
 				ct0 = mult_scalar_veck(challenge, t0);
 				ct0 = ifft_to_mont_vec(ct0);
